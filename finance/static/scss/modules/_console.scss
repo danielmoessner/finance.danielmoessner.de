@@ -1,0 +1,7 @@
+.console{
+	@extend .btn-group;
+	&--button{
+		@extend .btn;
+		@extend .btn-primary;
+	}
+} 

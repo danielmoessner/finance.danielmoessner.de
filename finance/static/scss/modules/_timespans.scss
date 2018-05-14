@@ -1,0 +1,45 @@
+.timespans{
+	@extend .list-group;
+}
+.timespan{
+	background-color: $light-primary-color;
+	@extend .list-group-item;
+	@extend .form-group;
+	@extend .d-flex; 
+	&--form{
+		@extend .d-flex;
+	}
+	&--label{
+		display: block;
+	    text-align: center;
+	    line-height: 150%;
+	    margin: 0;
+	    @extend .form-control;
+	}
+	&--input{
+		@extend .form-control;
+	}
+	&--button{
+		@extend .form-control;
+		@extend .btn;
+		@extend .btn-primary;
+		border-color: rgba(0,0,0,0);
+	}
+	&--add-button{
+		@extend .timespan--button;
+		@extend .ml-1;
+	}
+	&--set-button{
+		@extend .timespan--button;
+		@extend .btn-info;
+		height: 100%;
+	}
+	&--remove-button{
+		@extend .timespan--button;
+		@extend .btn-danger;
+		height: 100%;
+	}
+	&--set-form, &--remove-form{
+		@extend .ml-1;
+	}
+} 

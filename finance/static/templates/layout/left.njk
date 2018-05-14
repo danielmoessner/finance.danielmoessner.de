@@ -1,0 +1,47 @@
+<ul class="nav flex-column">
+    <li class="nav-item">
+        <p class="nav-link m-0 font-weight-bold">Dashboards</p>
+    </li>
+    <!-- <li class="nav-item">
+        <a class="nav-link {% if activePage=='index' %}active{% endif %}" href="index.html">Overview</a>
+    </li> -->
+    <li class="nav-item">
+        <a class="nav-link {% if activePage=='banking' %}active{% endif %}" href="{{ url('banking:index', args=[user.slug,]) }}">Banking</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if activePage=='crypto' %}active{% endif %}" href="{{ url('crypto:index', args=[user.slug,]) }}">Crypto</a>
+    </li>
+    <!-- <li class="nav-item">
+        <a class="nav-link {% if activePage=='stocks' %}active{% endif %}" href="performance.html">Stock Market</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if activePage=='commodities' %}active{% endif %}" href="allocation.html">Commodities</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if activePage=='p2p' %}active{% endif %}" href="allocation.html">P2P</a>
+    </li>
+    <li class="m-2"></li>
+    <li class="nav-item">
+        <p class="nav-link m-0 font-weight-bold">More</p>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if activePage==' ' %}active{% endif %}" href="#">Watchlist</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if activePage==' ' %}active{% endif %}" href="#">Link2</a>
+    </li> -->
+    <li class="m-2"></li>
+    <li class="nav-item">
+        <p class="nav-link m-0 font-weight-bold">User</p>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if activePage=='settings' %}active{% endif %}" href="{{ url('users:settings', args=[request.user.slug, ]) }}">Settings</a>
+    </li>
+    <li class="m-2"></li>
+    <li class="nav-item">
+        <p class="nav-link m-0 font-weight-bold">App</p>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{{ url('users:logout', args=[request.user.slug, ]) }}">Log Out</a>
+    </li>
+</ul>

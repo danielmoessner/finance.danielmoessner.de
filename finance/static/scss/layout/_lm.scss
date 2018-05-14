@@ -1,0 +1,7 @@
+#lm{
+	display: flex;
+	flex-direction: row;
+	@extend .container;
+	@extend .pt-5;
+	padding-bottom: 200px;
+}

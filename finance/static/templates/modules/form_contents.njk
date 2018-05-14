@@ -1,0 +1,164 @@
+{# md #}
+{% macro justInput(text="", type="text", name=None, helpText=None, required="True", step="0.01", min=-9999999999999.99, max=9999999999999.99, maxlength=None, value=None, wrapperClass="form-group", inputClass="form-control") %}
+	<div class="{{ wrapperClass }}">
+		{{ input(text, type, name, required, step, min, max, maxlength, value, class=inputClass) }}
+	</div>
+{% endmacro %}
+
+
+{% macro labelInput(labelText="", inputText="", inputType="text", name=None, helpText=None, required="False", step="0.01", min=-9999999999999.99, max=9999999999999.99, maxlength=None, value=None, wrapperClass="form-group", inputClass="form-control", id=None) %}
+	<div class="{{ wrapperClass }}">
+		{{ label(labelText) }}
+		{{ input(inputText, inputType, name, required, step, min, max, maxlength, value, inputClass, id) }}
+		{% if helpText %}
+			{{ help(helpText)}}
+		{% endif %}
+	</div>
+{% endmacro %}
+
+
+{% macro labelTextArea(labelText="", name=None, required="False", helpText=None, content="") %}
+	<div class="form-group"> 
+		{{ label(labelText) }}
+		{{ textArea(name, required, content) }}
+		{% if helpText %}
+			{{ help(helpText)}}
+		{% endif %}
+	</div>
+{% endmacro %}
+
+
+{% macro labelSelectNamePk(labelText="", selectItems=[], name=None, required="False", helpText=None, selectedItem=None) %}
+	<div class="form-group">
+		{{ label(labelText) }}
+		{{ selectNamePk(selectItems, name, required, selectedItem) }}
+		{% if helpText %}
+			{{ help(helpText)}}
+		{% endif %}
+	</div>
+{% endmacro %}
+
+
+{% macro labelSelect(labelText="", selectItems=[], name=None, required="False", helpText=None, selected=None) %}
+	<div class="form-group">
+		{{ label(labelText) }}
+		{{ select(selectItems, name, required, selected) }}
+		{% if helpText %}
+			{{ help(helpText)}}
+		{% endif %}
+	</div>
+{% endmacro %}
+
+
+{% macro labelSelectTupleFirst(labelText="", selectItems=[], name=None, required="False", helpText=None, selected=None, wrapperClass="form-control", inputClass="custom-select form-control") %}
+	<div class="{{ wrapperClass }}">
+		{{ label(labelText) }}
+		{{ selectTupleFirst(selectItems, name, required, selected, inputClass) }}
+		{% if helpText %}
+			{{ help(helpText)}}
+		{% endif %}
+	</div>
+{% endmacro %}
+
+
+{% macro labelInputSelectSymbolPk(labelText="", inputText="", inputName="", selectName="", inputType="text", selectItems=[], name=None, required="True", helpText=None, selectedItem=None, step="0.000000001", min=-9999999999999.99, max=9999999999999.99, maxlength=None, value=None) %}
+	<div class="form-group">
+		{{ label(labelText) }}
+		<div class="input-group">
+			{{ input(inputText, inputType, inputName, required, step, min, max, maxlength, value) }}
+			{{ selectInlineSymbol(selectItems, selectName, required) }}
+			{% if helpText %}
+				{{ help(helpText)}}
+			{% endif %}
+		</div>
+	</div>
+{% endmacro %}
+
+
+{% macro labelCheckbox(labelText="", name=None, checked=False, wrapperClass="form-check", inputClass="form-check-input", labelClass="form-check-label") %}
+	<div class="{{ wrapperClass }}">
+		{{ checkbox(name, checked, inputClass) }}
+		<label class="{{ labelClass }}">{{ labelText }}</label>
+	</div>
+{% endmacro %}
+
+
+{# sm #}
+{% macro label(text) %}
+<label>{{ text }}</label>
+{% endmacro %}
+
+
+{% macro help(text) %}
+	<small class="form-text text-muted">{{ text }}</small>
+{% endmacro %}
+
+
+{% macro input(text, type, name, required, step, min, max, maxlength, value, class, id=None) %}
+	<input type="{{ type }}" class="{{ class }}" name="{{ name }}" placeholder="{{ text }}" 
+	{% if id %}id={{ id }}{% else %}id="{{ name }}Input"{% endif %} 
+	{% if value %}value={{ value }}{% endif %}
+	{% if required=="True" %}required{% endif %}
+	{% if maxlength %}maxlength="{{ maxlength }}"{% endif %}
+	{% if type=="number" %}step="{{ step }}" min="{{ min }}" max="{{ max }}" {% endif %}>
+{% endmacro %}
+
+
+{% macro textArea(name, required, content) %}
+	<textarea class="form-control" id="{{ name }}Input" name="{{ name }}" rows="3" 
+	{% if required=="True" %}required{% endif %}
+	>{{ content }}</textarea>
+{% endmacro %} 
+
+
+{% macro selectInlineSymbol(items, name, required) %}
+	<select class="select select-inline" id="{{ name }}Input" name="{{ name }}" 
+	{% if required=="True" %}required{% endif %}>
+		{% for item in items %}
+			<option value="{{ item.pk }}">{{ item.symbol }}</option>
+		{% endfor %}
+	</select>
+{% endmacro %}
+
+{% macro select(items, name, required, selectedItem) %}
+	<select class="custom-select form-control" id="{{ name }}Input" name="{{ name }}" 
+	{% if required=="True" %}required{% endif %}>
+		{% for item in items %}
+			<option value="{{ item }}"
+			{% if selectedItem %}
+				{% if item.name==selectedItem %}selected{% endif %}
+			{% endif %}
+			>{{ item }}</option>
+		{% endfor %}
+	</select>
+{% endmacro %}
+
+{% macro selectTupleFirst(items, name, required, selectedItem, inputClass) %}
+	<select class="{{ inputClass }}" id="{{ name }}Input" name="{{ name }}" 
+	{% if required=="True" %}required{% endif %}>
+		{% for item in items %}
+			<option value="{{ item[0] }}" 
+			{% if selectedItem %}
+				{% if item[0]==selectedItem %}selected{% endif %}
+			{% endif %}
+			>{{ item[1] }}</option>
+		{% endfor %}
+	</select>
+{% endmacro %}
+
+{% macro selectNamePk(items, name, required, selectedItem) %}
+	<select class="custom-select form-control" id="{{ name }}Input" name="{{ name }}" 
+	{% if required=="True" %}required{% endif %}>
+		{% for item in items %}
+			<option value="{{ item.pk }}" 
+			{% if selectedItem %}
+				{% if item.name==selectedItem.name %}selected{% endif %}
+			{% endif %}
+			>{{ item.name }}</option>
+		{% endfor %}
+	</select>
+{% endmacro %}
+
+{% macro checkbox(name, checked, inputClass) %}
+	<input type="checkbox" value=True class="{{ inputClass }}" id="{{ name }}Input" name="{{ name }}" {% if checked %}checked{% endif %}>
+{% endmacro %}

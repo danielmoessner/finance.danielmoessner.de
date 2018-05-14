@@ -1,0 +1,26 @@
+.card{
+	margin-top: .75rem;
+	margin-bottom: 0;
+	color: $opposite-font-color;
+	&--img{
+		min-width: 100%;
+	}
+	&--placeholder{
+		border: 0;
+		visibility: hidden;
+	}
+	&--heading{
+		@extend .card-header;
+		@extend .h5;
+		@extend .m-0;
+		&-small{
+			font-size: 1.25rem;
+		}
+	}
+	&--body{
+		@extend .card-body;
+	}
+	&-stats{
+		min-width: 190px;
+	}
+}

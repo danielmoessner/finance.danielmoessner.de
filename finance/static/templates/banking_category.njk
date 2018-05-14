@@ -1,0 +1,131 @@
+{% extends "static/lm.njk" %}
+
+
+{% set activePage="banking" %}
+{% set headingCategory="Category" %}
+{% set headingHeading=category.name %}
+{% set title="Banking" + category.name %}
+{% set reverse=url("banking:category", args=[user.slug, category.slug,]) %}
+
+
+{% block head %}
+    <script type="text/javascript" src="{{ static('app/js/bar_chart.js') }}" api-data="{{ url('banking:api_data_category', args=[user.slug, category.slug, ]) }}"></script>
+{% endblock %}
+
+
+{% block chart %}
+    <div class="hs-3"></div>
+    <canvas id="bar_chart"></canvas>
+    <div class="hs-3"></div>
+    <hr class="hr"> 
+{% endblock %}
+ 
+
+{% block main %}
+    
+
+    {% import "modules/table.njk" as table %}
+    {% import "modules/buttons.njk" as buttons %}
+    {% import "modules/cards.njk" as cards %}
+   
+
+    <div class="hs-1"></div>
+    
+    
+    <div class="divider">
+        <div class="divider--content"> 
+            <div class="console" data-toggle="buttons">
+                <label class="console--button active" data-target=".console_stats">
+                    <input type="radio">Stats
+                </label>
+                <label class="console--button" data-target=".console_changes">
+                    <input type="radio">Changes
+                </label>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="hs-3"></div>
+    
+    
+    <div class="wrapper console-target console_stats">
+        <div class="table-heading">
+            <h2 class="table-heading--heading">Stats</h2>
+        </div>
+        <hr class="hr">
+        <div class="card-deck">
+            {% set value %}
+                {{ stats.get_total() }} {{ user.currency }}
+            {% endset %}
+            {{ cards.statsCard(heading="Total", value=value) }}
+        </div>
+        {% for ts in parent_timespans %}
+            {% if ts.start_date and depot.ts == ts %}
+                <div class="hs-3"></div>
+                <div class="table-heading">
+                    <h3 class="table-heading--heading">{{ ts.name }}</h3>
+                </div>
+                <hr class="hr"></hr>
+                <div class="card-deck">
+                    {% for data in ts.get_timespans_data(stats, ["b",]) %}
+                        {% set heading %}
+                            {{ data.start_date }}-{{ data.end_date }}
+                        {% endset %}
+                        {% set value %}
+                            Change: {{ data.b }}
+                        {% endset %}
+                        {{ cards.statsCard(heading=heading, value=value, small=True) }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+
+    <div class="wrapper console-target is-hidden console_changes">
+        <div class="table-heading">
+            <h2 class="table-heading--heading">Changes</h2>  
+        </div>
+        <table class="table">
+            {{ table.head(["Date", "Category", "Description", "Change", "Balance", "Action"]) }}
+            <tbody class="table--body">
+                {% for change in changes %}
+                    {% set tablebuttons %}
+                        <div class="d-flex flex-row">
+                            {% set data %}
+                                {% raw %} { {% endraw %}
+                                    'pk': '{{ change.pk }}', 
+                                    'account': '{{ change.account.pk }}',
+                                    'category': '{{ change.category.pk }}',
+                                    'date': '{{ change.date }}',
+                                    'description': '{{ change.description }}',
+                                    'change': '{{ change.change }}'
+                                {% raw %} } {% endraw %}
+                            {% endset %}
+                            {{ buttons.buttonModalNew(text="Edit", dataTarget="#editChange", data=data) }}
+                            <div class="placeholder"></div>
+                            <form method="POST" action="{{ url('banking:delete_change', args=[user.slug,]) }}">
+                                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                                <input type="hidden" name="change" value="{{ change.pk }}">
+                                <input type="hidden" name="reverse" value="{{ reverse }}">
+                                <input type="submit" class='btn btn-sm btn-danger' value="Delete">
+                            </form>
+                        </div>  
+                    {% endset %} 
+                    {{ 
+                        table.row([change.get_date(), change.category, change.get_description(), change.change, change.get_balance(category=category), tablebuttons|safe]) 
+                    }}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+
+{% endblock %}
+
+
+{% block modals %}
+    {% import "modules/banking/modals.njk" as modals %}
+    {{ modals.editChangeModal(user, accounts, categories, csrf_token, reverse) }}
+{% endblock %}

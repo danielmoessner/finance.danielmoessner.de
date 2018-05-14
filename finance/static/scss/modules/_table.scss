@@ -1,0 +1,16 @@
+.table{
+	margin-bottom: 0;
+	&--head, &--body{
+		&--data{
+			.btn{
+				padding-bottom: .24rem; // quick fix because the table layout broke on user_settings.njk under the banking tab
+			}
+		}
+		&--data:first-child{
+			width: 99%;
+		}
+		&--data:not(:first-child){
+			white-space: nowrap;
+		}
+	}
+}

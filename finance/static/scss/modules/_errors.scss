@@ -1,0 +1,11 @@
+.errors{
+	@extend .bg-danger;
+	@extend .rounded;
+	@extend .pl-2;
+	@extend .pt-1;
+	@extend .pr-2;
+	@extend .pb-1;
+	&--error{
+		@extend .mb-1;
+	}
+}

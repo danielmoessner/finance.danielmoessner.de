@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+    <!-- title -->
+    <title>{{ title }} | Tortuga Finance</title>
+    <!-- icon -->
+    <link rel="icon" href="{{ static('app/img/icon.png') }}">
+    <!-- charset -->
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <!-- resizing -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- description -->
+    <meta name="description" content="{{ description }}">
+    <!-- jquery -->
+    <script src="{{ static('node_modules/jquery/dist/jquery.min.js') }}"></script>
+    <!-- chartjs http://www.chartjs.org/ -->
+    <script src="{{ static('node_modules/chart.js/dist/Chart.bundle.min.js') }}"></script>
+    <!-- font -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic" rel="stylesheet">
+    <!-- popper -->
+    <script src="{{ static('node_modules/popper.js/dist/umd/popper.min.js') }}"></script>
+    <!-- bootstrap -->
+    <script src="{{ static('node_modules/bootstrap/dist/js/bootstrap.min.js') }}"></script>
+    <!-- stylesheet -->
+    <link rel="stylesheet" type="text/css" href="{{ static('app/css/main.css') }}">
+    <!-- script -->
+    <script src="{{ static('app/js/script.js') }}"></script>
+    <!-- charts -->
+    <script src="{{ static('app/js/chart.js') }}"></script>
+    <!-- other -->
+    {% block head %}
+
+    {% endblock head %}
+</head>
+{% block body %}
+
+{% endblock body %}
+</html>

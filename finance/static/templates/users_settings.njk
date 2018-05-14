@@ -1,0 +1,186 @@
+{% extends "static/lm.njk" %}
+
+
+{% set activePage="settings" %}
+{% set headingCategory="User" %}
+{% set headingHeading="Settings" %}
+{% set title="Settings" %}
+{% set reverse=url("users:settings", args=[request.user.slug, ]) %}
+
+
+{% block main %} 
+	
+
+	{% import "modules/form_contents.njk" as form %}
+	{% import "modules/buttons.njk" as buttons %}
+	{% import "modules/table.njk" as table %}
+
+
+	<div class="hs-1"></div>
+
+
+	<div class="divider">
+        <div class="divider--content"> 
+            <div class="console" data-toggle="buttons">
+                <label class="console--button active" data-target=".console_general">
+                    <input type="radio">General
+                </label>
+                <label class="console--button" data-target=".console_user">
+                    <input type="radio">User
+                </label>
+                <label class="console--button" data-target=".console_banking">
+                    <input type="radio">Banking
+                </label>
+                <label class="console--button" data-target=".console_crypto">
+                    <input type="radio">Crypto
+                </label>
+            </div>
+        </div>
+    </div>
+
+
+	<div class="hs-3"></div>
+
+
+	<div class="wrapper console-target console_general">
+		<div class="table-heading">
+	        <h2 class="table-heading--heading">General</h2>
+	    </div>
+		<hr class="hr">
+		<div class="settings">
+			<form action="{{ url('users:edit_user_specials', args=[user.slug,]) }}" method="POST">
+				<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+				{{ form.labelSelectTupleFirst(labelText="Select A Date Format", selectItems=date_formats[1], name="date_format", required="True", selected=date_formats[0], wrapperClass="settings--input-group", inputClass="settings--input-group--select") }}
+				{{ form.labelSelectTupleFirst(labelText="Select A Currency", selectItems=currencies[1], name="currency", required="True", selected=currencies[0], wrapperClass="settings--input-group", inputClass="settings--input-group--select") }}
+				{{ form.labelCheckbox(labelText="Round Numbers To 2 Decimal Places", name="rounded_numbers", checked=rounded_numbers, wrapperClass="settings--input-check", inputClass="settings--input-check--checkbox", labelClass="settings--input-check--checkbox-label") }}
+				<input type="submit" value="Update" class="settings--submit-button">
+			</form> 
+		</div> 
+	</div>
+
+
+	<div class="wrapper console-target console_user is-hidden">	
+		<div class="table-heading">
+	        <h2 class="table-heading--heading">@{{ user.username }}</h2>
+	    </div>
+		<hr class="hr">
+		<div class="settings">
+			<form action="{{ url('users:edit_user', args=[user.slug,]) }}" method="POST">
+				<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+				{{ form.labelInput(labelText="Username", value=user.username, inputType="text", required="True", name="username", wrapperClass="settings--input-group", inputClass="settings--input-group--input") }}
+				{{ form.labelInput(labelText="E-Mail", value=user.email, inputType="text", required="True", name="email", wrapperClass="settings--input-group", inputClass="settings--input-group--input") }}
+				<input type="submit" value="Update" class="settings--submit-button">
+			</form>
+		</div>
+
+		<div class="table-heading">
+	        <h3 class="table-heading--heading">Password</h3>
+	    </div>
+	    <hr class="hr">
+		<div class="settings">
+			<form action="{{ url('users:edit_user_password', args=[user.slug,]) }}" method="POST">
+				<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+				{{ form.labelInput(labelText="Old Password", value="password", inputType="password", required="True", name="old_password", wrapperClass="settings--input-group", inputClass="settings--input-group--input") }}
+				{{ form.labelInput(labelText="New Password", value="password", inputType="password", required="True", name="new_password1", wrapperClass="settings--input-group", inputClass="settings--input-group--input") }}
+				{{ form.labelInput(labelText="Retype New Password", value="password", inputType="password", required="True", name="new_password2", wrapperClass="settings--input-group", inputClass="settings--input-group--input") }}
+				<input type="submit" value="Change Password" class="settings--submit-button">
+			</form>
+		</div> 
+	</div>
+
+
+	<div class="wrapper console-target console_banking is-hidden">
+		<div class="table-heading">
+	        <h2 class="table-heading--heading">Banking</h2>
+	    </div>
+		<hr class="hr">
+		<div class="settings">
+			<form action="" method="POST">
+				<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+				<input type="submit" value="Init" class="settings--submit-button">
+			</form>
+		</div> 
+
+		<div class="table-heading">
+	        <h3 class="table-heading--heading">Depots</h3>
+	        {{ buttons.buttonModal(text="Add Depot", dataTarget="#addBankingDepot") }}
+            <div class="placeholder"></div>
+            {{ buttons.buttonModal(text="Delete Depot", dataTarget="#deleteBankingDepot", class="btn-danger") }} 
+	    </div>
+		<table class="table">
+            {{ table.head(["Depot", "Action"]) }}
+            <tbody class="table--body">
+                {% for depot in banking_depots %}
+                    {% set tablebuttons %}
+                        <div class="flex flex-row">  
+                        	<a type="button" href={{ url("users:set_banking_depot_active", args=[user.slug, depot.pk, ]) }} class="btn btn-sm btn-info {% if depot.is_active==True %}disabled{% endif %}" role="button">Set Active</a>
+                            {% set data %}
+                                {% raw %} { {% endraw %}
+                                    'pk': '{{ depot.pk }}', 
+                                    'name': '{{ depot.name }}'
+                                {% raw %} } {% endraw %}
+                            {% endset %}
+                            {{ buttons.buttonModalNew(text="Edit", dataTarget="#editBankingDepot", data=data) }}
+                        </div>
+                    {% endset %} 
+                    {{ table.row([depot.name, tablebuttons]) }}
+                {% endfor %}
+            </tbody>
+        </table>
+	</div>
+
+
+	<div class="wrapper console-target console_crypto is-hidden">
+		<div class="table-heading">
+	        <h2 class="table-heading--heading">Crypto</h2>
+	    </div>
+		<hr class="hr">
+		<div class="settings">
+			<form action="" method="POST">
+				<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+				<input type="submit" value="Init" class="settings--submit-button">
+			</form>
+		</div>
+
+		<div class="table-heading">
+	        <h3 class="table-heading--heading">Depots</h3>
+	        {{ buttons.buttonModal(text="Add Depot", dataTarget="#addCryptoDepot") }}
+            <div class="placeholder"></div>
+            {{ buttons.buttonModal(text="Delete Depot", dataTarget="#deleteCryptoDepot", class="btn-danger") }} 
+	    </div>
+		<table class="table">
+            {{ table.head(["Depot", "Action"]) }}
+            <tbody class="table--body">
+                {% for depot in crypto_depots %}
+                    {% set tablebuttons %}
+                        <div class="flex flex-row">  
+                        	<a type="button" href={{ url("users:set_banking_depot_active", args=[user.slug, depot.pk, ]) }} class="btn btn-sm btn-info {% if depot.is_active==True %}disabled{% endif %}" role="button">Set Active</a>
+                            {% set data %}
+                                {% raw %} { {% endraw %}
+                                    'pk': '{{ depot.pk }}', 
+                                    'name': '{{ depot.name }}'
+                                {% raw %} } {% endraw %}
+                            {% endset %}
+                            {{ buttons.buttonModalNew(text="Edit", dataTarget="#editCryptoDepot", data=data) }}
+                        </div>
+                    {% endset %} 
+                    {{ table.row([depot.name, tablebuttons]) }}
+                {% endfor %}
+            </tbody>
+        </table>
+	</div>
+
+ 
+{% endblock %}
+
+ 
+{% block modals %}
+	{% import "modules/banking/modals.njk" as bankingModals %}
+	{{ bankingModals.addBankingDepotModal(user, csrf_token, reverse) }}
+	{{ bankingModals.editBankingDepotModal(user, csrf_token) }}
+	{{ bankingModals.deleteBankingDepotModal(user, banking_depots, csrf_token, reverse) }}
+	{% import "modules/crypto/modals.njk" as cryptoModals %}
+	{{ cryptoModals.addCryptoDepotModal(user, csrf_token, reverse) }}
+	{{ cryptoModals.editCryptoDepotModal(user, csrf_token) }}
+	{{ cryptoModals.deleteCryptoDepotModal(user, crypto_depots, csrf_token, reverse) }}
+{% endblock %}

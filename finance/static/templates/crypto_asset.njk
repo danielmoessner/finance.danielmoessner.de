@@ -1,0 +1,174 @@
+{% extends "static/lm.njk" %}
+
+
+{% set activePage="crypto" %}
+{% set headingCategory="Asset" %}
+{% set headingHeading=asset.name %}
+{% set title="Crypto " + asset.name %}
+{% set reverse=url("crypto:asset", args=[user.slug, asset.slug, ]) %}
+
+
+{% block head %}
+	<script type="text/javascript" src="{{ static('app/js/line_chart_2_axes.js') }}" api-data="{{ url('crypto:api_data_asset', args=[user.slug, asset.slug, ]) }}"></script>
+{% endblock %}
+
+
+{% block chart %}
+	<div class="hs-3"></div>
+    <canvas id="line_chart"></canvas>
+    <div class="hs-3"></div>
+    <hr class="hr"> 
+{% endblock %}
+
+
+{% block main %}
+
+
+    {% import "modules/table.njk" as table %}
+    {% import "modules/buttons.njk" as buttons %}
+    {% import "modules/modals.njk" as modals %}
+    {% import "modules/cards.njk" as cards %}
+    {% import "modules/timespans.njk" as timespans %}
+   
+	
+	<div class="hs-1"></div>
+
+
+	<div class="divider">
+        <div class="divider--content"> 
+            <div class="console" data-toggle="buttons">
+                <label class="console--button active" data-target=".console_stats">
+                    <input type="radio">Stats
+                </label>
+                <label class="console--button" data-target=".console_prices">
+                    <input type="radio">Price History
+                </label>
+                <label class="console--button" data-target=".console_trades">
+                    <input type="radio">Trades
+                </label>
+                <label class="console--button" data-target=".console_timespans">
+                    <input type="radio">Time Spans
+                </label>
+            </div>
+        </div>
+    </div>
+
+	
+	<div class="hs-3"></div>
+
+
+	<div class="wrapper console-target console_stats">
+		<div class="table-heading">
+            <h2 class="table-heading--heading">Stats</h2>
+        </div>
+        <hr class="hr">
+        {%- set assetData = asset.get_movie(depot).get_all() -%}
+        <div class="card-deck">
+        	{{ cards.statsCard("Amount", assetData.amount )}}
+        	{{ cards.statsCard("Invested Capital", assetData.invested, user.currency) }}
+            {{ cards.statsCard("Profit", assetData.profit, user.currency) }}
+        </div>
+		<div class="card-deck">
+            {{ cards.statsCard("Value", assetData.value, user.currency) }}
+            {{ cards.statsCard("Current Return", assetData.yield, "%") }}
+            {{ cards.statsCard("True time weighted return", assetData.true_time_weighted_return, "%")}}
+		</div>
+		{% for ts in parent_timespans %}
+		    {% if ts.start_date and ts == depot.timespan %}
+		        <div class="hs-3"></div>
+		        <div class="table-heading">
+		            <h3 class="table-heading--heading">{{ ts.name }}</h3>
+		        </div>
+		        <hr class="hr"></hr>
+		        <div class="card-deck">
+		            {% for data in ts.get_timespans_data(movie, ["g", "cr", ]) %}
+		                {% set heading %}
+		                    {{ data.start_date }}-{{ data.end_date }}  
+		                {% endset %}
+		                {% set value %}
+		                    Profit: {{ data.g }} <br>
+		                    Current Return: {{ data.cr }}
+		                {% endset %}
+		                {{ cards.statsCard(heading=heading, value=value, small=True) }}
+		            {% endfor %}
+		        </div>
+		    {% endif %}
+		{% endfor %}
+	</div>
+
+
+	<div class="wrapper console-target is-hidden console_prices">
+		<div class="table-heading">
+            <h2 class="table-heading--heading">Price history</h2> 
+            {{ buttons.buttonModal(text="Add Price", dataTarget="#addPrice") }} 
+        </div>
+		<table class="table ">
+		    {{ table.head(["Date", "Price", "Action"]) }}
+		    <tbody class="table--body">
+		        {% for price in prices %}
+		            {% set tablebuttons %}
+		                <div class="d-flex flex-row">
+		                    <form method="POST" action="{{ url('crypto:delete_price', args=[user.slug, asset.slug,]) }}">
+							   	<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+							   	<input type="hidden" name="price" value="{{ price.pk }}">
+							   	<input type="submit" class='btn btn-sm btn-danger' value="Delete">
+							</form> 
+		                </div> 
+		            {% endset %}
+		            {{ table.row([price.get_date(), price.price, tablebuttons | safe]) }}
+		        {% endfor %}
+		    </tbody>
+		</table>
+	</div>
+
+
+	<div class="wrapper console-target is-hidden console_trades">
+		<div class="table-heading">
+            <h2 class="table-heading--heading">Trades</h2> 
+        </div>
+		<table class="table ">
+		    {{ table.head(["Account", "Date", "Buy", "Buy Asset", "Sell", "Sell Asset", "Fees", "Fees Asset", "Action"]) }}
+		    <tbody class="table--body">
+		        {% for trade in trades %}
+		            {% set tablebuttons %}
+		                <div class="d-flex flex-row">
+		                	<form method="POST" action="{{ url('crypto:delete_trade', args=[user.slug,]) }}">
+							   	<input type="hidden" name="reverse" value="{{ reverse }}">
+							   	<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+							   	<input type="hidden" name="trade" value="{{ trade.pk }}">
+							   	<input type="submit" class='btn btn-sm btn-danger' value="Delete">
+							</form>
+		                </div> 
+		            {% endset %}
+		            {{ table.row([trade.account, trade.date, trade.buy_amount, trade.buy_asset, trade.sell_amount, trade.sell_asset, trade.fees, trade.fees_asset, tablebuttons | safe]) }}
+		        {% endfor %}
+		    </tbody>
+		</table>
+	</div>
+	
+
+    <div class="wrapper console-target is-hidden console_timespans">
+	    <div class="table-heading">
+	        <h2 class="table-heading--heading">Timespans</h2>  
+	        {{ buttons.buttonLink(text="Update", url=url("banking:update_timespans", args=[user.slug])) }}
+	    </div>
+	    <hr class="hr">
+	    <div class="hs-1"></div>
+	    <ul class="timespans">
+	        {% for ts in parent_timespans %} 
+	            {{ timespans.timespan(ts, depot, reverse, csrf_token)}}
+	        {% endfor %}
+	        {{ timespans.createTimespan(False, reverse, csrf_token) }}
+	        {{ timespans.createTimespan(True, reverse, csrf_token) }}
+	    </ul>
+	</div>
+
+	
+{% endblock %}
+
+
+{% block modals %}
+	{% import "modules/crypto/modals.njk" as modals %}
+	{{ modals.addPriceModal(user, reverse, asset.pk, csrf_token=csrf_token) }}
+	{{ modals.addTradeModal(user, reverse, accounts=accounts, assets=assets, csrf_token=csrf_token) }}
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "static/base.njk" %}
+
+{% block body %}
+    <body id="lm">
+        <aside id="lm-left">
+            {% include "layout/left.njk" %}
+        </aside>
+        <main id="lm-main"> 
+            {% import "modules/headings.njk" as headings %}
+            {{ headings.lmHeading(headingCategory, headingHeading) }}
+            <div class="wrapper">
+                {% block chart %}
+
+                {% endblock %}
+            </div>
+            {% include "modules/errors.njk" %}
+            {% block main %}
+            
+            {% endblock %}
+            <div class="wrapper">
+                {% block modals %}
+
+                {% endblock %}
+            </div>
+        </main>
+        <script type="text/javascript">
+            jQuery(function(){
+                {% block jquery %}
+
+                {% endblock %}
+            });
+        </script>
+    </body>
+{% endblock body %}

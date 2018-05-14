@@ -1,0 +1,13 @@
+.divider{
+	&--hr{
+		width: 100%;
+		border-top: 1px solid $hr-color;
+		margin-bottom: .5rem;
+		margin-top: 0; 
+	}
+	&--content{
+		@extend .d-flex;
+		@extend .flex-row;
+		@extend .justify-content-center;
+	}
+}

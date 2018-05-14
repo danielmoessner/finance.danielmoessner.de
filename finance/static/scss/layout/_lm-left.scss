@@ -1,0 +1,20 @@
+#lm-left{
+
+	width: 25%;
+	max-width: 25%;
+	@extend .pr-4;
+	
+	.nav{
+		position: fixed;
+		max-width: 230px;
+		width: 100%;
+		.active{
+			background-color: $secondary-color;
+			border-radius: 0.25rem;
+		}
+		.nav-link{
+			color: white;
+		}
+	}
+
+}
