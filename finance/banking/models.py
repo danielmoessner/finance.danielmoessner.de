@@ -235,6 +235,15 @@ class Movie(models.Model):
         return round(self.get_data()["b"].last(), 2) if self.get_data()["b"].last() is not None \
             else 0
 
+    def get_data(self):
+        # if not self.data:
+        data = dict()
+        data["d"] = (Picture.objects.filter(movie=self).values_list("d", flat=True))
+        data["b"] = (Picture.objects.filter(movie=self).values_list("b", flat=True))
+        data["c"] = (Picture.objects.filter(movie=self).values_list("c", flat=True))
+        self.data = data
+        return self.data
+
     # update
     @staticmethod
     def update_all(depot, disable_update=False, force_update=False):
@@ -290,16 +299,6 @@ class Movie(models.Model):
         print(self, "is up to date. --Delete Time:", ((t2 - t1) / (t4-t1)),
               "--Calc Time:", ((t3 - t2) / (t4-t1)),
               "--Save Time:", ((t4 - t3) / (t4-t1)))
-
-    # get
-    def get_data(self):
-        # if not self.data:
-        data = dict()
-        data["d"] = (Picture.objects.filter(movie=self).values_list("d", flat=True))
-        data["b"] = (Picture.objects.filter(movie=self).values_list("b", flat=True))
-        data["c"] = (Picture.objects.filter(movie=self).values_list("c", flat=True))
-        self.data = data
-        return self.data
 
     # calc helpers
     @staticmethod
@@ -362,7 +361,6 @@ class Picture(models.Model):
     change = models.ForeignKey(Change, on_delete=models.CASCADE, blank=True, null=True)
     prev = models.ForeignKey("self", on_delete=models.CASCADE, blank=True, null=True)
 
-    # other
     def __str__(self):
         stats = str(self.movie)
         d = str(self.d)
