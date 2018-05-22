@@ -122,7 +122,7 @@ class Account(CoreAccount):
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         super(Account, self).save(force_insert, force_update, using, update_fields)
-        Movie.update_all(disable_update=True)
+        Movie.update_all(self.depot, disable_update=True)
 
     # getters
     def get_movie(self):
@@ -335,7 +335,8 @@ class Movie(models.Model):
             timespan = parent_timespan.get_timespans().last()
             data = dict()
             if timespan.start_date and timespan.end_date:
-                pictures = self.pictures.filter(d__gte=timespan.start_date, d__lte=timespan.end_date)
+                pictures = self.pictures.filter(d__gte=timespan.start_date,
+                                                d__lte=timespan.end_date)
                 data["d"] = (pictures.values_list("d", flat=True))
                 data["p"] = (pictures.values_list("p", flat=True))
                 data["v"] = (pictures.values_list("v", flat=True))
@@ -375,10 +376,7 @@ class Movie(models.Model):
 
     # update
     @staticmethod
-    def update_all(depot=None, force_update=False, disable_update=False):
-        if depot is None:
-            depot = Depot.objects.get(name="CMain")
-
+    def update_all(depot, force_update=False, disable_update=False):
         if force_update:
             for movie in Movie.objects.filter(depot=depot).select_related():
                 movie.update_needed = True

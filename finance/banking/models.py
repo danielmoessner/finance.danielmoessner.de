@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models import Q
+from django.db import connection
 
 from finance.core.models import IntelligentTimespan as CoreIntelligentTimespan
 from finance.core.models import Timespan as CoreTimespan
@@ -8,6 +10,9 @@ from finance.users.models import StandardUser
 from finance.core.utils import create_slug
 
 from datetime import datetime
+import datetime as dt
+import pandas
+import numpy
 import pytz
 import time
 
@@ -91,7 +96,7 @@ class Account(CoreAccount):
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         super(Account, self).save(force_insert, force_update, using, update_fields)
-        Movie.update_all(disable_update=True)
+        Movie.update_all(depot=self.depot, disable_update=True)
 
     # getters
     def get_movie(self):
@@ -141,23 +146,44 @@ class Change(models.Model):
 
     def __str__(self):
         account = self.account.name
-        date = self.date.strftime(self.account.depot.date_format)
+        date = self.date.strftime(self.account.depot.user.date_format)
         description = str(self.description)
         return account + " " + date + " " + description
 
     def save(self, *args, **kwargs):
-        movie = Movie.objects.get(depot=self.account.depot, account=None, category=None)
-        [picture.delete() for picture in movie.pictures.filter(d__gte=self.date)]
-        movie = Movie.objects.get(depot=self.account.depot, account=self.account, category=None)
-        [picture.delete() for picture in movie.pictures.filter(d__gte=self.date)]
-        movie = Movie.objects.get(depot=self.account.depot, account=self.account,
-                                  category=self.category)
-        [picture.delete() for picture in movie.pictures.filter(d__gte=self.date)]
-        movie = Movie.objects.get(depot=self.account.depot, account=None, category=self.category)
-        [picture.delete() for picture in movie.pictures.filter(d__gte=self.date)]
+        date = self.date
         if self.pk:
-            [picture.delete() for picture in Picture.objects.filter(change=self).all()]
+            date = min(self.date, Picture.objects.filter(change=self).first().d)
+        movies = Movie.objects.filter(
+            Q(depot=self.account.depot, account=None, category=None) |
+            Q(depot=self.account.depot, account=self.account, category=None) |
+            Q(depot=self.account.depot, account=None, category=self.category) |
+            Q(depot=self.account.depot, account=self.account, category=self.category)
+        )
+        [movie.pictures.filter(d__gte=date).delete() for movie in movies]
+
+        # movie = Movie.objects.get(depot=self.account.depot, account=None, category=None)
+        # [picture.delete() for picture in movie.pictures.filter(d__gte=self.date)]
+        # movie = Movie.objects.get(depot=self.account.depot, account=self.account, category=None)
+        # [picture.delete() for picture in movie.pictures.filter(d__gte=self.date)]
+        # movie = Movie.objects.get(depot=self.account.depot, account=self.account,
+        #                           category=self.category)
+        # [picture.delete() for picture in movie.pictures.filter(d__gte=self.date)]
+        # movie = Movie.objects.get(depot=self.account.depot, account=None, category=self.category)
+        # [picture.delete() for picture in movie.pictures.filter(d__gte=self.date)]
+        # if self.pk:
+        #     [picture.delete() for picture in Picture.objects.filter(change=self).all()]
         super(Change, self).save(*args, **kwargs)
+
+    def delete(self, using=None, keep_parents=False):
+        movies = Movie.objects.filter(
+            Q(depot=self.account.depot, account=None, category=None) |
+            Q(depot=self.account.depot, account=self.account, category=None) |
+            Q(depot=self.account.depot, account=None, category=self.category) |
+            Q(depot=self.account.depot, account=self.account, category=self.category)
+        )
+        [movie.pictures.filter(d__gte=self.date).delete() for movie in movies]
+        super(Change, self).delete(using, keep_parents)
 
     def get_date(self):
         return self.date.strftime(self.account.depot.user.date_format)
@@ -178,7 +204,7 @@ class Change(models.Model):
 
 
 class Movie(models.Model):
-    update_needed = models.BooleanField(default=True)
+    update_needed = models.BooleanField(default=True)  # remove later maybe
     depot = models.ForeignKey(Depot, blank=True, null=True, on_delete=models.CASCADE,
                               related_name="movies")
     account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.CASCADE)
@@ -262,58 +288,65 @@ class Movie(models.Model):
 
     # update
     def update(self):
-        def status(movie):
-            movie.update_needed = False
-            movie.save()
-            done = len(Movie.objects.filter(update_needed=False))
-            all = len(Movie.objects.filter().all())
-            print(movie, "is up to date.")
-        # data
-        changes = self.get_c()
-        d = self.calc_d()
-        b = self.calc_b()
-        c = self.calc_c()
-        # assert
-        assert len(d) == len(b) == len(c) == len(changes)
-        # chain
-        if len(Picture.objects.filter(movie=self).all()) > 0:
-            prev_picture = Picture.objects.filter(movie=self).latest("d")
-        else:
-            prev_picture = None
-        # save
-        for i in range(len(d)):
-            picture = Picture(movie=self, d=d[i], b=b[i], c=c[i], prev=prev_picture,
-                              change=changes[i])
-            picture.save()
-            prev_picture = picture
-        # status
-        status(self)
+        t1 = time.time()
+        # Picture.objects.filter(movie=self).delete()
+
+        t2 = time.time()
+        df = self.calc()
+
+        # query = str(Picture.objects.filter(movie=self).all().query)
+        # existing_pictures = pandas.read_sql_query(query, connection)
+        # existing_pictures.set_index("d", inplace=True)
+        # existing_pictures.drop(["id", "movie_id", "prev_id"], axis=1, inplace=True)
+        # merged_df = existing_pictures.merge(df, indicator=True, how='outer', left_index=True,
+        #                                     right_index=True)
+        # assert "left_only" not in merged_df["_merge"].values
+        # df = merged_df[merged_df['_merge'] == 'right_only']
+        # df.drop(["_merge", "b_x", "c_x", "change_id_x"], axis=1, inplace=True)
+        # df.rename(columns={"c_y": "c", "b_y": "b", "change_id_y": "change_id"}, inplace=True)
+
+        t3 = time.time()
+        pictures = list()
+        for index, row in df.iterrows():
+            picture = Picture(
+                movie=self,
+                d=index,
+                c=row["c"],
+                b=row["b"],
+                change=Change.objects.get(pk=row["change_id"]),
+            )
+            pictures.append(picture)
+        Picture.objects.bulk_create(pictures)
+
+        t4 = time.time()
+        print(self, "is up to date. --Delete Time:", ((t2 - t1) / (t4-t1)),
+              "--Calc Time:", ((t3 - t2) / (t4-t1)),
+              "--Save Time:", ((t4 - t3) / (t4-t1)))
 
     @staticmethod
-    def update_all(disable_update=False):
-        # update
+    def update_all(depot, disable_update=False):
         t1 = time.time()
-        for depot in Depot.objects.all():
-            for account in Account.objects.all():
-                for category in Category.objects.all():
-                    movie, created = Movie.objects.get_or_create(depot=depot, account=account,
-                                                                 category=category)
-                    if not disable_update:
-                        movie.update()
-                movie, created = Movie.objects.get_or_create(depot=depot, account=account,
-                                                             category=None)
-                if not disable_update:
-                    movie.update()
+        for account in depot.accounts.all():
             for category in Category.objects.all():
-                movie, created = Movie.objects.get_or_create(depot=depot, account=None,
+                movie, created = Movie.objects.get_or_create(depot=depot, account=account,
                                                              category=category)
                 if not disable_update:
                     movie.update()
-            movie, created = Movie.objects.get_or_create(depot=depot, account=None,
+            movie, created = Movie.objects.get_or_create(depot=depot, account=account,
                                                          category=None)
             if not disable_update:
                 movie.update()
+        for category in depot.user.categories.all():
+            movie, created = Movie.objects.get_or_create(depot=depot, account=None,
+                                                         category=category)
+            if not disable_update:
+                movie.update()
+        movie, created = Movie.objects.get_or_create(depot=depot, account=None,
+                                                     category=None)
+        if not disable_update:
+            movie.update()
         t2 = time.time()
+
         print("this took", str((t2 - t1) / 60), "minutes")
 
     # get
@@ -349,6 +382,73 @@ class Movie(models.Model):
     def get_total(self):
         return round(self.get_data()["b"].last(), 2) if self.get_data()["b"].last() is not None \
             else 0
+
+    # calc helpers
+    @staticmethod
+    def fadd(df, column):
+        """
+        fadd: Sums up the column from the back to the front.
+        """
+        for i in range(1, len(df[column])):
+            df.loc[df.index[i], column] = df[column][i - 1] + df[column][i]
+
+    # calc
+    def calc(self):
+        df = pandas.DataFrame()
+
+        try:
+            latest_picture = Picture.objects.filter(movie=self).latest("d")
+            q = Q(date__gte=latest_picture.d, pk__gt=latest_picture.change_id)
+        except Picture.DoesNotExist:
+            latest_picture = None
+            q = Q()
+        # print(q)
+        if self.depot and not self.account and not self.category:
+            changes = Change.objects.filter(
+                Q(account__in=self.depot.accounts.all()) & q
+            ).order_by("date", "pk")
+        elif self.account:
+            changes = Change.objects.filter(
+                Q(account=self.account) & q
+            ).order_by("date", "pk")
+        elif self.category:
+            changes = Change.objects.filter(
+                Q(account__in=self.depot.accounts.all(), category=self.category) & q
+            ).order_by("date", "pk")
+        elif self.account and self.category:
+            changes = Change.objects.filter(
+                Q(account=self.account, category=self.category) & q
+            ).order_by("date", "pk")
+        else:
+            raise Exception("Why is no depot, account or category defined?")
+        # if self.account and self.category:
+        #     new_changes = list()
+        #     for change in changes:
+        #         if change.category != self.category:
+        #             change.change = 0
+        #         new_changes.append(change)
+        #     changes = new_changes
+        # throw away the changes that already have a picture
+        # pictures = Picture.objects.filter(movie=self).all()
+        # changes_len = len(changes)
+        # changes = changes[len(pictures):]
+        # assert len(changes) == (changes_len - len(pictures))
+
+        # print(changes)
+
+        df["d"] = [change.date for change in changes]
+        df["c"] = [change.change for change in changes]
+        df["b"] = [change.change for change in changes]
+        Movie.fadd(df, "b")
+        if latest_picture:
+            df["b"] += latest_picture.b
+        df["change_id"] = [change.pk for change in changes]
+
+        df.set_index("d", inplace=True)
+        for column in df.drop(["change_id"], 1):
+            df[column] = df[column].astype(numpy.float64)
+
+        return df
 
 
 class Picture(models.Model):

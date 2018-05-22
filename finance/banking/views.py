@@ -183,7 +183,8 @@ def delete(request, user_slug):
 
 
 def update_stats(request, user_slug):
-    Movie.update_all()
+    depot = request.user.banking_depots.get(is_active=True)
+    Movie.update_all(depot)
     return HttpResponseRedirect(reverse_lazy("banking:index", args=[request.user.slug, ]))
 
 
