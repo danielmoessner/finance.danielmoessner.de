@@ -123,6 +123,7 @@ class Category(models.Model):
             self.slug = create_slug(self)
         super(Category, self).save(force_insert, force_update, using, update_fields)
 
+    # getters
     def get_movie(self):
         if not self.s:
             depot = Depot.objects.filter(user=self.user, is_active=True)
@@ -161,6 +162,9 @@ class Change(models.Model):
             Q(depot=self.account.depot, account=self.account, category=self.category)
         )
         [movie.pictures.filter(d__gte=date).delete() for movie in movies]
+        for movie in movies:
+            movie.update_needed = True
+            movie.save()
         super(Change, self).save(*args, **kwargs)
 
     def delete(self, using=None, keep_parents=False):
@@ -171,8 +175,12 @@ class Change(models.Model):
             Q(depot=self.account.depot, account=self.account, category=self.category)
         )
         [movie.pictures.filter(d__gte=self.date).delete() for movie in movies]
+        for movie in movies:
+            movie.update_needed = True
+            movie.save()
         super(Change, self).delete(using, keep_parents)
 
+    # getters
     def get_date(self):
         return self.date.strftime(self.account.depot.user.date_format)
 
@@ -209,7 +217,7 @@ class Movie(models.Model):
 
     def __str__(self):
         text = "{} {} {}".format(self.depot, self.account, self.category)
-        return text.replace("None ", "").replace(" None", " ")
+        return text.replace("None", "").replace("   ", " ").replace("  ", " ")
 
     # getters
     def get_timespan_data(self, parent_timespan):
@@ -248,9 +256,7 @@ class Movie(models.Model):
     @staticmethod
     def update_all(depot, disable_update=False, force_update=False):
         if force_update:
-            for movie in Movie.objects.filter(depot=depot):
-                movie.update_needed = True
-                movie.save()
+            Movie.objects.filter(depot=depot).delete()
 
         t1 = time.time()
         for account in depot.accounts.all():
