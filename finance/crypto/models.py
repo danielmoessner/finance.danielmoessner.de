@@ -378,7 +378,7 @@ class Movie(models.Model):
     @staticmethod
     def update_all(depot, force_update=False, disable_update=False):
         if force_update:
-            for movie in Movie.objects.filter(depot=depot).select_related():
+            for movie in Movie.objects.filter(depot=depot):
                 movie.update_needed = True
                 movie.save()
 
