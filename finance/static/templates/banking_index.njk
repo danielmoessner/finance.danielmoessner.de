@@ -29,7 +29,7 @@
     {% import "modules/table.njk" as table %}
     {% import "modules/buttons.njk" as buttons %}
     {% import "modules/cards.njk" as cards %}
-    {% import "modules/timespans.njk" as timespans %}
+    {% import "modules/timespan.njk" as timespan %}
 
     
     <div class="hs-1"></div>
@@ -70,7 +70,7 @@
             {% endset %}
             {{ cards.statsCard(heading="Total", value=value) }}
         </div>
-        {% for ts in parent_timespans %}
+        {% for ts in timespans %}
             {% if ts.start_date and ts == depot.timespan %}
                 <div class="hs-3"></div>
                 <div class="table-heading">
@@ -78,7 +78,7 @@
                 </div>
                 <hr class="hr"></hr>
                 <div class="card-deck">
-                    {% for data in ts.get_timespans_data(movie, ["b",]) %}
+                    {% for data in ts.get_data(movie, ["b",]) %}
                         {% set heading %}
                             {{ data.start_date }}-{{ data.end_date }}
                         {% endset %}
@@ -103,7 +103,7 @@
         <table class="table">
             {{ table.head(["Account", "Balance", "Action"]) }}
             <tbody class="table--body">
-                {% for account in accounts %}
+                {% for account, movie in accounts_movies %}
                     {% set name %}
                         <a href="{{ url('banking:account', args=[user.slug, account.slug,]) }}" class="link-bold">{{ account.name }}</a>
                     {% endset %}
@@ -121,7 +121,7 @@
                         </div> 
                     {% endset %}
                     {% set balance %}
-                        {{ account.get_movie().get_total() }} {{ user.currency }}
+                        {{ movie.get_total() }} {{ user.currency }}
                     {% endset %}
                     {{ table.row([name | safe, balance, tablebuttons | safe]) }}
                 {% endfor %}
@@ -171,11 +171,10 @@
         <hr class="hr">
         <div class="hs-1"></div>
         <ul class="timespans">
-            {% for ts in parent_timespans %} 
-                {{ timespans.timespan(ts, depot, url('banking:set_timespan', args=[user.slug,]), url('banking:delete_timespan', args=[user.slug,]), reverse, csrf_token)}}
+            {% for ts in timespans %} 
+                {{ timespan.timespan(ts, depot, url('banking:set_timespan', args=[user.slug,]), url('banking:delete_timespan', args=[user.slug,]), reverse, csrf_token)}}
             {% endfor %}
-            {{ timespans.createTimespan(False, url('banking:add_timespan', args=[user.slug,]), reverse, csrf_token) }}
-            {{ timespans.createTimespan(True, url('banking:add_timespan', args=[user.slug,]), reverse, csrf_token) }}
+            {{ timespan.createTimespan(False, url('banking:add_timespan', args=[user.slug,]), reverse, csrf_token) }}
         </ul>
     </div>
 

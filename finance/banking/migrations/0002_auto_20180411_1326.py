@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='depot',
             name='timespan',
-            field=models.ForeignKey(on_delete=models.SET(finance.banking.models.IntelligentTimespan.get_default_intelligent_timespan), related_name='depots', to='banking.IntelligentTimespan'),
+            field=models.ForeignKey(on_delete=models.SET(finance.banking.models.Timespan.get_default_intelligent_timespan), related_name='depots', to='banking.IntelligentTimespan'),
         ),
         migrations.AddField(
             model_name='depot',

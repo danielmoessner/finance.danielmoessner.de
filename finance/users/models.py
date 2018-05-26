@@ -18,12 +18,15 @@ class StandardUser(AbstractUser):
     )
     currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES)
     rounded_numbers = models.BooleanField(default=True)
+    # banking settings
+    banking_show_balance = models.BooleanField(default=False)  # not used at the moment
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if not self.slug:
             self.slug = create_slug_on_username(self)
         super(StandardUser, self).save(force_insert, force_update, using, update_fields)
 
+    # getters
     @cached_property
     def get_rounded_numbers(self):
         return self.rounded_numbers

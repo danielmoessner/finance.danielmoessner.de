@@ -8,7 +8,7 @@ from datetime import timedelta
 class IntelligentTimespan(models.Model):
     name = models.CharField(max_length=200)
     start_date = models.DateTimeField(blank=True, null=True)
-    period = models.DurationField(blank=True, null=True)
+    period = models.DurationField(blank=True, null=True)  # remove later
     end_date = models.DateTimeField(blank=True, null=True)
 
     class Meta:
@@ -30,6 +30,32 @@ class IntelligentTimespan(models.Model):
             timespan_data.update(timespan_number_data)
             if all([timespan_data[key] is not None and timespan_data[key] != 0 for key in keys]):
                 data.append(timespan_data)
+        return data
+
+    def get_data(self, movie, keys):
+        start_pictures = movie.pictures.filter(d__lte=self.start_date)
+        end_pictures = movie.pictures.filter(d__lte=self.end_date)
+        try:
+            start_picture = start_pictures.latest("d")
+        except ObjectDoesNotExist:
+            start_picture = None
+        try:
+            end_picture = end_pictures.latest("d")
+        except ObjectDoesNotExist:
+            end_picture = None
+
+        data = list()
+        for key in keys:
+            key_data = dict()
+            key_data["start_date"] = self.start_date.strftime(self.user.date_format)
+            key_data["end_date"] = self.end_date.strftime(self.user.date_format)
+            if start_picture is None and end_picture is None:
+                key_data[key] = None
+            elif start_picture is None:
+                key_data[key] = getattr(end_picture, key)
+            else:
+                key_data[key] = getattr(end_picture, key) - getattr(start_picture, key)
+            data.append(key_data)
         return data
 
     @staticmethod

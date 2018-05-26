@@ -56,19 +56,19 @@
         <hr class="hr">
         <div class="card-deck">
             {% set value %}
-                {{ stats.get_total() }} {{ user.currency }}
+                {{ movie.get_total() }} {{ user.currency }}
             {% endset %}
             {{ cards.statsCard(heading="Total", value=value) }}
         </div>
-        {% for ts in parent_timespans %}
-            {% if ts.start_date and ts==depot.ts %}
+        {% for ts in timespans %}
+            {% if ts.start_date and ts == depot.timespan %}
                 <div class="hs-3"></div>
                 <div class="table-heading">
                     <h3 class="table-heading--heading">{{ ts.name }}</h3>
                 </div>
                 <hr class="hr"></hr>
                 <div class="card-deck">
-                    {% for data in ts.get_timespans_data(stats, ["b",]) %}
+                    {% for data in ts.get_data(movie, ["b",]) %}
                         {% set heading %}
                             {{ data.start_date }}-{{ data.end_date }}
                         {% endset %}
@@ -91,13 +91,13 @@
 		<table class="table">
             {{ table.head(["Date", "Category", "Description", "Change", "Balance", "Action"]) }}
             <tbody class="table--body">
-                {% for change in changes %}
+                {% for change, picture in changes_pictures %}
                     {% set tablebuttons %}
                         <div class="d-flex flex-row">
                             {% set data %}
                                 {% raw %} { {% endraw %}
                                     'pk': '{{ change.pk }}', 
-                                    'account': '{{ change.account.pk }}',
+                                    'account': '{{ account.pk }}',
                                     'category': '{{ change.category.pk }}',
                                     'date': '{{ change.date }}',
                                     'description': '{{ change.description }}',
@@ -114,7 +114,8 @@
                             </form>
                         </div>  
                     {% endset %} 
-                    {{ table.row([change.get_date(), change.category, change.get_description(), change.change, change.get_balance(depot=depot, account=account), tablebuttons | safe]) }}
+                    {#{ table.row([change.get_date(), change.category, change.get_description(), change.change, change.get_balance(depot=depot, account=account), tablebuttons | safe]) }#}
+                    {{ table.row([change.get_date(user), change.category, change.get_description(), change.change, picture.b, tablebuttons | safe]) }}
                 {% endfor %}
             </tbody>
         </table>

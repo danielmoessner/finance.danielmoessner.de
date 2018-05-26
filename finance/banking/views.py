@@ -3,7 +3,7 @@ from django.urls import reverse_lazy
 from django.views import generic
 
 from finance.core.utils import create_slug
-from .models import IntelligentTimespan
+from .models import Timespan
 from .models import Category
 from .models import Account
 from .models import Change
@@ -31,9 +31,11 @@ class IndexView(generic.TemplateView):
         context["depot"] = context["user"].banking_depots.get(is_active=True)
         context["accounts"] = context["depot"].accounts.order_by("name")
         context["categories"] = context["user"].categories.order_by("name")
-        context["parent_timespans"] = context["user"].banking_intelligent_timespans.all()
+        context["timespans"] = context["user"].banking_intelligent_timespans.all()
 
         context["movie"] = context["depot"].movies.get(account=None, category=None)
+        context["accounts_movies"] = zip(context["accounts"], context["depot"].movies.filter(
+            account__in=context["accounts"], category=None).order_by("account__name"))
         return context
 
 
@@ -49,8 +51,10 @@ class AccountView(generic.TemplateView):
         context["parent_timespans"] = context["user"].banking_intelligent_timespans.all()
 
         context["account"] = context["depot"].accounts.get(slug=kwargs["slug"])
-        context["changes"] = context["account"].changes.order_by("-date", "-pk")
-        context["stats"] = context["depot"].movies.get(account=context["account"], category=None)
+        context["movie"] = context["depot"].movies.get(account=context["account"], category=None)
+        changes = context["account"].changes.order_by("-date", "-pk").select_related("category")
+        pictures = context["movie"].pictures.filter(change__in=changes).order_by("-d", "-pk")
+        context["changes_pictures"] = zip(changes, pictures)
         return context
 
 
@@ -66,8 +70,10 @@ class CategoryView(generic.TemplateView):
         context["parent_timespans"] = context["user"].banking_intelligent_timespans.all()
 
         context["category"] = context["user"].categories.get(slug=kwargs["slug"])
-        context["changes"] = context["category"].changes.order_by("-date", "-pk")
-        context["stats"] = context["depot"].movies.get(account=None, category=context["category"])
+        context["movie"] = context["depot"].movies.get(account=None, category=context["category"])
+        changes = context["category"].changes.order_by("-date", "-pk").select_related("account")
+        pictures = context["movie"].pictures.filter(change__in=changes).order_by("-d", "-pk")
+        context["changes_pictures"] = zip(changes, pictures)
         return context
 
 
@@ -86,17 +92,18 @@ def add(request, user_slug):
             name = str(request.POST["name"])
             start_date = datetime.strptime(request.POST["start_date"], '%Y-%m-%dT%H:%M')\
                 .replace(tzinfo=pytz.utc)
+            user = request.user
             if request.POST["end_date"] != "":
                 period = None
-                end_date = datetime.strptime(request.POST["start_date"], '%Y-%m-%dT%H:%M')\
+                end_date = datetime.strptime(request.POST["end_date"], '%Y-%m-%dT%H:%M')\
                     .replace(tzinfo=pytz.utc)
             elif request.POST["period"] != "":
                 period = timedelta(days=int(request.POST["period"]))
                 end_date = None
             else:
                 return  # error correction
-            timespan = IntelligentTimespan(name=name, start_date=start_date, end_date=end_date,
-                                           period=period)
+            timespan = Timespan(user=user, name=name, start_date=start_date,
+                                end_date=end_date, period=period)
             timespan.save()
             return HttpResponseRedirect(url)
         elif all(k in request.POST for k in ("account", "date", "category", "description",
@@ -169,7 +176,7 @@ def delete(request, user_slug):
             return HttpResponseRedirect(request.POST["reverse"])
         elif all(key in request.POST for key in ("timespan", "reverse")):
             url = request.POST["reverse"]
-            pts = IntelligentTimespan.objects.get(pk=request.POST["timespan"])
+            pts = Timespan.objects.get(pk=request.POST["timespan"])
             pts.delete()
             return HttpResponseRedirect(url)
         elif all(key in request.POST for key in ("change", "reverse")):
@@ -191,7 +198,7 @@ def update_stats(request, user_slug):
 def set_timespan(request, user_slug):
     if request.method == "POST":
         if all(key in request.POST for key in ("reverse", "timespan", "depot")):
-            pts = IntelligentTimespan.objects.get(pk=request.POST["timespan"])
+            pts = Timespan.objects.get(pk=request.POST["timespan"])
             depot = Depot.objects.get(pk=request.POST["depot"])
             depot.timespan = pts
             depot.save()
@@ -199,7 +206,7 @@ def set_timespan(request, user_slug):
 
 
 def update_timespans(request, user_slug):
-    for pts in IntelligentTimespan.objects.all():
+    for pts in Timespan.objects.all():
         pts.create_timespans()
     return HttpResponseRedirect(reverse_lazy("banking:index", args=[request.user.slug, ]))
 
@@ -260,53 +267,51 @@ class AccountData(APIView):
     def get(self, request, user_slug, slug, format=None):
         user = request.user
         depot = Depot.objects.get(user=user, is_active=True)
-
-        df1 = pd.DataFrame()
         account = Account.objects.get(slug=slug)
-        account_movie = account.get_movie()
-        df1["Balance"] = account_movie.get_timespan_data(depot.timespan)["b"]
-        df1["dates"] = [date.date() for date in
-                        list(account_movie.get_timespan_data(depot.timespan)["d"])]
-        df1["index"] = range(len(df1["dates"]))
-        df1.set_index("index", inplace=True)
-        for category in set([change.category for change in account.changes.all()]):
-            account_movie = Movie.objects.get(depot=depot, account=account, category=category)
-            # df1 and the data have the same length because of the way the changes are calculated
-            # with a account-category movie
-            df1[str(category)] = account_movie.get_timespan_data(depot.timespan)["c"]
 
-        deletes = list()
-        for i in range(len(df1) - 1):
-            if df1.iloc[i]["dates"] == df1.iloc[i+1]["dates"]:
-                # The 2 is important, because you don't want to add dates or balances together
-                for k in range(2, len(df1.iloc[i])):
-                    column_name = df1.iloc[:, k].name
-                    df1.at[i+1, column_name] = df1.at[i, column_name] + df1.at[i+1, column_name]
-                deletes.append(i)
-        df1.drop(deletes, inplace=True)
+        movie = Movie.objects.get(depot=depot, account=account, category=None)
 
-        df2 = pd.DataFrame(pd.date_range(start=df1["dates"].iloc[0], end=df1["dates"].iloc[-1]),
-                           columns=["dates", ])
-        df1.set_index("dates", inplace=True)
-        df2.set_index("dates", inplace=True)
+        df = pd.DataFrame()
+        df["dates"] = [date.date() for date in movie.get_timespan_data(depot.timespan)["d"]]
+        df["balance"] = movie.get_timespan_data(depot.timespan)["b"]
+        df.set_index("dates", inplace=True)
+        df = df.groupby(df.index).last()
 
-        df = df1.join(df2, how="outer")
-        df["Balance"] = df["Balance"].ffill()
+        for category in user.categories.all():
+            movie = Movie.objects.get(depot=depot, account=account, category=category)
+            df_c = pd.DataFrame()
+            df_c[str(category)] = movie.get_timespan_data(depot.timespan)["b"]
+            df_c["dates"] = [date.date() for date in movie.get_timespan_data(depot.timespan)["d"]]
+            df_c.set_index("dates", inplace=True)
+            for index in df_c.index.get_duplicates():
+                for column in df_c.columns:
+                    df_c.loc[index, column] = df_c.loc[index, column].sum()
+            df_c.drop_duplicates(inplace=True)
+            df = pd.concat([df, df_c], axis=1)
+
+        df.fillna(0, inplace=True)
+
+        # df with all dates to normalize the data
+        dates = pd.date_range(start=df.index[0], end=df.index[-1])
+        df_d = pd.DataFrame({"dates": dates})
+        df_d["dates"] = df_d["dates"].dt.date
+        df_d.set_index("dates", inplace=True)
+        df = pd.concat([df, df_d], axis=1)
+        df["balance"].ffill(inplace=True)
         df.fillna(0, inplace=True)
 
         datasets = list()
         dataset = dict()
         dataset["label"] = "Balance"
         dataset["type"] = "line"
-        dataset["data"] = df["Balance"].tolist()
+        dataset["data"] = df["balance"].values
         datasets.append(dataset)
-        for column_name in df.columns.values.tolist():
-            if column_name != "Balance":
-                dataset = dict()
-                dataset["label"] = str(column_name)
-                dataset["type"] = "bar"
-                dataset["data"] = df[column_name].tolist()
-                datasets.append(dataset)
+        for column in df.drop(["balance"], axis=1).columns:
+            dataset = dict()
+            dataset["label"] = str(column)
+            dataset["type"] = "bar"
+            dataset["data"] = df[column].tolist()
+            datasets.append(dataset)
 
         data = dict()
         data["labels"] = df.index.tolist()

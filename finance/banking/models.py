@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import Q
 from django.db import connection
+from django.core.exceptions import ObjectDoesNotExist
 
 from finance.core.models import IntelligentTimespan as CoreIntelligentTimespan
 from finance.core.models import Timespan as CoreTimespan
@@ -17,62 +18,32 @@ import pytz
 import time
 
 
-class IntelligentTimespan(CoreIntelligentTimespan):
+class Timespan(CoreIntelligentTimespan):
     user = models.ForeignKey(StandardUser, editable=False, on_delete=models.CASCADE,
                              related_name="banking_intelligent_timespans")
 
-    # getters
-    def get_timespans(self):
-        timespans = self.timespans.order_by("end_date")
-        return timespans
-
     @staticmethod
     def get_default_intelligent_timespan():
-        pts, created = IntelligentTimespan.objects.get_or_create(
+        pts, created = Timespan.objects.get_or_create(
             name="Default Timespan", start_date=None, end_date=None)
         return pts
 
     # update
     @staticmethod
     def update_all():
-        ts, created = IntelligentTimespan.objects.get_or_create(
+        ts, created = Timespan.objects.get_or_create(
             name="Default Timespan", start_date=None, period=None, end_date=None)
 
-        for its in IntelligentTimespan.objects.all():
+        for its in Timespan.objects.all():
             its.create_timespans()
-
-    def update(self):
-        if self.start_date and self.period:
-            Timespan.objects.get_or_create(
-                self,
-                self.start_date,
-                self.start_date + self.period
-            )
-            while self.timespans.order_by("end_date").last().end_date <= datetime.now(tz=pytz.utc):
-                Timespan.objects.get_or_create(
-                    self,
-                    self.timespans.order_by("end_date").last().end_date,
-                    self.timespans.order_by("end_date").last().end_date + self.period
-                )
-        elif self.end_date and self.start_date:
-            Timespan.objects.get_or_create(self, self.start_date, self.end_date)
-        elif self.start_date:
-            Timespan.objects.get_or_create(self, self.start_date, datetime.now(tz=pytz.utc))
-        else:
-            Timespan.objects.get_or_create(self, None, None)
-
-
-class Timespan(CoreTimespan):
-    timespan = models.ForeignKey(IntelligentTimespan, related_name="timespans",
-                                 on_delete=models.CASCADE)
 
 
 class Depot(CoreDepot):
     user = models.ForeignKey(StandardUser, editable=False, related_name="banking_depots",
                              on_delete=models.CASCADE)
     timespan = models.ForeignKey(
-        IntelligentTimespan, related_name="depots",
-        on_delete=models.SET(IntelligentTimespan.get_default_intelligent_timespan),
+        Timespan, related_name="depots",
+        on_delete=models.SET(Timespan.get_default_intelligent_timespan),
         null=True
     )
 
@@ -181,15 +152,14 @@ class Change(models.Model):
         super(Change, self).delete(using, keep_parents)
 
     # getters
-    def get_date(self):
-        return self.date.strftime(self.account.depot.user.date_format)
+    def get_date(self, user):
+        # user in args because of sql query optimization
+        return self.date.strftime(user.date_format)
 
-    def get_balance(self, depot=None, account=None, category=None):
-        movie = Movie.objects.filter(depot=depot, account=account, category=category)
-        picture = Picture.objects.filter(change=self, movie=movie)
-        if picture.exists():
-            return picture.get().b
-        else:
+    def get_balance(self, movie):
+        try:
+            return self.pictures.get(movie=movie).b
+        except Picture.DoesNotExist:
             return "update"
 
     def get_description(self):
@@ -200,7 +170,7 @@ class Change(models.Model):
 
 
 class Movie(models.Model):
-    update_needed = models.BooleanField(default=True)  # remove later maybe
+    update_needed = models.BooleanField(default=True)
     depot = models.ForeignKey(Depot, blank=True, null=True, on_delete=models.CASCADE,
                               related_name="movies")
     account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.CASCADE)
@@ -220,35 +190,34 @@ class Movie(models.Model):
         return text.replace("None", "").replace("   ", " ").replace("  ", " ")
 
     # getters
-    def get_timespan_data(self, parent_timespan):
-        if not self.timespan_data:
-            timespan = parent_timespan.get_timespans().last()
+    def get_timespan_data(self, timespan):
+        # if not self.timespan_data:
             data = dict()
             if timespan.start_date and timespan.end_date:
-                data["d"] = (Picture.objects.filter(movie=self, d__gte=timespan.start_date,
-                                                    d__lte=timespan.end_date)
-                             .values_list("d", flat=True))
-                data["b"] = (Picture.objects.filter(movie=self, d__gte=timespan.start_date,
-                                                    d__lte=timespan.end_date)
-                             .values_list("b", flat=True))
-                data["c"] = (Picture.objects.filter(movie=self, d__gte=timespan.start_date,
-                                                    d__lte=timespan.end_date)
-                             .values_list("c", flat=True))
+                pictures = self.pictures.filter(d__gte=timespan.start_date,
+                                                d__lte=timespan.end_date)
+                data["d"] = pictures.values_list("d", flat=True)
+                data["b"] = pictures.values_list("b", flat=True)
+                data["c"] = pictures.values_list("c", flat=True)
                 self.timespan_data = data
-            else:
-                self.timespan_data = self.get_data()
-        return self.timespan_data
+            return data
+        #     else:
+        #         self.timespan_data = self.get_data()
+        # return self.timespan_data
 
     def get_total(self):
-        return round(self.get_data()["b"].last(), 2) if self.get_data()["b"].last() is not None \
-            else 0
+        try:
+            return self.pictures.latest("d").b
+        except ObjectDoesNotExist:
+            return 0
 
     def get_data(self):
         # if not self.data:
         data = dict()
-        data["d"] = (Picture.objects.filter(movie=self).values_list("d", flat=True))
-        data["b"] = (Picture.objects.filter(movie=self).values_list("b", flat=True))
-        data["c"] = (Picture.objects.filter(movie=self).values_list("c", flat=True))
+        pictures = Picture.objects.filter(movie=self)
+        data["d"] = (pictures.values_list("d", flat=True))
+        data["b"] = (pictures.values_list("b", flat=True))
+        data["c"] = (pictures.values_list("c", flat=True))
         self.data = data
         return self.data
 
@@ -325,9 +294,10 @@ class Movie(models.Model):
         except Picture.DoesNotExist:
             latest_picture = None
             q = Q()
-        if self.depot and not self.account and not self.category:
+
+        if self.account and self.category:
             changes = Change.objects.filter(
-                Q(account__in=self.depot.accounts.all()) & q
+                Q(account=self.account, category=self.category) & q
             ).order_by("date", "pk")
         elif self.account:
             changes = Change.objects.filter(
@@ -335,11 +305,11 @@ class Movie(models.Model):
             ).order_by("date", "pk")
         elif self.category:
             changes = Change.objects.filter(
-                Q(account__in=self.depot.accounts.all(), category=self.category) & q
+                Q(category=self.category) & q
             ).order_by("date", "pk")
-        elif self.account and self.category:
+        elif self.depot:
             changes = Change.objects.filter(
-                Q(account=self.account, category=self.category) & q
+                Q(account__in=self.depot.accounts.all()) & q
             ).order_by("date", "pk")
         else:
             raise Exception("Why is no depot, account or category defined?")
@@ -364,7 +334,8 @@ class Picture(models.Model):
     d = models.DateTimeField()
     b = models.DecimalField(max_digits=15, decimal_places=2)
     c = models.DecimalField(max_digits=15, decimal_places=2)
-    change = models.ForeignKey(Change, on_delete=models.CASCADE, blank=True, null=True)
+    change = models.ForeignKey(Change, on_delete=models.CASCADE, blank=True, null=True,
+                               related_name="pictures")
     prev = models.ForeignKey("self", on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
