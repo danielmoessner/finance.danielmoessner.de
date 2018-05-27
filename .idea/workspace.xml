@@ -3,12 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="2963ab0c-7f32-4334-befc-b04bf7fbeb4e" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/db.sqlite3" afterPath="$PROJECT_DIR$/db.sqlite3" />
-      <change beforePath="$PROJECT_DIR$/finance/banking/models.py" afterPath="$PROJECT_DIR$/finance/banking/models.py" />
-      <change beforePath="$PROJECT_DIR$/finance/banking/views.py" afterPath="$PROJECT_DIR$/finance/banking/views.py" />
-      <change beforePath="$PROJECT_DIR$/finance/static/templates/crypto_account.njk" afterPath="$PROJECT_DIR$/finance/static/templates/crypto_account.njk" />
-      <change beforePath="$PROJECT_DIR$/finance/static/templates/crypto_asset.njk" afterPath="$PROJECT_DIR$/finance/static/templates/crypto_asset.njk" />
-      <change beforePath="$PROJECT_DIR$/finance/static/templates/crypto_index.njk" afterPath="$PROJECT_DIR$/finance/static/templates/crypto_index.njk" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -537,7 +531,14 @@
       <option name="project" value="LOCAL" />
       <updated>1527419810974</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="improved the categoriesdata api view works with timespans now">
+      <created>1527424871626</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1527424871626</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TodoView">
@@ -580,7 +581,8 @@
     <MESSAGE value="cleaned up code" />
     <MESSAGE value="cleaned up some code &#10;finished trello #54" />
     <MESSAGE value="completed trello #60" />
-    <option name="LAST_COMMIT_MESSAGE" value="completed trello #60" />
+    <MESSAGE value="improved the categoriesdata api view works with timespans now" />
+    <option name="LAST_COMMIT_MESSAGE" value="improved the categoriesdata api view works with timespans now" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
