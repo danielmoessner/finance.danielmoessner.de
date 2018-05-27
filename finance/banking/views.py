@@ -405,20 +405,18 @@ class CategoriesData(APIView):
         user = request.user
         depot = Depot.objects.get(user=user, is_active=True)
 
-        datasets = list()
-        labels = list()
-        data = list()
+        labels_data = list()
         for category in Category.objects.all():
-            category_movie = Movie.objects.get(depot=depot, account=None, category=category)
-            labels.append(str(category))
-            data.append(category_movie.get_data(depot.timespan)["b"].last() if
-                        category_movie.get_data(depot.timespan)["b"].last() is not None
-                        else 0)
-        data_and_labels = list(sorted(zip(data, labels)))
-        labels = [l for d, l in data_and_labels]
-        data = [abs(d) for d, l in data_and_labels]
+            movie = Movie.objects.get(depot=depot, account=None, category=category)
+            value = movie.get_value(user, depot.timespan, ["b", ])
+            if value is not None:
+                labels_data.append((str(category), value["b"]))
+        labels_data.sort(key=lambda x: x[1])
+        labels = [l for l, d in labels_data]
+        data = [abs(d) for l, d in labels_data]
         datasets_data = dict()
         datasets_data["data"] = data
+        datasets = list()
         datasets.append(datasets_data)
 
         data = dict()

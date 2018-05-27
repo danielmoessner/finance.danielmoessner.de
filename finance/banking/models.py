@@ -29,7 +29,7 @@ class Depot(CoreDepot):
                              on_delete=models.CASCADE)
     timespan = models.ForeignKey(
         Timespan, related_name="depots",
-        on_delete=models.SET(Timespan.get_default_intelligent_timespan),
+        on_delete=models.PROTECT,
         null=True
     )
 
@@ -177,7 +177,7 @@ class Movie(models.Model):
 
     # getters
     def get_df(self, timespan=None):
-        if timespan:
+        if timespan and timespan.start_date and timespan.end_date:
             pictures = self.pictures.filter(d__gte=timespan.start_date,
                                             d__lte=timespan.end_date).values("d", "c", "b")
         else:
@@ -186,7 +186,7 @@ class Movie(models.Model):
         return df
 
     def get_data(self, timespan=None):
-        if timespan:
+        if timespan and timespan.start_date and timespan.end_date:
             pictures = self.pictures.filter(d__gte=timespan.start_date,
                                             d__lte=timespan.end_date).values("d", "c", "b")
         else:
@@ -197,6 +197,38 @@ class Movie(models.Model):
         data["c"] = (pictures.values_list("c", flat=True))
         self.data = data
         return self.data
+
+    def get_value(self, user, timespan, keys):
+        # user in args for query optimization and ease
+        data = dict()
+        start_picture = None
+        end_picture = None
+        if timespan.start_date:
+            data["start_date"] = timespan.start_date.strftime(user.date_format)
+            try:
+                start_picture = self.pictures.filter(d__lt=timespan.start_date).latest("d")
+            except ObjectDoesNotExist:
+                pass
+        if timespan.end_date:
+            data["end_date"] = timespan.end_date.strftime(user.date_format)
+            try:
+                end_picture = self.pictures.filter(d__lte=timespan.end_date).latest("d")
+            except ObjectDoesNotExist:
+                pass
+        else:
+            try:
+                end_picture = self.pictures.latest("d")
+            except ObjectDoesNotExist:
+                pass
+
+        for key in keys:
+            if start_picture and end_picture:
+                data[key] = getattr(end_picture, key) - getattr(start_picture, key)
+            elif end_picture:
+                data[key] = getattr(end_picture, key)
+            else:
+                data[key] = None
+        return data
 
     def get_total(self):
         try:
