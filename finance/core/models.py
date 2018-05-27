@@ -33,14 +33,12 @@ class IntelligentTimespan(models.Model):
         return data
 
     def get_data(self, movie, keys):
-        start_pictures = movie.pictures.filter(d__lte=self.start_date)
-        end_pictures = movie.pictures.filter(d__lte=self.end_date)
         try:
-            start_picture = start_pictures.latest("d")
+            start_picture = movie.pictures.filter(d__lte=self.start_date).latest("d")
         except ObjectDoesNotExist:
             start_picture = None
         try:
-            end_picture = end_pictures.latest("d")
+            end_picture = movie.pictures.filter(d__lte=self.end_date).latest("d")
         except ObjectDoesNotExist:
             end_picture = None
 

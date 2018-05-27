@@ -31,7 +31,7 @@ class IndexView(generic.TemplateView):
         context["depot"] = context["user"].banking_depots.get(is_active=True)
         context["accounts"] = context["depot"].accounts.order_by("name")
         context["categories"] = context["user"].categories.order_by("name")
-        context["timespans"] = context["user"].banking_intelligent_timespans.all()
+        context["timespans"] = context["user"].banking_timespans.all()
 
         context["movie"] = context["depot"].movies.get(account=None, category=None)
         context["accounts_movies"] = zip(context["accounts"], context["depot"].movies.filter(
@@ -48,7 +48,7 @@ class AccountView(generic.TemplateView):
         context["depot"] = context["user"].banking_depots.get(is_active=True)
         context["accounts"] = context["depot"].accounts.order_by("name")
         context["categories"] = context["user"].categories.order_by("name")
-        context["parent_timespans"] = context["user"].banking_intelligent_timespans.all()
+        context["timespans"] = context["user"].banking_timespans.all()
 
         context["account"] = context["depot"].accounts.get(slug=kwargs["slug"])
         context["movie"] = context["depot"].movies.get(account=context["account"], category=None)
@@ -67,7 +67,7 @@ class CategoryView(generic.TemplateView):
         context["depot"] = context["user"].banking_depots.get(is_active=True)
         context["accounts"] = context["depot"].accounts.order_by("name")
         context["categories"] = context["user"].categories.order_by("name")
-        context["parent_timespans"] = context["user"].banking_intelligent_timespans.all()
+        context["timespans"] = context["user"].banking_timespans.all()
 
         context["category"] = context["user"].categories.get(slug=kwargs["slug"])
         context["movie"] = context["depot"].movies.get(account=None, category=context["category"])
@@ -222,17 +222,17 @@ class IndexData(APIView):
 
         df1 = pd.DataFrame()
         depot_movie = depot.get_movie()
-        df1["balance"] = depot_movie.get_timespan_data(depot.timespan)["b"]
+        df1["balance"] = depot_movie.get_data(depot.timespan)["b"]
         df1["dates"] = [date.date() for date in
-                        list(depot_movie.get_timespan_data(depot.timespan)["d"])]
+                        list(depot_movie.get_data(depot.timespan)["d"])]
         df1.set_index("dates", inplace=True)
         for account in Account.objects.filter(depot=depot):
             account_movie = account.get_movie()
             df2 = pd.DataFrame()
             account_movie = account.get_movie()
-            df2[str(account)] = account_movie.get_timespan_data(depot.timespan)["b"]
+            df2[str(account)] = account_movie.get_data(depot.timespan)["b"]
             df2["dates"] = [date.date() for date in
-                            list(account_movie.get_timespan_data(depot.timespan)["d"])]
+                            list(account_movie.get_data(depot.timespan)["d"])]
             df2.set_index("dates", inplace=True)
             df1 = pd.concat([df1, df2], join="outer", ignore_index=False)
             df1.sort_index(inplace=True)
@@ -270,29 +270,30 @@ class AccountData(APIView):
         account = Account.objects.get(slug=slug)
 
         movie = Movie.objects.get(depot=depot, account=account, category=None)
-
-        df = pd.DataFrame()
-        df["dates"] = [date.date() for date in movie.get_timespan_data(depot.timespan)["d"]]
-        df["balance"] = movie.get_timespan_data(depot.timespan)["b"]
+        df = movie.get_df(depot.timespan)
+        df = df.drop(["c"], axis=1)
+        df["d"] = df["d"].dt.date
+        df.rename(columns={"d": "dates", "b": "balance"}, inplace=True)
         df.set_index("dates", inplace=True)
         df = df.groupby(df.index).last()
 
         for category in user.categories.all():
-            movie = Movie.objects.get(depot=depot, account=account, category=category)
-            df_c = pd.DataFrame()
-            df_c[str(category)] = movie.get_timespan_data(depot.timespan)["b"]
-            df_c["dates"] = [date.date() for date in movie.get_timespan_data(depot.timespan)["d"]]
+            df_c = Movie.objects.get(depot=depot, account=account, category=category)\
+                .get_df(depot.timespan)
+            if df_c.empty:
+                continue
+            df_c = df_c.drop(["b"], axis=1)
+            df_c["d"] = df_c["d"].dt.date
+            df_c.rename(columns={"d": "dates", "c": str(category)}, inplace=True)
             df_c.set_index("dates", inplace=True)
             for index in df_c.index.get_duplicates():
                 for column in df_c.columns:
                     df_c.loc[index, column] = df_c.loc[index, column].sum()
-            df_c.drop_duplicates(inplace=True)
+            df_c = df_c.groupby(df_c.index).last()
             df = pd.concat([df, df_c], axis=1)
 
-        df.fillna(0, inplace=True)
-
-        # df with all dates to normalize the data
-        dates = pd.date_range(start=df.index[0], end=df.index[-1])
+        # df with all dates to normalize the data oterhwise chartjs displays the date weird af
+        dates = pd.date_range(start=df.index[0], end=(df.index[-1] + timedelta(days=1)))
         df_d = pd.DataFrame({"dates": dates})
         df_d["dates"] = df_d["dates"].dt.date
         df_d.set_index("dates", inplace=True)
@@ -332,8 +333,8 @@ class CategoryData(APIView):
         labels = list()
         data = list()
 
-        dates = movie.get_timespan_data(depot.timespan)["d"]
-        changes = movie.get_timespan_data(depot.timespan)["c"]
+        dates = movie.get_data(depot.timespan)["d"]
+        changes = movie.get_data(depot.timespan)["c"]
         last_month = None
         changes_sum = 0
         for i in range(len(dates)):
@@ -410,8 +411,8 @@ class CategoriesData(APIView):
         for category in Category.objects.all():
             category_movie = Movie.objects.get(depot=depot, account=None, category=category)
             labels.append(str(category))
-            data.append(category_movie.get_timespan_data(depot.timespan)["b"].last() if
-                        category_movie.get_timespan_data(depot.timespan)["b"].last() is not None
+            data.append(category_movie.get_data(depot.timespan)["b"].last() if
+                        category_movie.get_data(depot.timespan)["b"].last() is not None
                         else 0)
         data_and_labels = list(sorted(zip(data, labels)))
         labels = [l for d, l in data_and_labels]

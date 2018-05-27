@@ -1,41 +1,27 @@
-from django.db import models
-from django.db.models import Q
-from django.db import connection
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
+from django.db import models
 
 from finance.core.models import IntelligentTimespan as CoreIntelligentTimespan
-from finance.core.models import Timespan as CoreTimespan
 from finance.core.models import Account as CoreAccount
 from finance.core.models import Depot as CoreDepot
 from finance.users.models import StandardUser
 from finance.core.utils import create_slug
 
-from datetime import datetime
-import datetime as dt
-import pandas
-import numpy
-import pytz
+import pandas as pd
+import numpy as np
 import time
 
 
 class Timespan(CoreIntelligentTimespan):
     user = models.ForeignKey(StandardUser, editable=False, on_delete=models.CASCADE,
-                             related_name="banking_intelligent_timespans")
+                             related_name="banking_timespans")
 
     @staticmethod
     def get_default_intelligent_timespan():
-        pts, created = Timespan.objects.get_or_create(
-            name="Default Timespan", start_date=None, end_date=None)
-        return pts
-
-    # update
-    @staticmethod
-    def update_all():
         ts, created = Timespan.objects.get_or_create(
-            name="Default Timespan", start_date=None, period=None, end_date=None)
-
-        for its in Timespan.objects.all():
-            its.create_timespans()
+            name="Default Timespan", start_date=None, end_date=None)
+        return ts
 
 
 class Depot(CoreDepot):
@@ -190,36 +176,33 @@ class Movie(models.Model):
         return text.replace("None", "").replace("   ", " ").replace("  ", " ")
 
     # getters
-    def get_timespan_data(self, timespan):
-        # if not self.timespan_data:
-            data = dict()
-            if timespan.start_date and timespan.end_date:
-                pictures = self.pictures.filter(d__gte=timespan.start_date,
-                                                d__lte=timespan.end_date)
-                data["d"] = pictures.values_list("d", flat=True)
-                data["b"] = pictures.values_list("b", flat=True)
-                data["c"] = pictures.values_list("c", flat=True)
-                self.timespan_data = data
-            return data
-        #     else:
-        #         self.timespan_data = self.get_data()
-        # return self.timespan_data
+    def get_df(self, timespan=None):
+        if timespan:
+            pictures = self.pictures.filter(d__gte=timespan.start_date,
+                                            d__lte=timespan.end_date).values("d", "c", "b")
+        else:
+            pictures = self.pictures.values("d", "c", "b")
+        df = pd.DataFrame(list(pictures))
+        return df
+
+    def get_data(self, timespan=None):
+        if timespan:
+            pictures = self.pictures.filter(d__gte=timespan.start_date,
+                                            d__lte=timespan.end_date).values("d", "c", "b")
+        else:
+            pictures = Picture.objects.filter(movie=self)
+        data = dict()
+        data["d"] = (pictures.values_list("d", flat=True))
+        data["b"] = (pictures.values_list("b", flat=True))
+        data["c"] = (pictures.values_list("c", flat=True))
+        self.data = data
+        return self.data
 
     def get_total(self):
         try:
             return self.pictures.latest("d").b
         except ObjectDoesNotExist:
             return 0
-
-    def get_data(self):
-        # if not self.data:
-        data = dict()
-        pictures = Picture.objects.filter(movie=self)
-        data["d"] = (pictures.values_list("d", flat=True))
-        data["b"] = (pictures.values_list("b", flat=True))
-        data["c"] = (pictures.values_list("c", flat=True))
-        self.data = data
-        return self.data
 
     # update
     @staticmethod
@@ -286,7 +269,7 @@ class Movie(models.Model):
 
     # calc
     def calc(self):
-        df = pandas.DataFrame()
+        df = pd.DataFrame()
 
         try:
             latest_picture = Picture.objects.filter(movie=self).latest("d")
@@ -324,7 +307,7 @@ class Movie(models.Model):
 
         df.set_index("d", inplace=True)
         for column in df.drop(["change_id"], 1):
-            df[column] = df[column].astype(numpy.float64)
+            df[column] = df[column].astype(np.float64)
 
         return df
 
