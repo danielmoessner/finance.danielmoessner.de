@@ -13,7 +13,7 @@ from finance.crypto.forms import AddDepotForm as EditCryptoDepotForm
 from finance.crypto.forms import AddDepotForm as AddCryptoDepotForm
 from finance.crypto.models import Depot as CryptoDepot
 from finance.core.utils import form_invalid_universal
-from finance.core.views import CustomDeleteView
+from finance.core.views.views import CustomDeleteView
 
 
 class SettingsEditUserSpecialsView(SettingsView, generic.UpdateView):

@@ -52,7 +52,7 @@
 {% macro editAccountModal(user, csrf_token, reverse) %}
 	{% set content %}
 		<input type="hidden" id="reverseInput" name="reverse" value="{{ reverse }}">
-		<input type="hidden" id="accountInput" name="account" value="">
+		<input type="hidden" id="accountInput" name="pk" value="">
 		{{ form.labelInput(labelText="Name", inputText="Choose A New Name", inputType="text", name="name", required="True", maxlength=200) }}
 		<script type="text/javascript">
 	        jQuery(function(){
@@ -72,7 +72,7 @@
 {% macro deleteAccountModal(user, accounts, csrf_token, reverse) %}
 	{% set content %}
 		<input type="hidden" id="reverseInput" name="reverse" value="{{ reverse }}">
-		{{ form.labelSelectNamePk(labelText="Select A Account", selectItems=accounts, name="account", required="True") }}
+		{{ form.labelSelectNamePk(labelText="Select A Account", selectItems=accounts, name="pk", required="True") }}
 	{% endset %}
 	{{ modals.modal(content, url("banking:delete_account", args=[user.slug,]), "deleteAccount", "Delete Account", csrf_token, "Delete", "Cancel") }}
 {% endmacro %} 
@@ -91,7 +91,7 @@
 {% macro editCategoryModal(user, csrf_token, reverse) %}
 	{% set content %}
 		<input type="hidden" id="reverseInput" name="reverse" value="{{ reverse }}">
-		<input type="hidden" id="categoryInput" name="category" value="">
+		<input type="hidden" id="pkInput" name="pk" value="">
 		{{ form.labelInput(labelText="Category", inputText="Choose A New Name", inputType="text", name="name", required="True", maxlength=200) }}
 		{{ form.labelTextArea(labelText="Description", name="description") }}
 		<script type="text/javascript">
@@ -100,7 +100,7 @@
 				    var data = e.relatedTarget.dataset.all;
 					data = data.replace(/'/g, '"')
 					data = JSON.parse(data)
-					$("#editCategory #categoryInput").attr("value", data.pk)
+					$("#editCategory #pkInput").attr("value", data.pk)
 					$("#editCategory #nameInput").attr("value", data.name)
 					$("#editCategory #descriptionInput").val(data.description)
 				});
@@ -113,14 +113,14 @@
 {% macro deleteCategoryModal(user, categories, csrf_token, reverse) %}
 	{% set content %}
 		<input type="hidden" id="reverseInput" name="reverse" value="{{ reverse }}">
-		{{ form.labelSelectNamePk(labelText="Select A Category", selectItems=categories, name="category", required="True") }}
+		{{ form.labelSelectNamePk(labelText="Select A Category", selectItems=categories, name="pk", required="True") }}
 	{% endset %}
 	{{ modals.modal(content, url("banking:delete_category", args=[user.slug,]), "deleteCategory", "Delete Category", csrf_token, "Delete", "Cancel") }}
 {% endmacro %}
 
 
 <!-- Change -->
-{% macro addChangeModal(user, categories, csrf_token, reverse) %}
+{% macro addChangeModal(user, url, categories, csrf_token, reverse) %}
 	{% set content %}
 		<input type="hidden" id="reverseInput" name="reverse" value="{{ reverse }}">
 		<input type="hidden" id="accountInput" name="account" value="">
@@ -137,18 +137,18 @@
 		{{ form.labelTextArea(labelText="Description", name="description") }}
 		{{ form.labelInput(labelText="Change", inputText="Enter Amount", inputType="number", name="change", required="True")}}
 	{% endset %}
-	{{ modals.modal(content, url("banking:add_change", args=[user.slug,]), "addChange", "Deposit / Withdraw", csrf_token, "Save", "Cancel") }}
+	{{ modals.modal(content, url, "addChange", "Deposit / Withdraw", csrf_token, "Save", "Cancel") }}
 {% endmacro %}
 
-{% macro editChangeModal(user, accounts, categories, csrf_token, reverse) %}
+{% macro editChangeModal(user, account, accounts, categories, csrf_token, reverse) %}
 	{% set content %}
 		<input type="hidden" id="reverseInput" name="reverse" value="{{ reverse }}"> 
-		<input type="hidden" id="changeInput" name="change" value="">
+		<input type="hidden" id="pkInput" name="pk" value="">
 		{{ form.labelSelectNamePk(labelText="Account", selectItems=accounts, name="account", required="True", selectedItem="") }}
 		{{ form.labelSelectNamePk(labelText="Category", selectItems=categories, name="category", required="True", selectedItem="") }}
 		{{ form.labelInput(labelText="Date", value="", inputType="datetime-local", name="date", required="True") }}
 		{{ form.labelTextArea(labelText="Description", name="description", content="") }}
-		{{ form.labelInput(labelText="Change", value="", inputType="number", name="change_change", required="True") }}
+		{{ form.labelInput(labelText="Change", value="", inputType="number", name="change", required="True") }}
 		<script type="text/javascript">
 	        jQuery(function(){
 				$("#editChange").on("show.bs.modal", function(e) {
@@ -156,15 +156,15 @@
 					data = data.replace(/'/g, '"')
 					data = JSON.parse(data)
 					data.date = data.date.substring(0, 16).replace(" ", "T")
-					$("#editChange #changeInput").attr("value", data.pk)
+					$("#editChange #pkInput").attr("value", data.pk)
 					$("#editChange #accountInput option").filter(function() { return $(this).val() == data.account; }).attr('selected', true);
 					$("#editChange #categoryInput option").filter(function() { return $(this).val() == data.category; }).attr('selected', true);
 					$("#editChange #dateInput").attr("value", data.date)
 					$("#editChange #descriptionInput").text(data.description)
-					$("#editChange #change_changeInput").attr("value", data.change)
+					$("#editChange #changeInput").attr("value", data.change)
 				});
 	        });
 	    </script>
 	{% endset %}
-	{{ modals.modal(content, url("banking:edit_change", args=[user.slug,]), "editChange", "Edit Change", csrf_token, "Update", "Cancel") }}
+	{{ modals.modal(content, url("banking:edit_change", args=[user.slug, account.slug]), "editChange", "Edit Change", csrf_token, "Update", "Cancel") }}
 {% endmacro %}

@@ -18,7 +18,7 @@
 			<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 			<input type="submit" value="Remove" class="timespan--remove-button" {% if depot.timespan==ts %}disabled{% endif %}>
 			<input type="hidden" name="reverse" value="{{ reverse }}">
-			<input type="hidden" name="timespan" value="{{ ts.pk }}">
+			<input type="hidden" name="pk" value="{{ ts.pk }}">
 		</form>
 	</li>
 {% endmacro %}

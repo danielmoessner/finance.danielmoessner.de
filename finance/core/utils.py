@@ -26,8 +26,8 @@ def create_slug_on_username(instance, slug=None):
     return slug
 
 
-def form_invalid_universal(view, form, errors_name, heading="General Errors:"):
-    context = view.get_context_data()
+def form_invalid_universal(view, form, errors_name, heading="Something went wrong.", **kwargs):
+    context = view.get_context_data(**kwargs)
     context[errors_name] = [heading, ]
     for field in form:
         context[errors_name].append(

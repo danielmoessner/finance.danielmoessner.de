@@ -90,7 +90,7 @@
         <table class="table">
             {{ table.head(["Date", "Category", "Description", "Change", "Balance", "Action"]) }}
             <tbody class="table--body">
-                {% for change, picture in changes_pictures %}
+                {% for change, picture in changes_pictures | reverse %}
                     {% set tablebuttons %}
                         <div class="d-flex flex-row">
                             {% set data %}

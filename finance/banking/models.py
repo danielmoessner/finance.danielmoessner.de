@@ -37,6 +37,10 @@ class Depot(CoreDepot):
         super(Depot, self).__init__(*args, **kwargs)
         self.m = None
 
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        super(Depot, self).save(force_insert, force_update, using, update_fields)
+        Movie.update_all(depot=self, disable_update=True)
+
     # getters
     def get_movie(self):
         if not self.m:
@@ -79,6 +83,7 @@ class Category(models.Model):
         if not self.slug:
             self.slug = create_slug(self)
         super(Category, self).save(force_insert, force_update, using, update_fields)
+        Movie.update_all(depot=self.user.banking_depots.get(is_active=True), disable_update=True)
 
     # getters
     def get_movie(self):
@@ -105,8 +110,8 @@ class Change(models.Model):
     def __str__(self):
         account = self.account.name
         date = self.date.strftime(self.account.depot.user.date_format)
-        description = str(self.description)
-        return account + " " + date + " " + description
+        change = str(self.change)
+        return account + " " + date + " " + change + " " + str(self.pk)
 
     def save(self, *args, **kwargs):
         date = self.date
@@ -227,7 +232,7 @@ class Movie(models.Model):
             elif end_picture:
                 data[key] = getattr(end_picture, key)
             else:
-                data[key] = None
+                data[key] = 0
         return data
 
     def get_total(self):
@@ -267,8 +272,6 @@ class Movie(models.Model):
         print("this took", str((t2 - t1) / 60), "minutes")
 
     def update(self):
-        t1 = time.time()
-
         t2 = time.time()
         df = self.calc()
 
@@ -286,9 +289,11 @@ class Movie(models.Model):
         Picture.objects.bulk_create(pictures)
 
         t4 = time.time()
-        print(self, "is up to date. --Delete Time:", ((t2 - t1) / (t4-t1)),
-              "--Calc Time:", ((t3 - t2) / (t4-t1)),
-              "--Save Time:", ((t4 - t3) / (t4-t1)))
+        print(self, "is up to date.",
+              "--Calc Time:", ((t3 - t2) / (t4-t2)),
+              "--Save Time:", ((t4 - t3) / (t4-t2)))
+        self.update_needed = False
+        self.save()
 
     # calc helpers
     @staticmethod
@@ -304,28 +309,28 @@ class Movie(models.Model):
         df = pd.DataFrame()
 
         try:
-            latest_picture = Picture.objects.filter(movie=self).latest("d")
-            q = Q(date__gte=latest_picture.d, pk__gt=latest_picture.change_id)
-        except Picture.DoesNotExist:
+            latest_picture = self.pictures.order_by("-d", "-pk")[0]  # change to latest django 1.20
+            q = Q(date__gte=latest_picture.d)
+        except IndexError:  # Picture.DoesNotExist: change back to that on django 1.20
             latest_picture = None
             q = Q()
 
         if self.account and self.category:
             changes = Change.objects.filter(
                 Q(account=self.account, category=self.category) & q
-            ).order_by("date", "pk")
+            ).exclude(pk__in=self.pictures.values_list("change", flat=True)).order_by("date", "pk")
         elif self.account:
             changes = Change.objects.filter(
                 Q(account=self.account) & q
-            ).order_by("date", "pk")
+            ).exclude(pk__in=self.pictures.values_list("change", flat=True)).order_by("date", "pk")
         elif self.category:
             changes = Change.objects.filter(
                 Q(category=self.category) & q
-            ).order_by("date", "pk")
+            ).exclude(pk__in=self.pictures.values_list("change", flat=True)).order_by("date", "pk")
         elif self.depot:
             changes = Change.objects.filter(
                 Q(account__in=self.depot.accounts.all()) & q
-            ).order_by("date", "pk")
+            ).exclude(pk__in=self.pictures.values_list("change", flat=True)).order_by("date", "pk")
         else:
             raise Exception("Why is no depot, account or category defined?")
 
@@ -336,7 +341,6 @@ class Movie(models.Model):
         if latest_picture:
             df["b"] += latest_picture.b
         df["change_id"] = [change.pk for change in changes]
-
         df.set_index("d", inplace=True)
         for column in df.drop(["change_id"], 1):
             df[column] = df[column].astype(np.float64)

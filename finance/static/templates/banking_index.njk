@@ -187,7 +187,7 @@
     {{ modals.addAccountModal(user, depot.pk, csrf_token, reverse) }}
     {{ modals.editAccountModal(user, csrf_token, reverse) }}
     {{ modals.deleteAccountModal(user, accounts, csrf_token, reverse) }}
-    {{ modals.addChangeModal(user, categories, csrf_token, reverse) }}
+    {{ modals.addChangeModal(user, url("banking:add_change", args=[user.slug,]), categories, csrf_token, reverse) }}
     {{ modals.addCategoryModal(user, csrf_token, reverse) }}
     {{ modals.editCategoryModal(user, csrf_token, reverse) }}
     {{ modals.deleteCategoryModal(user, categories, csrf_token, reverse) }}
