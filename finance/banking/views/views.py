@@ -25,7 +25,7 @@ class IndexView(generic.TemplateView):
         context["user"] = self.request.user
         context["depot"] = context["user"].banking_depots.get(is_active=True)
         context["accounts"] = context["depot"].accounts.order_by("name")
-        context["categories"] = context["user"].categories.order_by("name")
+        context["categories"] = context["depot"].categories.order_by("name")
         context["timespans"] = context["user"].banking_timespans.all()
 
         context["movie"] = context["depot"].movies.get(account=None, category=None)
@@ -42,7 +42,7 @@ class AccountView(generic.TemplateView):
         context["user"] = self.request.user
         context["depot"] = context["user"].banking_depots.get(is_active=True)
         context["accounts"] = context["depot"].accounts.order_by("name")
-        context["categories"] = context["user"].categories.order_by("name")
+        context["categories"] = context["depot"].categories.order_by("name")
         context["timespans"] = context["user"].banking_timespans.all()
 
         context["account"] = context["depot"].accounts.get(slug=kwargs["slug"])
@@ -61,10 +61,10 @@ class CategoryView(generic.TemplateView):
         context["user"] = self.request.user
         context["depot"] = context["user"].banking_depots.get(is_active=True)
         context["accounts"] = context["depot"].accounts.order_by("name")
-        context["categories"] = context["user"].categories.order_by("name")
+        context["categories"] = context["depot"].categories.order_by("name")
         context["timespans"] = context["user"].banking_timespans.all()
 
-        context["category"] = context["user"].categories.get(slug=kwargs["slug"])
+        context["category"] = context["depot"].categories.get(slug=kwargs["slug"])
         context["movie"] = context["depot"].movies.get(account=None, category=context["category"])
         changes = context["category"].changes.order_by("date", "pk").select_related("account")
         pictures = context["movie"].pictures.filter(change__in=changes).order_by("d", "pk")
@@ -157,7 +157,7 @@ class AccountData(APIView):
         df.set_index("dates", inplace=True)
         df = df.groupby(df.index).last()
 
-        for category in user.categories.all():
+        for category in depot.categories.all():
             df_c = Movie.objects.get(depot=depot, account=account, category=category)\
                 .get_df(depot.timespan)
             if df_c.empty:

@@ -1,4 +1,3 @@
-from django.utils.html import strip_tags
 from django.views import generic
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
@@ -77,8 +76,7 @@ class IndexCreateCategoryView(IndexView, generic.CreateView):
 
     def form_valid(self, form):
         category = form.save(commit=False)
-        # category.depot = self.request.user.banking_depots.get(is_active=True)
-        category.user = self.request.user
+        category.depot = self.request.user.banking_depots.get(is_active=True)
         category.save()
         success_url = reverse_lazy("banking:index", args=[self.request.user.slug, ])
         return HttpResponseRedirect(success_url)
@@ -99,7 +97,7 @@ class IndexEditCategoryView(IndexView):
     def form_valid(self, form):
         category = form.save(commit=False)
         category.pk = form.cleaned_data["pk"]
-        category.user = self.request.user
+        category.depot = self.request.user.banking_depots.get(is_active=True)
         category.save()
         success_url = reverse_lazy("banking:index", args=[self.request.user.slug, ])
         return HttpResponseRedirect(success_url)

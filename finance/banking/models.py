@@ -70,7 +70,8 @@ class Category(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     slug = models.SlugField(unique=True)
-    user = models.ForeignKey(StandardUser, editable=False, related_name="categories")
+    depot = models.ForeignKey(Depot, editable=False, related_name="categories",
+                              on_delete=models.CASCADE)
 
     def __init__(self, *args, **kwargs):
         super(Category, self).__init__(*args, **kwargs)
@@ -83,7 +84,7 @@ class Category(models.Model):
         if not self.slug:
             self.slug = create_slug(self)
         super(Category, self).save(force_insert, force_update, using, update_fields)
-        Movie.update_all(depot=self.user.banking_depots.get(is_active=True), disable_update=True)
+        Movie.update_all(depot=self.depot, disable_update=True)
 
     # getters
     def get_movie(self):
@@ -258,7 +259,7 @@ class Movie(models.Model):
                                                          category=None)
             if not disable_update and movie.update_needed:
                 movie.update()
-        for category in depot.user.categories.all():
+        for category in depot.categories.all():
             movie, created = Movie.objects.get_or_create(depot=depot, account=None,
                                                          category=category)
             if not disable_update and movie.update_needed:
