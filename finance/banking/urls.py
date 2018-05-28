@@ -76,7 +76,9 @@ urlpatterns = [
         login_required(form_views.IndexDeleteTimespanView.as_view()),
         name="delete_timespan"),
     # set-timespan/
-    url(r"^set-timespan/$", login_required(views.set_timespan), name="set_timespan"),
+    url(r"^set-timespan/$",
+        login_required(form_views.IndexUpdateActiveOnTimespanView.as_view()),
+        name="set_timespan"),
 
     # PAGES
     # index

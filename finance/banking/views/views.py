@@ -26,7 +26,7 @@ class IndexView(generic.TemplateView):
         context["depot"] = context["user"].banking_depots.get(is_active=True)
         context["accounts"] = context["depot"].accounts.order_by("name")
         context["categories"] = context["depot"].categories.order_by("name")
-        context["timespans"] = context["depot"].banking_timespans.all()
+        context["timespans"] = context["depot"].timespans.all()
 
         context["movie"] = context["depot"].movies.get(account=None, category=None)
         context["accounts_movies"] = zip(context["accounts"], context["depot"].movies.filter(
@@ -43,7 +43,7 @@ class AccountView(generic.TemplateView):
         context["depot"] = context["user"].banking_depots.get(is_active=True)
         context["accounts"] = context["depot"].accounts.order_by("name")
         context["categories"] = context["depot"].categories.order_by("name")
-        context["timespans"] = context["depot"].banking_timespans.all()
+        context["timespans"] = context["depot"].timespans.all()
 
         context["account"] = context["depot"].accounts.get(slug=kwargs["slug"])
         context["movie"] = context["depot"].movies.get(account=context["account"], category=None)
@@ -62,7 +62,7 @@ class CategoryView(generic.TemplateView):
         context["depot"] = context["user"].banking_depots.get(is_active=True)
         context["accounts"] = context["depot"].accounts.order_by("name")
         context["categories"] = context["depot"].categories.order_by("name")
-        context["timespans"] = context["depot"].banking_timespans.all()
+        context["timespans"] = context["depot"].timespans.all()
 
         context["category"] = context["depot"].categories.get(slug=kwargs["slug"])
         context["movie"] = context["depot"].movies.get(account=None, category=context["category"])
@@ -79,15 +79,6 @@ def update_stats(request, user_slug):
     return HttpResponseRedirect(reverse_lazy("banking:index", args=[request.user.slug, ]))
 
 
-def set_timespan(request, user_slug):
-    if request.method == "POST":
-        if all(key in request.POST for key in ("reverse", "timespan", "depot")):
-            ts = Timespan.objects.get(pk=request.POST["timespan"])
-            ts.is_active = True
-            ts.save()
-            return HttpResponseRedirect(request.POST["reverse"])
-
-
 # API
 class IndexData(APIView):
     authentication_classes = (SessionAuthentication, BasicAuthentication)
@@ -99,18 +90,18 @@ class IndexData(APIView):
 
         df1 = pd.DataFrame()
         depot_movie = depot.get_movie()
-        df1["balance"] = depot_movie.get_data(depot.banking_timespans.get(is_active=True))["b"]
+        df1["balance"] = depot_movie.get_data(depot.timespans.get(is_active=True))["b"]
         df1["dates"] = [date.date() for date in
-                        list(depot_movie.get_data(depot.banking_timespans.get(is_active=True))["d"])]
+                        list(depot_movie.get_data(depot.timespans.get(is_active=True))["d"])]
         df1.set_index("dates", inplace=True)
         for account in Account.objects.filter(depot=depot):
             account_movie = account.get_movie()
             df2 = pd.DataFrame()
             account_movie = account.get_movie()
-            df2[str(account)] = account_movie.get_data(depot.banking_timespans.get(is_active=True))[
+            df2[str(account)] = account_movie.get_data(depot.timespans.get(is_active=True))[
                 "b"]
             df2["dates"] = [date.date() for date in
-                            list(account_movie.get_data(depot.banking_timespans.get(is_active=True))[
+                            list(account_movie.get_data(depot.timespans.get(is_active=True))[
                                      "d"])]
             df2.set_index("dates", inplace=True)
             df1 = pd.concat([df1, df2], join="outer", ignore_index=False)
@@ -149,7 +140,7 @@ class AccountData(APIView):
         account = Account.objects.get(slug=slug)
 
         movie = Movie.objects.get(depot=depot, account=account, category=None)
-        df = movie.get_df(depot.banking_timespans.get(is_active=True))
+        df = movie.get_df(depot.timespans.get(is_active=True))
         if df.empty:
             return Response(dict())
         df = df.drop(["c"], axis=1)
@@ -160,7 +151,7 @@ class AccountData(APIView):
 
         for category in depot.categories.all():
             df_c = Movie.objects.get(depot=depot, account=account, category=category)\
-                .get_df(depot.banking_timespans.get(is_active=True))
+                .get_df(depot.timespans.get(is_active=True))
             if df_c.empty:
                 continue
             df_c = df_c.drop(["b"], axis=1)
@@ -214,8 +205,8 @@ class CategoryData(APIView):
         labels = list()
         data = list()
 
-        dates = movie.get_data(depot.banking_timespans.get(is_active=True))["d"]
-        changes = movie.get_data(depot.banking_timespans.get(is_active=True))["c"]
+        dates = movie.get_data(depot.timespans.get(is_active=True))["d"]
+        changes = movie.get_data(depot.timespans.get(is_active=True))["c"]
         last_month = None
         changes_sum = 0
         for i in range(len(dates)):
@@ -292,7 +283,7 @@ class CategoriesData(APIView):
                 movie = Movie.objects.get(depot=depot, account=None, category=category)
             except Movie.DoesNotExist:
                 continue
-            value = movie.get_value(user, depot.banking_timespans.get(is_active=True), ["b", ])
+            value = movie.get_value(user, depot.timespans.get(is_active=True), ["b", ])
             if value is not None and value["b"] != 0.0:
                 labels_data.append((str(category), value["b"]))
         labels_data.sort(key=lambda x: x[1])

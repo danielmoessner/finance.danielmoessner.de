@@ -10,9 +10,7 @@
 		<form method="POST" action="{{ set_url }}" class="timespan--set-form">
 			<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 			<input type="submit" value="Set" class="timespan--set-button" {% if ts.is_active %}disabled{% endif %}>
-			<input type="hidden" name="reverse" value="{{ reverse }}">
-			<input type="hidden" name="timespan" value="{{ ts.pk }}">
-			<input type="hidden" name="depot" value="{{ depot.pk }}">
+			<input type="hidden" name="pk" value="{{ ts.pk }}">
 		</form>
 		<form method="POST" action="{{ delete_url }}" class="timespan--set-form">
 			<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">

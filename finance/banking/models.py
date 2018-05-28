@@ -146,14 +146,8 @@ class Change(models.Model):
 
 
 class Timespan(CoreIntelligentTimespan):
-    depot = models.ForeignKey(Depot, editable=False, related_name="banking_timespans",
+    depot = models.ForeignKey(Depot, editable=False, related_name="timespans",
                               on_delete=models.CASCADE)
-
-    @staticmethod
-    def get_default_intelligent_timespan():
-        ts, created = Timespan.objects.get_or_create(
-            name="Default Timespan", start_date=None, end_date=None)
-        return ts
 
 
 class Movie(models.Model):

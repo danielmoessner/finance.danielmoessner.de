@@ -135,3 +135,13 @@ class CreateTimespanForm(forms.ModelForm):
         end_date = self.cleaned_data["end_date"]
         end_date = datetime.strptime(end_date, '%Y-%m-%dT%H:%M').replace(tzinfo=pytz.utc)
         return end_date
+
+
+class UpdateActiveOnTimespanForm(forms.ModelForm):
+    pk = forms.IntegerField(min_value=0)
+
+    class Meta:
+        model = Timespan
+        fields = (
+            "pk",
+        )

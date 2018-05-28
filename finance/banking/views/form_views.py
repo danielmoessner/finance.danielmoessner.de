@@ -9,6 +9,7 @@ from finance.banking.models import Timespan
 from finance.banking.models import Category
 from finance.banking.models import Account
 from finance.banking.models import Change
+from finance.banking.forms import UpdateActiveOnTimespanForm
 from finance.banking.forms import CreateTimespanForm
 from finance.banking.forms import CreateAccountForm
 from finance.banking.forms import EditAccountForm
@@ -195,6 +196,26 @@ class IndexCreateTimespanView(IndexView, generic.CreateView):
         timespan.depot = self.request.user.banking_depots.get(is_active=True)
         timespan.is_active = False
         timespan.save()
+        success_url = reverse_lazy("banking:index", args=[self.request.user.slug, ])
+        return HttpResponseRedirect(success_url)
+
+    def form_invalid(self, form):
+        return form_invalid_universal(self, form, "errors",
+                                      heading="Timespan could not be created.")
+
+
+class IndexUpdateActiveOnTimespanView(IndexView):
+    def post(self, request, *args, **kwargs):
+        form = UpdateActiveOnTimespanForm(request.POST)
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+    def form_valid(self, form):
+        self.request.user.banking_depots.get(is_active=True).timespans.update(is_active=False)
+        timespan_pk = form.cleaned_data["pk"]
+        Timespan.objects.filter(pk=timespan_pk).update(is_active=True)
         success_url = reverse_lazy("banking:index", args=[self.request.user.slug, ])
         return HttpResponseRedirect(success_url)
 

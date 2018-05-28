@@ -99,24 +99,6 @@ class Timespan(models.Model):
                 data[key] = getattr(end_picture, key) - getattr(start_picture, key)
         return data
 
-        # old approach
-        # movie_data = movie.get_data()
-        # start = None
-        # end = len(movie_data["d"]) - 1
-        # for i in range(len(movie_data["d"])):
-        #     if self.start_date <= movie_data["d"][i] and start is None:
-        #         start = i - 1
-        #     if self.end_date <= movie_data["d"][i]:
-        #         end = i - 1
-        #         break
-        # for dict_key in dict_keys:
-        #     if (start == end) or (end == -1) or (start is None):
-        #         data[dict_key] = None
-        #     if start == -1:
-        #         data[dict_key] = round(movie_data[dict_key][end], 2)
-        #     else:
-        #       data[dict_key] = round(movie_data[dict_key][end] - movie_data[dict_key][start], 2)
-
 
 class Depot(models.Model):
     name = models.CharField(max_length=200)
