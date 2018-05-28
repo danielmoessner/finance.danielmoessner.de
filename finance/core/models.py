@@ -10,6 +10,7 @@ class IntelligentTimespan(models.Model):
     start_date = models.DateTimeField(blank=True, null=True)
     period = models.DurationField(blank=True, null=True)  # remove later
     end_date = models.DateTimeField(blank=True, null=True)
+    is_active = models.BooleanField(default=False)
 
     class Meta:
         abstract = True
@@ -45,8 +46,8 @@ class IntelligentTimespan(models.Model):
         data = list()
         for key in keys:
             key_data = dict()
-            key_data["start_date"] = self.start_date.strftime(self.user.date_format)
-            key_data["end_date"] = self.end_date.strftime(self.user.date_format)
+            key_data["start_date"] = self.start_date.strftime(self.depot.user.date_format)
+            key_data["end_date"] = self.end_date.strftime(self.depot.user.date_format)
             if start_picture is None and end_picture is None:
                 key_data[key] = None
             elif start_picture is None:

@@ -13,25 +13,9 @@ import numpy as np
 import time
 
 
-class Timespan(CoreIntelligentTimespan):
-    user = models.ForeignKey(StandardUser, editable=False, on_delete=models.CASCADE,
-                             related_name="banking_timespans")
-
-    @staticmethod
-    def get_default_intelligent_timespan():
-        ts, created = Timespan.objects.get_or_create(
-            name="Default Timespan", start_date=None, end_date=None)
-        return ts
-
-
 class Depot(CoreDepot):
     user = models.ForeignKey(StandardUser, editable=False, related_name="banking_depots",
                              on_delete=models.CASCADE)
-    timespan = models.ForeignKey(
-        Timespan, related_name="depots",
-        on_delete=models.PROTECT,
-        null=True
-    )
 
     def __init__(self, *args, **kwargs):
         super(Depot, self).__init__(*args, **kwargs)
@@ -89,7 +73,7 @@ class Category(models.Model):
     # getters
     def get_movie(self):
         if not self.s:
-            depot = Depot.objects.filter(user=self.user, is_active=True)
+            depot = Depot.objects.filter(user=self.depot.user, is_active=True)
             self.s = Movie.objects.get(depot=depot, category=self, account=None)
         return self.s
 
@@ -159,6 +143,17 @@ class Change(models.Model):
         if len(description) < len(self.description):
             description += "..."
         return description
+
+
+class Timespan(CoreIntelligentTimespan):
+    depot = models.ForeignKey(Depot, editable=False, related_name="banking_timespans",
+                              on_delete=models.CASCADE)
+
+    @staticmethod
+    def get_default_intelligent_timespan():
+        ts, created = Timespan.objects.get_or_create(
+            name="Default Timespan", start_date=None, end_date=None)
+        return ts
 
 
 class Movie(models.Model):

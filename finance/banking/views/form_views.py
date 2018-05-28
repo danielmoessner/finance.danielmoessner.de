@@ -192,8 +192,8 @@ class IndexCreateTimespanView(IndexView, generic.CreateView):
 
     def form_valid(self, form):
         timespan = form.save(commit=False)
-        # timespan.depot = self.request.user.banking_depots.get(is_active=True)
-        timespan.user = self.request.user
+        timespan.depot = self.request.user.banking_depots.get(is_active=True)
+        timespan.is_active = False
         timespan.save()
         success_url = reverse_lazy("banking:index", args=[self.request.user.slug, ])
         return HttpResponseRedirect(success_url)
@@ -207,6 +207,11 @@ class IndexDeleteTimespanView(IndexView, CustomDeleteView):
     def form_valid(self, form):
         timespan_pk = form.cleaned_data["pk"]
         timespan = Timespan.objects.get(pk=timespan_pk)
+        if timespan.is_active:
+            form_invalid_universal(self, form, "errors",
+                                   heading="Timespan could not be deleted, because it's still "
+                                           "active.",
+                                   **self.request.kwargs)
         timespan.delete()
         success_url = reverse_lazy("banking:index", args=[self.request.user.slug, ])
         return HttpResponseRedirect(success_url)

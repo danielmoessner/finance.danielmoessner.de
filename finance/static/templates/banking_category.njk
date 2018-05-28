@@ -61,7 +61,7 @@
             {{ cards.statsCard(heading="Total", value=value) }}
         </div>
         {% for ts in timespans %}
-            {% if ts.start_date and ts == depot.timespan %}
+            {% if ts.start_date and ts.is_active %}
                 <div class="hs-3"></div>
                 <div class="table-heading">
                     <h3 class="table-heading--heading">{{ ts.name }}</h3>
