@@ -12,11 +12,11 @@ from finance.banking.models import Change
 from finance.banking.forms import UpdateActiveOnTimespanForm
 from finance.banking.forms import CreateTimespanForm
 from finance.banking.forms import CreateAccountForm
-from finance.banking.forms import EditAccountForm
+from finance.banking.forms import UpdateAccountForm
 from finance.banking.forms import CreateChangeForm
 from finance.banking.forms import CreateCategoryForm
-from finance.banking.forms import EditCategoryForm
-from finance.banking.forms import EditChangeForm
+from finance.banking.forms import UpdateCategoryForm
+from finance.banking.forms import UpdateChangeForm
 from finance.core.utils import form_invalid_universal
 
 
@@ -37,9 +37,9 @@ class IndexCreateAccountView(IndexView, generic.CreateView):
                                       heading="Account could not be created.")
 
 
-class IndexEditAccountView(IndexView):
+class IndexUpdateAccountView(IndexView):
     def post(self, request, *args, **kwargs):
-        form = EditAccountForm(request.POST)
+        form = UpdateAccountForm(request.POST)
         if form.is_valid():
             return self.form_valid(form)
         else:
@@ -87,9 +87,9 @@ class IndexCreateCategoryView(IndexView, generic.CreateView):
                                       heading="Category could not be created.")
 
 
-class IndexEditCategoryView(IndexView):
+class IndexUpdateCategoryView(IndexView):
     def post(self, request, *args, **kwargs):
-        form = EditCategoryForm(request.POST)
+        form = UpdateCategoryForm(request.POST)
         if form.is_valid():
             return self.form_valid(form)
         else:
@@ -151,9 +151,9 @@ class AccountCreateChangeView(AccountView, generic.CreateView):
                                       heading="Change could not be created.")
 
 
-class AccountEditChangeView(AccountView):
+class AccountUpdateChangeView(AccountView):
     def post(self, request, *args, **kwargs):
-        form = EditChangeForm(request.POST)
+        form = UpdateChangeForm(request.POST)
         if form.is_valid():
             return self.form_valid(form)
         else:

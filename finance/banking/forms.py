@@ -19,7 +19,7 @@ class AddDepotForm(forms.ModelForm):
         )
 
 
-class EditDepotForm(forms.ModelForm):
+class UpdateDepotForm(forms.ModelForm):
     pk = forms.IntegerField(min_value=0)
 
     class Meta:
@@ -39,7 +39,7 @@ class CreateAccountForm(forms.ModelForm):
         )
 
 
-class EditAccountForm(forms.ModelForm):
+class UpdateAccountForm(forms.ModelForm):
     pk = forms.IntegerField(min_value=0)
 
     class Meta:
@@ -60,7 +60,7 @@ class CreateCategoryForm(forms.ModelForm):
         )
 
 
-class EditCategoryForm(forms.ModelForm):
+class UpdateCategoryForm(forms.ModelForm):
     pk = forms.IntegerField(min_value=0)
 
     class Meta:
@@ -92,7 +92,7 @@ class CreateChangeForm(forms.ModelForm):
         return date
 
 
-class EditChangeForm(forms.ModelForm):
+class UpdateChangeForm(forms.ModelForm):
     pk = forms.IntegerField(min_value=0)
     date = forms.CharField(max_length=16, min_length=16)
 

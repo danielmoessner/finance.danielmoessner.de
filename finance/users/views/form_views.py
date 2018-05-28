@@ -6,7 +6,7 @@ from django.views import generic
 from finance.users.forms import EditStandardUserForm, EditStandardUserSpecialsForm
 from finance.users.models import StandardUser
 from finance.users.views.views import SettingsView
-from finance.banking.forms import EditDepotForm as EditBankingDepotForm
+from finance.banking.forms import UpdateDepotForm as EditBankingDepotForm
 from finance.banking.forms import AddDepotForm as AddBankingDepotForm
 from finance.banking.models import Depot as BankingDepot
 from finance.crypto.forms import AddDepotForm as EditCryptoDepotForm

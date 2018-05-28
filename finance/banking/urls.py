@@ -30,7 +30,7 @@ urlpatterns = [
         name="add_account"),
     # edit-account/
     url(r"^edit-account/$",
-        login_required(form_views.IndexEditAccountView.as_view()),
+        login_required(form_views.IndexUpdateAccountView.as_view()),
         name="edit_account"),
     # delete-account/
     url(r"^delete-account/$",
@@ -43,7 +43,7 @@ urlpatterns = [
         name="add_category"),
     # edit-category/
     url(r"^edit-category/$",
-        login_required(form_views.IndexEditCategoryView.as_view()),
+        login_required(form_views.IndexUpdateCategoryView.as_view()),
         name="edit_category"),
     # delete-category/
     url(r"^delete-category/$",
@@ -60,7 +60,7 @@ urlpatterns = [
         name="add_change"),
     # account/comdirect/edit-change/
     url(r"^account/(?P<slug>[0-9a-zA-Z-#]*)/edit-change/$",
-        login_required(form_views.AccountEditChangeView.as_view()),
+        login_required(form_views.AccountUpdateChangeView.as_view()),
         name="edit_change"),
     # delete-change/
     url(r"^account/(?P<slug>[0-9a-zA-Z-#]*)/delete-change/$",
