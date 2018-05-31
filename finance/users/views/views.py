@@ -22,7 +22,7 @@ def signup(request):
         if form.is_valid():
             user = form.save()
             login_user(request, user)
-            return redirect("users:settings", args=[request.user.slug, ])
+            return HttpResponseRedirect(reverse_lazy("users:settings", args=[request.user.slug, ]))
         else:
             errors = list()
             for field in form:
