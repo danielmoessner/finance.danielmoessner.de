@@ -55,13 +55,16 @@ urlpatterns = [
         name="delete_crypto_depot"),
 
     # CHANGE STATE / UPDATE
-    # logout/
+    # moesibert/logout/
     url(r"^(?P<slug>[a-zA-Z@.+_-]*)/logout/$", views.logout, name="logout"),
 
+    # moesibert/init-banking/
+    url(r"^(?P<slug>[a-zA-Z@.+_-]*)/init-banking/$", views.init_banking, name="init_banking"),
     # moesibert/set-banking-depot-active/
     url(r"^(?P<slug>[a-zA-Z@.+_-]*)/set-banking-depot-active/(?P<pk>\d+)/$",
         login_required(views.set_banking_depot_active),
         name="set_banking_depot_active"),
+
     # moesibert/set-crypto-depot-active/
     url(r"^(?P<slug>[a-zA-Z@.+_-]*)/set-crypto-depot-active/(?P<pk>\d+)/$",
         login_required(views.set_crypto_depot_active),

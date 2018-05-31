@@ -17,7 +17,8 @@ def init_banking(user):
     from django.utils import timezone
     from datetime import timedelta
     import random
-    depot = Depot.objects.create(name="TestDepot", is_active=True, user=user)
+    depot = Depot.objects.create(name="TestDepot", user=user)
+    user.set_banking_depot_active(depot)
     account1 = Account.objects.create(depot=depot, name="Bank #1")
     account2 = Account.objects.create(depot=depot, name="Bank #2")
     category1 = Category.objects.create(depot=depot, name="Category #1",
@@ -26,6 +27,9 @@ def init_banking(user):
                                         description="This category is for test purposes only.")
     category3 = Category.objects.create(depot=depot, name="Category #3",
                                         description="This category is for test purposes only.")
+    timespan = Timespan.objects.create(depot=depot, name="Default Timespan", start_date=None,
+                                       end_date=None, period=None, is_active=True)
+    changes = list()
     for i in range(0, 100):
         random_number = random.randint(1, 2)
         account = account1 if random_number == 1 else account2
@@ -37,8 +41,9 @@ def init_banking(user):
         random_number = random.randint(1, 90)
         date = timezone.now() - timedelta(days=random_number)
         description = "Change #{}".format(i)
-        Change.objects.create(account=account, category=category, change=change, date=date,
-                              description=description)
+        changes.append(Change(account=account, category=category, change=change, date=date,
+                              description=description))
+    Change.objects.bulk_create(changes)
     Movie.update_all(depot)
 
 

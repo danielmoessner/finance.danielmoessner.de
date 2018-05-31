@@ -97,7 +97,7 @@
 		<div class="settings">
 			<form action="" method="POST">
 				<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-				<input type="submit" value="Init" class="settings--submit-button">
+				{{ buttons.buttonLink(text="Init", url=url("users:init_banking", args=[user.slug,]), class="settings--submit-button") }}
 			</form>
 		</div> 
 

@@ -19,7 +19,7 @@ class StandardUser(AbstractUser):
     currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES)
     rounded_numbers = models.BooleanField(default=True)
     # banking settings
-    banking_show_balance = models.BooleanField(default=False)  # not used at the moment
+    banking_active = models.BooleanField(default=False)  # not used at the moment
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if not self.slug:
@@ -33,9 +33,7 @@ class StandardUser(AbstractUser):
 
     # setters
     def set_banking_depot_active(self, depot):
-        for d in self.banking_depots.exclude(pk=depot.pk):
-            d.is_active = False
-            d.save()
+        self.banking_depots.update(is_active=False)
         depot.is_active = True
         depot.save()
 

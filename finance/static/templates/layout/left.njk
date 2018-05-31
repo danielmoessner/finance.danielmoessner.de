@@ -5,12 +5,16 @@
     <!-- <li class="nav-item">
         <a class="nav-link {% if activePage=='index' %}active{% endif %}" href="index.html">Overview</a>
     </li> -->
+    {% if user.banking_active %}
     <li class="nav-item">
         <a class="nav-link {% if activePage=='banking' %}active{% endif %}" href="{{ url('banking:index', args=[user.slug,]) }}">Banking</a>
     </li>
+    {% endif %}
+    {% if False %}
     <li class="nav-item">
         <a class="nav-link {% if activePage=='crypto' %}active{% endif %}" href="{{ url('crypto:index', args=[user.slug,]) }}">Crypto</a>
     </li>
+    {% endif %}
     <!-- <li class="nav-item">
         <a class="nav-link {% if activePage=='stocks' %}active{% endif %}" href="performance.html">Stock Market</a>
     </li>
