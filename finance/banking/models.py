@@ -13,6 +13,35 @@ import numpy as np
 import time
 
 
+def init_banking(user):
+    from django.utils import timezone
+    from datetime import timedelta
+    import random
+    depot = Depot.objects.create(name="TestDepot", is_active=True, user=user)
+    account1 = Account.objects.create(depot=depot, name="Bank #1")
+    account2 = Account.objects.create(depot=depot, name="Bank #2")
+    category1 = Category.objects.create(depot=depot, name="Category #1",
+                                        description="This category is for test purposes only.")
+    category2 = Category.objects.create(depot=depot, name="Category #2",
+                                        description="This category is for test purposes only.")
+    category3 = Category.objects.create(depot=depot, name="Category #3",
+                                        description="This category is for test purposes only.")
+    for i in range(0, 100):
+        random_number = random.randint(1, 2)
+        account = account1 if random_number == 1 else account2
+        random_number = random.randint(1, 3)
+        category = category1 if random_number == 1 else category2 if random_number == 2 \
+            else category3
+        random_number = random.randint(-500, 1000)
+        change = random_number
+        random_number = random.randint(1, 90)
+        date = timezone.now() - timedelta(days=random_number)
+        description = "Change #{}".format(i)
+        Change.objects.create(account=account, category=category, change=change, date=date,
+                              description=description)
+    Movie.update_all(depot)
+
+
 class Depot(CoreDepot):
     user = models.ForeignKey(StandardUser, editable=False, related_name="banking_depots",
                              on_delete=models.CASCADE)

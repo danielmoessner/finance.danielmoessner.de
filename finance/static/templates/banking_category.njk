@@ -88,34 +88,10 @@
             <h2 class="table-heading--heading">Changes</h2>  
         </div>
         <table class="table">
-            {{ table.head(["Date", "Category", "Description", "Change", "Balance", "Action"]) }}
+            {{ table.head(["Date", "Category", "Description", "Change", "Balance"]) }}
             <tbody class="table--body">
                 {% for change, picture in changes_pictures | reverse %}
-                    {% set tablebuttons %}
-                        <div class="d-flex flex-row">
-                            {% set data %}
-                                {% raw %} { {% endraw %}
-                                    'pk': '{{ change.pk }}', 
-                                    'account': '{{ change.account.pk }}',
-                                    'category': '{{ category.pk }}',
-                                    'date': '{{ change.date }}',
-                                    'description': '{{ change.description }}',
-                                    'change': '{{ change.change }}'
-                                {% raw %} } {% endraw %}
-                            {% endset %}
-                            {{ buttons.buttonModalNew(text="Edit", dataTarget="#editChange", data=data) }}
-                            <div class="placeholder"></div>
-                            <form method="POST" action="{{ url('banking:delete_change', args=[user.slug,]) }}">
-                                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-                                <input type="hidden" name="change" value="{{ change.pk }}">
-                                <input type="hidden" name="reverse" value="{{ reverse }}">
-                                <input type="submit" class='btn btn-sm btn-danger' value="Delete">
-                            </form>
-                        </div>  
-                    {% endset %} 
-                    {{ 
-                        table.row([change.get_date(user), category, change.get_description(), change.change, picture.b, tablebuttons|safe]) 
-                    }}
+                    {{ table.row([change.get_date(user), category, change.get_description(), change.change, picture.b]) }}
                 {% endfor %}
             </tbody>
         </table>
@@ -126,6 +102,5 @@
 
 
 {% block modals %}
-    {% import "modules/banking/modals.njk" as modals %}
-    {{ modals.editChangeModal(user, accounts, categories, csrf_token, reverse) }}
+
 {% endblock %}
