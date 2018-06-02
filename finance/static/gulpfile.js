@@ -70,4 +70,4 @@ var gulp = require("gulp"),//http://gulpjs.com/
 	});
 
 
-	gulp.task("default", ["watch-json", "watch-sass", "watch-nunjucks"]);
+	gulp.task("default", ["watch-sass"]);

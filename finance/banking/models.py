@@ -287,8 +287,7 @@ class Movie(models.Model):
                                                          category=category)
             if not disable_update and movie.update_needed:
                 movie.update()
-        movie, created = Movie.objects.get_or_create(depot=depot, account=None,
-                                                     category=None)
+        movie, created = Movie.objects.get_or_create(depot=depot, account=None, category=None)
         if not disable_update and movie.update_needed:
             movie.update()
         t2 = time.time()

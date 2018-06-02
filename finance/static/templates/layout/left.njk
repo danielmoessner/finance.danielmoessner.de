@@ -5,7 +5,7 @@
     <!-- <li class="nav-item">
         <a class="nav-link {% if activePage=='index' %}active{% endif %}" href="index.html">Overview</a>
     </li> -->
-    {% if user.banking_active %}
+    {% if user.banking_is_active %}
     <li class="nav-item">
         <a class="nav-link {% if activePage=='banking' %}active{% endif %}" href="{{ url('banking:index', args=[user.slug,]) }}">Banking</a>
     </li>

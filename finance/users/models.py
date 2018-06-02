@@ -18,8 +18,8 @@ class StandardUser(AbstractUser):
     )
     currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES)
     rounded_numbers = models.BooleanField(default=True)
-    # banking settings
-    banking_active = models.BooleanField(default=False)  # not used at the moment
+    banking_is_active = models.BooleanField(default=False)
+    crypto_is_active = models.BooleanField(default=False)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if not self.slug:

@@ -56,6 +56,26 @@
 				<input type="submit" value="Update" class="settings--submit-button">
 			</form> 
 		</div> 
+
+		<div class="table-heading">
+	        <h2 class="table-heading--heading">Apps</h2>
+	    </div>
+		<hr class="hr">
+		<div class="settings">
+			<div class="column">
+				<div class="column--left">
+					<h3 class="column--heading">Banking</h3>
+					<div class="column--spacer"></div>
+					<h3 class="column--heading">Crypto</h3>
+				</div>
+				<div class="column--right">
+					{{ buttons.buttonLink(text="Init", url=url("users:init_banking", args=[user.slug,]), class="btn-info btn-sm column--button") }}
+					<div class="column--spacer"></div>
+					{{ buttons.buttonLink(text="Init", url="#", class="btn-info btn-sm column--button") }}
+				</form>
+				</div>
+			</div>
+		</div>
 	</div>
 
 
@@ -91,29 +111,17 @@
 
 	<div class="wrapper console-target console_banking is-hidden">
 		<div class="table-heading">
-	        <h2 class="table-heading--heading">Banking</h2>
-	    </div>
-		<hr class="hr">
-		<div class="settings">
-			<form action="" method="POST">
-				<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-				{{ buttons.buttonLink(text="Init", url=url("users:init_banking", args=[user.slug,]), class="settings--submit-button") }}
-			</form>
-		</div> 
-
-		<div class="table-heading">
-	        <h3 class="table-heading--heading">Depots</h3>
-	        {{ buttons.buttonModal(text="Add Depot", dataTarget="#addBankingDepot") }}
-            <div class="placeholder"></div>
-            {{ buttons.buttonModal(text="Delete Depot", dataTarget="#deleteBankingDepot", class="btn-danger") }} 
+	        <h2 class="table-heading--heading">Depots</h2>
+	        {{ buttons.buttonModal(text="Add Depot", dataTarget="#addBankingDepot") }} 
 	    </div>
 		<table class="table">
             {{ table.head(["Depot", "Action"]) }}
             <tbody class="table--body">
                 {% for depot in banking_depots %}
                     {% set tablebuttons %}
-                        <div class="flex flex-row">  
+                        <div class="d-flex flex-row">  
                         	<a type="button" href={{ url("users:set_banking_depot_active", args=[user.slug, depot.pk, ]) }} class="btn btn-sm btn-info {% if depot.is_active==True %}disabled{% endif %}" role="button">Set Active</a>
+                            <div class="placeholder"></div>
                             {% set data %}
                                 {% raw %} { {% endraw %}
                                     'pk': '{{ depot.pk }}', 
@@ -121,6 +129,12 @@
                                 {% raw %} } {% endraw %}
                             {% endset %}
                             {{ buttons.buttonModalNew(text="Edit", dataTarget="#editBankingDepot", data=data) }}
+                            <div class="placeholder"></div>
+                            <form method="POST" action="{{ url('users:delete_banking_depot', args=[user.slug,]) }}" class="">
+                                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                                <input type="hidden" name="pk" value="{{ depot.pk }}">
+                                <input type="submit" class="btn btn-sm btn-danger {% if depot.is_active==True %}disabled{% endif %}" value="Delete">
+                            </form>
                         </div>
                     {% endset %} 
                     {{ table.row([depot.name, tablebuttons]) }}
@@ -132,18 +146,7 @@
 
 	<div class="wrapper console-target console_crypto is-hidden">
 		<div class="table-heading">
-	        <h2 class="table-heading--heading">Crypto</h2>
-	    </div>
-		<hr class="hr">
-		<div class="settings">
-			<form action="" method="POST">
-				<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-				<input type="submit" value="Init" class="settings--submit-button">
-			</form>
-		</div>
-
-		<div class="table-heading">
-	        <h3 class="table-heading--heading">Depots</h3>
+	        <h2 class="table-heading--heading">Depots</h2>
 	        {{ buttons.buttonModal(text="Add Depot", dataTarget="#addCryptoDepot") }}
             <div class="placeholder"></div>
             {{ buttons.buttonModal(text="Delete Depot", dataTarget="#deleteCryptoDepot", class="btn-danger") }} 
