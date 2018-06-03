@@ -151,7 +151,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    os.path.join(APPS_DIR, 'static'),
+    # os.path.join(APPS_DIR, 'static'), only needed if Debug=true
 ]
 
 STATIC_ROOT = os.path.join(APPS_DIR, 'static')  # define as soon as it gets into production
