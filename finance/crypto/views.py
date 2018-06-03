@@ -184,7 +184,7 @@ def update_prices(request, *args, **kwargs):
 
 def update_movies(request, *args, **kwargs):
     depot = request.user.crypto_depots.get(is_active=True)
-    Movie.update_all(depot)
+    Movie.update_all(depot, force_update=True)
     return HttpResponseRedirect(reverse_lazy("crypto:index", args=[request.user.slug, ]))
 
 
@@ -229,7 +229,8 @@ def json_data(pi, g=True, p=True, v=True, cr=True, ttwr=True, cs=True):
         data_cs["data"] = pi["cs"]
         data_cs["yAxisID"] = "value"
         datasets.append(data_cs)
-
+    for data in datasets:
+        print(list(data["data"])[-3:])
     data = dict()
     data["labels"] = labels
     data["datasets"] = datasets

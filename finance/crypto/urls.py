@@ -65,7 +65,7 @@ urlpatterns = [
 ]
 
 
-handler400 = "finance.core.views.error_400_view"
-handler403 = "finance.core.views.error_403_view"
-handler404 = "finance.core.views.error_404_view"
-handler500 = "finance.core.views.error_500_view"
+handler400 = "finance.core.views.views.error_400_view"
+handler403 = "finance.core.views.views.error_403_view"
+handler404 = "finance.core.views.views.error_404_view"
+handler500 = "finance.core.views.views.error_500_view"

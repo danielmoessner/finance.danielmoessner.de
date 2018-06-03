@@ -29,6 +29,12 @@ urlpatterns = [
 ]
 
 
+handler400 = "finance.core.views.views.error_400_view"
+handler403 = "finance.core.views.views.error_403_view"
+handler404 = "finance.core.views.views.error_404_view"
+handler500 = "finance.core.views.views.error_500_view"
+
+
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

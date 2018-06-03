@@ -4,7 +4,6 @@ from finance.users.views import views
 from finance.users.views import form_views
 from django.contrib.auth.decorators import login_required
 
-
 app_name = "users"
 
 
@@ -77,7 +76,7 @@ urlpatterns = [
 ]
 
 
-handler400 = "finance.core.views.error_400_view"
-handler403 = "finance.core.views.error_403_view"
-handler404 = "finance.core.views.error_404_view"
-handler500 = "finance.core.views.error_500_view"
+handler400 = "finance.core.views.views.error_400_view"
+handler403 = "finance.core.views.views.error_403_view"
+handler404 = "finance.core.views.views.error_404_view"
+handler500 = "finance.core.views.views.error_500_view"

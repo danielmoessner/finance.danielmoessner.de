@@ -154,7 +154,7 @@ STATICFILES_DIRS = [
     os.path.join(APPS_DIR, 'static'),
 ]
 
-STATIC_ROOT = ""  # define as soon as it gets into production
+STATIC_ROOT = os.path.join(APPS_DIR, 'static')  # define as soon as it gets into production
 
 MEDIA_URL = '/media/'
 
