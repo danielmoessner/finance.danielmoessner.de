@@ -119,7 +119,7 @@ class Category(models.Model):
 
 
 class Change(models.Model):
-    account = models.ForeignKey(Account, on_delete=models.PROTECT, related_name="changes")
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="changes")
     date = models.DateTimeField()
     category = models.ForeignKey(Category, related_name="changes", null=True,
                                  on_delete=models.SET(Category.get_default_category))

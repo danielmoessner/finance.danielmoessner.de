@@ -10,6 +10,7 @@ from django.views import generic
 from finance.users.forms import AddStandardUserForm
 from finance.banking.models import Depot as BankingDepot
 from finance.banking.models import init_banking as banking_init_banking
+from finance.crypto.models import init_crypto as crypto_init_crypto
 from finance.crypto.models import Depot as CryptoDepot
 
 
@@ -80,7 +81,15 @@ class SettingsView(generic.TemplateView):
 def init_banking(request, slug):
     user = request.user
     banking_init_banking(user)
-    user.banking_active = True
+    user.banking_is_active = True
+    user.save()
+    return HttpResponseRedirect(reverse_lazy("users:settings", args=[slug, ]))
+
+
+def init_crypto(request, slug):
+    user = request.user
+    crypto_init_crypto(user)
+    user.crypto_is_active = True
     user.save()
     return HttpResponseRedirect(reverse_lazy("users:settings", args=[slug, ]))
 

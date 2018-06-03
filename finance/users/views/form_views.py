@@ -2,6 +2,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views import generic
+from django.db.models import ProtectedError
 
 from finance.users.forms import EditStandardUserForm, EditStandardUserSpecialsForm
 from finance.users.models import StandardUser
@@ -102,19 +103,25 @@ class SettingsEditBankingDepotView(SettingsView):
         return HttpResponseRedirect(success_url)
 
     def form_invalid(self, form):
-        return form_invalid_universal(self, form, "errors", heading="Depot could not be edited:")
+        return form_invalid_universal(self, form, "errors", heading="Depot could not be edited.")
 
 
 class SettingsDeleteBankingDepotView(SettingsView, CustomDeleteView):
     def form_valid(self, form):
         depot_pk = form.cleaned_data["pk"]
         depot = BankingDepot.objects.get(pk=depot_pk)
-        depot.delete()
+        try:
+            depot.delete()
+        except ProtectedError as e:
+            context = self.get_context_data()
+            context["errors"] = ["Depot could not be deleted.",
+                                 "You need to delete the accounts within the depot first."]
+            return self.render_to_response(context)
         success_url = reverse_lazy("users:settings", args=[self.request.user.slug, ])
         return HttpResponseRedirect(success_url)
 
-    def form_invalid(self, form):
-        return form_invalid_universal(self, form, "errors", heading="Depot could not be deleted:")
+    def form_invalid(self, form, **kwargs):
+        return form_invalid_universal(self, form, "errors", heading="Depot could not be deleted.")
 
 
 class SettingsAddCryptoDepotView(SettingsView, generic.CreateView):
@@ -156,10 +163,16 @@ class SettingsDeleteCryptoDepotView(SettingsView, CustomDeleteView):
     def form_valid(self, form):
         depot_pk = form.cleaned_data["pk"]
         depot = CryptoDepot.objects.get(pk=depot_pk)
-        depot.delete()
+        try:
+            depot.delete()
+        except ProtectedError as e:
+            context = self.get_context_data(**self.request.kwargs)
+            context["errors"] = ["Depot could not be deleted.",
+                                 "You need to delete the accounts within the depot first."]
+            return self.render_to_response(context)
         success_url = reverse_lazy("users:settings", args=[self.request.user.slug, ])
         return HttpResponseRedirect(success_url)
 
-    def form_invalid(self, form):
+    def form_invalid(self, form, **kwargs):
         return form_invalid_universal(self, form, "errors", heading="Depot could not be deleted:")
 

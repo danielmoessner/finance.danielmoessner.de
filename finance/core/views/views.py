@@ -1,5 +1,5 @@
 from django.views import generic
-
+from django.shortcuts import render
 from finance.core.forms import DeleteForm
 
 
@@ -16,3 +16,20 @@ class CustomDeleteView(generic.View):
 
     def form_invalid(self, form, **kwargs):
         raise NotImplementedError()
+
+
+def error_400_view(request, exception):
+    return render(request, "error_templates/400.html")
+
+
+def error_403_view(request, exception):
+    return render(request, "error_templates/403.html")
+
+
+def error_404_view(request, exception):
+    return render(request, "error_templates/404.html")
+
+
+def error_500_view(request, exception):
+    return render(request, "error_templates/500.html")
+

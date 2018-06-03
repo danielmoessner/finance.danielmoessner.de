@@ -4,7 +4,10 @@ from django.conf.urls import url
 from finance.banking.views import views
 from finance.banking.views import form_views
 
+
 app_name = "banking"
+
+
 urlpatterns = [
     # API DATA
     # api-data/index/
@@ -90,3 +93,9 @@ urlpatterns = [
     url(r"^category/(?P<slug>[0-9a-zA-Z-#]*)/$", login_required(views.CategoryView.as_view()),
         name="category"),
 ]
+
+
+handler400 = "finance.core.views.error_400_view"
+handler403 = "finance.core.views.error_403_view"
+handler404 = "finance.core.views.error_404_view"
+handler500 = "finance.core.views.error_500_view"

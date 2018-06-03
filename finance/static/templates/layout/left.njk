@@ -10,7 +10,7 @@
         <a class="nav-link {% if activePage=='banking' %}active{% endif %}" href="{{ url('banking:index', args=[user.slug,]) }}">Banking</a>
     </li>
     {% endif %}
-    {% if False %}
+    {% if user.crypto_is_active %}
     <li class="nav-item">
         <a class="nav-link {% if activePage=='crypto' %}active{% endif %}" href="{{ url('crypto:index', args=[user.slug,]) }}">Crypto</a>
     </li>
@@ -43,7 +43,7 @@
     </li>
     <li class="m-2"></li>
     <li class="nav-item">
-        <p class="nav-link m-0 font-weight-bold">App</p>
+        <p class="nav-link m-0 font-weight-bold">Finance</p>
     </li>
     <li class="nav-item">
         <a class="nav-link" href="{{ url('users:logout', args=[request.user.slug, ]) }}">Log Out</a>

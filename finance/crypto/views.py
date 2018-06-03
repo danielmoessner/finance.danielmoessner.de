@@ -183,7 +183,8 @@ def update_prices(request, *args, **kwargs):
 
 
 def update_movies(request, *args, **kwargs):
-    Movie.update_all()
+    depot = request.user.crypto_depots.get(is_active=True)
+    Movie.update_all(depot)
     return HttpResponseRedirect(reverse_lazy("crypto:index", args=[request.user.slug, ]))
 
 

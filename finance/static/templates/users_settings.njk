@@ -28,12 +28,16 @@
                 <label class="console--button" data-target=".console_user">
                     <input type="radio">User
                 </label>
+                {% if user.banking_is_active %}
                 <label class="console--button" data-target=".console_banking">
                     <input type="radio">Banking
                 </label>
+                {% endif %}
+                {% if user.crypto_is_active %}
                 <label class="console--button" data-target=".console_crypto">
                     <input type="radio">Crypto
                 </label>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -52,7 +56,8 @@
 				<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 				{{ form.labelSelectTupleFirst(labelText="Select A Date Format", selectItems=date_formats[1], name="date_format", required="True", selected=date_formats[0], wrapperClass="settings--input-group", inputClass="settings--input-group--select") }}
 				{{ form.labelSelectTupleFirst(labelText="Select A Currency", selectItems=currencies[1], name="currency", required="True", selected=currencies[0], wrapperClass="settings--input-group", inputClass="settings--input-group--select") }}
-				{{ form.labelCheckbox(labelText="Round Numbers To 2 Decimal Places", name="rounded_numbers", checked=rounded_numbers, wrapperClass="settings--input-check", inputClass="settings--input-check--checkbox", labelClass="settings--input-check--checkbox-label") }}
+				{{ form.labelSelect(labelText="Round Numbers To 2 Decimal Places", selectItems=["True", "False"], name="rounded_numbers", required="True", selected=rounded_numbers, wrapperClass="settings--input-group", inputClass="settings--input-group--select") }}
+				{#{ form.labelCheckbox(labelText="Round Numbers To 2 Decimal Places", name="rounded_numbers", checked=rounded_numbers, wrapperClass="settings--input-check", inputClass="settings--input-check--checkbox", labelClass="settings--input-check--checkbox-label") }#}
 				<input type="submit" value="Update" class="settings--submit-button">
 			</form> 
 		</div> 
@@ -69,9 +74,12 @@
 					<h3 class="column--heading">Crypto</h3>
 				</div>
 				<div class="column--right">
-					{{ buttons.buttonLink(text="Init", url=url("users:init_banking", args=[user.slug,]), class="btn-info btn-sm column--button") }}
+					{% set data %}
+						btn-info btn-sm column--button {% if user.crypto_is_active %}disabled{% endif %}
+					{% endset %}
+					{{ buttons.buttonLink(text="Init", url=url("users:init_banking", args=[user.slug,]), class=data) }}
 					<div class="column--spacer"></div>
-					{{ buttons.buttonLink(text="Init", url="#", class="btn-info btn-sm column--button") }}
+					{{ buttons.buttonLink(text="Init", url=url("users:init_crypto", args=[user.slug,]), class=data) }}
 				</form>
 				</div>
 			</div>

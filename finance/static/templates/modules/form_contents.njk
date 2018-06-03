@@ -39,10 +39,10 @@
 {% endmacro %}
 
 
-{% macro labelSelect(labelText="", selectItems=[], name=None, required="False", helpText=None, selected=None) %}
-	<div class="form-group">
+{% macro labelSelect(labelText="", selectItems=[], name=None, required="False", helpText=None, selected=None, wrapperClass="form-group", inputClass="custom-select form-control") %}
+	<div class="{{ wrapperClass }}">
 		{{ label(labelText) }}
-		{{ select(selectItems, name, required, selected) }}
+		{{ select(selectItems, name, required, selected, inputClass) }}
 		{% if helpText %}
 			{{ help(helpText)}}
 		{% endif %}
@@ -120,15 +120,11 @@
 	</select>
 {% endmacro %}
 
-{% macro select(items, name, required, selectedItem) %}
-	<select class="custom-select form-control" id="{{ name }}Input" name="{{ name }}" 
+{% macro select(items, name, required, selectedItem, inputClass) %}
+	<select class={{ inputClass }} id="{{ name }}Input" name="{{ name }}" 
 	{% if required=="True" %}required{% endif %}>
 		{% for item in items %}
-			<option value="{{ item }}"
-			{% if selectedItem %}
-				{% if item.name==selectedItem %}selected{% endif %}
-			{% endif %}
-			>{{ item }}</option>
+			<option value="{{ item }}" {% if (item | lower)==(selectedItem | lower) %}selected{% endif %}>{{ item }}</option>
 		{% endfor %}
 	</select>
 {% endmacro %}

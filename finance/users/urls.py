@@ -6,6 +6,8 @@ from django.contrib.auth.decorators import login_required
 
 
 app_name = "users"
+
+
 urlpatterns = [
     # PAGE
     # signup/
@@ -65,9 +67,17 @@ urlpatterns = [
         login_required(views.set_banking_depot_active),
         name="set_banking_depot_active"),
 
+    # moesibert/init-crypto/
+    url(r"^(?P<slug>[0-9a-zA-Z@.+_-]*)/init-crypto/$", views.init_crypto, name="init_crypto"),
     # moesibert/set-crypto-depot-active/
     url(r"^(?P<slug>[0-9a-zA-Z@.+_-]*)/set-crypto-depot-active/(?P<pk>\d+)/$",
         login_required(views.set_crypto_depot_active),
         name="set_crypto_depot_active"),
 
 ]
+
+
+handler400 = "finance.core.views.error_400_view"
+handler403 = "finance.core.views.error_403_view"
+handler404 = "finance.core.views.error_404_view"
+handler500 = "finance.core.views.error_500_view"

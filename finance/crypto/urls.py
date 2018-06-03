@@ -5,6 +5,8 @@ from . import views
 
 
 app_name = "crypto"
+
+
 urlpatterns = [
     # API DATA
     # api-data/index/
@@ -61,3 +63,9 @@ urlpatterns = [
     url(r"^asset/(?P<slug>[0-9a-zA-Z-#]*)/$", login_required(views.AssetView.as_view()),
         name="asset"),
 ]
+
+
+handler400 = "finance.core.views.error_400_view"
+handler403 = "finance.core.views.error_403_view"
+handler404 = "finance.core.views.error_404_view"
+handler500 = "finance.core.views.error_500_view"

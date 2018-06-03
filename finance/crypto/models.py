@@ -23,6 +23,10 @@ import json
 import os
 
 
+def init_crypto(user):
+    pass
+
+
 class IntelligentTimespan(CoreIntelligentTimespan):
     user = models.ForeignKey(StandardUser, editable=False, on_delete=models.CASCADE,
                              related_name="crypto_intelligent_timespans")

@@ -46,9 +46,6 @@
                 <label class="console--button" data-target=".console_trades">
                     <input type="radio">Trades
                 </label>
-                <label class="console--button" data-target=".console_timespans">
-                    <input type="radio">Time Spans
-                </label>
             </div>
         </div>
     </div>
@@ -144,23 +141,6 @@
 		        {% endfor %}
 		    </tbody>
 		</table>
-	</div>
-	
-
-    <div class="wrapper console-target is-hidden console_timespans">
-	    <div class="table-heading">
-	        <h2 class="table-heading--heading">Timespans</h2>  
-	        {{ buttons.buttonLink(text="Update", url=url("banking:update_timespans", args=[user.slug])) }}
-	    </div>
-	    <hr class="hr">
-	    <div class="hs-1"></div>
-	    <ul class="timespans">
-	        {% for ts in parent_timespans %} 
-	            {{ timespans.timespan(ts, depot, reverse, csrf_token)}}
-	        {% endfor %}
-	        {{ timespans.createTimespan(False, reverse, csrf_token) }}
-	        {{ timespans.createTimespan(True, reverse, csrf_token) }}
-	    </ul>
 	</div>
 
 	
