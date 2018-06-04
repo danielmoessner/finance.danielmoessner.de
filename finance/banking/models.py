@@ -2,10 +2,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db import models
 
-from finance.core.models import IntelligentTimespan as CoreIntelligentTimespan
+from finance.users.models import StandardUser
+from finance.core.models import Timespan as CoreTimespan
 from finance.core.models import Account as CoreAccount
 from finance.core.models import Depot as CoreDepot
-from finance.users.models import StandardUser
 from finance.core.utils import create_slug
 
 import pandas as pd
@@ -179,7 +179,7 @@ class Change(models.Model):
         return description
 
 
-class Timespan(CoreIntelligentTimespan):
+class Timespan(CoreTimespan):
     depot = models.ForeignKey(Depot, editable=False, related_name="timespans",
                               on_delete=models.CASCADE)
 

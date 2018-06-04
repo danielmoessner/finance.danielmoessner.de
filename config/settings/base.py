@@ -150,11 +150,13 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# used for additional static files
 STATICFILES_DIRS = [
-    # os.path.join(APPS_DIR, 'static'), only needed if Debug=true
+    os.path.join(APPS_DIR, 'static'),
 ]
 
-STATIC_ROOT = os.path.join(APPS_DIR, 'static')  # define as soon as it gets into production
+# supposed to be the folder in which all the static files get copied into
+STATIC_ROOT = ""  # define as soon as it gets into production
 
 MEDIA_URL = '/media/'
 

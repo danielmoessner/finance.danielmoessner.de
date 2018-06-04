@@ -1,14 +1,11 @@
-from django.conf import settings
 from django.db.models import Q
+from django.conf import settings
 from django.db import models
 
-from finance.core.models import IntelligentTimespan as CoreIntelligentTimespan
-from finance.core.models import Timespan as CoreTimespan
-from finance.banking.models import Category as ACategory
-from finance.core.models import Account as CoreAccount
-from finance.banking.models import Change as AChange
-from finance.core.models import Depot as CoreDepot
 from finance.users.models import StandardUser
+from finance.core.models import Timespan as CoreTimespan
+from finance.core.models import Account as CoreAccount
+from finance.core.models import Depot as CoreDepot
 from finance.core.utils import create_slug
 
 from datetime import timedelta, datetime
@@ -27,64 +24,9 @@ def init_crypto(user):
     pass
 
 
-class IntelligentTimespan(CoreIntelligentTimespan):
-    user = models.ForeignKey(StandardUser, editable=False, on_delete=models.CASCADE,
-                             related_name="crypto_intelligent_timespans")
-
-    # getters
-    def get_timespans(self):
-        timespans = self.timespans.order_by("end_date")
-        return timespans
-
-    @staticmethod
-    def get_default_intelligent_timespan():
-        pts, created = IntelligentTimespan.objects.get_or_create(
-            name="Default Timespan", start_date=None, end_date=None)
-        return pts
-
-    # update
-    @staticmethod
-    def update_all():
-        ts, created = IntelligentTimespan.objects.get_or_create(
-            name="Default Timespan", start_date=None, period=None, end_date=None)
-
-        for its in IntelligentTimespan.objects.all():
-            its.create_timespans()
-
-    def update(self):
-        if self.start_date and self.period:
-            Timespan.objects.get_or_create(
-                self,
-                self.start_date,
-                self.start_date + self.period
-            )
-            while self.timespans.order_by("end_date").last().end_date <= datetime.now(tz=pytz.utc):
-                Timespan.objects.get_or_create(
-                    self,
-                    self.timespans.order_by("end_date").last().end_date,
-                    self.timespans.order_by("end_date").last().end_date + self.period
-                )
-        elif self.end_date and self.start_date:
-            Timespan.objects.get_or_create(self, self.start_date, self.end_date)
-        elif self.start_date:
-            Timespan.objects.get_or_create(self, self.start_date, datetime.now(tz=pytz.utc))
-        else:
-            Timespan.objects.get_or_create(self, None, None)
-
-
-class Timespan(CoreTimespan):
-    timespan = models.ForeignKey(IntelligentTimespan, related_name="timespans",
-                                 on_delete=models.CASCADE)
-
-
 class Depot(CoreDepot):
     user = models.ForeignKey(StandardUser, editable=False, related_name="crypto_depots",
                              on_delete=models.CASCADE)
-    timespan = models.ForeignKey(
-        IntelligentTimespan, related_name="depots",
-        on_delete=models.SET(IntelligentTimespan.get_default_intelligent_timespan),
-        null=True
-    )
 
     def __init__(self, *args, **kwargs):
         super(Depot, self).__init__(*args, **kwargs)
@@ -255,32 +197,15 @@ class Trade(models.Model):
         return "{} {} {} {} {} {} {} {} ".format(date, account, buy_amount, buy_asset, sell_amount,
                                                  sell_asset, fees, fees_asset)
 
-    def save(self, add_change=False, inactivate_trades=True, force_insert=False,
-             force_update=False, using=None, update_fields=None):
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if self.buy_asset != self.fees_asset and self.sell_asset != self.fees_asset:
             raise TypeError("The fees asset must be the same as the buy or the sell asset")
         super(Trade, self).save(force_insert, force_update, using, update_fields)
-        # if add_change:   change later
-        #     self.update_account()
 
-    # update
-    def update_account(self):
-        category = ACategory.objects.get(pk=0)
-        if self.buy_asset == Asset.objects.get(
-                symbol=self.account.depot.user.get_currency_display()):
-            change_change = self.buy_amount
-            description = str(self.sell_asset) + " sell"
-        elif self.sell_asset == Asset.objects.get(
-                symbol=self.account.depot.user.get_currency_display()):
-            fees = self.fees if self.fees_asset == Asset.objects.get(
-                symbol=self.account.depot.user.get_currency_display()) else 0
-            change_change = (self.sell_amount + fees) * -1
-            description = str(self.buy_asset) + " buy"
-        else:
-            return
-        change = AChange(account=self.account, date=self.date, category=category,
-                         description=description, change=change_change)
-        change.save()
+
+class Timespan(CoreTimespan):
+    depot = models.ForeignKey(Depot, editable=False, related_name="timespans",
+                              on_delete=models.CASCADE)
 
 
 class Movie(models.Model):
