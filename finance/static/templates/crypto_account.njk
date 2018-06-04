@@ -67,8 +67,8 @@
             {{ cards.statsCard("Current Return", accountData.yield, "%") }}
             {{ cards.statsCard("True time weighted return", accountData.true_time_weighted_return, "%")}}
 		</div>
-		{% for ts in parent_timespans %}
-		    {% if ts.start_date and ts == depot.timespan %}
+		{% for ts in timespans %}
+		    {% if ts.start_date and ts.is_active %}
 		        <div class="hs-3"></div>
 		        <div class="table-heading">
 		            <h3 class="table-heading--heading">{{ ts.name }}</h3>

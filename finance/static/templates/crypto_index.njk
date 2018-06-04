@@ -30,7 +30,7 @@
     {% import "modules/buttons.njk" as buttons %}
     {% import "modules/modals.njk" as modals %}
     {% import "modules/cards.njk" as cards %}
-    {% import "modules/timespan.njk" as timespans %}
+    {% import "modules/timespan.njk" as timespan %}
 
     
     <div class="hs-1"></div>
@@ -75,8 +75,8 @@
             {{ cards.statsCard("Current Return", depotData.yield, "%") }}
             {{ cards.statsCard("True time weighted return", depotData.true_time_weighted_return, "%")}}
         </div>
-        {% for ts in parent_timespans %}
-            {% if ts.start_date and ts == depot.timespan %}
+        {% for ts in timespans %}
+            {% if ts.start_date and ts.is_active %}
                 <div class="hs-3"></div>
                 <div class="table-heading">
                     <h3 class="table-heading--heading">{{ ts.name }}</h3>
@@ -102,12 +102,12 @@
     <div class="wrapper console-target is-hidden console_accounts">
     	<div class="table-heading">
             <h2 class="table-heading--heading">Accounts</h2>  
-            {{ buttons.buttonModal(text="Add Account", dataTarget="#addCryptoAccount") }}  
+            {{ buttons.buttonModal(text="Add Account", dataTarget="#addAccount") }}  
             <div class="placeholder"></div>
             {{ buttons.buttonModal(text="Delete Account", dataTarget="#deleteAccount", class="btn-danger") }}     
         </div>
         <table class="table">
-            {{ table.head(["Account", "Assets Value"]) }}
+            {{ table.head(["Account", "Assets Value", "Action"]) }}
             <tbody class="table--body">
                 {% for account in accounts %}
                     {% set name %}
@@ -116,7 +116,18 @@
                     {% set value %}
                         {{ account.get_movie().get_all().value }} {{ user.currency }}
                     {% endset %}
-                    {{ table.row([name | safe, value ]) }}
+                    {% set tablebuttons %}
+                        <div class="d-flex flex-row">
+                            {% set data %}
+                                {% raw %} { {% endraw %}
+                                    'pk': '{{ account.pk }}', 
+                                    'name': '{{ account.name }}'
+                                {% raw %} } {% endraw %}
+                            {% endset %}
+                            {{ buttons.buttonModalNew(text="Edit", dataTarget="#editAccount", data=data) }}
+                        </div>  
+                    {% endset %} 
+                    {{ table.row([name | safe, value, tablebuttons | safe]) }}
                 {% endfor %}
             </tbody>
         </table>
@@ -128,7 +139,7 @@
             <h2 class="table-heading--heading">Assets</h2>  
             {{ buttons.buttonLink(text="Update Prices", url=url("crypto:update_prices", args=[user.slug,])) }}
             <div class="placeholder"></div>
-            {{ buttons.buttonModal(text="Add Asset", dataTarget="#addCryptoAsset") }}
+            {{ buttons.buttonModal(text="Add Asset", dataTarget="#addAsset") }}
             <div class="placeholder"></div>
             {{ buttons.buttonModal(text="Remove Asset", dataTarget="#deleteAsset", class="btn-danger") }}  
         </div>
@@ -138,12 +149,22 @@
                 {% for asset in assets %}
                     {% set tablebuttons %}
                         <div class="d-flex flex-row">
-                            {{ buttons.buttonModal(text="Buy/Sell", dataTarget="#addTrade", data="pk=" + asset.pk|string) }}  
+                            {{ buttons.buttonModal(text="Buy/Sell", dataTarget="#addTrade", data="pk=" + asset.pk|string) }} 
+                            <div class="placeholder"></div>
+                            {% set data %}
+                                {% raw %} { {% endraw %}
+                                    'pk': '{{ asset.pk }}', 
+                                    'name': '{{ asset.name }}',
+                                    'symbol': '{{ asset.symbol }}'
+                                {% raw %} } {% endraw %}
+                            {% endset %}
+                            {{ buttons.buttonModalNew(text="Edit", dataTarget="#editAsset", data=data) }} 
                         </div> 
                     {% endset %}
                     {% set name %}
                         <a href="{{ url('crypto:asset', args=[user.slug, asset.slug, ]) }}" class="link-bold">{{ asset.name }}</a>
                     {% endset %} 
+
                     {%- set assetData = asset.get_movie(depot).get_all() -%}
                     {{ table.row([name, assetData.price, assetData.amount, assetData.value, assetData.profit, assetData.yield, tablebuttons | safe]) }}
                 {% endfor %}
@@ -159,11 +180,10 @@
         <hr class="hr">
         <div class="hs-1"></div>
         <ul class="timespans">
-            {% for ts in parent_timespans %} 
-                {{ timespans.timespan(ts, depot, reverse, csrf_token)}}
+            {% for ts in timespans %} 
+                {{ timespan.timespan(ts, depot, url('crypto:set_timespan', args=[user.slug,]), url('crypto:delete_timespan', args=[user.slug,]), reverse, csrf_token)}}
             {% endfor %}
-            {{ timespans.createTimespan(False, reverse, csrf_token) }}
-            {{ timespans.createTimespan(True, reverse, csrf_token) }}
+            {{ timespan.createTimespan(False, url('crypto:add_timespan', args=[user.slug,]), reverse, csrf_token) }}
         </ul>
     </div>
 
@@ -173,9 +193,11 @@
 
 {% block modals %}
     {% import "modules/crypto/modals.njk" as modals %}
-    {{ modals.addCryptoAccountModal(user, depot.pk, csrf_token, reverse) }}
-    {{ modals.addCryptoAssetModal(user, reverse, csrf_token) }}
+    {{ modals.addAccountModal(user, depot.pk, csrf_token) }}
+    {{ modals.editAccountModal(user, csrf_token) }}
+    {{ modals.deleteAccountModal(user, accounts, csrf_token) }}
+    {{ modals.addAssetModal(user, csrf_token) }}
+    {{ modals.editAssetModal(user, csrf_token) }}
     {{ modals.deleteAssetModal(user, assets, csrf_token) }}
     {{ modals.addTradeModal(user, reverse, accounts, assets_all, csrf_token) }}
-    {#{ modals.deleteAccountModal(user, accounts, csrf_token, reverse) }#}
 {% endblock %}

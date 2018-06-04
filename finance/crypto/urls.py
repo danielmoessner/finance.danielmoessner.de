@@ -15,48 +15,90 @@ urlpatterns = [
     # api-data/account/comdirect/
     url(r"^api-data/account/(?P<slug>[0-9a-zA-Z-#]*)/$", login_required(
         views.AccountData.as_view()), name="api_data_account"),
-    # api-data/assets
+    # api-data/assets/
     url(r"^api-data/assets/$", login_required(views.AssetsData.as_view()), name="api_data_assets"),
     # api-data/asset/bitcoin/
     url(r"^api-data/asset/(?P<slug>[0-9a-zA-Z-#]*)/$", login_required(views.AssetData.as_view()),
         name="api_data_asset"),
 
-
     # FUNCTIONS
     # update-movie/
     url(r"^update-movies", login_required(views.update_movies), name="update_movies"),
-
     # update-prices/
     url(r"^update-prices/$", login_required(views.update_prices), name="update_prices"),
 
-    # add-account/
-    url(r"^add-account/$", login_required(views.add), name="add_account"),
-
-    # add-asset/
-    url(r"^add-asset/$", login_required(views.add), name="add_asset"),
-    # delete-asset/
-    url(r"^delete-asset/$", login_required(views.delete), name="delete_asset"),
-
-    # asset/bitcoin/add-price/
-    url(r"^add-price/$", login_required(views.add), name="add_price"),
-
-    # add-trade/
-    url(r"^add-trade/$", login_required(views.add), name="add_trade"),
-    # delete-trade/
-    url(r"^delete-trade/$", login_required(views.delete), name="delete_trade"),
-
     # account/comdirect/move-asset/
     url(r"^account/(?P<slug>[0-9a-zA-Z-#]*)/move-asset/$", login_required(views.move_asset),
-        name="move_asset"),
+        name="move_asset"),  # think
 
+    # asset/bitcoin/add-price/
+    url(r"^asset/(?P<slug>[0-9a-zA-Z-#]*)/add-price/$",
+        login_required(views.IndexView.as_view()),  # change
+        name="add_price"),
     # asset/bitcoin/delete-price/
-    url(r"^asset/(?P<slug>[0-9a-zA-Z-#]*)/delete-price/$", login_required(views.delete),
+    url(r"^asset/(?P<slug>[0-9a-zA-Z-#]*)/delete-price/$",
+        login_required(views.IndexView.as_view()),  # change
         name="delete_price"),
 
+    # add-account/
+    url(r"^add-account/$",
+        login_required(form_views.IndexCreateAccountView.as_view()),
+        name="add_account"),
+    # edit-account/
+    url(r"^edit-account/$",
+        login_required(form_views.IndexUpdateAccountView.as_view()),
+        name="edit_account"),
+    # delete-account/
+    url(r"^delete-account/$",
+        login_required(form_views.IndexDeleteAccountView.as_view()),
+        name="delete_account"),
+
+    # add-asset/
+    url(r"^add-asset/$",
+        login_required(form_views.IndexCreateAssetView.as_view()),
+        name="add_asset"),
+    # edit-asset/
+    url(r"^edit-asset/$",
+        login_required(form_views.IndexUpdateAssetView.as_view()),
+        name="edit_asset"),
+    # delete-asset/
+    url(r"^delete-asset/$",
+        login_required(form_views.IndexDeleteAssetView.as_view()),
+        name="delete_asset"),
+
+    # add-trade/
+    url(r"^add-trade/$",
+        login_required(form_views.IndexCreateTradeView.as_view()),
+        name="add_trade"),
+    # bitcoin/add-trade/
+    url(r"^account/(?P<slug>[0-9a-zA-Z-#]*)/add-trade/$",
+        login_required(form_views.AccountCreateTradeView.as_view()),
+        name="add_trade"),
+    # bitcoin/edit-trade/
+    url(r"^account/(?P<slug>[0-9a-zA-Z-#]*)/edit-trade/$",
+        login_required(form_views.AccountUpdateTradeView.as_view()),
+        name="delete_trade"),
+    # bitcoin/delete-trade/
+    url(r"^account/(?P<slug>[0-9a-zA-Z-#]*)/delete-trade/$",
+        login_required(form_views.AccountDeleteTradeView.as_view()),
+        name="delete_trade"),
+
+    # add-timespan/
+    url(r"^add-timespan/$",
+        login_required(form_views.IndexCreateTimespanView.as_view()),
+        name="add_timespan"),
+    # set-timespan/
+    url(r"^set-timespan/$",
+        login_required(form_views.IndexUpdateActiveOnTimespanView.as_view()),
+        name="set_timespan"),
+    # delete-timespan/
+    url(r"^delete-timespan/$",
+        login_required(form_views.IndexDeleteTimespanView.as_view()),
+        name="delete_timespan"),
 
     # PAGES
     # index
-    url(r"^$", login_required(views.CryptoView.as_view()), name="index"),
+    url(r"^$", login_required(views.IndexView.as_view()), name="index"),
     # account/comdirect/
     url(r"^account/(?P<slug>[0-9a-zA-Z-#]*)/$", login_required(views.AccountView.as_view()),
         name="account"),

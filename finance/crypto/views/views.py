@@ -19,19 +19,19 @@ import pytz
 
 
 # VIEWS
-class CryptoView(generic.TemplateView):
+class IndexView(generic.TemplateView):
     template_name = "crypto_index.njk"
 
     def get_context_data(self, **kwargs):
-        context = super(CryptoView, self).get_context_data(**kwargs)
+        context = super(IndexView, self).get_context_data(**kwargs)
         context["user"] = self.request.user
         context["depot"] = context["user"].crypto_depots.get(is_active=True)
         context["accounts"] = context["depot"].accounts.all()
-        context["assets"] = Asset.objects.exclude(
+        context["assets_all"] = context["depot"].assets.order_by("name")
+        context["assets"] = context["assets_all"].exclude(
             symbol=context["user"].get_currency_display()).order_by("name")
-        context["assets_all"] = Asset.objects.order_by("name")
+        context["timespans"] = context["depot"].timespans.all()
 
-        context["parent_timespans"] = context["user"].crypto_intelligent_timespans.all()
         context["movie"] = context["depot"].movies.get(account=None, asset=None)
         return context
 
@@ -44,10 +44,10 @@ class AccountView(generic.TemplateView):
         context["user"] = self.request.user
         context["depot"] = context["user"].crypto_depots.get(is_active=True)
         context["accounts"] = context["depot"].accounts.all()
-        context["assets"] = Asset.objects.exclude(
+        context["assets_all"] = context["depot"].assets.order_by("name")
+        context["assets"] = context["assets_all"].exclude(
             symbol=context["user"].get_currency_display()).order_by("name")
-        context["assets_all"] = Asset.objects.order_by("name")
-        context["parent_timespans"] = context["user"].crypto_intelligent_timespans.all()
+        context["timespans"] = context["depot"].timespans.all()
 
         context["account"] = context["depot"].accounts.get(slug=kwargs["slug"])
         context["trades"] = context["account"].trades.order_by("-date")
@@ -63,10 +63,10 @@ class AssetView(generic.TemplateView):
         context["user"] = self.request.user
         context["depot"] = context["user"].crypto_depots.get(is_active=True)
         context["accounts"] = context["depot"].accounts.all()
-        context["assets"] = Asset.objects.exclude(
+        context["assets_all"] = context["depot"].assets.order_by("name")
+        context["assets"] = context["assets_all"].exclude(
             symbol=context["user"].get_currency_display()).order_by("name")
-        context["assets_all"] = Asset.objects.order_by("name")
-        context["parent_timespans"] = context["user"].crypto_intelligent_timespans.all()
+        context["timespans"] = context["depot"].timespans.all()
 
         context["asset"] = Asset.objects.get(slug=kwargs["slug"])
         context["prices"] = context["asset"].prices.order_by("-date")
@@ -78,86 +78,6 @@ class AssetView(generic.TemplateView):
 
 
 # FUNCTIONS
-def add(request, *args, **kwargs):
-    if request.method == "POST":
-        if all(k in request.POST for k in ("asset", "date", "price", "currency", "reverse")):
-            asset = Asset.objects.get(pk=request.POST["asset"])
-            date = datetime.strptime(request.POST["date"], '%Y-%m-%dT%H:%M')\
-                .replace(tzinfo=pytz.utc)
-            price = Decimal(request.POST["price"])
-            currency = str(request.POST["currency"])
-            price = Price(asset=asset, date=date, price=price, currency=currency)
-            price.save()
-            return HttpResponseRedirect(request.POST["reverse"])
-        elif all(k in request.POST for k in ("name", "symbol", "reverse")):
-            symbol = str(request.POST["symbol"])
-            name = str(request.POST["name"])
-            asset = Asset(symbol=symbol, name=name)
-            asset.save()
-            return HttpResponseRedirect(request.POST["reverse"])
-        elif all(k in request.POST for k in ("asset", "date", "price", "reverse")):
-            asset = Asset.objects.get(pk=request.POST["asset"])
-            date = datetime.strptime(request.POST["date"], '%Y-%m-%dT%H:%M')\
-                .replace(tzinfo=pytz.utc)
-            asset_price = Decimal(request.POST["price"])
-            currency = request.user.currency
-            price = Price(asset=asset, date=date, price=asset_price, currency=currency)
-            price.save()
-            return HttpResponseRedirect(request.POST["reverse"])
-        elif all(k in request.POST for k in ("name", "depot", "reverse")):
-            depot = Depot.objects.get(pk=request.POST["depot"])
-            name = str(request.POST["name"])
-            account = Account(depot=depot, name=name)
-            account.save()
-            return HttpResponseRedirect(request.POST["reverse"])
-        elif all(k in request.POST for k in ("account", "date", "buy_amount", "buy_asset", "fees",
-                                             "fees_asset", "sell_amount", "sell_asset",
-                                             "reverse")):
-            account = Account.objects.get(pk=request.POST["account"])
-            date = datetime.strptime(request.POST["date"], '%Y-%m-%dT%H:%M')\
-                .replace(tzinfo=pytz.utc)
-            buy_amount = Decimal(request.POST["buy_amount"])
-            buy_asset = Asset.objects.get(pk=request.POST["buy_asset"])
-            fees = Decimal(request.POST["fees"])
-            fees_asset = Asset.objects.get(pk=request.POST["fees_asset"])
-            sell_amount = Decimal(request.POST["sell_amount"])
-            sell_asset = Asset.objects.get(pk=request.POST["sell_asset"])
-            trade = Trade(account=account, date=date, buy_amount=buy_amount, buy_asset=buy_asset,
-                          fees=fees,
-                          fees_asset=fees_asset, sell_amount=sell_amount, sell_asset=sell_asset)
-            trade.save(add_change=True)
-            return HttpResponseRedirect(request.POST["reverse"])
-        else:
-            pass  # error correction
-    else:
-        raise Exception("Something is wrong here. Why is this no POST request?")
-
-
-def delete(request, *args, **kwargs):
-    if request.method == "POST":
-        if "asset" in request.POST:
-            asset = Asset.objects.get(pk=request.POST["asset"])
-            if asset.get_ca() == 0:
-                asset.delete()
-            else:
-                pass  # error correction
-            return HttpResponseRedirect(reverse_lazy("crypto:index", args=[request.user.slug, ]))
-        if "price" in request.POST:
-            price = Price.objects.get(pk=request.POST["price"])
-            price.delete()
-            return HttpResponseRedirect(reverse_lazy("crypto:asset",
-                                                     args=[request.user.slug, kwargs["slug"], ]))
-        if "trade" in request.POST and "reverse" in request.POST:
-            trade = Trade.objects.get(pk=request.POST["trade"])
-            trade.delete()
-            url = request.POST["reverse"]
-            return HttpResponseRedirect(url)
-        else:
-            pass  # error correction
-    else:
-        raise Exception("Something is wrong here. Why is this no POST request?")
-
-
 def move_asset(request, *args, **kwargs):
     if request.method == "POST":
         if all(k in request.POST for k in ("from_account", "asset", "to_account", "fees", "date",
@@ -229,8 +149,6 @@ def json_data(pi, g=True, p=True, v=True, cr=True, ttwr=True, cs=True):
         data_cs["data"] = pi["cs"]
         data_cs["yAxisID"] = "value"
         datasets.append(data_cs)
-    for data in datasets:
-        print(list(data["data"])[-3:])
     data = dict()
     data["labels"] = labels
     data["datasets"] = datasets
@@ -244,7 +162,7 @@ class IndexData(APIView):
     def get(self, request, user_slug, format=None):
         user = request.user
         depot = user.crypto_depots.get(is_active=True)
-        pi = depot.get_movie().get_timespan_data(depot.timespan)
+        pi = depot.get_movie().get_data(depot.timespans.get(is_active=True))
         return json_data(pi, p=False)
 
 
@@ -256,7 +174,7 @@ class AccountData(APIView):
         user = request.user
         depot = user.crypto_depots.get(is_active=True)
         account = depot.accounts.get(slug=slug)
-        pi = account.get_movie().get_timespan_data(depot.timespan)
+        pi = account.get_movie().get_data(depot.timespans.get(is_active=True))
         return json_data(pi, p=False)
 
 
@@ -274,8 +192,8 @@ class AssetsData(APIView):
         for asset in Asset.objects.exclude(symbol=user.get_currency_display()):
             movie = asset.get_movie(depot)
             labels.append(str(asset))
-            data.append(movie.get_timespan_data(depot.timespan)["v"].last()
-                        if movie.get_timespan_data(depot.timespan)["v"].last() is not None else 0)
+            data.append(movie.get_data(depot.timespans.get(is_active=True))["v"].last()
+                        if movie.get_data(depot.timespans.get(is_active=True))["v"].last() is not None else 0)
         data_and_labels = list(sorted(zip(data, labels)))
         labels = [l for d, l in data_and_labels]
         data = [abs(d) for d, l in data_and_labels]
@@ -297,5 +215,5 @@ class AssetData(APIView):
         user = request.user
         depot = user.crypto_depots.get(is_active=True)
         asset = Asset.objects.get(slug=slug)
-        pi = asset.get_movie(depot).get_timespan_data(depot.timespan)
+        pi = asset.get_movie(depot).get_data(depot.timespans.get(is_active=True))
         return json_data(pi)

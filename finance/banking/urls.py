@@ -24,8 +24,8 @@ urlpatterns = [
         views.CategoryData.as_view()), name="api_data_category"),
 
     # FUNCTIONS
-    # update-stats/
-    url(r"^update-stats", login_required(views.update_stats), name="update_stats"),
+    # update-movies/
+    url(r"^update-movies", login_required(views.update_movies), name="update_stats"),
 
     # add-account/
     url(r"^add-account/$",

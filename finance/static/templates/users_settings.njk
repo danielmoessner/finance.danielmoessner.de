@@ -165,7 +165,7 @@
                 {% for depot in crypto_depots %}
                     {% set tablebuttons %}
                         <div class="flex flex-row">  
-                        	<a type="button" href={{ url("users:set_banking_depot_active", args=[user.slug, depot.pk, ]) }} class="btn btn-sm btn-info {% if depot.is_active==True %}disabled{% endif %}" role="button">Set Active</a>
+                        	<a type="button" href={{ url("users:set_crypto_depot_active", args=[user.slug, depot.pk, ]) }} class="btn btn-sm btn-info {% if depot.is_active==True %}disabled{% endif %}" role="button">Set Active</a>
                             {% set data %}
                                 {% raw %} { {% endraw %}
                                     'pk': '{{ depot.pk }}', 

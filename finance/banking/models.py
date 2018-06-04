@@ -74,6 +74,8 @@ class Account(CoreAccount):
         self.m = None
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        if not self.slug:
+            self.slug = create_slug(self)
         super(Account, self).save(force_insert, force_update, using, update_fields)
         Movie.update_all(depot=self.depot, disable_update=True)
 
@@ -217,15 +219,14 @@ class Movie(models.Model):
     def get_data(self, timespan=None):
         if timespan and timespan.start_date and timespan.end_date:
             pictures = self.pictures.filter(d__gte=timespan.start_date,
-                                            d__lte=timespan.end_date).values("d", "c", "b")
+                                            d__lte=timespan.end_date)
         else:
             pictures = Picture.objects.filter(movie=self)
         data = dict()
         data["d"] = (pictures.values_list("d", flat=True))
         data["b"] = (pictures.values_list("b", flat=True))
         data["c"] = (pictures.values_list("c", flat=True))
-        self.data = data
-        return self.data
+        return data
 
     def get_value(self, user, timespan, keys):
         # user in args for query optimization and ease

@@ -72,9 +72,7 @@ class SettingsView(generic.TemplateView):
         context["rounded_numbers"] = context["user"].rounded_numbers
 
         context["banking_depots"] = context["user"].banking_depots.all()
-
         context["crypto_depots"] = context["user"].crypto_depots.all()
-
         return context
 
 

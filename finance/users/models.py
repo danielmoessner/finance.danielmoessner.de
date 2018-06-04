@@ -26,11 +26,6 @@ class StandardUser(AbstractUser):
             self.slug = create_slug_on_username(self)
         super(StandardUser, self).save(force_insert, force_update, using, update_fields)
 
-    # getters
-    @cached_property
-    def get_rounded_numbers(self):
-        return self.rounded_numbers
-
     # setters
     def set_banking_depot_active(self, depot):
         self.banking_depots.update(is_active=False)
@@ -38,8 +33,6 @@ class StandardUser(AbstractUser):
         depot.save()
 
     def set_crypto_depot_active(self, depot):
-        for d in self.crypto_depots.exclude(depot):
-            d.is_active = False
-            d.save()
+        self.crypto_depots.update(is_active=False)
         depot.is_active = True
         depot.save()

@@ -40,24 +40,75 @@
 
 
 <!-- Account -->
-{% macro addCryptoAccountModal(user, depot, csrf_token, reverse) %}
+{% macro addAccountModal(user, depot, csrf_token) %}
 	{% set content %}
-		<input type="hidden" id="reverseInput" name="reverse" value="{{ reverse }}">
 		<input type="hidden" id="depotInput" name="depot" value="{{ depot }}">
 		{{ form.labelInput(labelText="Name", inputText="Choose A Name", inputType="text", name="name", required="True", maxlength=200) }}
 	{% endset %}
-	{{ modals.modal(content, url("crypto:add_account", args=[user.slug,]), "addCryptoAccount", "Add Account", csrf_token, "Save", "Cancel") }}
+	{{ modals.modal(content, url("crypto:add_account", args=[user.slug,]), "addAccount", "Add Account", csrf_token, "Save", "Cancel") }}
 {% endmacro %}
-  
+
+{% macro editAccountModal(user, csrf_token) %}
+	{% set content %}
+		<input type="hidden" id="accountInput" name="pk" value="">
+		{{ form.labelInput(labelText="Name", inputText="Choose A New Name", inputType="text", name="name", required="True", maxlength=200) }}
+		<script type="text/javascript">
+	        jQuery(function(){
+	            $("#editAccount").on("show.bs.modal", function(e) {
+				    var data = e.relatedTarget.dataset.all;
+					data = data.replace(/'/g, '"')
+					data = JSON.parse(data)
+					$("#editAccount #accountInput").attr("value", data.pk)
+					$("#editAccount #nameInput").attr("value", data.name)
+				});
+	        });
+	    </script> 
+	{% endset %}
+	{{ modals.modal(content, url("crypto:edit_account", args=[user.slug,]), "editAccount", "Edit Account", csrf_token, "Update", "Cancel") }}
+{% endmacro %}
+
+{% macro deleteAccountModal(user, accounts, csrf_token) %}
+	{% set content %}
+		{{ form.labelSelectNamePk(labelText="Select A Account", selectItems=accounts, name="pk", required="True") }}
+	{% endset %}
+	{{ modals.modal(content, url("crypto:delete_account", args=[user.slug,]), "deleteAccount", "Delete Account", csrf_token, "Delete", "Cancel") }}
+{% endmacro %} 
 
 <!-- Asset -->
-{% macro addCryptoAssetModal(user, reverse, csrf_token) %}
+{% macro addAssetModal(user, csrf_token) %}
 	{% set content %}
-		<input type="hidden" id="reverseInput" name="reverse" value="{{ reverse }}">
 		{{ form.labelInput(labelText="Name", inputText="Choose A Name", inputType="text", name="name", required="True", maxlength=300) }}
 		{{ form.labelInput(labelText="Symbol", inputText="Choose A Symbol (BTC / ETH / BCH ...)", inputType="text", name="symbol", maxlength=5, required="True") }}
 	{% endset %}
-	{{ modals.modal(content, url("crypto:add_asset", args=[user.slug,]), "addCryptoAsset", "Add Asset", csrf_token, "Save", "Cancel") }}
+	{{ modals.modal(content, url("crypto:add_asset", args=[user.slug,]), "addAsset", "Add Asset", csrf_token, "Save", "Cancel") }}
+{% endmacro %}
+
+{% macro editAssetModal(user, csrf_token) %}
+	{% set content %}
+		<input type="hidden" id="editAssetPk" name="pk" value="">
+		{{ form.labelInput(labelText="Name", inputText="Choose A New Name", inputType="text", name="name", required="True", maxlength=200) }}
+		{{ form.labelInput(labelText="Symbol", inputText="Choose A New Symbol", inputType="text", name="symbol", required="True", maxlength=5) }}
+		<script type="text/javascript">
+	        jQuery(function(){
+	            $("#editAsset").on("show.bs.modal", function(e) {
+				    var data = e.relatedTarget.dataset.all;
+					data = data.replace(/'/g, '"')
+					data = JSON.parse(data)
+					$("#editAsset #editAssetPk").attr("value", data.pk)
+					$("#editAsset #nameInput").attr("value", data.name)
+					$("#editAsset #symbolInput").attr("value", data.symbol)
+				});
+	        });
+	    </script> 
+	{% endset %}
+	{{ modals.modal(content, url("crypto:edit_asset", args=[user.slug,]), "editAsset", "Edit Asset", csrf_token, "Update", "Cancel") }}
+{% endmacro %}
+
+{% macro deleteAssetModal(user, assets, csrf_token) %}
+	{% set content %}
+		{{ form.labelSelectNamePk(labelText="Select A Asset", selectItems=assets, name="pk", required="True") }}
+	{% endset %}
+	{{ modals.modal(content, url("crypto:delete_asset", args=[user.slug,]), "deleteAsset", "Remove Asset", csrf_token, "Remove", "Cancel") }}
 {% endmacro %}
 
 {% macro moveAssetModal(user, account, accounts, csrf_token=None) %}
@@ -80,13 +131,6 @@
 	{{ modals.modal(content, url("crypto:move_asset", args=[user.slug, account.slug, ]), "moveAsset", "Move Asset", csrf_token, "Move", "Cancel") }}
 {% endmacro %}  
 
-{% macro deleteAssetModal(user, assets, csrf_token) %}
-	{% set content %}
-		{{ form.labelSelectNamePk(labelText="Select A Asset", selectItems=assets, name="asset", required="True") }}
-	{% endset %}
-	{{ modals.modal(content, url("crypto:delete_asset", args=[user.slug,]), "deleteAsset", "Remove Asset", csrf_token, "Remove", "Cancel") }}
-{% endmacro %}
-
 
 <!-- Trade -->
 {% macro addTradeModal(user, reverse, accounts, assets, csrf_token) %}
@@ -99,50 +143,6 @@
 		{{ form.labelInputSelectSymbolPk(labelText="Sell (Doesn't include fees.)", inputText="Amount", inputName="sell_amount", selectName="sell_asset", inputType="number", selectItems=assets) }}
 	{% endset %}
 	{{ modals.modal(content, url("crypto:add_trade", args=[user.slug,]), "addTrade", "Buy / Sell", csrf_token, "Save", "Cancel") }}
-{% endmacro %}
-
-
-{% macro addOldTradeModal(reverse_lazy, symbols, accounts=None, assets=None, account=None, asset=None, csrf_token=None) %}
-	{% set content %}
-		{% if asset %}
-			<input type="hidden" id="assetInput" name="asset" value="{{ asset.pk }}">
-		{% elif assets %}
-			{{ form.labelSelectNamePk(labelText="Choose Asset", selectItems=assets, name="asset", required="True") }}
-		{% else %}
-			<input type="hidden" id="assetInput" name="asset" value="">
-			<script type="text/javascript">
-		        jQuery(function(){
-		        	$("#addTrade").on("show.bs.modal", function(e) {
-				        var pk = e.relatedTarget.dataset.pk;
-				        $("#addTrade #assetInput").attr("value", pk)
-				    });
-		        });
-		    </script>
-		{% endif %}
-		{% if account %}
-			<input type="hidden" id="accountInput" name="account" value="{{ account.pk }}">
-		{% elif accounts %}
-			{{ form.labelSelectNamePk(labelText="Choose Account", selectItems=accounts, name="account", required="True") }}
-		{% else %}
-			<input type="hidden" id="accountInput" name="account" value="">
-			<script type="text/javascript">
-		        jQuery(function(){
-		        	$("#addTrade").on("show.bs.modal", function(e) {
-				        var pk = e.relatedTarget.dataset.pk;
-				        $("#addTrade #accountInput").attr("value", pk)
-				    });
-		        });
-		    </script>
-		{% endif %}
-		<input type="hidden" name="reverse_lazy" value="{{ reverse_lazy }}">
-		{{ form.labelSelect(labelText="Type", selectItems=["BUY", "SELL"], name="type", required="True") }}
-		{{ form.labelInput(labelText="Amount", inputText="Enter Amount", inputType="number", name="amount", required="True", min=0, step=0.000000001) }}
-		{{ form.labelInput(labelText="Date", inputText="Pick A Date", inputType="datetime-local", name="date", required="True") }}
-		{{ form.labelInput(labelText="Fees", inputText="", inputType="number", name="fees", required="True", min=0, step=0.000000001) }}
-		{{ form.labelInput(labelText="Total Sum", inputText="", inputType="number", name="sum", required="True", min=0, step=0.000000001) }}
-		{{ form.labelSelect(labelText="Buy With", selectItems=symbols, name="buy_with", required="True") }}
-	{% endset %}
-	{{ modals.modal(content, url("crypto:add_trade"), "addTrade", "Buy / Sell", csrf_token, "Save", "Cancel") }}
 {% endmacro %}
 
 

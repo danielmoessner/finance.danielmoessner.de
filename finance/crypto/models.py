@@ -32,6 +32,10 @@ class Depot(CoreDepot):
         super(Depot, self).__init__(*args, **kwargs)
         self.m = None
 
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        super(Depot, self).save(force_insert, force_update, using, update_fields)
+        Movie.update_all(depot=self, disable_update=True)
+
     # getters
     def get_movie(self):
         if not self.m:
@@ -81,6 +85,7 @@ class Asset(models.Model):
     name = models.CharField(max_length=300)
     symbol = models.CharField(max_length=5, unique=True)
     slug = models.SlugField(unique=True)
+    depot = models.ForeignKey(Depot, on_delete=models.PROTECT, related_name="assets")
 
     def __init__(self, *args, **kwargs):
         super(Asset, self).__init__(*args, **kwargs)
@@ -95,6 +100,7 @@ class Asset(models.Model):
         if not self.slug:
             self.slug = create_slug(self)
         super(Asset, self).save(force_insert, force_update, using, update_fields)
+        Movie.update_all(depot=self.depot, disable_update=True)
 
     # getters
     def get_movie(self, depot):
@@ -239,53 +245,33 @@ class Movie(models.Model):
             return "delete me"
 
     # getters
-    def get_data(self):
-        if not self.data:
-            data = dict()
-            pictures = self.pictures.all()
-            data["d"] = (pictures.values_list("d", flat=True))
-            data["p"] = (pictures.values_list("p", flat=True))
-            data["v"] = (pictures.values_list("v", flat=True))
-            data["g"] = (pictures.values_list("g", flat=True))
-            data["cr"] = (pictures.values_list("cr", flat=True))
-            data["ttwr"] = (pictures.values_list("ttwr", flat=True))
-            data["td"] = (pictures.values_list("td", flat=True))
-            data["ba"] = (pictures.values_list("ba", flat=True))
-            data["bs"] = (pictures.values_list("bs", flat=True))
-            data["sa"] = (pictures.values_list("sa", flat=True))
-            data["ss"] = (pictures.values_list("ss", flat=True))
-            data["ca"] = (pictures.values_list("ca", flat=True))
-            data["cs"] = (pictures.values_list("cs", flat=True))
-            self.data = data
-        return self.data
-
-    def get_timespan_data(self, parent_timespan):
-        if not self.timespan_data:
-            timespan = parent_timespan.get_timespans().last()
-            data = dict()
-            if timespan.start_date and timespan.end_date:
-                pictures = self.pictures.filter(d__gte=timespan.start_date,
-                                                d__lte=timespan.end_date)
-                data["d"] = (pictures.values_list("d", flat=True))
-                data["p"] = (pictures.values_list("p", flat=True))
-                data["v"] = (pictures.values_list("v", flat=True))
-                data["g"] = (pictures.values_list("g", flat=True))
-                data["cr"] = (pictures.values_list("cr", flat=True))
-                data["ttwr"] = (pictures.values_list("ttwr", flat=True))
-                data["td"] = (pictures.values_list("td", flat=True))
-                data["ba"] = (pictures.values_list("ba", flat=True))
-                data["bs"] = (pictures.values_list("bs", flat=True))
-                data["sa"] = (pictures.values_list("sa", flat=True))
-                data["ss"] = (pictures.values_list("ss", flat=True))
-                data["ca"] = (pictures.values_list("ca", flat=True))
-                data["cs"] = (pictures.values_list("cs", flat=True))
-                self.timespan_data = data
-            else:
-                self.timespan_data = self.get_data()
-        return self.timespan_data
+    def get_data(self, timespan=None):
+        if timespan and timespan.start_date and timespan.end_date:
+            pictures = self.pictures.filter(d__gte=timespan.start_date,
+                                            d__lte=timespan.end_date)
+        else:
+            pictures = Picture.objects.filter(movie=self)
+        data = dict()
+        data["d"] = (pictures.values_list("d", flat=True))
+        data["p"] = (pictures.values_list("p", flat=True))
+        data["v"] = (pictures.values_list("v", flat=True))
+        data["g"] = (pictures.values_list("g", flat=True))
+        data["cr"] = (pictures.values_list("cr", flat=True))
+        data["ttwr"] = (pictures.values_list("ttwr", flat=True))
+        data["td"] = (pictures.values_list("td", flat=True))
+        data["ba"] = (pictures.values_list("ba", flat=True))
+        data["bs"] = (pictures.values_list("bs", flat=True))
+        data["sa"] = (pictures.values_list("sa", flat=True))
+        data["ss"] = (pictures.values_list("ss", flat=True))
+        data["ca"] = (pictures.values_list("ca", flat=True))
+        data["cs"] = (pictures.values_list("cs", flat=True))
+        return data
 
     def get_all(self):
-        picture = self.pictures.latest("d")
+        try:
+            picture = self.pictures.latest("d")
+        except Picture.DoesNotExist:
+            return None
         data = dict()
         data["price"] = picture.p
         data["amount"] = picture.ca
@@ -322,7 +308,7 @@ class Movie(models.Model):
                                                          asset=None)
             if movie.update_needed and not disable_update:
                 movie.update()
-        for asset in Asset.objects.exclude(symbol=depot.user.get_currency_display()):
+        for asset in depot.assets.exclude(symbol=depot.user.get_currency_display()):
             movie, created = Movie.objects.get_or_create(depot=depot, account=None,
                                                          asset=asset)
             if movie.update_needed and not disable_update:
