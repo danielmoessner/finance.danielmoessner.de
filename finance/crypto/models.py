@@ -171,11 +171,12 @@ class Trade(models.Model):
 
 
 class Transaction(models.Model):
-    asset = models.ForeignKey(Asset, related_name="asset", on_delete=models.CASCADE)
-    from_account = models.ForeignKey(Account, related_name="from_account",
+    asset = models.ForeignKey(Asset, related_name="transactions", on_delete=models.CASCADE)
+    from_account = models.ForeignKey(Account, related_name="from_transactions",
                                      on_delete=models.CASCADE)
     date = models.DateTimeField()
-    to_account = models.ForeignKey(Account, related_name="to_account", on_delete=models.CASCADE)
+    to_account = models.ForeignKey(Account, related_name="to_transactions",
+                                   on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=20, decimal_places=10)
     fees = models.DecimalField(max_digits=20, decimal_places=10)
 

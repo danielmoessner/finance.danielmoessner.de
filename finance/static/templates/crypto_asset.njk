@@ -45,6 +45,9 @@
                 <label class="console--button" data-target=".console_trades">
                     <input type="radio">Trades
                 </label>
+                <label class="console--button" data-target=".console_transactions">
+                    <input type="radio">Transactions
+                </label>
             </div>
         </div>
     </div>
@@ -121,16 +124,31 @@
 		<div class="table-heading">
             <h2 class="table-heading--heading">Trades</h2> 
         </div>
-		<table class="table ">
-		    {{ table.head(["Account", "Date", "Buy", "Buy Asset", "Sell", "Sell Asset", "Fees", "Fees Asset"]) }}
+		<table class="table">
+		    {{ table.head(["Date", "Account", "Buy", "Buy Asset", "Sell", "Sell Asset", "Fees", "Fees Asset"]) }}
 		    <tbody class="table--body">
 		        {% for trade in trades %}
-		            {{ table.row([trade.account, trade.date, trade.buy_amount, trade.buy_asset, trade.sell_amount, trade.sell_asset, trade.fees, trade.fees_asset]) }}
+		            {{ table.row([trade.date, trade.account, trade.buy_amount, trade.buy_asset, trade.sell_amount, trade.sell_asset, trade.fees, trade.fees_asset]) }}
 		        {% endfor %}
 		    </tbody>
 		</table>
 	</div>
 	
+
+	<div class="wrapper console-target is-hidden console_transactions">
+		<div class="table-heading">
+            <h2 class="table-heading--heading">Transactions</h2> 
+        </div>
+		<table class="table">
+		    {{ table.head(["Date", "Asset", "From Account", "To Account", "Amount", "Fees"]) }}
+		    <tbody class="table--body">
+		        {% for transaction in transactions %}
+		            {{ table.row([transaction.date, transaction.asset, transaction.from_account, transaction.to_account, transaction.amount, transaction.fees]) }}
+		        {% endfor %}
+		    </tbody>
+		</table>
+	</div>
+
 	
 {% endblock %}
 

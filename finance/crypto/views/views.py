@@ -4,8 +4,6 @@ from django.views import generic
 
 from finance.crypto.models import Account
 from finance.crypto.models import Asset
-from finance.crypto.models import Trade
-from finance.crypto.models import Price
 from finance.crypto.models import Depot
 from finance.crypto.models import Movie
 
@@ -54,6 +52,10 @@ class AccountView(generic.TemplateView):
         context["account"] = context["depot"].accounts.get(slug=kwargs["slug"])
         context["trades"] = context["account"].trades.order_by("-date").select_related(
             "account", "buy_asset", "sell_asset", "fees_asset")
+        to_transactions = context["account"].to_transactions.all()
+        from_transactions = context["account"].from_transactions.all()
+        context["transactions"] = (to_transactions | from_transactions).order_by(
+            "-date").select_related("from_account", "to_account", "asset")
         context["movie"] = context["depot"].movies.get(account=context["account"], asset=None)
         # movies = [asset.get_acc_movie(context["account"]) for asset in context["assets"]]
         # context["assets_movies"] = zip(context["assets"], movies)
@@ -79,6 +81,8 @@ class AssetView(generic.TemplateView):
         sell_trades = context["asset"].sell_trades.all()
         context["trades"] = (buy_trades | sell_trades).order_by("-date").select_related(
             "account", "buy_asset", "sell_asset", "fees_asset")
+        context["transactions"] = context["asset"].transactions.order_by("-date").select_related(
+            "from_account", "to_account", "asset")
         context["movie"] = context["depot"].movies.get(account=None, asset=context["asset"])
         return context
 
