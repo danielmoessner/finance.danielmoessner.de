@@ -7,6 +7,7 @@ from .models import Account
 from .models import Trade
 from .models import Movie
 from .models import Picture
+from .models import Transaction
 
 admin.site.register(Depot)
 admin.site.register(Account)
@@ -15,3 +16,4 @@ admin.site.register(Asset)
 admin.site.register(Price)
 admin.site.register(Movie)
 admin.site.register(Picture)
+admin.site.register(Transaction)

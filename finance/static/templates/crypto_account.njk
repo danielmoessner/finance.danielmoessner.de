@@ -102,7 +102,7 @@
 		        {% for asset in assets %}
 		            {% set tablebuttons %}
 		                <div class="d-flex flex-row">
-		                	{{ buttons.buttonModal(text="Move", dataTarget="#moveAsset", data="assetpk=" + asset.pk|string) }}
+		                	{{ buttons.buttonModal(text="Send", dataTarget="#addTransaction", data="assetpk=" + asset.pk|string) }}
 		                </div> 
 		            {% endset %}
 		            {%- set assetData = asset.get_acc_movie(account).get_all() -%}
@@ -123,7 +123,7 @@
 		        {% for trade in trades %}
 		            {% set tablebuttons %}
 		                <div class="d-flex flex-row">
-		                	<form method="POST" action="{{ url('crypto:delete_trade', args=[user.slug,]) }}">
+		                	<form method="POST" action="{{ url('crypto:delete_trade', args=[user.slug, account.slug]) }}">
 							   	<input type="hidden" name="reverse" value="{{ reverse }}">
 							   	<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 							   	<input type="hidden" name="trade" value="{{ trade.pk }}">
@@ -145,6 +145,6 @@
 	{% import "modules/crypto/modals.njk" as modals %}
 	{#{ modals.editChangeModal(user, accounts, categories, csrf_token, reverse) }#}
 	{#{ modals.addChangeModal(user, categories, csrf_token, reverse) }#}
-	{{ modals.moveAssetModal(user, account, accounts, csrf_token) }}
+	{{ modals.addTransactionModal(user, account, accounts, csrf_token) }}
 	{{ modals.addTradeModal(user, reverse, accounts, assets_all, csrf_token) }}
 {% endblock %}

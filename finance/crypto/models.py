@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.conf import settings
 from django.db import models
@@ -8,12 +9,12 @@ from finance.core.models import Account as CoreAccount
 from finance.core.models import Depot as CoreDepot
 from finance.core.utils import create_slug
 
-from datetime import timedelta, datetime
+from datetime import datetime
 from decimal import Decimal
+import pandas as pd
+import numpy as np
 import urllib.request
 import urllib.error
-import pandas
-import numpy
 import pytz
 import time
 import json
@@ -126,35 +127,6 @@ class Asset(models.Model):
         price = prices[index].price
         return price * amount
 
-    # move asset from one account to another
-    def move(self, date, from_account, amount, to_account, tx_fees):
-        ft_account = from_account
-        ft_date = date
-        ft_buy_amount = self.get_worth(date, amount)
-        ft_buy_asset = Asset.objects.get(symbol=from_account.depot.user.get_currency_display())
-        ft_sell_amount = amount + tx_fees
-        ft_sell_asset = self
-        ft_fees = 0
-        ft_fees_asset = Asset.objects.get(symbol=from_account.depot.user.get_currency_display())
-        from_trade = Trade(account=ft_account, date=ft_date, buy_amount=ft_buy_amount,
-                           buy_asset=ft_buy_asset, sell_amount=ft_sell_amount,
-                           sell_asset=ft_sell_asset, fees=ft_fees, fees_asset=ft_fees_asset,
-                           is_move_trade=True)
-        from_trade.save()
-        tt_account = to_account
-        tt_date = date + timedelta(0, 10)
-        tt_buy_amount = amount
-        tt_buy_asset = self
-        tt_sell_amount = ft_buy_amount
-        tt_sell_asset = Asset.objects.get(symbol=from_account.depot.user.get_currency_display())
-        tt_fees = tx_fees
-        tt_fees_asset = self
-        to_trade = Trade(account=tt_account, date=tt_date, buy_amount=tt_buy_amount,
-                         buy_asset=tt_buy_asset, sell_amount=tt_sell_amount,
-                         sell_asset=tt_sell_asset, fees=tt_fees, fees_asset=tt_fees_asset,
-                         is_move_trade=True)
-        to_trade.save()
-
     # update
     def update_price(self):
         file_path = os.path.join(settings.MEDIA_ROOT, "crypto/prices")
@@ -186,7 +158,6 @@ class Trade(models.Model):
     sell_asset = models.ForeignKey(Asset, related_name="sell_trades", on_delete=models.CASCADE)
     fees = models.DecimalField(max_digits=20, decimal_places=10)
     fees_asset = models.ForeignKey(Asset, related_name="trade_fees", on_delete=models.CASCADE)
-    is_move_trade = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["-date"]
@@ -200,13 +171,58 @@ class Trade(models.Model):
         sell_amount = str(self.sell_amount)
         fees = str(self.fees)
         fees_asset = str(self.fees_asset)
-        return "{} {} {} {} {} {} {} {} ".format(date, account, buy_amount, buy_asset, sell_amount,
-                                                 sell_asset, fees, fees_asset)
+        return "{} {} {} {} {} {} {} {}".format(date, account, buy_amount, buy_asset, sell_amount,
+                                                sell_asset, fees, fees_asset)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if self.buy_asset != self.fees_asset and self.sell_asset != self.fees_asset:
             raise TypeError("The fees asset must be the same as the buy or the sell asset")
         super(Trade, self).save(force_insert, force_update, using, update_fields)
+
+
+class Transaction(models.Model):
+    asset = models.ForeignKey(Asset, related_name="asset", on_delete=models.CASCADE)
+    from_account = models.ForeignKey(Account, related_name="from_account",
+                                     on_delete=models.CASCADE)
+    date = models.DateTimeField()
+    to_account = models.ForeignKey(Account, related_name="to_account", on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=20, decimal_places=10)
+    fees = models.DecimalField(max_digits=20, decimal_places=10)
+
+
+class Price(models.Model):
+    asset = models.ForeignKey(Asset, related_name="prices", on_delete=models.PROTECT)
+    date = models.DateTimeField()
+    price = models.DecimalField(decimal_places=2, max_digits=15, default=0)
+    currency = models.CharField(max_length=3)
+
+    class Meta:
+        unique_together = ("asset", "date", "currency")
+
+    def __str__(self):
+        asset = str(self.asset)
+        date = self.date.strftime("%Y-%m-%d")
+        price = str(self.price)
+        return asset + " " + date + " " + price
+
+    # getters
+    def get_date(self):
+        return str(self.date.strftime("%Y-%m-%d %H:%M"))
+
+    # clean
+    @staticmethod
+    def clean_db():
+        for asset in Asset.objects.all():
+            prices = list(Price.objects.filter(asset=asset).order_by("date"))
+            prices2 = Price.objects.filter(asset=asset).order_by("date")
+            deletes = list()
+            for i in range(len(prices)):
+                if prices[i].date.replace(hour=0, minute=0, second=0, microsecond=0) in \
+                        [price.date.replace(hour=0, minute=0, second=0, microsecond=0)
+                         for price in prices2[i+1:]]:
+                    deletes.append(i)
+            for i in reversed(deletes):
+                prices[i].delete()
 
 
 class Timespan(CoreTimespan):
@@ -245,6 +261,20 @@ class Movie(models.Model):
             return "delete me"
 
     # getters
+    def get_df(self, timespan=None):
+        if timespan and timespan.start_date and timespan.end_date:
+            pictures = self.pictures.filter(d__gte=timespan.start_date,
+                                            d__lte=timespan.end_date)
+        else:
+            pictures = self.pictures
+        pictures = pictures.values(
+            "d", "p", "v", "g", "cr", "ttwr", "td", "ba", "bs", "sa", "ss", "ca", "cs")
+        df = pd.DataFrame(list(pictures))
+        if df.empty:
+            df = pd.DataFrame(columns=["d", "p", "v", "g", "cr", "ttwr", "td", "ba", "bs", "sa",
+                                       "ss", "ca", "cs"])
+        return df
+
     def get_data(self, timespan=None):
         if timespan and timespan.start_date and timespan.end_date:
             pictures = self.pictures.filter(d__gte=timespan.start_date,
@@ -267,6 +297,38 @@ class Movie(models.Model):
         data["cs"] = (pictures.values_list("cs", flat=True))
         return data
 
+    def get_value(self, user, timespan, keys):
+        # user in args for query optimization and ease
+        data = dict()
+        start_picture = None
+        end_picture = None
+        if timespan.start_date:
+            data["start_date"] = timespan.start_date.strftime(user.date_format)
+            try:
+                start_picture = self.pictures.filter(d__lt=timespan.start_date).latest("d")
+            except ObjectDoesNotExist:
+                pass
+        if timespan.end_date:
+            data["end_date"] = timespan.end_date.strftime(user.date_format)
+            try:
+                end_picture = self.pictures.filter(d__lte=timespan.end_date).latest("d")
+            except ObjectDoesNotExist:
+                pass
+        else:
+            try:
+                end_picture = self.pictures.latest("d")
+            except ObjectDoesNotExist:
+                pass
+
+        for key in keys:
+            if start_picture and end_picture:
+                data[key] = getattr(end_picture, key) - getattr(start_picture, key)
+            elif end_picture:
+                data[key] = getattr(end_picture, key)
+            else:
+                data[key] = 0
+        return data
+
     def get_all(self):
         try:
             picture = self.pictures.latest("d")
@@ -280,7 +342,7 @@ class Movie(models.Model):
         data["true_time_weighted_return"] = picture.ttwr
         data["profit"] = picture.g
         data["value"] = picture.v
-        if self.depot.user.get_rounded_numbers:
+        if self.depot.user.rounded_numbers:
             for key in data:
                 data[key] = round(data[key], 2) if data[key] else "x"
         else:
@@ -299,18 +361,16 @@ class Movie(models.Model):
 
         t1 = time.time()
         for account in depot.accounts.all():
-            for asset in Asset.objects.exclude(symbol=depot.user.get_currency_display()):
+            for asset in depot.assets.exclude(symbol=depot.user.get_currency_display()):
                 movie, created = Movie.objects.get_or_create(depot=depot, account=account,
                                                              asset=asset)
                 if movie.update_needed and not disable_update:
                     movie.update()
-            movie, created = Movie.objects.get_or_create(depot=depot, account=account,
-                                                         asset=None)
+            movie, created = Movie.objects.get_or_create(depot=depot, account=account, asset=None)
             if movie.update_needed and not disable_update:
                 movie.update()
         for asset in depot.assets.exclude(symbol=depot.user.get_currency_display()):
-            movie, created = Movie.objects.get_or_create(depot=depot, account=None,
-                                                         asset=asset)
+            movie, created = Movie.objects.get_or_create(depot=depot, account=None, asset=asset)
             if movie.update_needed and not disable_update:
                 movie.update()
         movie, created = Movie.objects.get_or_create(depot=depot, account=None, asset=None)
@@ -325,43 +385,70 @@ class Movie(models.Model):
         Picture.objects.filter(movie=self).delete()
 
         t2 = time.time()
-        if self.asset:
-            df = self.calc_asset()
-        elif self.account and not self.asset:
+        if self.depot and not self.account and self.asset:
+            df = self.calc_asset_depot()
+        elif self.depot and self.account and self.asset:
+            df = self.calc_asset_account()
+        elif self.depot and self.account and not self.asset:
             df = self.calc_account()
-        elif self.depot:
+        elif self.depot and not self.account and not self.asset:
             df = self.calc_depot()
         else:
             raise Exception("Depot, account or asset must be defined in a movie.")
 
         t3 = time.time()
-        d = df.index.to_datetime()
-        v = df["value"]
-        cs = df["current_sum"]
-        g = df["gain"]
-        cr = df["current_return"]
-        ttwr = df["true_time_weighted_return"]
-        if self.asset:
-            p = df["price"]
-            ca = df["current_amount"]
-            assert len(d) == len(v) == len(cs) == len(g) == len(cr) == len(ttwr) == len(p) == \
-                len(ca)
-            for i in range(len(d)):
-                picture = Picture(movie=self, d=d[i], v=v[i], cs=cs[i], g=g[i], cr=cr[i],
-                                  ttwr=ttwr[i], p=p[i], ca=ca[i])
-                picture.save()
-        else:
-            assert len(d) == len(v) == len(cs) == len(g) == len(cr) == len(ttwr)
-            for i in range(len(d)):
-                picture = Picture(movie=self, d=d[i], v=v[i], cs=cs[i], g=g[i], cr=cr[i],
-                                  ttwr=ttwr[i])
-                picture.save()
+        pictures = list()
+        if self.asset and self.account:
+            for index, row in df.iterrows():
+                picture = Picture(
+                    movie=self,
+                    d=index,
+                    v=row["value"],
+                    p=row["price"],
+                    ca=row["current_amount"]
+                )
+                pictures.append(picture)
+        elif self.asset and self.depot:
+            for index, row in df.iterrows():
+                picture = Picture(
+                    movie=self,
+                    d=index,
+                    v=row["value"],
+                    cs=row["current_sum"],
+                    g=row["gain"],
+                    cr=row["current_return"],
+                    ttwr=row["true_time_weighted_return"],
+                    p=row["price"],
+                    ca=row["current_amount"]
+                )
+                pictures.append(picture)
+        elif self.account:
+            for index, row in df.iterrows():
+                picture = Picture(
+                    movie=self,
+                    d=index,
+                    v=row["value"],
+                )
+                pictures.append(picture)
+        elif self.depot:
+            for index, row in df.iterrows():
+                picture = Picture(
+                    movie=self,
+                    d=index, 
+                    v=row["value"], 
+                    cs=row["current_sum"], 
+                    g=row["gain"], 
+                    cr=row["current_return"],
+                    ttwr=row["true_time_weighted_return"]
+                )
+                pictures.append(picture)
+        Picture.objects.bulk_create(pictures)
 
         t4 = time.time()
         self.update_needed = False
         self.save()
-        done = len(Movie.objects.filter(update_needed=False))
-        all = len(Movie.objects.filter().all())
+        done = len(self.depot.movies.filter(update_needed=False))
+        all = len(self.depot.movies.all())
         print(self, "is up to date.", done, "of", all, "movies are up to date. --Delete time:",
               t2 - t1, "--Calc time:", t3 - t2, "--Save time:", t4 - t3)
 
@@ -369,7 +456,8 @@ class Movie(models.Model):
     @staticmethod
     def ffadd(df, column):
         for i in range(1, len(df[column])):
-            df.loc[df.index[i], column] = df[column][i - 1] + df[column][i]
+            df.loc[df.index[i], column] = \
+                df.loc[df.index[i-1], column] + df.loc[df.index[i], column]
 
     @staticmethod
     def ffmultiply(df, column):
@@ -377,9 +465,9 @@ class Movie(models.Model):
             try:
                 df.loc[df.index[i], column] = df[column][i - 1] * df[column][i]
             except RuntimeWarning as rw:
-                if (abs(df[column][i-1]) == numpy.inf and df[column][i] == 0) \
-                        or (df[column][i-1] == 0 and abs(df[column][i]) == numpy.inf):
-                    df.loc[df.index[i], column] = numpy.nan
+                if (abs(df[column][i-1]) == np.inf and df[column][i] == 0) \
+                        or (df[column][i-1] == 0 and abs(df[column][i]) == np.inf):
+                    df.loc[df.index[i], column] = np.nan
                 else:
                     print(df[column][i - 1], df[column][i])
                     raise rw
@@ -387,13 +475,16 @@ class Movie(models.Model):
     @staticmethod
     def calc_fifo(type_column, buy_amount_column, buy_sum_column, fee_sum_column,
                   current_amount_column):
-        current_sum_row = numpy.zeros(len(buy_amount_column))
+        """
+        ATTENTION: The index of the columns must be in ascendent order. Otherwise it doesn't work.
+        """
+        current_sum_row = np.zeros(len(buy_amount_column))
         for i in range(len(buy_amount_column)):
             current_amount = current_amount_column[i]
             if current_amount < 0:
                 raise Exception("There was more asset sold than available.")
             current_sum = 0
-            for k in reversed(range(0, i + 1)):
+            for k in reversed(range(0, i + 1)):  # genauere datetypen hier verwenden numpy iwas
                 if type_column[k] == "BUY":
                     if k > 0:
                         if current_amount > buy_amount_column[k] - buy_amount_column[k - 1]:
@@ -417,71 +508,72 @@ class Movie(models.Model):
                             raise Exception("Something is wrong here.")
             assert current_amount == 0  # if fails something wrong in the formula
             current_sum_row[i] = Decimal(current_sum)
-        return current_sum_row.astype(numpy.float64)
+        return current_sum_row.astype(np.float64)
 
     # calc
-    def calc_asset(self):
-        price_df = pandas.DataFrame()
-        prices = Price.objects.filter(asset=self.asset).order_by("date")
-        price_df["date"] = [price.date for price in prices]
-        price_df["price"] = [price.price for price in prices]
+    def calc_asset_depot(self):
+        buy_trades = Trade.objects.filter(buy_asset=self.asset)
+        buy_trades_values = buy_trades.values("date", "buy_amount")
+        buy_trades_df = pd.DataFrame(list(buy_trades_values))
+        buy_trades_df["type"] = "BUY"
+        buy_trades_df["buy_sum"] = [trade.sell_asset.get_worth(trade.date, trade.sell_amount) for
+                                    trade in buy_trades]
+        buy_trades_df["fee_sum_buy"] = [trade.fees_asset.get_worth(trade.date, trade.fees)
+                                        for trade in buy_trades]
+        if buy_trades_df.empty:
+            buy_trades_df = pd.DataFrame(columns=["date", "buy_amount", "type", "buy_sum",
+                                                  "fee_sum_buy"])
 
-        if self.account:
-            trades = Trade.objects.filter(account=self.account)\
-                .filter(Q(sell_asset=self.asset) | Q(buy_asset=self.asset)).order_by("date")
-        elif self.depot:
-            trades = Trade.objects.filter(account__in=self.depot.accounts.all()) \
-                .filter(Q(sell_asset=self.asset) | Q(buy_asset=self.asset)).order_by("date")
-        else:
-            raise Exception("Something is wrong here.")
-        if not self.account:
-            adj_trades = list()
-            for trade in trades:
-                if trade.is_move_trade:
-                    trade.buy_amount = 0
-                    trade.sell_amount = 0
-                adj_trades.append(trade)
-            assert len(adj_trades) == len(trades)
-            trades = adj_trades
+        sell_trades = Trade.objects.filter(sell_asset=self.asset)
+        sell_trades_values = sell_trades.values("date", "sell_amount")
+        sell_trades_df = pd.DataFrame(list(sell_trades_values))
+        sell_trades_df["type"] = "SELL"
+        sell_trades_df["sell_sum"] = [trade.buy_asset.get_worth(trade.date, trade.buy_amount)
+                                      for trade in sell_trades]
+        sell_trades_df["fee_amount_sell"] = [Decimal(trade.fees) if trade.fees_asset == self.asset
+                                             else Decimal(0) for trade in sell_trades]
+        if sell_trades_df.empty:
+            sell_trades_df = pd.DataFrame(columns=["date", "sell_amount", "type", "sell_sum",
+                                                   "fee_amount_sell"])
 
-        trade_df = pandas.DataFrame()
-        trade_df["date"] = [trade.date for trade in trades]
-        trade_df["type"] = ["BUY" if trade.buy_asset == self.asset else "SELL" for trade in trades]
-        trade_df["buy_amount"] = [trade.buy_amount if trade.buy_asset == self.asset else 0
-                                  for trade in trades]
-        Movie.ffadd(trade_df, "buy_amount")
-        trade_df["buy_sum"] = [trade.sell_asset.get_worth(trade.date, trade.sell_amount)
-                               if trade.buy_asset == self.asset else 0 for trade in trades]
-        Movie.ffadd(trade_df, "buy_sum")
-        trade_df["sell_amount"] = [trade.sell_amount if trade.sell_asset == self.asset
-                                   else 0 for trade in trades]
-        Movie.ffadd(trade_df, "sell_amount")
-        trade_df["sell_sum"] = [trade.buy_asset.get_worth(trade.date, trade.buy_amount)
-                                if trade.sell_asset == self.asset else 0 for trade in trades]
-        Movie.ffadd(trade_df, "sell_sum")
-        trade_df["fee_amount_sell"] = [trade.fees
-                                       if trade.fees_asset == self.asset
-                                       and trade.sell_asset == self.asset
-                                       else 0 for trade in trades]
-        Movie.ffadd(trade_df, "fee_amount_sell")
-        trade_df["fee_sum_buy"] = [trade.fees_asset.get_worth(trade.date, trade.fees)
-                                   if trade.buy_asset == self.asset else 0 for trade in trades]
-        Movie.ffadd(trade_df, "fee_sum_buy")
-        trade_df["current_amount"] = \
-            trade_df["buy_amount"] - trade_df["sell_amount"] - trade_df["fee_amount_sell"]
-        trade_df["current_sum"] = Movie.calc_fifo(trade_df["type"], trade_df["buy_amount"],
-                                                  trade_df["buy_sum"], trade_df["fee_sum_buy"],
-                                                  trade_df["current_amount"])
+        transactions = Transaction.objects.filter(asset=self.asset)
+        transactions = transactions.values("date", "fees")
+        transactions_df = pd.DataFrame(list(transactions))
+        transactions_df["type"] = "TRANSACTION"
+        if transactions_df.empty:
+            transactions_df = pd.DataFrame(columns=["date", "fees", "type"])
+
+        tratra_df = pd.concat([buy_trades_df, sell_trades_df, transactions_df],
+                              join="outer", ignore_index=True, sort=False)
+        tratra_df.fillna(Decimal(0), inplace=True)
+        tratra_df["fee_amount"] = tratra_df["fee_amount_sell"] + tratra_df["fees"]
+        tratra_df.sort_values(by=["date"], inplace=True)
+        Movie.ffadd(tratra_df, "buy_amount")
+        Movie.ffadd(tratra_df, "buy_sum")
+        Movie.ffadd(tratra_df, "sell_amount")
+        Movie.ffadd(tratra_df, "sell_sum")
+        Movie.ffadd(tratra_df, "fee_amount")
+        Movie.ffadd(tratra_df, "fee_sum_buy")
+        tratra_df = tratra_df[tratra_df.type != "TRANSACTION"]
+        tratra_df.reset_index(drop=True, inplace=True)
+        tratra_df["current_amount"] = \
+            tratra_df["buy_amount"] - tratra_df["sell_amount"] - tratra_df["fee_amount"]
+        tratra_df["current_sum"] = Movie.calc_fifo(tratra_df["type"], tratra_df["buy_amount"],
+                                                   tratra_df["buy_sum"], tratra_df["fee_sum_buy"],
+                                                   tratra_df["current_amount"])
+
+        prices = Price.objects.filter(asset=self.asset)
+        prices = prices.values("date", "price")
+        price_df = pd.DataFrame(list(prices))
 
         price_df.set_index("date", inplace=True)
-        trade_df.set_index("date", inplace=True)
-        df = pandas.concat([price_df, trade_df], join="outer", ignore_index=False)
-        assert len(price_df) + len(trade_df) == len(df)
+        tratra_df.set_index("date", inplace=True)
+        df = pd.concat([price_df, tratra_df], join="outer", axis=0, ignore_index=False, sort=False)
         df.drop(columns=["type", ], inplace=True)
         df.sort_index(inplace=True)
         df.ffill(inplace=True)
         for column in df:
-            df[column] = df[column].astype(numpy.float64)
+            df[column] = df[column].astype(np.float64)
 
         df["value"] = df["current_amount"] * df["price"]
         df["gain"] = df["value"] - df["current_sum"]
@@ -489,75 +581,116 @@ class Movie(models.Model):
         df.fillna(0, inplace=True)
         df["true_time_weighted_return"] = df["value"]\
             .divide((df["value"].shift(1) + (df["current_sum"] - df["current_sum"].shift(1))))
-        df["true_time_weighted_return"].replace(numpy.nan, 1, inplace=True)
+        df["true_time_weighted_return"].replace(np.nan, 1, inplace=True)
         Movie.ffmultiply(df, "true_time_weighted_return")
         df["true_time_weighted_return"] = (df["true_time_weighted_return"] - 1) * 100
         df.fillna(0, inplace=True)
 
-        df.replace([numpy.nan, ], 0, inplace=True)  # change later maybe couldn't get django
+        df.replace([np.nan, ], 0, inplace=True)  # change later maybe couldn't get django
         #  to acctept inf and nan values on decimal field
-        df.replace([numpy.inf, ], 9999999999, inplace=True)  # change later maybe
-        df.replace([-numpy.inf, ], -9999999999, inplace=True)  # change later maybe
+        df.replace([np.inf, ], 9999999999, inplace=True)  # change later maybe
+        df.replace([-np.inf, ], -9999999999, inplace=True)  # change later maybe
 
-        # import tabulate
-        # print(tabulate.tabulate(df, headers="keys"))
+        return df
+
+    def calc_asset_account(self):
+        # buy trades
+        buy_trades = Trade.objects.filter(buy_asset=self.asset, account=self.account)
+        buy_trades_values = buy_trades.values("date", "buy_amount")
+        buy_trades_df = pd.DataFrame(list(buy_trades_values))
+        if buy_trades_df.empty:
+            buy_trades_df = pd.DataFrame(columns=["date", "buy_amount"])
+        buy_trades_df.set_index("date", inplace=True)
+        
+        # sell trades
+        sell_trades = Trade.objects.filter(sell_asset=self.asset, account=self.account)
+        sell_trades_values = sell_trades.values("date", "sell_amount")
+        sell_trades_df = pd.DataFrame(list(sell_trades_values))
+        sell_trades_df["fee_amount_sell"] = [Decimal(trade.fees) if trade.fees_asset == self.asset
+                                             else Decimal(0) for trade in sell_trades]
+        if sell_trades_df.empty:
+            sell_trades_df = pd.DataFrame(columns=["date", "sell_amount", "fee_amount_sell"])
+        sell_trades_df.set_index("date", inplace=True)
+        
+        # to_transactions
+        to_transactions = Transaction.objects.filter(asset=self.asset, to_account=self.account)
+        to_transactions = to_transactions.values("date", "amount")
+        to_transactions_df = pd.DataFrame(list(to_transactions))
+        to_transactions_df.rename(columns={"amount": "to_amount"}, inplace=True)
+        if to_transactions_df.empty:
+            to_transactions_df = pd.DataFrame(columns=["date", "to_amount"])
+        to_transactions_df.set_index("date", inplace=True)
+
+        # from_transactions
+        from_transactions = Transaction.objects.filter(asset=self.asset, from_account=self.account)
+        from_transactions = from_transactions.values("date", "fees", "amount")
+        from_transactions_df = pd.DataFrame(list(from_transactions))
+        from_transactions_df.rename(columns={"amount": "from_amount"}, inplace=True)
+        if from_transactions_df.empty:
+            from_transactions_df = pd.DataFrame(columns=["date", "fees", "from_amount"])
+        from_transactions_df.set_index("date", inplace=True)
+        
+        # buy_trades, sell_trades, to_transactions and from_transactions
+        tratra_df = pd.concat([buy_trades_df, sell_trades_df,
+                               from_transactions_df, to_transactions_df],
+                              join="outer", ignore_index=False, sort=False)
+        tratra_df.fillna(Decimal(0), inplace=True)
+        tratra_df["fee_amount"] = tratra_df["fee_amount_sell"] + tratra_df["fees"]
+        tratra_df.sort_index(inplace=True)
+        Movie.ffadd(tratra_df, "to_amount")
+        Movie.ffadd(tratra_df, "from_amount")
+        Movie.ffadd(tratra_df, "buy_amount")
+        Movie.ffadd(tratra_df, "sell_amount")
+        Movie.ffadd(tratra_df, "fee_amount")
+        tratra_df["current_amount"] = \
+            tratra_df["buy_amount"] + tratra_df["to_amount"] - \
+            tratra_df["sell_amount"] - tratra_df["fee_amount"] - tratra_df["from_amount"]
+
+        # prices
+        prices = Price.objects.filter(asset=self.asset)
+        prices = prices.values("date", "price")
+        price_df = pd.DataFrame(list(prices))
+        price_df.set_index("date", inplace=True)
+
+        # all together
+        df = pd.concat([tratra_df, price_df], sort=False)
+        df.sort_index(inplace=True)
+        df.ffill(inplace=True)
+        df.fillna(Decimal(0), inplace=True)
+        df["value"] = df["current_amount"] * df["price"]
+
         return df
 
     def calc_account(self):
-        df = pandas.DataFrame()
-        df["value"] = ""
-        df["current_sum"] = ""
-
-        asset_dfs_length = 0
+        df = pd.DataFrame(columns=["value", ])
         asset_dfs_values = list()
-        asset_dfs_current_sums = list()
-
-        for asset in Asset.objects.exclude(symbol="EUR"):
+        
+        for asset in self.depot.assets.exclude(symbol="EUR"):
             movie = asset.get_acc_movie(self.account)
             data = movie.get_data()
 
-            asset_df = pandas.DataFrame()
+            asset_df = pd.DataFrame()
             asset_df["date"] = data["d"]
             asset_df.set_index("date", inplace=True)
             asset_df[asset.name + "__value"] = data["v"]
-            asset_df[asset.name + "__current_sum"] = data["cs"]
-
             asset_dfs_values.append(asset.name + "__value")
-            asset_dfs_current_sums.append(asset.name + "__current_sum")
-            asset_dfs_length += len(asset_df)
 
-            df = pandas.concat([df, asset_df], join="outer", ignore_index=False)
+            df = pd.concat([df, asset_df], join="outer", ignore_index=False, sort=False)
 
-        assert len(df) == asset_dfs_length
         df.sort_index(inplace=True)
-        df = df[~df.index.duplicated(keep="last")]
         df.ffill(inplace=True)
-        df.fillna(0, inplace=True)
-        for column in df:
-            df[column] = df[column].astype(numpy.float64)
+        df.fillna(Decimal(0), inplace=True)
 
+        df = df[~df.index.duplicated(keep="last")]
         for column in asset_dfs_values:
             df["value"] += df[column]
-        for column in asset_dfs_current_sums:
-            df["current_sum"] += df[column]
         df.drop(columns=asset_dfs_values, inplace=True)
-        df.drop(columns=asset_dfs_current_sums, inplace=True)
-
-        df["gain"] = df["value"] - df["current_sum"]
-        df["current_return"] = ((df["value"].divide(df["current_sum"])) - 1) * 100
-        df["true_time_weighted_return"] = df["value"]\
-            .divide((df["value"].shift(1) + (df["current_sum"] - df["current_sum"].shift(1))))
-        df["true_time_weighted_return"].replace([numpy.nan, ], 1, inplace=True)
-        Movie.ffmultiply(df, "true_time_weighted_return")
-        df["true_time_weighted_return"] = (df["true_time_weighted_return"] - 1) * 100
         df.fillna(0, inplace=True)
 
-        # import tabulate
-        # print(tabulate.tabulate(df, headers="keys"))
         return df
 
     def calc_depot(self):
-        df = pandas.DataFrame()
+        df = pd.DataFrame()
         df["value"] = ""
         df["current_sum"] = ""
 
@@ -565,11 +698,11 @@ class Movie(models.Model):
         asset_dfs_values = list()
         asset_dfs_current_sums = list()
 
-        for asset in Asset.objects.exclude(symbol="EUR"):
+        for asset in self.depot.assets.exclude(symbol="EUR"):
             movie = asset.get_dep_movie(self.depot)
             data = movie.get_data()
 
-            asset_df = pandas.DataFrame()
+            asset_df = pd.DataFrame()
             asset_df["date"] = data["d"]
             asset_df.set_index("date", inplace=True)
             asset_df[asset.name + "__value"] = data["v"]
@@ -579,7 +712,7 @@ class Movie(models.Model):
             asset_dfs_current_sums.append(asset.name + "__current_sum")
             asset_dfs_length += len(asset_df)
 
-            df = pandas.concat([df, asset_df], join="outer", ignore_index=False)
+            df = pd.concat([df, asset_df], join="outer", ignore_index=False, sort=False)
 
         assert len(df) == asset_dfs_length
         df.sort_index(inplace=True)
@@ -587,7 +720,7 @@ class Movie(models.Model):
         df.ffill(inplace=True)
         df.fillna(0, inplace=True)
         for column in df:
-            df[column] = df[column].astype(numpy.float64)
+            df[column] = df[column].astype(np.float64)
 
         for column in asset_dfs_values:
             df["value"] += df[column]
@@ -600,13 +733,11 @@ class Movie(models.Model):
         df["current_return"] = ((df["value"].divide(df["current_sum"])) - 1) * 100
         df["true_time_weighted_return"] = df["value"]\
             .divide((df["value"].shift(1) + (df["current_sum"] - df["current_sum"].shift(1))))
-        df["true_time_weighted_return"].replace([numpy.nan, ], 1, inplace=True)
+        df["true_time_weighted_return"].replace([np.nan, ], 1, inplace=True)
         Movie.ffmultiply(df, "true_time_weighted_return")
         df["true_time_weighted_return"] = (df["true_time_weighted_return"] - 1) * 100
         df.fillna(0, inplace=True)
 
-        # import tabulate
-        # print(tabulate.tabulate(df, headers="keys"))
         return df
 
 
@@ -629,38 +760,3 @@ class Picture(models.Model):
     cs = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=3)
 
     prev = models.ForeignKey("self", on_delete=models.CASCADE, blank=True, null=True)
-
-
-class Price(models.Model):
-    asset = models.ForeignKey(Asset, related_name="prices", on_delete=models.PROTECT)
-    date = models.DateTimeField()
-    price = models.DecimalField(decimal_places=2, max_digits=15, default=0)
-    currency = models.CharField(max_length=3)
-
-    class Meta:
-        unique_together = ("asset", "date", "currency")
-
-    def __str__(self):
-        asset = str(self.asset)
-        date = self.date.strftime("%Y-%m-%d")
-        price = str(self.price)
-        return asset + " " + date + " " + price
-
-    # getters
-    def get_date(self):
-        return str(self.date.strftime("%Y-%m-%d %H:%M"))
-
-    # clean
-    @staticmethod
-    def clean_db():
-        for asset in Asset.objects.all():
-            prices = list(Price.objects.filter(asset=asset).order_by("date"))
-            prices2 = Price.objects.filter(asset=asset).order_by("date")
-            deletes = list()
-            for i in range(len(prices)):
-                if prices[i].date.replace(hour=0, minute=0, second=0, microsecond=0) in \
-                        [price.date.replace(hour=0, minute=0, second=0, microsecond=0)
-                         for price in prices2[i+1:]]:
-                    deletes.append(i)
-            for i in reversed(deletes):
-                prices[i].delete()

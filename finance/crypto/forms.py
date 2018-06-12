@@ -3,8 +3,10 @@ from django import forms
 from .models import Depot
 from .models import Asset
 from .models import Trade
+from .models import Price
 from .models import Account
 from .models import Timespan
+from .models import Transaction
 
 from datetime import datetime
 import pytz
@@ -117,6 +119,58 @@ class UpdateTradeForm(forms.ModelForm):
         date = self.cleaned_data["date"]
         date = datetime.strptime(date, '%Y-%m-%dT%H:%M').replace(tzinfo=pytz.utc)
         return date
+
+
+# TRANSACTION
+class CreateTransactionForm(forms.ModelForm):
+    date = forms.CharField(max_length=16, min_length=16)
+
+    class Meta:
+        model = Transaction
+        fields = (
+            "asset",
+            "from_account",
+            "to_account",
+            "date",
+            "amount",
+            "fees",
+        )
+
+    def clean_date(self):
+        date = self.cleaned_data["date"]
+        date = datetime.strptime(date, '%Y-%m-%dT%H:%M').replace(tzinfo=pytz.utc)
+        return date
+
+
+class UpdateTransactionForm(forms.ModelForm):
+    pk = forms.IntegerField(min_value=0)
+    date = forms.CharField(max_length=16, min_length=16)
+
+    class Meta:
+        model = Transaction
+        fields = (
+            "asset",
+            "from_account",
+            "to_account",
+            "date",
+            "amount",
+            "fees",
+        )
+
+    def clean_date(self):
+        date = self.cleaned_data["date"]
+        date = datetime.strptime(date, '%Y-%m-%dT%H:%M').replace(tzinfo=pytz.utc)
+        return date
+
+
+# PRICE
+class CreatePriceForm(forms.ModelForm):
+    class Meta:
+        model = Price
+        fields = (
+            "price",
+            "date"
+        )
 
 
 # TIMESPAN

@@ -6,16 +6,21 @@ from finance.crypto.views.views import AccountView
 from finance.crypto.views.views import IndexView
 from finance.crypto.views.views import AssetView
 from finance.core.views.views import CustomDeleteView
+from finance.crypto.models import Transaction
 from finance.crypto.models import Timespan
 from finance.crypto.models import Account
 from finance.crypto.models import Asset
 from finance.crypto.models import Trade
+from finance.crypto.models import Price
 from finance.crypto.forms import UpdateActiveOnTimespanForm
+from finance.crypto.forms import UpdateTransactionForm
+from finance.crypto.forms import CreateTransactionForm
+from finance.crypto.forms import CreateTimespanForm
+from finance.crypto.forms import UpdateAccountForm
 from finance.crypto.forms import CreateAccountForm
 from finance.crypto.forms import CreateTradeForm
 from finance.crypto.forms import UpdateTradeForm
-from finance.crypto.forms import UpdateAccountForm
-from finance.crypto.forms import CreateTimespanForm
+from finance.crypto.forms import CreatePriceForm
 from finance.crypto.forms import CreateAssetForm
 from finance.crypto.forms import UpdateAssetForm
 from finance.core.utils import form_invalid_universal
@@ -175,9 +180,92 @@ class AccountDeleteTradeView(AccountView, CustomDeleteView):
     def form_valid(self, form):
         trade_pk = form.cleaned_data["pk"]
         trade = Trade.objects.get(pk=trade_pk)
-        trade.delete()
         account = trade.account
+        trade.delete()
         success_url = reverse_lazy("crypto:account", args=[self.request.user.slug, account.slug])
+        return HttpResponseRedirect(success_url)
+
+    def form_invalid(self, form, **kwargs):
+        return form_invalid_universal(self, form, "errors",
+                                      heading="Change could not be deleted.", **kwargs)
+
+
+# TRANSACTION
+class AccountCreateTransactionView(AccountView, generic.CreateView):
+    form_class = CreateTransactionForm
+    model = Transaction
+
+    def form_valid(self, form):
+        transaction = form.save()
+        account = transaction.account
+        success_url = reverse_lazy("crypto:account", args=[self.request.user.slug, account.slug])
+        return HttpResponseRedirect(success_url)
+
+    def form_invalid(self, form):
+        return form_invalid_universal(self, form, "errors",
+                                      heading="Transaction could not be created.")
+
+
+class AccountUpdateTransactionView(AccountView):
+    def post(self, request, *args, **kwargs):
+        form = UpdateTransactionForm(request.POST)
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form, **kwargs)
+
+    def form_valid(self, form):
+        transaction = form.save(commit=False)
+        transaction.pk = form.cleaned_data["pk"]
+        transaction.save()
+        account = transaction.account
+        success_url = reverse_lazy("crypto:account", args=[self.request.user.slug, account.slug])
+        return HttpResponseRedirect(success_url)
+
+    def form_invalid(self, form, **kwargs):
+        return form_invalid_universal(self, form, "errors",
+                                      heading="Transaction could not be edited.", **kwargs)
+
+
+class AccountDeleteTransactionView(AccountView, CustomDeleteView):
+    def form_valid(self, form):
+        transaction_pk = form.cleaned_data["pk"]
+        transaction = Transaction.objects.get(pk=transaction_pk)
+        account = transaction.account
+        transaction.delete()
+        success_url = reverse_lazy("crypto:account", args=[self.request.user.slug, account.slug])
+        return HttpResponseRedirect(success_url)
+
+    def form_invalid(self, form, **kwargs):
+        return form_invalid_universal(self, form, "errors",
+                                      heading="Transaction could not be deleted.", **kwargs)
+
+
+# PRICE
+class AssetCreatePriceView(AssetView, generic.CreateView):
+    form_class = CreatePriceForm
+    model = Price
+
+    def form_valid(self, form):
+        price = form.save(commit=False)
+        asset = Asset.objects.get(slug=self.request.kwargs["slug"])
+        price.asset = asset
+        price.currency = self.request.user.currency
+        price.save()
+        success_url = reverse_lazy("crypto:asset", args=[self.request.user.slug, asset.slug])
+        return HttpResponseRedirect(success_url)
+
+    def form_invalid(self, form):
+        return form_invalid_universal(self, form, "errors", heading="Price could not be created.")
+
+
+class AssetDeletePriceView(AssetView, CustomDeleteView):
+    def form_valid(self, form):
+        price_pk = form.cleaned_data["pk"]
+        price = Price.objects.get(pk=price_pk)
+        asset = price.asset
+        price.delete()
+        success_url = reverse_lazy("crypto:asset", args=[self.request.user.slug, asset.slug])
         return HttpResponseRedirect(success_url)
 
     def form_invalid(self, form, **kwargs):

@@ -111,26 +111,6 @@
 	{{ modals.modal(content, url("crypto:delete_asset", args=[user.slug,]), "deleteAsset", "Remove Asset", csrf_token, "Remove", "Cancel") }}
 {% endmacro %}
 
-{% macro moveAssetModal(user, account, accounts, csrf_token=None) %}
-	{% set content %}
-		<input type="hidden" id="accountInput" name="from_account" value="{{ account.pk }}">
-		<input type="hidden" id="assetInput" name="asset" value="">
-		<script type="text/javascript">
-	        jQuery(function(){
-	        	$("#moveAsset").on("show.bs.modal", function(e) {
-			    	var pk = e.relatedTarget.dataset.assetpk;
-			    	$("#moveAsset #assetInput").attr("value", pk)
-			    });
-	        });
-	    </script>
-		{{ form.labelSelectNamePk(labelText="Move To Account", selectItems=accounts, name="to_account", required="True") }}
-		{{ form.labelInput(labelText="Date of the Move", inputText="", inputType="datetime-local", name="date", required="True") }}
-		{{ form.labelInput(labelText="Amount (Without Fees)", inputType="number", name="amount", required="True", min=0, step=0.000000001) }}
-		{{ form.labelInput(labelText="Tx Fees", inputType="number", name="fees", required="False", min=0, step=0.000000001) }}
-	{% endset %}
-	{{ modals.modal(content, url("crypto:move_asset", args=[user.slug, account.slug, ]), "moveAsset", "Move Asset", csrf_token, "Move", "Cancel") }}
-{% endmacro %}  
-
 
 <!-- Trade -->
 {% macro addTradeModal(user, reverse, accounts, assets, csrf_token) %}
@@ -144,6 +124,28 @@
 	{% endset %}
 	{{ modals.modal(content, url("crypto:add_trade", args=[user.slug,]), "addTrade", "Buy / Sell", csrf_token, "Save", "Cancel") }}
 {% endmacro %}
+
+
+<!-- Transaction -->
+{% macro addTransactionModal(user, account, accounts, csrf_token) %}
+	{% set content %}
+		<input type="hidden" id="accountInput" name="from_account" value="{{ account.pk }}">
+		<input type="hidden" id="assetInput" name="asset" value="">
+		<script type="text/javascript">
+	        jQuery(function(){
+	        	$("#addTransaction").on("show.bs.modal", function(e) {
+			    	var pk = e.relatedTarget.dataset.assetpk;
+			    	$("#addTransaction #assetInput").attr("value", pk)
+			    });
+	        });
+	    </script>
+		{{ form.labelSelectNamePk(labelText="Recipient", selectItems=accounts, name="to_account", required="True") }}
+		{{ form.labelInput(labelText="Date", inputText="", inputType="datetime-local", name="date", required="True") }}
+		{{ form.labelInput(labelText="Amount (Without Tx Fees)", inputType="number", name="amount", required="True", min=0, step=0.000000001) }}
+		{{ form.labelInput(labelText="Tx Fees", inputType="number", name="fees", required="False", min=0, step=0.000000001) }}
+	{% endset %}
+	{{ modals.modal(content, url("crypto:add_transaction", args=[user.slug, account.slug, ]), "addTransaction", "Transaction", csrf_token, "Send", "Cancel") }}
+{% endmacro %} 
 
 
 <!-- Price -->

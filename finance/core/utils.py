@@ -1,6 +1,13 @@
 from django.utils.html import strip_tags
 from django.utils.text import slugify
 
+import tabulate
+
+
+def print_df(df):
+    table = tabulate.tabulate(df, headers="keys")
+    print(table)
+
 
 def create_slug(instance, slug=None):
     if slug is None:

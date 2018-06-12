@@ -27,17 +27,13 @@ urlpatterns = [
     # update-prices/
     url(r"^update-prices/$", login_required(views.update_prices), name="update_prices"),
 
-    # account/comdirect/move-asset/
-    url(r"^account/(?P<slug>[0-9a-zA-Z-#]*)/move-asset/$", login_required(views.move_asset),
-        name="move_asset"),  # think
-
     # asset/bitcoin/add-price/
     url(r"^asset/(?P<slug>[0-9a-zA-Z-#]*)/add-price/$",
-        login_required(views.IndexView.as_view()),  # change
+        login_required(views.IndexView.as_view()),
         name="add_price"),
     # asset/bitcoin/delete-price/
     url(r"^asset/(?P<slug>[0-9a-zA-Z-#]*)/delete-price/$",
-        login_required(views.IndexView.as_view()),  # change
+        login_required(views.IndexView.as_view()),
         name="delete_price"),
 
     # add-account/
@@ -70,18 +66,31 @@ urlpatterns = [
     url(r"^add-trade/$",
         login_required(form_views.IndexCreateTradeView.as_view()),
         name="add_trade"),
-    # bitcoin/add-trade/
+    # account/comdirect/add-trade/
     url(r"^account/(?P<slug>[0-9a-zA-Z-#]*)/add-trade/$",
         login_required(form_views.AccountCreateTradeView.as_view()),
         name="add_trade"),
-    # bitcoin/edit-trade/
+    # account/comdirect/edit-trade/
     url(r"^account/(?P<slug>[0-9a-zA-Z-#]*)/edit-trade/$",
         login_required(form_views.AccountUpdateTradeView.as_view()),
         name="delete_trade"),
-    # bitcoin/delete-trade/
+    # account/comdirect/delete-trade/
     url(r"^account/(?P<slug>[0-9a-zA-Z-#]*)/delete-trade/$",
         login_required(form_views.AccountDeleteTradeView.as_view()),
         name="delete_trade"),
+
+    # account/comdirect/add-transaction/
+    url(r"^account/(?P<slug>[0-9a-zA-Z-#]*)/add-transaction/$",
+        login_required(form_views.AccountCreateTransactionView.as_view()),
+        name="add_transaction"),
+    # account/comdirect/edit-transaction/
+    url(r"^account/(?P<slug>[0-9a-zA-Z-#]*)/edit-transaction/$",
+        login_required(form_views.AccountUpdateTransactionView.as_view()),
+        name="delete_transaction"),
+    # account/comdirect/delete-transaction/
+    url(r"^account/(?P<slug>[0-9a-zA-Z-#]*)/delete-transaction/$",
+        login_required(form_views.AccountDeleteTransactionView.as_view()),
+        name="delete_transaction"),
 
     # add-timespan/
     url(r"^add-timespan/$",

@@ -214,6 +214,8 @@ class Movie(models.Model):
         else:
             pictures = self.pictures.values("d", "c", "b")
         df = pd.DataFrame(list(pictures))
+        if df.empty:
+            df = pd.DataFrame(columns=["d", "c", "b"])
         return df
 
     def get_data(self, timespan=None):
