@@ -66,7 +66,7 @@
         <hr class="hr"> 
         <div class="card-deck">
             {% set value %}
-                {{ movie.get_total() }} {{ user.currency }}
+                {{ movie.get_values(user, ["b",])["b"] }} {{ user.currency }}
             {% endset %}
             {{ cards.statsCard(heading="Total", value=value) }}
         </div>
@@ -78,7 +78,7 @@
                 </div>
                 <hr class="hr"></hr>
                 <div class="card-deck">
-                    {% for data in ts.get_data(movie, ["b",]) %}
+                    {% for data in movie.get_values(user, ["b",], ts) %}
                         {% set heading %}
                             {{ data.start_date }}-{{ data.end_date }}
                         {% endset %}
@@ -121,7 +121,7 @@
                         </div> 
                     {% endset %}
                     {% set balance %}
-                        {{ movie.get_total() }} {{ user.currency }}
+                        {{ movie.get_values(user, ["b",])["b"] }} {{ user.currency }}
                     {% endset %}
                     {{ table.row([name | safe, balance, tablebuttons | safe]) }}
                 {% endfor %}

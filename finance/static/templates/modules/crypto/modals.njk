@@ -149,12 +149,11 @@
 
 
 <!-- Price -->
-{% macro addPriceModal(user, reverse, asset_pk, csrf_token=None) %}
+{% macro addPriceModal(user, asset, csrf_token) %}
 	{% set content %}
-		<input type="hidden" name="reverse" value="{{ reverse }}">
-		<input type="hidden" id="assetInput" name="asset" value="{{ asset_pk }}" style="display: none;">
+		<input type="hidden" id="assetInput" name="asset" value="{{ asset.pk }}" style="display: none;">
 		{{ form.labelInput(labelText="Date", inputText="Pick A Date", inputType="datetime-local", name="date", required="True") }}
 		{{ form.labelInput(labelText="Price", inputText="Enter Price", inputType="number", name="price", required="True", min=0)}}
 	{% endset %}
-	{{ modals.modal(content, url("crypto:add_price", args=[user.slug,]), "addPrice", "Add Price", csrf_token, "Save", "Cancel") }}
+	{{ modals.modal(content, url("crypto:add_price", args=[user.slug,asset.slug]), "addPrice", "Add Price", csrf_token, "Save", "Cancel") }}
 {% endmacro %}

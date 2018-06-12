@@ -51,27 +51,17 @@ class Depot(CoreDepot):
     user = models.ForeignKey(StandardUser, editable=False, related_name="banking_depots",
                              on_delete=models.CASCADE)
 
-    def __init__(self, *args, **kwargs):
-        super(Depot, self).__init__(*args, **kwargs)
-        self.m = None
-
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         super(Depot, self).save(force_insert, force_update, using, update_fields)
         Movie.update_all(depot=self, disable_update=True)
 
     # getters
     def get_movie(self):
-        if not self.m:
-            self.m = Movie.objects.get(depot=self, account=None, category=None)
-        return self.m
+        return self.movies.get(account=None, category=None)
 
 
 class Account(CoreAccount):
     depot = models.ForeignKey(Depot, on_delete=models.PROTECT, related_name="accounts")
-
-    def __init__(self, *args, **kwargs):
-        super(Account, self).__init__(*args, **kwargs)
-        self.m = None
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if not self.slug:
@@ -81,9 +71,7 @@ class Account(CoreAccount):
 
     # getters
     def get_movie(self):
-        if not self.m:
-            self.m = Movie.objects.get(depot=self.depot, account=self, category=None)
-        return self.m
+        return self.movies.get(account=self, category=None)
 
 
 class Category(models.Model):
@@ -92,10 +80,6 @@ class Category(models.Model):
     slug = models.SlugField(unique=True)
     depot = models.ForeignKey(Depot, editable=False, related_name="categories",
                               on_delete=models.CASCADE)
-
-    def __init__(self, *args, **kwargs):
-        super(Category, self).__init__(*args, **kwargs)
-        self.s = None  # stats
 
     def __str__(self):
         return self.name
@@ -108,10 +92,7 @@ class Category(models.Model):
 
     # getters
     def get_movie(self):
-        if not self.s:
-            depot = Depot.objects.filter(user=self.depot.user, is_active=True)
-            self.s = Movie.objects.get(depot=depot, category=self, account=None)
-        return self.s
+        return self.movies.get(depot=self.depot, account=None)
 
     @staticmethod
     def get_default_category():
@@ -230,18 +211,18 @@ class Movie(models.Model):
         data["c"] = (pictures.values_list("c", flat=True))
         return data
 
-    def get_value(self, user, timespan, keys):
+    def get_values(self, user, keys, timespan=None):
         # user in args for query optimization and ease
         data = dict()
         start_picture = None
         end_picture = None
-        if timespan.start_date:
+        if timespan and timespan.start_date:
             data["start_date"] = timespan.start_date.strftime(user.date_format)
             try:
                 start_picture = self.pictures.filter(d__lt=timespan.start_date).latest("d")
             except ObjectDoesNotExist:
                 pass
-        if timespan.end_date:
+        if timespan and timespan.end_date:
             data["end_date"] = timespan.end_date.strftime(user.date_format)
             try:
                 end_picture = self.pictures.filter(d__lte=timespan.end_date).latest("d")
@@ -261,12 +242,6 @@ class Movie(models.Model):
             else:
                 data[key] = 0
         return data
-
-    def get_total(self):
-        try:
-            return self.pictures.latest("d").b
-        except ObjectDoesNotExist:
-            return 0
 
     # update
     @staticmethod

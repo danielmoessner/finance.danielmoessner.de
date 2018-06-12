@@ -26,10 +26,11 @@ class IndexView(generic.TemplateView):
         context = super(IndexView, self).get_context_data(**kwargs)
         context["user"] = self.request.user
         context["depot"] = context["user"].crypto_depots.get(is_active=True)
-        context["accounts"] = context["depot"].accounts.all()
+        context["accounts"] = context["depot"].accounts.all().select_related("movie")
         context["assets_all"] = context["depot"].assets.order_by("name")
         context["assets"] = context["assets_all"].exclude(
-            symbol=context["user"].get_currency_display()).order_by("name")
+            symbol=context["user"].get_currency_display()).order_by("name").select_related(
+            "movie", "acc_movie")
         context["timespans"] = context["depot"].timespans.all()
 
         context["movie"] = context["depot"].movies.get(account=None, asset=None)
@@ -43,15 +44,19 @@ class AccountView(generic.TemplateView):
         context = super(AccountView, self).get_context_data(**kwargs)
         context["user"] = self.request.user
         context["depot"] = context["user"].crypto_depots.get(is_active=True)
-        context["accounts"] = context["depot"].accounts.all()
+        context["accounts"] = context["depot"].accounts.all().select_related("movie")
         context["assets_all"] = context["depot"].assets.order_by("name")
         context["assets"] = context["assets_all"].exclude(
-            symbol=context["user"].get_currency_display()).order_by("name")
+            symbol=context["user"].get_currency_display()).order_by("name").select_related(
+            "acc_movie")
         context["timespans"] = context["depot"].timespans.all()
 
         context["account"] = context["depot"].accounts.get(slug=kwargs["slug"])
-        context["trades"] = context["account"].trades.order_by("-date")
+        context["trades"] = context["account"].trades.order_by("-date").select_related(
+            "account", "buy_asset", "sell_asset", "fees_asset")
         context["movie"] = context["depot"].movies.get(account=context["account"], asset=None)
+        # movies = [asset.get_acc_movie(context["account"]) for asset in context["assets"]]
+        # context["assets_movies"] = zip(context["assets"], movies)
         return context
 
 
@@ -72,7 +77,8 @@ class AssetView(generic.TemplateView):
         context["prices"] = context["asset"].prices.order_by("-date")
         buy_trades = context["asset"].buy_trades.all()
         sell_trades = context["asset"].sell_trades.all()
-        context["trades"] = (buy_trades | sell_trades).order_by("-date")
+        context["trades"] = (buy_trades | sell_trades).order_by("-date").select_related(
+            "account", "buy_asset", "sell_asset", "fees_asset")
         context["movie"] = context["depot"].movies.get(account=None, asset=context["asset"])
         return context
 
@@ -190,7 +196,7 @@ class AssetsData(APIView):
         labels = list()
         data = list()
         for asset in Asset.objects.exclude(symbol=user.get_currency_display()):
-            movie = asset.get_movie(depot)
+            movie = asset.get_movie()
             labels.append(str(asset))
             data.append(movie.get_data(depot.timespans.get(is_active=True))["v"].last()
                         if movie.get_data(depot.timespans.get(is_active=True))["v"].last() is not None else 0)
@@ -215,5 +221,5 @@ class AssetData(APIView):
         user = request.user
         depot = user.crypto_depots.get(is_active=True)
         asset = Asset.objects.get(slug=slug)
-        pi = asset.get_movie(depot).get_data(depot.timespans.get(is_active=True))
+        pi = asset.get_movie().get_data(depot.timespans.get(is_active=True))
         return json_data(pi)

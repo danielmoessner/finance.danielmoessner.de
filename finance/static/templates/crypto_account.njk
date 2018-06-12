@@ -57,16 +57,10 @@
             <h2 class="table-heading--heading">Stats</h2>
         </div>
         <hr class="hr">
-        {%- set accountData = account.get_movie().get_all() -%}
+        {%- set accountData = movie.get_values(user, ["v", ]) -%}
         <div class="card-deck">
-            {{ cards.statsCard("Invested Capital", accountData.invested, user.currency) }}
-            {{ cards.statsCard("Profit", accountData.profit, user.currency) }}
-            {{ cards.statsCard("Value", accountData.value, user.currency) }}
+            {{ cards.statsCard("Value", accountData.v, user.currency) }}
         </div>
-		<div class="card-deck">
-            {{ cards.statsCard("Current Return", accountData.yield, "%") }}
-            {{ cards.statsCard("True time weighted return", accountData.true_time_weighted_return, "%")}}
-		</div>
 		{% for ts in timespans %}
 		    {% if ts.start_date and ts.is_active %}
 		        <div class="hs-3"></div>
@@ -75,7 +69,7 @@
 		        </div>
 		        <hr class="hr"></hr>
 		        <div class="card-deck">
-		            {% for data in ts.get_timespans_data(movie, ["g", "cr", ]) %}
+		            {% for data in movie.get_values(user, ["g", "cr", ], ts) %}
 		                {% set heading %}
 		                    {{ data.start_date }}-{{ data.end_date }}  
 		                {% endset %}
@@ -97,7 +91,7 @@
             {{ buttons.buttonModal(text="Buy/Sell", dataTarget="#addTrade") }}
         </div>
 		<table class="table ">
-		    {{ table.head(["Asset", "Current Price", "Amount", "Value", "Profit", "TTWR", "Action"]) }}
+		    {{ table.head(["Asset", "Current Price", "Amount", "Value", "Action"]) }}
 		    <tbody class="table--body">
 		        {% for asset in assets %}
 		            {% set tablebuttons %}
@@ -105,14 +99,14 @@
 		                	{{ buttons.buttonModal(text="Send", dataTarget="#addTransaction", data="assetpk=" + asset.pk|string) }}
 		                </div> 
 		            {% endset %}
-		            {%- set assetData = asset.get_acc_movie(account).get_all() -%}
-                    {{ table.row([asset.name, assetData.price, assetData.amount, assetData.value, assetData.profit, assetData.yield, tablebuttons | safe]) }}
+		            {%- set assetData = asset.get_acc_movie(account).get_values(user, ["p", "ca", "v"]) -%}
+                    {{ table.row([asset.name, assetData.p, assetData.ca, assetData.v, tablebuttons | safe]) }}
 		        {% endfor %}
 		    </tbody>
 		</table>
 	</div>
 	
-
+	
 	<div class="wrapper console-target is-hidden console_trades">
 		<div class="table-heading">
             <h2 class="table-heading--heading">Trades</h2> 

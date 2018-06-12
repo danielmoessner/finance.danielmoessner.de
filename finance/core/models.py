@@ -23,31 +23,6 @@ class Timespan(models.Model):
             name="Default Timespan", start_date=None, end_date=None)
         return pts
 
-    # getters
-    def get_data(self, movie, keys):
-        try:
-            start_picture = movie.pictures.filter(d__lte=self.start_date).latest("d")
-        except ObjectDoesNotExist:
-            start_picture = None
-        try:
-            end_picture = movie.pictures.filter(d__lte=self.end_date).latest("d")
-        except ObjectDoesNotExist:
-            end_picture = None
-
-        data = list()
-        for key in keys:
-            key_data = dict()
-            key_data["start_date"] = self.start_date.strftime(self.depot.user.date_format)
-            key_data["end_date"] = self.end_date.strftime(self.depot.user.date_format)
-            if start_picture is None and end_picture is None:
-                key_data[key] = None
-            elif start_picture is None:
-                key_data[key] = getattr(end_picture, key)
-            else:
-                key_data[key] = getattr(end_picture, key) - getattr(start_picture, key)
-            data.append(key_data)
-        return data
-
 
 class Depot(models.Model):
     name = models.CharField(max_length=200)

@@ -65,15 +65,15 @@
             {{ buttons.buttonLink(text="Update", url=url("crypto:update_movies", args=[user.slug,])) }}
         </div>
         <hr class="hr">
-        {%- set depotData = depot.get_movie().get_all() -%}
+        {%- set depotData = movie.get_values(user, ["cs", "g", "v", "cr", "ttwr"]) -%}
         <div class="card-deck">
-            {{ cards.statsCard("Invested Capital", depotData.invested, user.currency) }}
-            {{ cards.statsCard("Profit", depotData.profit, user.currency) }}
-            {{ cards.statsCard("Value", depotData.value, user.currency) }}
+            {{ cards.statsCard("Invested Capital", depotData.cs, user.currency) }}
+            {{ cards.statsCard("Profit", depotData.g, user.currency) }}
+            {{ cards.statsCard("Value", depotData.v, user.currency) }}
         </div>
         <div class="card-deck">
-            {{ cards.statsCard("Current Return", depotData.yield, "%") }}
-            {{ cards.statsCard("True time weighted return", depotData.true_time_weighted_return, "%")}}
+            {{ cards.statsCard("Current Return", depotData.cr, "%") }}
+            {{ cards.statsCard("True time weighted return", depotData.ttwr, "%")}}
         </div>
         {% for ts in timespans %}
             {% if ts.start_date and ts.is_active %}
@@ -83,7 +83,7 @@
                 </div>
                 <hr class="hr"></hr>
                 <div class="card-deck">
-                    {% for data in ts.get_timespans_data(movie, ["g", "cr", ]) %}
+                    {% for data in movie.get_values(user, ["g", "cr", ], ts) %}
                         {% set heading %}
                             {{ data.start_date }}-{{ data.end_date }}  
                         {% endset %}
@@ -114,7 +114,7 @@
                         <a href="{{ url('crypto:account', args=[user.slug, account.slug, ]) }}" class="link-bold">{{ account.name }}</a>
                     {% endset %} 
                     {% set value %}
-                        {{ account.get_movie().get_all().value }} {{ user.currency }}
+                        {{ account.get_movie().get_values(user, ["v",])["v"] }} {{ user.currency }}
                     {% endset %}
                     {% set tablebuttons %}
                         <div class="d-flex flex-row">
@@ -165,8 +165,8 @@
                         <a href="{{ url('crypto:asset', args=[user.slug, asset.slug, ]) }}" class="link-bold">{{ asset.name }}</a>
                     {% endset %} 
 
-                    {%- set assetData = asset.get_movie(depot).get_all() -%}
-                    {{ table.row([name, assetData.price, assetData.amount, assetData.value, assetData.profit, assetData.yield, tablebuttons | safe]) }}
+                    {%- set assetData = asset.get_movie().get_values(user, ["p", "ca", "v", "g", "cr"]) -%}
+                    {{ table.row([name, assetData.p, assetData.ca, assetData.v, assetData.g, assetData.cr, tablebuttons | safe]) }}
                 {% endfor %}
             </tbody>
         </table>

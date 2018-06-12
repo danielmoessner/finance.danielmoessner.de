@@ -283,7 +283,7 @@ class CategoriesData(APIView):
                 movie = Movie.objects.get(depot=depot, account=None, category=category)
             except Movie.DoesNotExist:
                 continue
-            value = movie.get_value(user, depot.timespans.get(is_active=True), ["b", ])
+            value = movie.get_values(user, ["b", ], depot.timespans.get(is_active=True))
             if value is not None and value["b"] != 0.0:
                 labels_data.append((str(category), value["b"]))
         labels_data.sort(key=lambda x: x[1])

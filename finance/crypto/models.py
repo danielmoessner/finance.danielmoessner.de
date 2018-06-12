@@ -29,19 +29,13 @@ class Depot(CoreDepot):
     user = models.ForeignKey(StandardUser, editable=False, related_name="crypto_depots",
                              on_delete=models.CASCADE)
 
-    def __init__(self, *args, **kwargs):
-        super(Depot, self).__init__(*args, **kwargs)
-        self.m = None
-
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         super(Depot, self).save(force_insert, force_update, using, update_fields)
         Movie.update_all(depot=self, disable_update=True)
 
     # getters
     def get_movie(self):
-        if not self.m:
-            self.m = self.movies.get(account=None, asset=None, depot=self)
-        return self.m
+        return self.movies.get(account=None, asset=None)
 
     # update
     def update_prices(self):
@@ -66,10 +60,9 @@ class Depot(CoreDepot):
 
 class Account(CoreAccount):
     depot = models.ForeignKey(Depot, on_delete=models.PROTECT, related_name="accounts")
-
-    def __init__(self, *args, **kwargs):
-        super(Account, self).__init__(*args, **kwargs)
-        self.m = None
+    # sql query optimization
+    movie = models.OneToOneField("Movie", on_delete=models.SET_NULL, default=None,
+                                 null=True, related_name="undefined_3")
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         super(Account, self).save(force_insert, force_update, using, update_fields)
@@ -77,9 +70,10 @@ class Account(CoreAccount):
 
     # getters
     def get_movie(self):
-        if not self.m:
-            self.m = Movie.objects.get(depot=self.depot, asset=None, account=self)
-        return self.m
+        if self.movie is None:
+            self.movie = self.movies.get(depot=self.depot, asset=None)
+            self.save()
+        return self.movie
 
 
 class Asset(models.Model):
@@ -87,12 +81,11 @@ class Asset(models.Model):
     symbol = models.CharField(max_length=5, unique=True)
     slug = models.SlugField(unique=True)
     depot = models.ForeignKey(Depot, on_delete=models.PROTECT, related_name="assets")
-
-    def __init__(self, *args, **kwargs):
-        super(Asset, self).__init__(*args, **kwargs)
-        self.m = None  # m = movie
-        self.acc_m = None  # acc_m = account movie
-        self.dep_m = None  # dep_m = depot movie
+    # sql query optimization
+    acc_movie = models.OneToOneField("Movie", on_delete=models.SET_NULL, default=None,
+                                     null=True, related_name="undefined_1")
+    movie = models.OneToOneField("Movie", on_delete=models.SET_NULL, default=None,
+                                 null=True, related_name="undefined_2")
 
     def __str__(self):
         return str(self.symbol)
@@ -104,20 +97,17 @@ class Asset(models.Model):
         Movie.update_all(depot=self.depot, disable_update=True)
 
     # getters
-    def get_movie(self, depot):
-        if not self.m:
-            self.m = Movie.objects.get(depot=depot, account=None, asset=self)
-        return self.m
+    def get_movie(self):
+        if self.movie is None:
+            self.movie = self.movies.get(depot=self.depot, account=None)
+            self.save()
+        return self.movie
 
     def get_acc_movie(self, account):
-        if not self.acc_m:
-            self.acc_m = Movie.objects.get(depot=account.depot, account=account, asset=self)
-        return self.acc_m
-
-    def get_dep_movie(self, depot):
-        if not self.dep_m:
-            self.dep_m = Movie.objects.get(depot=depot, account=None, asset=self)
-        return self.dep_m
+        if self.acc_movie is None:
+            self.acc_movie = self.movies.get(depot=self.depot, account=account)
+            self.save()
+        return self.acc_movie
 
     def get_worth(self, date, amount):
         prices = Price.objects.filter(asset=self)
@@ -297,18 +287,18 @@ class Movie(models.Model):
         data["cs"] = (pictures.values_list("cs", flat=True))
         return data
 
-    def get_value(self, user, timespan, keys):
+    def get_values(self, user, keys, timespan=None):
         # user in args for query optimization and ease
         data = dict()
         start_picture = None
         end_picture = None
-        if timespan.start_date:
+        if timespan and timespan.start_date:
             data["start_date"] = timespan.start_date.strftime(user.date_format)
             try:
                 start_picture = self.pictures.filter(d__lt=timespan.start_date).latest("d")
             except ObjectDoesNotExist:
                 pass
-        if timespan.end_date:
+        if timespan and timespan.end_date:
             data["end_date"] = timespan.end_date.strftime(user.date_format)
             try:
                 end_picture = self.pictures.filter(d__lte=timespan.end_date).latest("d")
@@ -327,28 +317,11 @@ class Movie(models.Model):
                 data[key] = getattr(end_picture, key)
             else:
                 data[key] = 0
-        return data
-
-    def get_all(self):
-        try:
-            picture = self.pictures.latest("d")
-        except Picture.DoesNotExist:
-            return None
-        data = dict()
-        data["price"] = picture.p
-        data["amount"] = picture.ca
-        data["invested"] = picture.cs
-        data["yield"] = picture.cr
-        data["true_time_weighted_return"] = picture.ttwr
-        data["profit"] = picture.g
-        data["value"] = picture.v
-        if self.depot.user.rounded_numbers:
-            for key in data:
-                data[key] = round(data[key], 2) if data[key] else "x"
-        else:
-            for key in data:
-                if not data[key]:
+            if user.rounded_numbers:
+                data[key] = round(data[key], 2)
+                if data[key] == 0.00:
                     data[key] = "x"
+
         return data
 
     # update
@@ -667,12 +640,11 @@ class Movie(models.Model):
         
         for asset in self.depot.assets.exclude(symbol="EUR"):
             movie = asset.get_acc_movie(self.account)
-            data = movie.get_data()
 
-            asset_df = pd.DataFrame()
-            asset_df["date"] = data["d"]
+            asset_df = movie.get_df()
+            asset_df = asset_df[["v", "d"]]
+            asset_df.rename(columns={"v": asset.name + "__value", "d": "date"}, inplace=True)
             asset_df.set_index("date", inplace=True)
-            asset_df[asset.name + "__value"] = data["v"]
             asset_dfs_values.append(asset.name + "__value")
 
             df = pd.concat([df, asset_df], join="outer", ignore_index=False, sort=False)
@@ -694,27 +666,22 @@ class Movie(models.Model):
         df["value"] = ""
         df["current_sum"] = ""
 
-        asset_dfs_length = 0
         asset_dfs_values = list()
         asset_dfs_current_sums = list()
 
         for asset in self.depot.assets.exclude(symbol="EUR"):
-            movie = asset.get_dep_movie(self.depot)
-            data = movie.get_data()
+            movie = asset.get_movie(self.depot)
 
-            asset_df = pd.DataFrame()
-            asset_df["date"] = data["d"]
+            asset_df = movie.get_df()
+            asset_df = asset_df[["v", "d", "cs"]]
+            asset_df.rename(columns={"v": asset.name + "__value", "d": "date",
+                                     "cs": asset.name + "__current_sum"}, inplace=True)
             asset_df.set_index("date", inplace=True)
-            asset_df[asset.name + "__value"] = data["v"]
-            asset_df[asset.name + "__current_sum"] = data["cs"]
-
             asset_dfs_values.append(asset.name + "__value")
             asset_dfs_current_sums.append(asset.name + "__current_sum")
-            asset_dfs_length += len(asset_df)
 
             df = pd.concat([df, asset_df], join="outer", ignore_index=False, sort=False)
 
-        assert len(df) == asset_dfs_length
         df.sort_index(inplace=True)
         df = df[~df.index.duplicated(keep="last")]
         df.ffill(inplace=True)
