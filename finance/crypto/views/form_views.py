@@ -187,7 +187,7 @@ class AccountDeleteTradeView(AccountView, CustomDeleteView):
 
     def form_invalid(self, form, **kwargs):
         return form_invalid_universal(self, form, "errors",
-                                      heading="Change could not be deleted.", **kwargs)
+                                      heading="Trade could not be deleted.", **kwargs)
 
 
 # TRANSACTION
@@ -197,13 +197,13 @@ class AccountCreateTransactionView(AccountView, generic.CreateView):
 
     def form_valid(self, form):
         transaction = form.save()
-        account = transaction.account
+        account = transaction.from_account
         success_url = reverse_lazy("crypto:account", args=[self.request.user.slug, account.slug])
         return HttpResponseRedirect(success_url)
 
-    def form_invalid(self, form):
+    def form_invalid(self, form, **kwargs):
         return form_invalid_universal(self, form, "errors",
-                                      heading="Transaction could not be created.")
+                                      heading="Transaction could not be created.", **kwargs)
 
 
 class AccountUpdateTransactionView(AccountView):
@@ -218,7 +218,7 @@ class AccountUpdateTransactionView(AccountView):
         transaction = form.save(commit=False)
         transaction.pk = form.cleaned_data["pk"]
         transaction.save()
-        account = transaction.account
+        account = transaction.from_account
         success_url = reverse_lazy("crypto:account", args=[self.request.user.slug, account.slug])
         return HttpResponseRedirect(success_url)
 
@@ -231,7 +231,7 @@ class AccountDeleteTransactionView(AccountView, CustomDeleteView):
     def form_valid(self, form):
         transaction_pk = form.cleaned_data["pk"]
         transaction = Transaction.objects.get(pk=transaction_pk)
-        account = transaction.account
+        account = transaction.from_account
         transaction.delete()
         success_url = reverse_lazy("crypto:account", args=[self.request.user.slug, account.slug])
         return HttpResponseRedirect(success_url)

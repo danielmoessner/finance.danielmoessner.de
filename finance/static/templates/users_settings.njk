@@ -187,11 +187,11 @@
  
 {% block modals %}
 	{% import "modules/banking/modals.njk" as bankingModals %}
-	{{ bankingModals.addBankingDepotModal(user, csrf_token, reverse) }}
+	{{ bankingModals.addBankingDepotModal(user, csrf_token) }}
 	{{ bankingModals.editBankingDepotModal(user, csrf_token) }}
-	{{ bankingModals.deleteBankingDepotModal(user, banking_depots, csrf_token, reverse) }}
+	{{ bankingModals.deleteBankingDepotModal(user, banking_depots, csrf_token) }}
 	{% import "modules/crypto/modals.njk" as cryptoModals %}
-	{{ cryptoModals.addCryptoDepotModal(user, csrf_token, reverse) }}
+	{{ cryptoModals.addCryptoDepotModal(user, csrf_token) }}
 	{{ cryptoModals.editCryptoDepotModal(user, csrf_token) }}
-	{{ cryptoModals.deleteCryptoDepotModal(user, crypto_depots, csrf_token, reverse) }}
+	{{ cryptoModals.deleteCryptoDepotModal(user, crypto_depots, csrf_token) }}
 {% endblock %}

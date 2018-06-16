@@ -5,7 +5,6 @@
 {% set headingCategory="Dashboard" %}
 {% set headingHeading="Crypto" %}
 {% set title="Crypto" %}
-{% set reverse=url("crypto:index", args=[user.slug,]) %}
 
 
 {% block head %}
@@ -109,12 +108,12 @@
         <table class="table">
             {{ table.head(["Account", "Assets Value", "Action"]) }}
             <tbody class="table--body">
-                {% for account in accounts %}
+                {% for account, movie in accounts_movies %}
                     {% set name %}
                         <a href="{{ url('crypto:account', args=[user.slug, account.slug, ]) }}" class="link-bold">{{ account.name }}</a>
                     {% endset %} 
                     {% set value %}
-                        {{ account.get_movie().get_values(user, ["v",])["v"] }} {{ user.currency }}
+                        {{ movie.get_values(user, ["v",])["v"] }} {{ user.currency }}
                     {% endset %}
                     {% set tablebuttons %}
                         <div class="d-flex flex-row">
@@ -146,7 +145,7 @@
         <table class="table">
             {{ table.head(["Asset", "Current Price", "Amount", "Value", "Profit", "Yield", "Action"]) }}
             <tbody class="table--body">
-                {% for asset in assets %}
+                {% for asset, movie in assets_movies %}
                     {% set tablebuttons %}
                         <div class="d-flex flex-row">
                             {{ buttons.buttonModal(text="Buy/Sell", dataTarget="#addTrade", data="pk=" + asset.pk|string) }} 
@@ -165,7 +164,7 @@
                         <a href="{{ url('crypto:asset', args=[user.slug, asset.slug, ]) }}" class="link-bold">{{ asset.name }}</a>
                     {% endset %} 
 
-                    {%- set assetData = asset.get_movie().get_values(user, ["p", "ca", "v", "g", "cr"]) -%}
+                    {%- set assetData = movie.get_values(user, ["p", "ca", "v", "g", "cr"]) -%}
                     {{ table.row([name, assetData.p, assetData.ca, assetData.v, assetData.g, assetData.cr, tablebuttons | safe]) }}
                 {% endfor %}
             </tbody>
@@ -193,11 +192,11 @@
 
 {% block modals %}
     {% import "modules/crypto/modals.njk" as modals %}
-    {{ modals.addAccountModal(user, depot.pk, csrf_token) }}
+    {{ modals.addAccountModal(user, csrf_token) }}
     {{ modals.editAccountModal(user, csrf_token) }}
     {{ modals.deleteAccountModal(user, accounts, csrf_token) }}
     {{ modals.addAssetModal(user, csrf_token) }}
     {{ modals.editAssetModal(user, csrf_token) }}
     {{ modals.deleteAssetModal(user, assets, csrf_token) }}
-    {{ modals.addTradeModal(user, reverse, accounts, assets_all, csrf_token) }}
+    {{ modals.addTradeModal(user, accounts, assets_all, csrf_token) }}
 {% endblock %}

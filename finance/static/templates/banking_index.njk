@@ -5,7 +5,6 @@
 {% set headingCategory="Dashboard" %}
 {% set headingHeading="Banking" %}
 {% set title="Banking" %}
-{% set reverse=url("banking:index", args=[user.slug,]) %}
 
 
 {% block head %}
@@ -183,11 +182,11 @@
  
 {% block modals %}
     {% import "modules/banking/modals.njk" as modals %}
-    {{ modals.addAccountModal(user, depot.pk, csrf_token, reverse) }}
-    {{ modals.editAccountModal(user, csrf_token, reverse) }}
-    {{ modals.deleteAccountModal(user, accounts, csrf_token, reverse) }}
-    {{ modals.addChangeModal(user, url("banking:add_change", args=[user.slug,]), categories, csrf_token, reverse) }}
-    {{ modals.addCategoryModal(user, csrf_token, reverse) }}
-    {{ modals.editCategoryModal(user, csrf_token, reverse) }}
-    {{ modals.deleteCategoryModal(user, categories, csrf_token, reverse) }}
+    {{ modals.addAccountModal(user, depot.pk, csrf_token) }}
+    {{ modals.editAccountModal(user, csrf_token) }}
+    {{ modals.deleteAccountModal(user, accounts, csrf_token) }}
+    {{ modals.addChangeModal(user, url("banking:add_change", args=[user.slug,]), categories, csrf_token) }}
+    {{ modals.addCategoryModal(user, csrf_token) }}
+    {{ modals.editCategoryModal(user, csrf_token) }}
+    {{ modals.deleteCategoryModal(user, categories, csrf_token) }}
 {% endblock %}

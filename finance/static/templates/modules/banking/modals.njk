@@ -1,154 +1,154 @@
 {% import "modules/form_contents.njk" as form %}
+{% import "modules/form_childs.njk" as childs %}
 {% import "modules/modals.njk" as modals %}
 
 
 <!-- Depot -->
-{% macro addBankingDepotModal(user, csrf_token, reverse) %}
+{% macro addBankingDepotModal(user, csrf_token) %}
 	{% set content %}
-		{{ form.labelInput(labelText="Name", inputText="Choose A Name", inputType="text", name="name", required="True", maxlength=200) }}
+		{{ childs.textInput("Name", "name") }}
 	{% endset %}
-	{{ modals.modal(content, url("users:add_banking_depot", args=[user.slug,]), "addBankingDepot", "Add Depot", csrf_token, "Save", "Cancel") }}
+	{%- set url=url("users:add_banking_depot", args=[user.slug,]) -%}
+	{{ modals.modal(content, url, "addBankingDepot", "Add Depot", csrf_token, "Save", "Cancel") }}
 {% endmacro %}
 
 {% macro editBankingDepotModal(user, csrf_token) %}
 	{% set content %}
-		<input type="hidden" name="reverse" value="{{ reverse }}">
-		<input type="hidden" id="editBankingDepotPkInput" name="pk" value="">
-		{{ form.labelInput(labelText="Name", inputText="Choose A New Name", inputType="text", name="name", required="True", maxlength=200, id="editBankingDepotNameInput") }}
+		{{ childs.textInput("Name", "name") }}
+		<input type="hidden" class="inputpk" name="pk">
 		<script type="text/javascript">
 	        jQuery(function(){
 	            $("#editBankingDepot").on("show.bs.modal", function(e) {
 				    var data = e.relatedTarget.dataset.all;
 					data = data.replace(/'/g, '"')
 					data = JSON.parse(data)
-					$("#editBankingDepot #editBankingDepotPkInput").attr("value", data.pk)
-					$("#editBankingDepot #editBankingDepotNameInput").attr("value", data.name)
+					$("#editBankingDepot .editBankingDepotPkInput").attr("value", data.pk)
+					$("#editBankingDepot .inputname").attr("value", data.name)
 				});
 	        });
 	    </script> 
 	{% endset %}
-	{{ modals.modal(content, url("users:edit_banking_depot", args=[user.slug, ]), "editBankingDepot", "Edit Depot", csrf_token, "Update", "Cancel") }}
+	{%- set url=url("users:edit_banking_depot", args=[user.slug, ]) -%}
+	{{ modals.modal(content, url, "editBankingDepot", "Edit Depot", csrf_token, "Update", "Cancel") }}
 {% endmacro %}
 
-{% macro deleteBankingDepotModal(user, depots, csrf_token, reverse) %}
+{% macro deleteBankingDepotModal(user, depots, csrf_token) %}
 	{% set content %}
-		<input type="hidden" id="reverseInput" name="reverse" value="{{ reverse }}">
-		{{ form.labelSelectNamePk(labelText="Select A Depot", selectItems=depots, name="pk", required="True") }}
+		{{ childs.pkNameSelect("Select A Depot", "pk", depots) }}
 	{% endset %}
-	{{ modals.modal(content, url("users:delete_banking_depot", args=[user.slug,]), "deleteBankingDepot", "Delete Depot", csrf_token, "Delete", "Cancel") }}
+	{%- set url=url("users:delete_banking_depot", args=[user.slug,]) -%}
+	{{ modals.modal(content, url, "deleteBankingDepot", "Delete Depot", csrf_token, "Delete", "Cancel") }}
 {% endmacro %} 
 
 
 <!-- Account -->
-{% macro addAccountModal(user, depot, csrf_token, reverse) %}
+{% macro addAccountModal(user, depot, csrf_token) %}
 	{% set content %}
-		<input type="hidden" id="reverseInput" name="reverse" value="{{ reverse }}">
-		<input type="hidden" id="depotInput" name="depot" value="{{ depot }}">
-		{{ form.labelInput(labelText="Name", inputText="Choose A Name", inputType="text", name="name", required="True", maxlength=200) }}
+		{{ childs.textInput("Name", "name") }}
+		<input type="hidden" class="inputdepot" name="depot" value="{{ depot }}">
 	{% endset %}
-	{{ modals.modal(content, url("banking:add_account", args=[user.slug,]), "addAccount", "Add Account", csrf_token, "Save", "Cancel") }}
+	{%- set url=url("banking:add_account", args=[user.slug,]) -%}
+	{{ modals.modal(content, url, "addAccount", "Add Account", csrf_token, "Save", "Cancel") }}
 {% endmacro %}
 
-{% macro editAccountModal(user, csrf_token, reverse) %}
+{% macro editAccountModal(user, csrf_token) %}
 	{% set content %}
-		<input type="hidden" id="reverseInput" name="reverse" value="{{ reverse }}">
-		<input type="hidden" id="accountInput" name="pk" value="">
-		{{ form.labelInput(labelText="Name", inputText="Choose A New Name", inputType="text", name="name", required="True", maxlength=200) }}
+		{{ childs.textInput("Name", "name") }}
+		<input type="hidden" class="inputaccount" name="pk" value="">
 		<script type="text/javascript">
 	        jQuery(function(){
 	            $("#editAccount").on("show.bs.modal", function(e) {
 				    var data = e.relatedTarget.dataset.all;
 					data = data.replace(/'/g, '"')
 					data = JSON.parse(data)
-					$("#editAccount #accountInput").attr("value", data.pk)
-					$("#editAccount #nameInput").attr("value", data.name)
+					$("#editAccount .inputaccount").attr("value", data.pk)
+					$("#editAccount .inputname").attr("value", data.name)
 				});
 	        });
 	    </script> 
 	{% endset %}
-	{{ modals.modal(content, url("banking:edit_account", args=[user.slug,]), "editAccount", "Edit Account", csrf_token, "Update", "Cancel") }}
+	{%- set url=url("banking:edit_account", args=[user.slug,]) -%}
+	{{ modals.modal(content, url, "editAccount", "Edit Account", csrf_token, "Update", "Cancel") }}
 {% endmacro %}
 
-{% macro deleteAccountModal(user, accounts, csrf_token, reverse) %}
+{% macro deleteAccountModal(user, accounts, csrf_token) %}
 	{% set content %}
-		<input type="hidden" id="reverseInput" name="reverse" value="{{ reverse }}">
-		{{ form.labelSelectNamePk(labelText="Select A Account", selectItems=accounts, name="pk", required="True") }}
+		{{ childs.pkNameSelect("Select An Account", "pk", accounts) }}
 	{% endset %}
-	{{ modals.modal(content, url("banking:delete_account", args=[user.slug,]), "deleteAccount", "Delete Account", csrf_token, "Delete", "Cancel") }}
+	{%- set url=url("banking:delete_account", args=[user.slug,]) -%}
+	{{ modals.modal(content, url, "deleteAccount", "Delete Account", csrf_token, "Delete", "Cancel") }}
 {% endmacro %} 
 
 
 <!-- Category -->
-{% macro addCategoryModal(user, csrf_token, reverse) %}
+{% macro addCategoryModal(user, csrf_token) %}
 	{% set content %}
-		<input type="hidden" id="reverseInput" name="reverse" value="{{ reverse }}">
-		{{ form.labelInput(labelText="Category", inputText="Choose A Name", inputType="text", name="name", required="True", maxlength=200) }}
-		{{ form.labelTextArea(labelText="Description", name="description") }}
+		{{ childs.textInput("Name", "name") }}
+		{{ childs.textarea("Description", "description") }}
 	{% endset %}
-	{{ modals.modal(content, url('banking:add_category', args=[user.slug,]), "addCategory", "Add Category", csrf_token, "Save", "Cancel") }}
+	{%- set url=url('banking:add_category', args=[user.slug,]) -%}
+	{{ modals.modal(content, url, "addCategory", "Add Category", csrf_token, "Save", "Cancel") }}
 {% endmacro %}
 
-{% macro editCategoryModal(user, csrf_token, reverse) %}
+{% macro editCategoryModal(user, csrf_token) %}
 	{% set content %}
-		<input type="hidden" id="reverseInput" name="reverse" value="{{ reverse }}">
-		<input type="hidden" id="pkInput" name="pk" value="">
-		{{ form.labelInput(labelText="Category", inputText="Choose A New Name", inputType="text", name="name", required="True", maxlength=200) }}
-		{{ form.labelTextArea(labelText="Description", name="description") }}
+		<input type="hidden" class="inputpk" name="pk" value="">
+		{{ childs.textInput("Name", "name") }}
+		{{ childs.textarea("Description", "description") }}
 		<script type="text/javascript">
 	        jQuery(function(){
 	            $("#editCategory").on("show.bs.modal", function(e) {
 				    var data = e.relatedTarget.dataset.all;
 					data = data.replace(/'/g, '"')
 					data = JSON.parse(data)
-					$("#editCategory #pkInput").attr("value", data.pk)
-					$("#editCategory #nameInput").attr("value", data.name)
-					$("#editCategory #descriptionInput").val(data.description)
+					$("#editCategory .inputpk").attr("value", data.pk)
+					$("#editCategory .inputname").attr("value", data.name)
+					$("#editCategory .textareadescription").val(data.description)
 				});
 	        });
 	    </script>
 	{% endset %}
-	{{ modals.modal(content, url('banking:edit_category', args=[user.slug,]), "editCategory", "Edit Category", csrf_token, "Update", "Cancel") }}
+	{%- set url=url('banking:edit_category', args=[user.slug,]) -%}
+	{{ modals.modal(content, url, "editCategory", "Edit Category", csrf_token, "Update", "Cancel") }}
 {% endmacro %}
 
-{% macro deleteCategoryModal(user, categories, csrf_token, reverse) %}
+{% macro deleteCategoryModal(user, categories, csrf_token) %}
 	{% set content %}
-		<input type="hidden" id="reverseInput" name="reverse" value="{{ reverse }}">
-		{{ form.labelSelectNamePk(labelText="Select A Category", selectItems=categories, name="pk", required="True") }}
+		{{ childs.pkNameSelect("Select A Category", "pk", categories) }}
 	{% endset %}
-	{{ modals.modal(content, url("banking:delete_category", args=[user.slug,]), "deleteCategory", "Delete Category", csrf_token, "Delete", "Cancel") }}
+	{%- set url=url("banking:delete_category", args=[user.slug,]) -%}
+	{{ modals.modal(content, url, "deleteCategory", "Delete Category", csrf_token, "Delete", "Cancel") }}
 {% endmacro %}
 
 
 <!-- Change -->
-{% macro addChangeModal(user, url, categories, csrf_token, reverse) %}
+{% macro addChangeModal(user, url, categories, csrf_token) %}
 	{% set content %}
-		<input type="hidden" id="reverseInput" name="reverse" value="{{ reverse }}">
-		<input type="hidden" id="accountInput" name="account" value="">
+		{{ childs.dateInput("date") }}
+		{{ childs.pkNameSelect("Category", "category", categories) }}
+		{{ childs.textarea("Description", "description") }}
+		{{ childs.numberInput("Change", "change") }}
+		<input type="hidden" class="inputaccount" name="account">
 		<script type="text/javascript">
 	        jQuery(function(){
 	        	$("#addChange").on("show.bs.modal", function(e) {
 				    var pk = e.relatedTarget.dataset.accountpk;
-				    $("#addChange #accountInput").attr("value", pk)
+				    $("#addChange .inputaccount").attr("value", pk)
 				});
 	        });
 	    </script>
-		{{ form.labelInput(labelText="Date", inputText="Pick A Date", inputType="datetime-local", name="date", required="True") }}
-		{{ form.labelSelectNamePk(labelText="Category", selectItems=categories, name="category", required="True") }}
-		{{ form.labelTextArea(labelText="Description", name="description") }}
-		{{ form.labelInput(labelText="Change", inputText="Enter Amount", inputType="number", name="change", required="True")}}
 	{% endset %}
 	{{ modals.modal(content, url, "addChange", "Deposit / Withdraw", csrf_token, "Save", "Cancel") }}
 {% endmacro %}
 
-{% macro editChangeModal(user, account, accounts, categories, csrf_token, reverse) %}
+{% macro editChangeModal(user, account, accounts, categories, csrf_token) %}
 	{% set content %}
-		<input type="hidden" id="reverseInput" name="reverse" value="{{ reverse }}"> 
-		<input type="hidden" id="pkInput" name="pk" value="">
-		{{ form.labelSelectNamePk(labelText="Account", selectItems=accounts, name="account", required="True", selectedItem="") }}
-		{{ form.labelSelectNamePk(labelText="Category", selectItems=categories, name="category", required="True", selectedItem="") }}
-		{{ form.labelInput(labelText="Date", value="", inputType="datetime-local", name="date", required="True") }}
-		{{ form.labelTextArea(labelText="Description", name="description", content="") }}
-		{{ form.labelInput(labelText="Change", value="", inputType="number", name="change", required="True") }}
+		{{ childs.pkNameSelect("Account", "account", accounts) }}
+		{{ childs.pkNameSelect("Category", "category", categories) }}
+		{{ childs.dateInput("date") }}
+		{{ childs.textarea("Description", "description") }}
+		{{ childs.numberInput("Change", "change") }}
+		<input type="hidden" class="inputpk" name="pk">
 		<script type="text/javascript">
 	        jQuery(function(){
 				$("#editChange").on("show.bs.modal", function(e) {
@@ -156,15 +156,16 @@
 					data = data.replace(/'/g, '"')
 					data = JSON.parse(data)
 					data.date = data.date.substring(0, 16).replace(" ", "T")
-					$("#editChange #pkInput").attr("value", data.pk)
-					$("#editChange #accountInput option").filter(function() { return $(this).val() == data.account; }).attr('selected', true);
-					$("#editChange #categoryInput option").filter(function() { return $(this).val() == data.category; }).attr('selected', true);
-					$("#editChange #dateInput").attr("value", data.date)
-					$("#editChange #descriptionInput").text(data.description)
-					$("#editChange #changeInput").attr("value", data.change)
+					$("#editChange .inputpk").attr("value", data.pk)
+					$("#editChange .selectaccount option").filter(function() { return $(this).val() == data.account; }).attr('selected', true);
+					$("#editChange .selectcategory option").filter(function() { return $(this).val() == data.category; }).attr('selected', true);
+					$("#editChange .inputdate").attr("value", data.date)
+					$("#editChange .textareadescription").text(data.description)
+					$("#editChange .inputchange").attr("value", data.change)
 				});
 	        });
 	    </script>
 	{% endset %}
-	{{ modals.modal(content, url("banking:edit_change", args=[user.slug, account.slug]), "editChange", "Edit Change", csrf_token, "Update", "Cancel") }}
+	{%- set url=url("banking:edit_change", args=[user.slug, account.slug]) -%}
+	{{ modals.modal(content, url, "editChange", "Edit Change", csrf_token, "Update", "Cancel") }}
 {% endmacro %}

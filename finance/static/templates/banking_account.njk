@@ -5,7 +5,6 @@
 {% set headingCategory="Account" %}
 {% set headingHeading=account.name %}
 {% set title="Banking " + account.name %}
-{% set reverse=url("banking:account", args=[user.slug, account.slug, ]) %}
 
 
 {% block head %}
@@ -127,6 +126,6 @@
 
 {% block modals %}
     {% import "modules/banking/modals.njk" as modals %}
-    {{ modals.editChangeModal(user, account, accounts, categories, csrf_token, reverse) }}
-	{{ modals.addChangeModal(user, url("banking:add_change", args=[user.slug, account.slug]), categories, csrf_token, reverse) }}
+    {{ modals.editChangeModal(user, account, accounts, categories, csrf_token) }}
+	{{ modals.addChangeModal(user, url("banking:add_change", args=[user.slug, account.slug]), categories, csrf_token) }}
 {% endblock %}

@@ -24,11 +24,18 @@ class IndexView(generic.TemplateView):
         context = super(IndexView, self).get_context_data(**kwargs)
         context["user"] = self.request.user
         context["depot"] = context["user"].crypto_depots.get(is_active=True)
-        context["accounts"] = context["depot"].accounts.all().select_related("movie")
+        context["accounts"] = context["depot"].accounts.order_by("name")
+        movies = context["depot"].movies.filter(
+            account__in=context["accounts"], asset=None).order_by("account__name")
+        assert len(context["accounts"]) == len(movies)
+        context["accounts_movies"] = zip(context["accounts"], movies)
         context["assets_all"] = context["depot"].assets.order_by("name")
-        context["assets"] = context["assets_all"].exclude(
-            symbol=context["user"].get_currency_display()).order_by("name").select_related(
-            "movie", "acc_movie")
+        assets = context["assets_all"].exclude(
+            symbol=context["user"].get_currency_display()).order_by("name")
+        movies = context["depot"].movies.filter(asset__in=assets, account=None).order_by(
+            "asset__name")
+        assert len(assets) == len(movies)
+        context["assets_movies"] = zip(assets, movies)
         context["timespans"] = context["depot"].timespans.all()
 
         context["movie"] = context["depot"].movies.get(account=None, asset=None)
@@ -39,17 +46,17 @@ class AccountView(generic.TemplateView):
     template_name = "crypto_account.njk"
 
     def get_context_data(self, **kwargs):
-        context = super(AccountView, self).get_context_data(**kwargs)
-        context["user"] = self.request.user
+        context = {"user": self.request.user}
         context["depot"] = context["user"].crypto_depots.get(is_active=True)
-        context["accounts"] = context["depot"].accounts.all().select_related("movie")
+        context["accounts"] = context["depot"].accounts.all()
         context["assets_all"] = context["depot"].assets.order_by("name")
-        context["assets"] = context["assets_all"].exclude(
-            symbol=context["user"].get_currency_display()).order_by("name").select_related(
-            "acc_movie")
         context["timespans"] = context["depot"].timespans.all()
-
         context["account"] = context["depot"].accounts.get(slug=kwargs["slug"])
+        assets = context["assets_all"].exclude(
+            symbol=context["user"].get_currency_display()).order_by("name")
+        movies = context["account"].movies.filter(asset__in=assets).order_by("asset__name")
+        assert len(assets) == len(movies)
+        context["assets_movies"] = zip(assets, movies)
         context["trades"] = context["account"].trades.order_by("-date").select_related(
             "account", "buy_asset", "sell_asset", "fees_asset")
         to_transactions = context["account"].to_transactions.all()
@@ -57,8 +64,6 @@ class AccountView(generic.TemplateView):
         context["transactions"] = (to_transactions | from_transactions).order_by(
             "-date").select_related("from_account", "to_account", "asset")
         context["movie"] = context["depot"].movies.get(account=context["account"], asset=None)
-        # movies = [asset.get_acc_movie(context["account"]) for asset in context["assets"]]
-        # context["assets_movies"] = zip(context["assets"], movies)
         return context
 
 

@@ -12,7 +12,7 @@ urlpatterns = [
     # API DATA
     # api-data/index/
     url(r"^api-data/index/$", login_required(views.IndexData.as_view()), name="api_data_index"),
-    # api-data/account/comdirect/
+    # api-data/account/bittrex/
     url(r"^api-data/account/(?P<slug>[0-9a-zA-Z-#]*)/$", login_required(
         views.AccountData.as_view()), name="api_data_account"),
     # api-data/assets/
@@ -29,11 +29,11 @@ urlpatterns = [
 
     # asset/bitcoin/add-price/
     url(r"^asset/(?P<slug>[0-9a-zA-Z-#]*)/add-price/$",
-        login_required(views.IndexView.as_view()),
+        login_required(form_views.AssetCreatePriceView.as_view()),
         name="add_price"),
     # asset/bitcoin/delete-price/
     url(r"^asset/(?P<slug>[0-9a-zA-Z-#]*)/delete-price/$",
-        login_required(views.IndexView.as_view()),
+        login_required(form_views.AssetDeletePriceView.as_view()),
         name="delete_price"),
 
     # add-account/
@@ -66,28 +66,28 @@ urlpatterns = [
     url(r"^add-trade/$",
         login_required(form_views.IndexCreateTradeView.as_view()),
         name="add_trade"),
-    # account/comdirect/add-trade/
+    # account/bittrex/add-trade/
     url(r"^account/(?P<slug>[0-9a-zA-Z-#]*)/add-trade/$",
         login_required(form_views.AccountCreateTradeView.as_view()),
         name="add_trade"),
-    # account/comdirect/edit-trade/
+    # account/bittrex/edit-trade/
     url(r"^account/(?P<slug>[0-9a-zA-Z-#]*)/edit-trade/$",
         login_required(form_views.AccountUpdateTradeView.as_view()),
-        name="delete_trade"),
-    # account/comdirect/delete-trade/
+        name="edit_trade"),
+    # account/bittrex/delete-trade/
     url(r"^account/(?P<slug>[0-9a-zA-Z-#]*)/delete-trade/$",
         login_required(form_views.AccountDeleteTradeView.as_view()),
         name="delete_trade"),
 
-    # account/comdirect/add-transaction/
+    # account/bittrex/add-transaction/
     url(r"^account/(?P<slug>[0-9a-zA-Z-#]*)/add-transaction/$",
         login_required(form_views.AccountCreateTransactionView.as_view()),
         name="add_transaction"),
-    # account/comdirect/edit-transaction/
+    # account/bittrex/edit-transaction/
     url(r"^account/(?P<slug>[0-9a-zA-Z-#]*)/edit-transaction/$",
         login_required(form_views.AccountUpdateTransactionView.as_view()),
         name="delete_transaction"),
-    # account/comdirect/delete-transaction/
+    # account/bittrex/delete-transaction/
     url(r"^account/(?P<slug>[0-9a-zA-Z-#]*)/delete-transaction/$",
         login_required(form_views.AccountDeleteTransactionView.as_view()),
         name="delete_transaction"),
@@ -108,7 +108,7 @@ urlpatterns = [
     # PAGES
     # index
     url(r"^$", login_required(views.IndexView.as_view()), name="index"),
-    # account/comdirect/
+    # account/bittrex/
     url(r"^account/(?P<slug>[0-9a-zA-Z-#]*)/$", login_required(views.AccountView.as_view()),
         name="account"),
     # asset/bitcoin/

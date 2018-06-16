@@ -205,6 +205,7 @@ class Movie(models.Model):
                                             d__lte=timespan.end_date)
         else:
             pictures = Picture.objects.filter(movie=self)
+        pictures = pictures.order_by("d")
         data = dict()
         data["d"] = (pictures.values_list("d", flat=True))
         data["b"] = (pictures.values_list("b", flat=True))

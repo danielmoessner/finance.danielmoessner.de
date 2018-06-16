@@ -5,7 +5,6 @@
 {% set headingCategory="Account" %}
 {% set headingHeading=account.name %}
 {% set title="Crypto " + account.name %}
-{% set reverse=url("crypto:account", args=[user.slug, account.slug, ]) %}
 
 
 {% block head %}
@@ -96,14 +95,14 @@
 		<table class="table ">
 		    {{ table.head(["Asset", "Current Price", "Amount", "Value", "Action"]) }}
 		    <tbody class="table--body">
-		        {% for asset in assets %}
+		        {% for asset, movie in assets_movies %}
 		            {% set tablebuttons %}
 		                <div class="d-flex flex-row">
 		                	{{ buttons.buttonModal(text="Send", dataTarget="#addTransaction", data="assetpk=" + asset.pk|string) }}
 		                </div> 
 		            {% endset %}
-		            {%- set assetData = asset.get_acc_movie(account).get_values(user, ["p", "ca", "v"]) -%}
-                    {{ table.row([asset.name, assetData.p, assetData.ca, assetData.v, tablebuttons | safe]) }}
+		            {%- set assetData = movie.get_values(user, ["p", "ca", "v"]) -%}
+                    {{ table.row([ asset.name, assetData.p, assetData.ca, assetData.v, tablebuttons | safe]) }}
 		        {% endfor %}
 		    </tbody>
 		</table>
@@ -115,20 +114,34 @@
             <h2 class="table-heading--heading">Trades</h2> 
         </div>
 		<table class="table ">
-		    {{ table.head(["Account", "Date", "Buy", "Buy Asset", "Sell", "Sell Asset", "Fees", "Fees Asset", "Action"]) }}
+		    {{ table.head(["Date", "Account", "Buy", "Buy Asset", "Sell", "Sell Asset", "Fees", "Fees Asset", "Action"]) }}
 		    <tbody class="table--body">
 		        {% for trade in trades %}
 		            {% set tablebuttons %}
 		                <div class="d-flex flex-row">
+		                	{% set data %}
+		                        {% raw %} { {% endraw %}
+		                            'pk': '{{ trade.pk }}', 
+		                            'date': '{{ trade.date }}',
+		                            'account': '{{ trade.account }}',
+		                            'buy_amount': '{{ trade.buy_amount }}',
+		                            'buy_asset': '{{ trade.buy_asset }}',
+		                            'sell_amount': '{{ trade.sell_amount }}',
+		                            'sell_asset': '{{ trade.sell_asset }}',
+		                            'fees': '{{ trade.fees }}',
+		                            'fees_asset': '{{ trade.fees_asset }}'
+		                        {% raw %} } {% endraw %}
+		                    {% endset %}
+		                    {{ buttons.buttonModalNew(text="Edit", dataTarget="#editTrade", data=data) }}
+		                    <div class="placeholder"></div>
 		                	<form method="POST" action="{{ url('crypto:delete_trade', args=[user.slug, account.slug]) }}">
-							   	<input type="hidden" name="reverse" value="{{ reverse }}">
 							   	<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 							   	<input type="hidden" name="trade" value="{{ trade.pk }}">
 							   	<input type="submit" class='btn btn-sm btn-danger' value="Delete">
 							</form>
 		                </div> 
 		            {% endset %}
-		            {{ table.row([trade.account, trade.date, trade.buy_amount, trade.buy_asset, trade.sell_amount, trade.sell_asset, trade.fees, trade.fees_asset, tablebuttons | safe]) }}
+		            {{ table.row([trade.date, trade.account, trade.buy_amount, trade.buy_asset, trade.sell_amount, trade.sell_asset, trade.fees, trade.fees_asset, tablebuttons | safe]) }}
 		        {% endfor %}
 		    </tbody>
 		</table>
@@ -144,14 +157,25 @@
 		    <tbody class="table--body">
 		        {% for transaction in transactions %}
 		            {% set tablebuttons %}
-		                {#<div class="d-flex flex-row">
-		                	<form method="POST" action="{{ url('crypto:delete_trade', args=[user.slug, account.slug]) }}">
-							   	<input type="hidden" name="reverse" value="{{ reverse }}">
+		                <div class="d-flex flex-row">
+		                	{% set data %}
+		                        {% raw %} { {% endraw %}
+		                            'pk': '{{ transaction.pk }}', 
+		                            'date': '{{ transaction.date }}',
+		                            'from_account': '{{ transaction.from_account }}',
+		                            'to_account': '{{ transaction.to_account }}',
+		                            'amount': '{{ transaction.amount }}',
+		                            'fees': '{{ transaction.fees }}'
+		                        {% raw %} } {% endraw %}
+		                    {% endset %}
+		                    {{ buttons.buttonModalNew(text="Edit", dataTarget="#editTrade", data=data) }}
+		                    <div class="placeholder"></div>
+		                	<form method="POST" action="{{ url('crypto:delete_transaction', args=[user.slug, account.slug]) }}">
 							   	<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-							   	<input type="hidden" name="trade" value="{{ trade.pk }}">
+							   	<input type="hidden" name="pk" value="{{ transaction.pk }}">
 							   	<input type="submit" class='btn btn-sm btn-danger' value="Delete">
 							</form>
-		                </div>#}
+		                </div>
 		            {% endset %}
 		            {{ table.row([transaction.date, transaction.asset, transaction.from_account, transaction.to_account, transaction.amount, transaction.fees, tablebuttons | safe]) }}
 		        {% endfor %}
@@ -165,8 +189,7 @@
 
 {% block modals %}
 	{% import "modules/crypto/modals.njk" as modals %}
-	{#{ modals.editChangeModal(user, accounts, categories, csrf_token, reverse) }#}
-	{#{ modals.addChangeModal(user, categories, csrf_token, reverse) }#}
 	{{ modals.addTransactionModal(user, account, accounts, csrf_token) }}
-	{{ modals.addTradeModal(user, reverse, accounts, assets_all, csrf_token) }}
+	{{ modals.addTradeModal(user, accounts, assets_all, csrf_token) }}
+	{{ modals.editTradeModal(user, account, accounts, assets_all, csrf_token) }}
 {% endblock %}
