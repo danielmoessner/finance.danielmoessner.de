@@ -1,27 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2963ab0c-7f32-4334-befc-b04bf7fbeb4e" name="Default" comment="trello #69">
+    <list default="true" id="2963ab0c-7f32-4334-befc-b04bf7fbeb4e" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/db.sqlite3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/banking/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/finance/banking/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/core/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/finance/core/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/crypto/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/finance/crypto/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/crypto/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/finance/crypto/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/crypto/views/form_views.py" beforeDir="false" afterPath="$PROJECT_DIR$/finance/crypto/views/form_views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/crypto/views/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/finance/crypto/views/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/static/app/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/finance/static/app/css/main.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/static/scss/_modules.scss" beforeDir="false" afterPath="$PROJECT_DIR$/finance/static/scss/_modules.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/static/templates/banking_account.njk" beforeDir="false" afterPath="$PROJECT_DIR$/finance/static/templates/banking_account.njk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/static/templates/banking_category.njk" beforeDir="false" afterPath="$PROJECT_DIR$/finance/static/templates/banking_category.njk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/static/templates/banking_index.njk" beforeDir="false" afterPath="$PROJECT_DIR$/finance/static/templates/banking_index.njk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/static/templates/crypto_account.njk" beforeDir="false" afterPath="$PROJECT_DIR$/finance/static/templates/crypto_account.njk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/static/templates/crypto_asset.njk" beforeDir="false" afterPath="$PROJECT_DIR$/finance/static/templates/crypto_asset.njk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/static/templates/crypto_index.njk" beforeDir="false" afterPath="$PROJECT_DIR$/finance/static/templates/crypto_index.njk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/static/templates/modules/banking/modals.njk" beforeDir="false" afterPath="$PROJECT_DIR$/finance/static/templates/modules/banking/modals.njk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/static/templates/modules/crypto/modals.njk" beforeDir="false" afterPath="$PROJECT_DIR$/finance/static/templates/modules/crypto/modals.njk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/static/templates/modules/form_contents.njk" beforeDir="false" afterPath="$PROJECT_DIR$/finance/static/templates/modules/form_contents.njk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/static/templates/users_settings.njk" beforeDir="false" afterPath="$PROJECT_DIR$/finance/static/templates/users_settings.njk" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -83,14 +65,23 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="form_views.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="form_views.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/finance/crypto/views/form_views.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="237">
+            <state relative-caret-position="-630">
               <caret line="197" column="31" selection-start-line="197" selection-start-column="31" selection-end-line="197" selection-end-column="31" />
               <folding>
                 <element signature="e#0#32#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="forms.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/finance/users/forms.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="425">
+              <caret line="28" column="4" selection-start-line="28" selection-start-column="4" selection-end-line="28" selection-end-column="4" />
             </state>
           </provider>
         </entry>
@@ -726,7 +717,14 @@
       <option name="project" value="LOCAL" />
       <updated>1528836040795</updated>
     </task>
-    <option name="localTasksCounter" value="28" />
+    <task id="LOCAL-00028" summary="trello #56">
+      <created>1529182206900</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1529182206900</updated>
+    </task>
+    <option name="localTasksCounter" value="29" />
     <servers />
   </component>
   <component name="TodoView">
@@ -742,12 +740,12 @@
     <frame x="-8" y="-8" width="1936" height="1096" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" x="0" y="0" width="1916" height="1080" id="Project" order="2" sideWeight="0.4819103" visible="true" weight="0.17175975" />
+      <window_info active="true" content_ui="combo" x="0" y="0" width="1916" height="1080" id="Project" order="2" sideWeight="0.4819103" visible="true" weight="0.17175975" />
       <window_info anchor="bottom" id="TODO" internal_type="SLIDING" order="5" show_stripe_button="false" type="SLIDING" weight="0.32778355" />
       <window_info anchor="bottom" id="Event Log" order="6" sideWeight="0.5168598" side_tool="true" weight="0.28008088" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.32962587" />
       <window_info anchor="bottom" id="Python Console" order="10" sideWeight="0.4873551" weight="0.47421637" />
-      <window_info active="true" anchor="bottom" id="Run" order="8" sideWeight="0.48314014" visible="true" weight="0.26491407" />
+      <window_info anchor="bottom" id="Run" order="8" sideWeight="0.48314014" visible="true" weight="0.26491407" />
       <window_info id="Structure" internal_type="SLIDING" order="0" show_stripe_button="false" side_tool="true" type="SLIDING" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="9" sideWeight="0.4841939" weight="0.30535895" />
       <window_info id="Favorites" order="1" sideWeight="0.5180897" side_tool="true" weight="0.18651211" />
@@ -786,7 +784,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="small changes&#10;trello #54 not finished yet tho" />
     <MESSAGE value="cleaned up code" />
     <MESSAGE value="cleaned up some code &#10;finished trello #54" />
     <MESSAGE value="completed trello #60" />
@@ -811,7 +808,8 @@
     <MESSAGE value="trello #67" />
     <MESSAGE value="trello #68" />
     <MESSAGE value="trello #69" />
-    <option name="LAST_COMMIT_MESSAGE" value="trello #69" />
+    <MESSAGE value="trello #56" />
+    <option name="LAST_COMMIT_MESSAGE" value="trello #56" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -920,13 +918,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="657">
           <caret line="298" column="6" selection-start-line="298" selection-start-column="6" selection-end-line="298" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/finance/users/forms.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="425">
-          <caret line="28" column="4" selection-start-line="28" selection-start-column="4" selection-end-line="28" selection-end-column="4" />
         </state>
       </provider>
     </entry>
@@ -1185,11 +1176,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/finance/crypto/views/form_views.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="237">
+        <state relative-caret-position="-630">
           <caret line="197" column="31" selection-start-line="197" selection-start-column="31" selection-end-line="197" selection-end-column="31" />
           <folding>
             <element signature="e#0#32#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/finance/users/forms.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="425">
+          <caret line="28" column="4" selection-start-line="28" selection-start-column="4" selection-end-line="28" selection-end-column="4" />
         </state>
       </provider>
     </entry>

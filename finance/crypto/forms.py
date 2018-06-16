@@ -165,12 +165,36 @@ class UpdateTransactionForm(forms.ModelForm):
 
 # PRICE
 class CreatePriceForm(forms.ModelForm):
+    date = forms.CharField(max_length=16, min_length=16)
+
     class Meta:
         model = Price
         fields = (
             "price",
             "date"
         )
+
+    def clean_date(self):
+        date = self.cleaned_data["date"]
+        date = datetime.strptime(date, '%Y-%m-%dT%H:%M').replace(tzinfo=pytz.utc)
+        return date
+
+
+class EditPriceForm(forms.ModelForm):
+    pk = forms.IntegerField(min_value=0)
+    date = forms.CharField(max_length=16, min_length=16)
+
+    class Meta:
+        model = Price
+        fields = (
+            "price",
+            "date"
+        )
+
+    def clean_date(self):
+        date = self.cleaned_data["date"]
+        date = datetime.strptime(date, '%Y-%m-%dT%H:%M').replace(tzinfo=pytz.utc)
+        return date
 
 
 # TIMESPAN
