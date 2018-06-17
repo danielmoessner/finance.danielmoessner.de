@@ -8,7 +8,7 @@
 
 {% block main %} 
 
-	{% import "modules/form_contents.njk" as form %}
+	{% import "modules/form_childs.njk" as childs %}
 	<div class="login">
 		<div class="wrapper">
 			<h1 class="login--heading">Login</h1>
@@ -21,8 +21,8 @@
 			{% endif %}
 			<form action="{{ url('users:login') }}" method="POST">
 				<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-				{{ form.justInput(text="Username", type="text", name="username", wrapperClass="login--input-group", inputClass="login--input-group--input") }}
-				{{ form.justInput(text="Password", type="password", name="password", wrapperClass="login--input-group", inputClass="login--input-group--input") }}
+					{{ childs.textInput("Username", "username") }}
+				{{ childs.passwordInput("Password", "password") }}
 				<input type="submit" value="Login" class="login--login-button">
 			</form>
 			<a type="button" href="{{ url('users:signup') }}" class="login--signup-button" role="button">Sign up as a new user.</a>

@@ -9,8 +9,6 @@ $.ajax({
 	},
 	error: function(xhr, ajaxOptions, thrownError){
 		console.log("Error in line_chart.js ajax call.")
-		console.log(xhr.status)
-		console.log(thrownError)
 	}
 })
 
