@@ -100,7 +100,7 @@ class IndexData(APIView):
             df2.rename(columns={"d": "dates", "b": str(account)}, inplace=True)
             df2.drop(["c"], axis=1, inplace=True)
             df2.set_index("dates", inplace=True)
-            df1 = pd.concat([df1, df2], join="outer", ignore_index=False)
+            df1 = pd.concat([df1, df2], join="outer", ignore_index=False, sort=False)
         df1.sort_index(inplace=True)
         df1.ffill(inplace=True)
         df1 = df1[~df1.index.duplicated(keep="last")]

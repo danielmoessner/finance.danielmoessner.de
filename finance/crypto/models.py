@@ -223,16 +223,8 @@ class Movie(models.Model):
         self.timespan_data = None
 
     def __str__(self):
-        if self.depot and self.account and self.asset:
-            return str(self.depot) + " with " + str(self.account) + " with " + str(self.asset)
-        elif self.depot and self.account and not self.asset:
-            return str(self.depot) + " with " + str(self.account)
-        elif self.depot and not self.account and self.asset:
-            return str(self.depot) + " with " + str(self.asset)
-        elif self.depot and not self.account and not self.asset:
-            return str(self.depot)
-        else:
-            return "delete me"
+        text = "{} {} {}".format(self.depot, self.account, self.asset)
+        return text.replace("None ", "").replace(" None", "")
 
     # getters
     def get_df(self, timespan=None):
@@ -313,9 +305,7 @@ class Movie(models.Model):
     @staticmethod
     def update_all(depot, force_update=False, disable_update=False):
         if force_update:
-            for movie in Movie.objects.filter(depot=depot):
-                movie.update_needed = True
-                movie.save()
+            depot.movies.update(update_needed=True)
 
         t1 = time.time()
         for account in depot.accounts.all():
@@ -340,7 +330,7 @@ class Movie(models.Model):
 
     def update(self):
         t1 = time.time()
-        Picture.objects.filter(movie=self).delete()
+        self.pictures.all().delete()
 
         t2 = time.time()
         if self.depot and not self.account and self.asset:
@@ -403,12 +393,11 @@ class Movie(models.Model):
         Picture.objects.bulk_create(pictures)
 
         t4 = time.time()
+        text = "{} is up to date. --Calc Time: {}% --Save/Delete Time: {}%".format(
+            self, round((t3 - t2) / (t4 - t1), 2), round((t4 - t3 + t2 - t1) / (t4 - t1), 2), "%")
+        print(text)
         self.update_needed = False
         self.save()
-        done = len(self.depot.movies.filter(update_needed=False))
-        all = len(self.depot.movies.all())
-        print(self, "is up to date.", done, "of", all, "movies are up to date. --Delete time:",
-              t2 - t1, "--Calc time:", t3 - t2, "--Save time:", t4 - t3)
 
     # calc helpers
     @staticmethod

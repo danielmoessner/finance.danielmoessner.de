@@ -189,7 +189,7 @@ class Movie(models.Model):
 
     def __str__(self):
         text = "{} {} {}".format(self.depot, self.account, self.category)
-        return text.replace("None", "").replace("   ", " ").replace("  ", " ")
+        return text.replace("None ", "").replace(" None", "")
 
     # getters
     def get_df(self, timespan=None):
@@ -252,7 +252,7 @@ class Movie(models.Model):
     @staticmethod
     def update_all(depot, disable_update=False, force_update=False):
         if force_update:
-            Movie.objects.filter(depot=depot).delete()
+            depot.movies.all().delete()
 
         t1 = time.time()
         for account in depot.accounts.all():
@@ -295,9 +295,9 @@ class Movie(models.Model):
         Picture.objects.bulk_create(pictures)
 
         t4 = time.time()
-        print(self, "is up to date.",
-              "--Calc Time:", ((t3 - t2) / (t4-t2)),
-              "--Save Time:", ((t4 - t3) / (t4-t2)))
+        text = "{} is up to date. --Calc Time: {}% --Save Time: {}%".format(
+            self, round((t3 - t2) / (t4 - t2), 2), round((t4 - t3) / (t4 - t2), 2), "%")
+        print(text)
         self.update_needed = False
         self.save()
 
