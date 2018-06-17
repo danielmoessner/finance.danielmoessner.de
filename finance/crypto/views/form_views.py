@@ -218,8 +218,8 @@ class AccountUpdateTransactionView(AccountView):
         transaction = form.save(commit=False)
         transaction.pk = form.cleaned_data["pk"]
         transaction.save()
-        account = transaction.from_account
-        success_url = reverse_lazy("crypto:account", args=[self.request.user.slug, account.slug])
+        url = self.request.META['PATH_INFO']
+        success_url = "/".join(url.split("/")[:-2])
         return HttpResponseRedirect(success_url)
 
     def form_invalid(self, form, **kwargs):
@@ -231,9 +231,9 @@ class AccountDeleteTransactionView(AccountView, CustomDeleteView):
     def form_valid(self, form):
         transaction_pk = form.cleaned_data["pk"]
         transaction = Transaction.objects.get(pk=transaction_pk)
-        account = transaction.from_account
         transaction.delete()
-        success_url = reverse_lazy("crypto:account", args=[self.request.user.slug, account.slug])
+        url = self.request.META['PATH_INFO']
+        success_url = "/".join(url.split("/")[:-2])
         return HttpResponseRedirect(success_url)
 
     def form_invalid(self, form, **kwargs):
