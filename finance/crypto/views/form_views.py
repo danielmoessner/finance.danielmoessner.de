@@ -300,7 +300,6 @@ class IndexUpdateActiveOnTimespanView(IndexView):
             return self.form_invalid(form)
 
     def form_valid(self, form):
-        print("ok")
         self.request.user.crypto_depots.get(is_active=True).timespans.update(is_active=False)
         timespan_pk = form.cleaned_data["pk"]
         Timespan.objects.filter(pk=timespan_pk).update(is_active=True)

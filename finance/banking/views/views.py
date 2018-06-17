@@ -88,45 +88,35 @@ class IndexData(APIView):
         user = request.user
         depot = Depot.objects.get(user=user, is_active=True)
 
-        df1 = pd.DataFrame()
-        depot_movie = depot.get_movie()
-        df1["balance"] = depot_movie.get_data(depot.timespans.get(is_active=True))["b"]
-        df1["dates"] = [date.date() for date in
-                        list(depot_movie.get_data(depot.timespans.get(is_active=True))["d"])]
+        timespan = depot.timespans.get(is_active=True)
+        df1 = depot.get_movie().get_df(timespan)
+        df1.rename(columns={"d": "dates", "b": "Total"}, inplace=True)
+        df1.drop(["c"], axis=1, inplace=True)
         df1.set_index("dates", inplace=True)
         for account in Account.objects.filter(depot=depot):
-            account_movie = account.get_movie()
-            df2 = pd.DataFrame()
-            account_movie = account.get_movie()
-            df2[str(account)] = account_movie.get_data(depot.timespans.get(is_active=True))[
-                "b"]
-            df2["dates"] = [date.date() for date in
-                            list(account_movie.get_data(depot.timespans.get(is_active=True))[
-                                     "d"])]
+            df2 = account.get_movie().get_df(timespan)
+            if df2.empty:
+                continue
+            df2.rename(columns={"d": "dates", "b": str(account)}, inplace=True)
+            df2.drop(["c"], axis=1, inplace=True)
             df2.set_index("dates", inplace=True)
             df1 = pd.concat([df1, df2], join="outer", ignore_index=False)
-            df1.sort_index(inplace=True)
-            df1.ffill(inplace=True)
+        df1.sort_index(inplace=True)
+        df1.ffill(inplace=True)
         df1 = df1[~df1.index.duplicated(keep="last")]
         df1.fillna(0, inplace=True)
 
         datasets = list()
-        dataset = dict()
-        dataset["label"] = "Total"
-        dataset["type"] = "line"
-        dataset["data"] = df1["balance"].tolist()
-        datasets.append(dataset)
         for column_name in df1.columns.values.tolist():
-            if column_name != "balance":
-                dataset = dict()
-                dataset["label"] = str(column_name)
-                dataset["type"] = "line"
-                dataset["data"] = df1[column_name].tolist()
-                datasets.append(dataset)
-
+            dataset = dict()
+            dataset["label"] = str(column_name)
+            dataset["type"] = "line"
+            dataset["data"] = df1[column_name].tolist()
+            datasets.append(dataset)
         data = dict()
         data["labels"] = df1.index.tolist()
         data["datasets"] = datasets
+
         return Response(data)
 
 
@@ -139,19 +129,19 @@ class AccountData(APIView):
         depot = Depot.objects.get(user=user, is_active=True)
         account = Account.objects.get(slug=slug)
 
-        movie = Movie.objects.get(depot=depot, account=account, category=None)
-        df = movie.get_df(depot.timespans.get(is_active=True))
+        movie = account.get_movie()
+        timespan = depot.timespans.get(is_active=True)
+        df = movie.get_df(timespan)
         if df.empty:
             return Response(dict())
-        df = df.drop(["c"], axis=1)
+        df.drop(["c"], axis=1, inplace=True)
         df["d"] = df["d"].dt.date
         df.rename(columns={"d": "dates", "b": "balance"}, inplace=True)
         df.set_index("dates", inplace=True)
         df = df.groupby(df.index).last()
 
         for category in depot.categories.all():
-            df_c = Movie.objects.get(depot=depot, account=account, category=category)\
-                .get_df(depot.timespans.get(is_active=True))
+            df_c = account.get_cat_movie(category).get_df(timespan)
             if df_c.empty:
                 continue
             df_c = df_c.drop(["b"], axis=1)
@@ -163,6 +153,7 @@ class AccountData(APIView):
                     df_c.loc[index, column] = df_c.loc[index, column].sum()
             df_c = df_c.groupby(df_c.index).last()
             df = pd.concat([df, df_c], axis=1)
+        df.sort_index(inplace=True)
 
         # df with all dates to normalize the data oterhwise chartjs displays the date weird af
         dates = pd.date_range(start=df.index[0], end=(df.index[-1] + timedelta(days=1)))
@@ -185,10 +176,10 @@ class AccountData(APIView):
             dataset["type"] = "bar"
             dataset["data"] = df[column].tolist()
             datasets.append(dataset)
-
         data = dict()
         data["labels"] = df.index.tolist()
         data["datasets"] = datasets
+
         return Response(data)
 
 
@@ -199,73 +190,34 @@ class CategoryData(APIView):
     def get(self, request, user_slug, slug, format=None):
         user = request.user
         depot = user.banking_depots.get(is_active=True)
-
         category = Category.objects.get(slug=slug)
-        movie = Movie.objects.get(depot=depot, account=None, category=category)
-        labels = list()
-        data = list()
+        timespan = depot.timespans.get(is_active=True)
 
-        dates = movie.get_data(depot.timespans.get(is_active=True))["d"]
-        changes = movie.get_data(depot.timespans.get(is_active=True))["c"]
-        last_month = None
-        changes_sum = 0
-        for i in range(len(dates)):
-            if last_month is None:
-                last_month = dates[i].month
-                changes_sum += changes[i]
-            else:
-                if dates[i].month == last_month:
-                    changes_sum += changes[i]
-                else:
-                    labels.append(str(dates[i - 1].month) + "/" + str(dates[i - 1].year))
-                    data.append(changes_sum)
-                    last_month = dates[i].month
-                    changes_sum = changes[i]
-            if i == len(dates) - 1:
-                labels.append(str(dates[i].month) + "/" + str(dates[i].year))
-                data.append(changes_sum)
-
-        if len(labels) > 0:
-            first_year = int(labels[0][3:]) if len(labels[0]) == 7 else int(labels[0][2:])
-            first_month = int(labels[0][:2]) if len(labels[0]) == 7 else int(labels[0][:1])
-            last_year = int(labels[-1][3:]) if len(labels[-1]) == 7 else int(labels[-1][2:])
-            last_month = int(labels[-1][:2]) if len(labels[-1]) == 7 else int(labels[-1][:1])
-        else:
-            return Response(None)
-
-        dates = list()
-        for year in range(first_year, last_year + 1):
-            if year == first_year == last_year:
-                months = range(first_month, last_month + 1)
-            elif year == first_year:
-                months = range(first_month, 13)
-            elif year == last_year:
-                months = range(1, last_month + 1)
-            else:
-                months = range(1, 13)
-            for month in months:
-                dates.append(str(month) + "/" + str(year))
-        changes = list()
-        for i in range(len(dates)):
-            changes.append(0)
-            for k in range(len(labels)):
-                if dates[i] == labels[k]:
-                    changes[i] = data[k]
-                    break
+        df = category.get_movie().get_df(timespan)
+        df.rename(columns={"d": "date", "c": "change"}, inplace=True)
+        df.drop(["b"], axis=1, inplace=True)
+        df.set_index("date", inplace=True)
+        first_date = min(df.index)
+        last_date = max(df.index)
+        date_range = pd.date_range(first_date, last_date, freq="27D")
+        df_date_range = pd.DataFrame(0, index=date_range, columns=["change"])
+        df = pd.concat([df, df_date_range], sort=False)
+        df = df.groupby(lambda x: (x.year, x.month)).sum()
+        df.index.name = "date"
+        df.index = df.index.map(lambda val: str(val[1]) + "/" + str(val[0]))
 
         dataset = dict()
-        dataset["data"] = changes
+        dataset["data"] = df["change"].tolist()
         dataset["label"] = "Change"
-        if len(changes) > 0:
-            dataset["backgroundColor"] = "hsla(358, 100%, 50%, 1)" if sum(changes) < 0 \
+        if len(df["change"]) > 0:
+            dataset["backgroundColor"] = "hsla(358, 100%, 50%, 1)" if df["change"].sum() < 0 \
                 else "hsla(140, 100%, 50%, 1)"
-
         datasets = list()
         datasets.append(dataset)
-
         data = dict()
         data["datasets"] = datasets
-        data["labels"] = dates
+        data["labels"] = df.index.tolist()
+
         return Response(data)
 
 
@@ -275,17 +227,16 @@ class CategoriesData(APIView):
 
     def get(self, request, user_slug):
         user = request.user
-        depot = Depot.objects.get(user=user, is_active=True)
+        depot = user.banking_depots.get(is_active=True)
+        categories = depot.categories.all()
+        movies = depot.movies.filter(account=None, category__in=categories).select_related(
+            "category")
 
         labels_data = list()
-        for category in Category.objects.all():
-            try:
-                movie = Movie.objects.get(depot=depot, account=None, category=category)
-            except Movie.DoesNotExist:
-                continue
+        for movie in movies:
             value = movie.get_values(user, ["b", ], depot.timespans.get(is_active=True))
-            if value is not None and value["b"] != 0.0:
-                labels_data.append((str(category), value["b"]))
+            if value != 0:
+                labels_data.append((str(movie.category), value["b"]))
         labels_data.sort(key=lambda x: x[1])
         labels = [l for l, d in labels_data]
         data = [abs(d) for l, d in labels_data]

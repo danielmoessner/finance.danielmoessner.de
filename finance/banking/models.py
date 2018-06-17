@@ -71,7 +71,10 @@ class Account(CoreAccount):
 
     # getters
     def get_movie(self):
-        return self.movies.get(account=self, category=None)
+        return self.movies.get(depot=self.depot, category=None)
+
+    def get_cat_movie(self, category):
+        return self.movies.get(depot=self.depot, category=category)
 
 
 class Category(models.Model):
@@ -171,8 +174,9 @@ class Movie(models.Model):
     update_needed = models.BooleanField(default=True)
     depot = models.ForeignKey(Depot, blank=True, null=True, on_delete=models.CASCADE,
                               related_name="movies")
-    account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.CASCADE)
-    category = models.ForeignKey(Category, blank=True, null=True, related_name="stats",
+    account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.CASCADE,
+                                related_name="movies")
+    category = models.ForeignKey(Category, blank=True, null=True, related_name="movies",
                                  on_delete=models.CASCADE)
 
     class Meta:
