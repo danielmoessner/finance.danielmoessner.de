@@ -8,13 +8,13 @@
 
 
 {% block head %}
-	<script type="text/javascript" src="{{ static('app/js/line_chart_2_axes.js') }}" api-data="{{ url('crypto:api_data_account', args=[user.slug, account.slug, ]) }}"></script>
+	<script type="text/javascript" src="{{ static('app/js/pie_chart.js') }}" api-data="{{ url('crypto:api_data_account', args=[user.slug, account.slug, ]) }}"></script>
 {% endblock %}
 
 
 {% block chart %}
 	<div class="hs-3"></div>
-    <canvas id="line_chart"></canvas>
+    <canvas id="pie_chart"></canvas>
     <div class="hs-3"></div>
     <hr class="hr"> 
 {% endblock %}

@@ -189,10 +189,29 @@ class AccountData(APIView):
     def get(self, request, user_slug, slug, format=None):
         user = request.user
         depot = user.crypto_depots.get(is_active=True)
-        account = depot.accounts.get(slug=slug)
         timespan = depot.timespans.get(is_active=True)
-        pi = account.get_movie().get_data(timespan)
-        return json_data(pi, p=False)
+        account = depot.accounts.get(slug=slug)
+        assets = depot.assets.exclude(symbol=user.get_currency_display())
+        movies = depot.movies.filter(account=account, asset__in=assets).select_related("asset")
+        datasets = list()
+        labels = list()
+        data = list()
+        for movie in movies:
+            value = movie.get_values(user, ["v", ], timespan)["v"]
+            if value != "x" and round(value, 2) != 0.00:
+                labels.append(str(movie.asset))
+                data.append(value)
+        data_and_labels = list(sorted(zip(data, labels)))
+        labels = [l for d, l in data_and_labels]
+        data = [abs(d) for d, l in data_and_labels]
+        datasets_data = dict()
+        datasets_data["data"] = data
+        datasets.append(datasets_data)
+
+        data = dict()
+        data["datasets"] = datasets
+        data["labels"] = labels
+        return Response(data)
 
 
 class AssetsData(APIView):
