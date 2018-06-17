@@ -93,9 +93,3 @@ urlpatterns = [
     url(r"^category/(?P<slug>[0-9a-zA-Z-#]*)/$", login_required(views.CategoryView.as_view()),
         name="category"),
 ]
-
-
-handler400 = "finance.core.views.views.error_400_view"
-handler403 = "finance.core.views.views.error_403_view"
-handler404 = "finance.core.views.views.error_404_view"
-handler500 = "finance.core.views.views.error_500_view"

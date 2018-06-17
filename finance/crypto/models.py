@@ -326,7 +326,8 @@ class Movie(models.Model):
             movie.update()
         t2 = time.time()
 
-        print("This update took", str((t2 - t1) / 60), "minutes.")
+        text = "This update took {} minutes.".format(round((t2 - t1) / 60, 2))
+        print(text)
 
     def update(self):
         t1 = time.time()

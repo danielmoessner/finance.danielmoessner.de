@@ -18,18 +18,18 @@ class CustomDeleteView(generic.View):
         raise NotImplementedError()
 
 
-def error_400_view(request, exception):
+def error_400_view(request, exception=None):
     return render(request, "error_templates/400.html")
 
 
-def error_403_view(request, exception):
+def error_403_view(request, exception=None):
     return render(request, "error_templates/403.html")
 
 
-def error_404_view(request, exception):
+def error_404_view(request, exception=None):
     return render(request, "error_templates/404.html")
 
 
-def error_500_view(request, exception):
+def error_500_view(request, exception=None):
     return render(request, "error_templates/500.html")
 
