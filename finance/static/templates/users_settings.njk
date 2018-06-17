@@ -5,13 +5,12 @@
 {% set headingCategory="User" %}
 {% set headingHeading="Settings" %}
 {% set title="Settings" %}
-{% set reverse=url("users:settings", args=[request.user.slug, ]) %}
 
 
 {% block main %} 
 	
 
-	{% import "modules/form_contents.njk" as form %}
+	{% import "modules/form_childs.njk" as childs %}
 	{% import "modules/buttons.njk" as buttons %}
 	{% import "modules/table.njk" as table %}
 
@@ -54,11 +53,10 @@
 		<div class="settings">
 			<form action="{{ url('users:edit_user_specials', args=[user.slug,]) }}" method="POST">
 				<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-				{{ form.labelSelectTupleFirst(labelText="Select A Date Format", selectItems=date_formats[1], name="date_format", required="True", selected=date_formats[0], wrapperClass="settings--input-group", inputClass="settings--input-group--select") }}
-				{{ form.labelSelectTupleFirst(labelText="Select A Currency", selectItems=currencies[1], name="currency", required="True", selected=currencies[0], wrapperClass="settings--input-group", inputClass="settings--input-group--select") }}
-				{{ form.labelSelect(labelText="Round Numbers To 2 Decimal Places", selectItems=["True", "False"], name="rounded_numbers", required="True", selected=rounded_numbers, wrapperClass="settings--input-group", inputClass="settings--input-group--select") }}
-				{#{ form.labelCheckbox(labelText="Round Numbers To 2 Decimal Places", name="rounded_numbers", checked=rounded_numbers, wrapperClass="settings--input-check", inputClass="settings--input-check--checkbox", labelClass="settings--input-check--checkbox-label") }#}
-				<input type="submit" value="Update" class="settings--submit-button">
+				{{ childs.tupleSelect("Select A Date Format", "date_format", date_formats[1], selected=date_formats[0]) }}
+				{{ childs.tupleSelect("Select A Currency", "currency", currencies[1], selected=currencies[0]) }}
+				{{ childs.select("Round Numbers To 2 Decimal Places", "rounded_numbers", ["True", "False"], selected=rounded_numbers)}}
+				<input type="submit" value="Update" class="form-child--submit-button">
 			</form> 
 		</div> 
 
@@ -95,9 +93,9 @@
 		<div class="settings">
 			<form action="{{ url('users:edit_user', args=[user.slug,]) }}" method="POST">
 				<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-				{{ form.labelInput(labelText="Username", value=user.username, inputType="text", required="True", name="username", wrapperClass="settings--input-group", inputClass="settings--input-group--input") }}
-				{{ form.labelInput(labelText="E-Mail", value=user.email, inputType="text", required="True", name="email", wrapperClass="settings--input-group", inputClass="settings--input-group--input") }}
-				<input type="submit" value="Update" class="settings--submit-button">
+				{{ childs.textInput("Username", "username", value=user.username) }}
+				{{ childs.textInput("E-Mail", "email", value=user.email) }}
+				<input type="submit" value="Update" class="form-child--submit-button">
 			</form>
 		</div>
 
@@ -108,10 +106,10 @@
 		<div class="settings">
 			<form action="{{ url('users:edit_user_password', args=[user.slug,]) }}" method="POST">
 				<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-				{{ form.labelInput(labelText="Old Password", value="password", inputType="password", required="True", name="old_password", wrapperClass="settings--input-group", inputClass="settings--input-group--input") }}
-				{{ form.labelInput(labelText="New Password", value="password", inputType="password", required="True", name="new_password1", wrapperClass="settings--input-group", inputClass="settings--input-group--input") }}
-				{{ form.labelInput(labelText="Retype New Password", value="password", inputType="password", required="True", name="new_password2", wrapperClass="settings--input-group", inputClass="settings--input-group--input") }}
-				<input type="submit" value="Change Password" class="settings--submit-button">
+				{{ childs.passwordInput("Old Password", "old_password") }}
+				{{ childs.passwordInput("New Password", "new_password1") }}
+				{{ childs.passwordInput("Retype New Password", "new_password2") }}
+				<input type="submit" value="Change Password" class="form-child--submit-button">
 			</form>
 		</div> 
 	</div>
@@ -141,7 +139,7 @@
                             <form method="POST" action="{{ url('users:delete_banking_depot', args=[user.slug,]) }}" class="">
                                 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                                 <input type="hidden" name="pk" value="{{ depot.pk }}">
-                                <input type="submit" class="btn btn-sm btn-danger {% if depot.is_active==True %}disabled{% endif %}" value="Delete">
+                                <input type="submit" class="btn btn-sm btn-danger" {% if depot.is_active==True %}disabled{% endif %} value="Delete">
                             </form>
                         </div>
                     {% endset %} 
@@ -156,16 +154,15 @@
 		<div class="table-heading">
 	        <h2 class="table-heading--heading">Depots</h2>
 	        {{ buttons.buttonModal(text="Add Depot", dataTarget="#addCryptoDepot") }}
-            <div class="placeholder"></div>
-            {{ buttons.buttonModal(text="Delete Depot", dataTarget="#deleteCryptoDepot", class="btn-danger") }} 
 	    </div>
 		<table class="table">
             {{ table.head(["Depot", "Action"]) }}
             <tbody class="table--body">
                 {% for depot in crypto_depots %}
                     {% set tablebuttons %}
-                        <div class="flex flex-row">  
-                        	<a type="button" href={{ url("users:set_crypto_depot_active", args=[user.slug, depot.pk, ]) }} class="btn btn-sm btn-info {% if depot.is_active==True %}disabled{% endif %}" role="button">Set Active</a>
+                        <div class="d-flex flex-row">  
+                        	<a type="button" href={{ url("users:set_crypto_depot_active", args=[user.slug, depot.pk, ]) }} class="btn btn-sm btn-info {% if depot.is_active==True %}disabled{% endif %}"" role="button">Set Active</a>
+                            <div class="placeholder"></div>
                             {% set data %}
                                 {% raw %} { {% endraw %}
                                     'pk': '{{ depot.pk }}', 
@@ -173,6 +170,12 @@
                                 {% raw %} } {% endraw %}
                             {% endset %}
                             {{ buttons.buttonModalNew(text="Edit", dataTarget="#editCryptoDepot", data=data) }}
+                            <div class="placeholder"></div>
+                            <form method="POST" action="{{ url('users:delete_crypto_depot', args=[user.slug,]) }}" class="">
+                                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                                <input type="hidden" name="pk" value="{{ depot.pk }}">
+                                <input type="submit" class="btn btn-sm btn-danger" {% if depot.is_active==True %}disabled{% endif %} value="Delete">
+                            </form>
                         </div>
                     {% endset %} 
                     {{ table.row([depot.name, tablebuttons]) }}

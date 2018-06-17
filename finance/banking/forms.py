@@ -11,7 +11,7 @@ import pytz
 
 
 # DEPOT
-class AddDepotForm(forms.ModelForm):
+class CreateDepotForm(forms.ModelForm):
     class Meta:
         model = Depot
         fields = (

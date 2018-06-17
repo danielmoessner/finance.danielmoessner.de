@@ -37,7 +37,6 @@ def form_invalid_universal(view, form, errors_name, heading="Something went wron
     context = view.get_context_data(**kwargs)
     context[errors_name] = [heading, ]
     for field in form:
-        context[errors_name].append(field)
         context[errors_name].append(
             strip_tags(field.errors).replace(".", ". ").replace("  ", " ")
         )
