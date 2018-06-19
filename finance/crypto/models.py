@@ -123,11 +123,11 @@ class Asset(models.Model):
 class Trade(models.Model):
     account = models.ForeignKey(Account, related_name="trades", on_delete=models.CASCADE)
     date = models.DateTimeField()
-    buy_amount = models.DecimalField(max_digits=20, decimal_places=10)
+    buy_amount = models.DecimalField(max_digits=20, decimal_places=8)
     buy_asset = models.ForeignKey(Asset, related_name="buy_trades", on_delete=models.CASCADE)
-    sell_amount = models.DecimalField(max_digits=20, decimal_places=10)
+    sell_amount = models.DecimalField(max_digits=20, decimal_places=8)
     sell_asset = models.ForeignKey(Asset, related_name="sell_trades", on_delete=models.CASCADE)
-    fees = models.DecimalField(max_digits=20, decimal_places=10)
+    fees = models.DecimalField(max_digits=20, decimal_places=8)
     fees_asset = models.ForeignKey(Asset, related_name="trade_fees", on_delete=models.CASCADE)
 
     class Meta:
@@ -158,8 +158,8 @@ class Transaction(models.Model):
     date = models.DateTimeField()
     to_account = models.ForeignKey(Account, related_name="to_transactions",
                                    on_delete=models.CASCADE)
-    amount = models.DecimalField(max_digits=20, decimal_places=10)
-    fees = models.DecimalField(max_digits=20, decimal_places=10)
+    amount = models.DecimalField(max_digits=20, decimal_places=8)
+    fees = models.DecimalField(max_digits=20, decimal_places=8)
 
 
 class Price(models.Model):
@@ -416,55 +416,55 @@ class Movie(models.Model):
     # calc helpers
     @staticmethod
     def ffadd(df, column):
+        column_loc = df.columns.get_loc(column)
         for i in range(1, len(df[column])):
-            df.loc[df.index[i], column] = \
-                df.loc[df.index[i-1], column] + df.loc[df.index[i], column]
+            df.iloc[i, column_loc] = df.iloc[i, column_loc] + df.iloc[i - 1, column_loc]
 
     @staticmethod
     def ffmultiply(df, column):
+        column_loc = df.columns.get_loc(column)
         for i in range(1, len(df[column])):
-            try:
-                df.loc[df.index[i], column] = df[column][i - 1] * df[column][i]
-            except RuntimeWarning as rw:
-                if (abs(df[column][i-1]) == np.inf and df[column][i] == 0) \
-                        or (df[column][i-1] == 0 and abs(df[column][i]) == np.inf):
-                    df.loc[df.index[i], column] = np.nan
-                else:
-                    print(df[column][i - 1], df[column][i])
-                    raise rw
+            # try:
+            df.iloc[i, column_loc] = df.iloc[i, column_loc] * df.iloc[i - 1, column_loc]
+            # except RuntimeWarning as rw:
+            #     if (abs(df[column][i-1]) == np.inf and df[column][i] == 0) \
+            #             or (df[column][i-1] == 0 and abs(df[column][i]) == np.inf):
+            #         df.loc[df.index[i], column] = np.nan
+            #     else:
+            #         print(df[column][i - 1], df[column][i])
+            #         raise rw
 
     @staticmethod
-    def calc_fifo(type_column, buy_amount_column, buy_sum_column, fee_sum_column,
-                  current_amount_column):
+    def calc_fifo(type_column, ba_column, bs_column, fee_sum_column, ca_column):
         """
         ATTENTION: The index of the columns must be in ascendent order. Otherwise it doesn't work.
+        I'm pretty sure that because of iloc it does work now no matter the index
         """
-        current_sum_row = [0] * len(buy_amount_column)
-        for i in range(len(buy_amount_column)):
-            current_amount = current_amount_column[i]
+        current_sum_row = [0] * len(ba_column)
+        for i in range(len(ba_column)):
+            current_amount = ca_column.iloc[i]
             if np.around(current_amount, 8) < 0:
                 raise Exception("There was more asset sold than available.")
             current_sum = 0
-            for k in reversed(range(0, i + 1)):  # genauere datetypen hier verwenden numpy iwas
-                if type_column[k] == "BUY":
+            for k in reversed(range(0, i + 1)):
+                if type_column.iloc[k] == "BUY":
                     if k > 0:
-                        if np.around(current_amount, 8) > np.around(
-                                buy_amount_column[k] - buy_amount_column[k - 1], 8):
-                            current_sum += (buy_sum_column[k] - buy_sum_column[k - 1]) + \
-                                           (fee_sum_column[k] - fee_sum_column[k - 1])
-                            current_amount -= buy_amount_column[k] - buy_amount_column[k - 1]
-                        elif np.around(current_amount, 8) <= np.around(
-                                buy_amount_column[k] - buy_amount_column[k - 1], 8):
-                            current_sum += ((buy_sum_column[k] - buy_sum_column[k - 1]) +
-                                            (fee_sum_column[k] - fee_sum_column[k - 1])) * \
-                                           (current_amount /
-                                            (buy_amount_column[k] - buy_amount_column[k - 1]))
+                        if np.around(current_amount, 8) > \
+                                np.around(ba_column.iloc[k] - ba_column.iloc[k - 1], 8):
+                            current_sum += (bs_column.iloc[k] - bs_column.iloc[k - 1]) + \
+                                           (fee_sum_column.iloc[k] - fee_sum_column.iloc[k - 1])
+                            current_amount -= ba_column.iloc[k] - ba_column.iloc[k - 1]
+                        elif np.around(current_amount, 8) <= \
+                                np.around(ba_column.iloc[k] - ba_column.iloc[k - 1], 8):
+                            current_sum += ((bs_column.iloc[k] - bs_column.iloc[k - 1]) + (
+                                    fee_sum_column.iloc[k] - fee_sum_column.iloc[k - 1])) * (
+                                    current_amount / (ba_column.iloc[k] - ba_column.iloc[k - 1]))
                             current_amount -= current_amount
                             break
                     else:
-                        if np.around(current_amount, 8) <= np.around(buy_amount_column[k], 8):
-                            current_sum += (buy_sum_column[k] + fee_sum_column[k]) * \
-                                           (current_amount / buy_amount_column[k])
+                        if np.around(current_amount, 8) <= np.around(ba_column.iloc[k], 8):
+                            current_sum += (bs_column.iloc[k] + fee_sum_column.iloc[k]) * \
+                                           (current_amount / ba_column.iloc[k])
                             current_amount -= current_amount
                             break
                         else:
