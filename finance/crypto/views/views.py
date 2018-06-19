@@ -255,4 +255,4 @@ class AssetData(APIView):
         asset = Asset.objects.get(slug=slug)
         timespan = depot.timespans.get(is_active=True)
         pi = asset.get_movie().get_data(timespan)
-        return json_data(pi)
+        return json_data(pi, ttwr=False)

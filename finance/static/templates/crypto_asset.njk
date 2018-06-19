@@ -60,7 +60,7 @@
             <h2 class="table-heading--heading">Stats</h2>
         </div>
         <hr class="hr">
-        {%- set assetData = movie.get_values(user, ["cs", "g", "v", "cr", "ttwr"]) -%}
+        {%- set assetData = movie.get_values(user, ["cs", "g", "v", "cr"]) -%}
         <div class="card-deck">
             {{ cards.statsCard("Invested Capital", assetData.cs, user.currency) }}
             {{ cards.statsCard("Profit", assetData.g, user.currency) }}
@@ -68,7 +68,6 @@
         </div>
         <div class="card-deck">
             {{ cards.statsCard("Current Return", assetData.cr, "%") }}
-            {{ cards.statsCard("True time weighted return", assetData.ttwr, "%")}}
         </div>
 		{% for ts in timespans %}
 		    {% if ts.start_date and ts.is_active %}
