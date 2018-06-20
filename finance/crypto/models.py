@@ -491,19 +491,19 @@ class Movie(models.Model):
         buy_trades_df.set_index("date", inplace=True)
 
         # sell_trades
-        sell_trades = Trade.objects.filter(sell_asset=self.asset).select_related("buy_asset",
-                                                                                 "fees_asset")
-        sell_trades_values = sell_trades.values("date", "sell_amount")
+        sell_trades = Trade.objects.filter(sell_asset=self.asset).select_related("buy_asset")
+        sell_trades_values = sell_trades.values("date", "sell_amount", "fees", "fees_asset",
+                                                "sell_asset")
         sell_trades_df = pd.DataFrame(list(sell_trades_values), dtype=np.float64)
+        if sell_trades_df.empty:
+            sell_trades_df = pd.DataFrame(columns=["date", "sell_amount", "fees", "fees_asset",
+                                                   "sell_asset", "type", "sell_sum"])
+        sell_trades_df.rename(columns={"fees": "fee_amount_sell"}, inplace=True)
         sell_trades_df["type"] = "SELL"
         sell_trades_df["sell_sum"] = [trade.buy_asset.get_worth(trade.date, trade.buy_amount)
                                       for trade in sell_trades]
-        sell_trades_df["fee_amount_sell"] = [np.float64(trade.fees)
-                                             if trade.fees_asset == self.asset
-                                             else 0 for trade in sell_trades]
-        if sell_trades_df.empty:
-            sell_trades_df = pd.DataFrame(columns=["date", "sell_amount", "type", "sell_sum",
-                                                   "fee_amount_sell"])
+        sell_trades_df.loc[sell_trades_df.loc[:, "fees_asset"] !=
+                           sell_trades_df.loc[:, "sell_asset"], "fee_amount_sell"] = 0
         sell_trades_df.set_index("date", inplace=True)
 
         # transactions
@@ -568,15 +568,16 @@ class Movie(models.Model):
         buy_trades_df.set_index("date", inplace=True)
         
         # sell_trades
-        sell_trades = Trade.objects.filter(sell_asset=self.asset,
-                                           account=self.account).select_related("fees_asset")
-        sell_trades_values = sell_trades.values("date", "sell_amount")
+        sell_trades = Trade.objects.filter(sell_asset=self.asset, account=self.account)
+        sell_trades_values = sell_trades.values("date", "sell_amount", "fees_asset", "sell_asset",
+                                                "fees")
         sell_trades_df = pd.DataFrame(list(sell_trades_values), dtype=np.float64)
-        sell_trades_df["fee_amount_sell"] = [np.float64(trade.fees)
-                                             if trade.fees_asset == self.asset
-                                             else 0 for trade in sell_trades]
         if sell_trades_df.empty:
-            sell_trades_df = pd.DataFrame(columns=["date", "sell_amount", "fee_amount_sell"])
+            sell_trades_df = pd.DataFrame(columns=["date", "sell_amount", "fees_asset",
+                                                   "sell_asset", "fees"])
+        sell_trades_df.rename(columns={"fees": "fee_amount_sell"}, inplace=True)
+        sell_trades_df.loc[sell_trades_df.loc[:, "fees_asset"] !=
+                           sell_trades_df.loc[:, "sell_asset"], "fee_amount_sell"] = 0
         sell_trades_df.set_index("date", inplace=True)
         
         # to_transactions
