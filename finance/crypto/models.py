@@ -355,7 +355,7 @@ class Movie(models.Model):
             df = df[len(old_df):]
         else:
             from finance.core.utils import print_df
-            print(df)
+            print_df(df)
             print_df(old_df)
             self.pictures.all().delete()
 
@@ -424,15 +424,7 @@ class Movie(models.Model):
     def ffmultiply(df, column):
         column_loc = df.columns.get_loc(column)
         for i in range(1, len(df[column])):
-            # try:
             df.iloc[i, column_loc] = df.iloc[i, column_loc] * df.iloc[i - 1, column_loc]
-            # except RuntimeWarning as rw:
-            #     if (abs(df[column][i-1]) == np.inf and df[column][i] == 0) \
-            #             or (df[column][i-1] == 0 and abs(df[column][i]) == np.inf):
-            #         df.loc[df.index[i], column] = np.nan
-            #     else:
-            #         print(df[column][i - 1], df[column][i])
-            #         raise rw
 
     @staticmethod
     def calc_fifo(type_column, ba_column, bs_column, fee_sum_column, ca_column):
@@ -636,7 +628,7 @@ class Movie(models.Model):
         return df
 
     def calc_account(self):
-        df = pd.DataFrame(columns=["value", ], dtype=np.float64)
+        df = pd.DataFrame(columns=["value", "date"], dtype=np.float64)
 
         # assets
         asset_dfs_values = list()
@@ -645,11 +637,12 @@ class Movie(models.Model):
             asset_df = movie.get_df()
             asset_df = asset_df[["v", "d"]]
             asset_df.rename(columns={"v": asset.name + "__value", "d": "date"}, inplace=True)
-            asset_df.set_index("date", inplace=True)
             asset_dfs_values.append(asset.name + "__value")
-            df = pd.concat([df, asset_df], join="outer", ignore_index=False, sort=False)
+            df = pd.concat([df, asset_df], join="outer", ignore_index=True, sort=False)
 
         # all together
+        df["date"] = df["date"].dt.normalize()
+        df.set_index("date", inplace=True)
         df.sort_index(inplace=True)
         df.ffill(inplace=True)
         df = df[~df.index.duplicated(keep="last")]
@@ -663,7 +656,7 @@ class Movie(models.Model):
         return df
 
     def calc_depot(self):
-        df = pd.DataFrame(columns=["value", "current_sum"], dtype=np.float64)
+        df = pd.DataFrame(columns=["value", "current_sum", "date"], dtype=np.float64)
 
         # assets
         asset_dfs_values = list()
@@ -674,15 +667,16 @@ class Movie(models.Model):
             asset_df = asset_df[["v", "d", "cs"]]
             asset_df.rename(columns={"v": asset.name + "__value", "d": "date",
                                      "cs": asset.name + "__current_sum"}, inplace=True)
-            asset_df.set_index("date", inplace=True)
             asset_dfs_values.append(asset.name + "__value")
             asset_dfs_current_sums.append(asset.name + "__current_sum")
             df = pd.concat([df, asset_df], join="outer", ignore_index=False, sort=False)
 
         # all together
+        df["date"] = df["date"].dt.normalize()
+        df.set_index("date", inplace=True)
         df.sort_index(inplace=True)
-        df = df[~df.index.duplicated(keep="last")]
         df.ffill(inplace=True)
+        df = df[~df.index.duplicated(keep="last")]
 
         # calc
         df["value"] = df[asset_dfs_values].sum(axis=1, skipna=True)
