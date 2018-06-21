@@ -198,6 +198,7 @@ class Movie(models.Model):
                                             d__lte=timespan.end_date).values("d", "c", "b")
         else:
             pictures = self.pictures.values("d", "c", "b")
+        pictures = pictures.order_by("d")
         df = pd.DataFrame(list(pictures))
         if df.empty:
             df = pd.DataFrame(columns=["d", "c", "b"])

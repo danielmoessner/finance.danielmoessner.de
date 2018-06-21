@@ -47,9 +47,10 @@ class AccountView(generic.TemplateView):
 
         context["account"] = context["depot"].accounts.get(slug=kwargs["slug"])
         context["movie"] = context["depot"].movies.get(account=context["account"], category=None)
-        changes = context["account"].changes.order_by("date", "pk").select_related("category")
-        pictures = context["movie"].pictures.filter(change__in=changes).order_by("d", "pk")
-        context["changes_pictures"] = zip(changes, pictures)
+        context["changes"] = context["account"].changes.order_by("-date", "-pk").select_related(
+            "category")
+        # pictures = context["movie"].pictures.filter(change__in=changes).order_by("d", "pk")
+        # context["changes_pictures"] = zip(changes, pictures)
         return context
 
 
@@ -66,9 +67,10 @@ class CategoryView(generic.TemplateView):
 
         context["category"] = context["depot"].categories.get(slug=kwargs["slug"])
         context["movie"] = context["depot"].movies.get(account=None, category=context["category"])
-        changes = context["category"].changes.order_by("date", "pk").select_related("account")
-        pictures = context["movie"].pictures.filter(change__in=changes).order_by("d", "pk")
-        context["changes_pictures"] = zip(changes, pictures)
+        context["changes"] = context["category"].changes.order_by("-date", "-pk").select_related(
+            "account")
+        # pictures = context["movie"].pictures.filter(change__in=changes).order_by("d", "pk")
+        # context["changes_pictures"] = zip(changes, pictures)
         return context
 
 
@@ -152,7 +154,7 @@ class AccountData(APIView):
                 for column in df_c.columns:
                     df_c.loc[index, column] = df_c.loc[index, column].sum()
             df_c = df_c.groupby(df_c.index).last()
-            df = pd.concat([df, df_c], axis=1)
+            df = pd.concat([df, df_c], axis=1, sort=False)
         df.sort_index(inplace=True)
 
         # df with all dates to normalize the data oterhwise chartjs displays the date weird af
@@ -160,7 +162,7 @@ class AccountData(APIView):
         df_d = pd.DataFrame({"dates": dates})
         df_d["dates"] = df_d["dates"].dt.date
         df_d.set_index("dates", inplace=True)
-        df = pd.concat([df, df_d], axis=1)
+        df = pd.concat([df, df_d], axis=1, sort=True)
         df["balance"].ffill(inplace=True)
         df.fillna(0, inplace=True)
 

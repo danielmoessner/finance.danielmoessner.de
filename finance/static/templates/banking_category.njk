@@ -87,10 +87,10 @@
             <h2 class="table-heading--heading">Changes</h2>  
         </div>
         <table class="table">
-            {{ table.head(["Date", "Category", "Description", "Change", "Balance"]) }}
+            {{ table.head(["Date", "Category", "Description", "Change"]) }}
             <tbody class="table--body">
-                {% for change, picture in changes_pictures | reverse %}
-                    {{ table.row([change.get_date(user), category, change.get_description(), change.change, picture.b]) }}
+                {% for change in changes %}
+                    {{ table.row([change.get_date(user), category, change.get_description(), change.change]) }}
                 {% endfor %}
             </tbody>
         </table>

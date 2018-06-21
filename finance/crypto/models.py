@@ -428,10 +428,6 @@ class Movie(models.Model):
 
     @staticmethod
     def calc_fifo(type_column, ba_column, bs_column, fee_sum_column, ca_column):
-        """
-        ATTENTION: The index of the columns must be in ascendent order. Otherwise it doesn't work.
-        I'm pretty sure that because of iloc it does work now no matter the index
-        """
         current_sum_row = [0] * len(ba_column)
         for i in range(len(ba_column)):
             current_amount = ca_column.iloc[i]
