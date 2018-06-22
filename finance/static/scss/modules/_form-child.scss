@@ -1,0 +1,27 @@
+.form-child{
+	@extend .form-group;
+	&--label{
+
+	}
+	&--input{
+		@extend .form-control;
+	}
+	&--select{
+		@extend .form-control;
+		@extend .custom-select;
+	}
+	&--textarea{
+		@extend .form-control;
+	}
+	&--group{
+		@extend .input-group;
+	}
+	&--submit-button{
+		@extend .btn;
+		@extend .btn-primary;
+		@extend .w-100;
+	}
+	&--cancel-button{
+		// todo
+	}
+}
