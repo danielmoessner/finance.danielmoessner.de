@@ -38,7 +38,7 @@ class Depot(CoreDepot):
     # update
     def update_prices(self):
         file_path = os.path.join(settings.MEDIA_ROOT, "crypto/prices")
-        file_name = time.strftime("%d%m%Y") + ".json"
+        file_name = time.strftime("%Y%m%d") + ".json"
         file = os.path.join(file_path, file_name)
         if not os.path.exists(file):
             try:
@@ -46,7 +46,7 @@ class Depot(CoreDepot):
                                             self.user.get_currency_display()) as url:
                     data = json.loads(url.read().decode())
                     file_path = os.path.join(settings.MEDIA_ROOT, "crypto/prices")
-                    file_name = time.strftime("%d%m%Y") + ".json"
+                    file_name = time.strftime("%Y%m%d") + ".json"
                     file = os.path.join(file_path, file_name)
                     with open(file, "w+") as file:
                         json.dump(data, file)
@@ -101,7 +101,7 @@ class Asset(models.Model):
     # update
     def update_price(self):
         file_path = os.path.join(settings.MEDIA_ROOT, "crypto/prices")
-        file_name = time.strftime("%d%m%Y") + ".json"
+        file_name = time.strftime("%Y%m%d") + ".json"
         file = os.path.join(file_path, file_name)
         if os.path.exists(file):
             with open(file, "r") as file:
