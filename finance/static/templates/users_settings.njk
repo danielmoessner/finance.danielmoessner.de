@@ -53,9 +53,10 @@
 		<div class="settings">
 			<form action="{{ url('users:edit_user_specials', args=[user.slug,]) }}" method="POST">
 				<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+				<input type="hidden" name="rounded_numbers" value="{{ rounded_numbers }}">
 				{{ childs.tupleSelect("Select A Date Format", "date_format", date_formats[1], selected=date_formats[0]) }}
 				{{ childs.tupleSelect("Select A Currency", "currency", currencies[1], selected=currencies[0]) }}
-				{{ childs.select("Round Numbers To 2 Decimal Places", "rounded_numbers", ["True", "False"], selected=rounded_numbers)}}
+				{{ childs.tupleSelect("Front Page", "front_page", front_pages[1], selected=front_pages[0])}}
 				<input type="submit" value="Update" class="form-child--submit-button">
 			</form> 
 		</div> 
@@ -151,6 +152,22 @@
 
 
 	<div class="wrapper console-target console_crypto is-hidden">
+		<div class="table-heading">
+	        <h2 class="table-heading--heading">General</h2>
+	    </div>
+	    <hr class="hr">
+		<div class="settings">
+			<form action="{{ url('users:edit_user_specials', args=[user.slug,]) }}" method="POST">
+				<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+				<input type="hidden" name="date_format" value="{{ date_formats[0] }}">
+				<input type="hidden" name="currency" value="{{ currencies[0] }}">
+				<input type="hidden" name="front_page" value="{{ front_pages[0] }}">
+				{{ childs.select("Round Numbers To 2 Decimal Places", "rounded_numbers", ["True", "False"], selected=rounded_numbers)}}
+
+				<input type="submit" value="Update" class="form-child--submit-button">
+			</form> 
+		</div> 
+
 		<div class="table-heading">
 	        <h2 class="table-heading--heading">Depots</h2>
 	        {{ buttons.buttonModal(text="Add Depot", dataTarget="#addCryptoDepot") }}

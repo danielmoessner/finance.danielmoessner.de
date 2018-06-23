@@ -1,12 +1,14 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.functional import cached_property
+from django.urls import reverse_lazy
 
 from finance.core.utils import create_slug_on_username
 
 
 class StandardUser(AbstractUser):
     slug = models.SlugField(unique=True)
+    # general
     DATE_FORMAT_CHOICES = (
         ("%d.%m.%Y", "Date.Month.Year"),
         ("%m/%d/%Y", "Month/Date/Year"),
@@ -17,9 +19,20 @@ class StandardUser(AbstractUser):
         ("$", "USD"),
     )
     currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES)
-    rounded_numbers = models.BooleanField(default=True)
-    banking_is_active = models.BooleanField(default=False)
+    banking_url = reverse_lazy("banking:index", kwargs={})
+    crypto_url = reverse_lazy("crypto:index", kwargs={})
+    settings_url = reverse_lazy("users:settings", kwargs={})
+    FRONT_PAGE_CHOICES = (
+        ("BANKING", "Banking"),
+        ("CRYPTO", "Crypto"),
+        ("SETTINGS", "Settings")
+    )
+    front_page = models.CharField(max_length=8, choices=FRONT_PAGE_CHOICES, default="SETTINGS")
+    # crypto
     crypto_is_active = models.BooleanField(default=False)
+    rounded_numbers = models.BooleanField(default=True)
+    # banking
+    banking_is_active = models.BooleanField(default=False)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if not self.slug:

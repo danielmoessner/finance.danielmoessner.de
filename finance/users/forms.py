@@ -32,4 +32,5 @@ class EditStandardUserSpecialsForm(forms.ModelForm):
             "currency",
             "date_format",
             "rounded_numbers",
+            "front_page"
         )

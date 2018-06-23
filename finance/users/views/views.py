@@ -36,7 +36,14 @@ def signup(request):
 
 def login(request):
     if request.user.is_authenticated:
-        return HttpResponseRedirect(reverse_lazy("users:settings", args=[request.user.slug, ]))
+        print(request.user.front_page)
+        if request.user.front_page == "BANKING":
+            url = reverse_lazy("banking:index", args=[request.user.slug])
+        elif request.user.front_page == "CRYPTO":
+            url = reverse_lazy("crypto:index", args=[request.user.slug])
+        else:
+            url = reverse_lazy("users:settings", args=[request.user.slug])
+        return HttpResponseRedirect(url)
 
     if request.method == "POST":
         username = request.POST["username"]
@@ -44,7 +51,7 @@ def login(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login_user(request, user)
-            return HttpResponseRedirect(reverse_lazy("users:settings", args=[request.user.slug, ]))
+            return HttpResponseRedirect(reverse_lazy("users:login"))
         else:
             errors = list()
             errors.append("This combination of username and password doesn't exist")
@@ -64,15 +71,19 @@ class SettingsView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = dict()
         context["user"] = self.request.user
-
-        context["currencies"] = context["user"]._meta.get_field("currency").choices
-        context["date_formats"] = context["user"]._meta.get_field("date_format").choices
-        context["currencies"] = (self.request.user.currency, context["currencies"])
-        context["date_formats"] = (self.request.user.date_format, context["date_formats"])
+        # general
+        currencies = context["user"]._meta.get_field("currency").choices
+        context["currencies"] = (context["user"].currency, currencies)
+        date_formats = context["user"]._meta.get_field("date_format").choices
+        context["date_formats"] = (context["user"].date_format, date_formats)
+        front_pages = context["user"]._meta.get_field("front_page").choices
+        context["front_pages"] = (context["user"].front_page, front_pages)
+        # banking
+        context["banking_depots"] = context["user"].banking_depots.all()
+        # crypto
+        context["crypto_depots"] = context["user"].crypto_depots.all()
         context["rounded_numbers"] = context["user"].rounded_numbers
 
-        context["banking_depots"] = context["user"].banking_depots.all()
-        context["crypto_depots"] = context["user"].crypto_depots.all()
         return context
 
 
