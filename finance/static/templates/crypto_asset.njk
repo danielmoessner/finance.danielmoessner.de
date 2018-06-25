@@ -3,8 +3,8 @@
 
 {% set activePage="crypto" %}
 {% set headingCategory="Asset" %}
-{% set headingHeading=asset.name %}
-{% set title="Asset " + asset.name + " | Crypto" %}
+{% set headingHeading=asset.get_name() %}
+{% set title="Asset " + asset.get_name() + " | Crypto" %}
 
 
 {% block head %}
@@ -96,20 +96,26 @@
 	<div class="wrapper console-target is-hidden console_prices">
 		<div class="table-heading">
             <h2 class="table-heading--heading">Price history</h2> 
-            {{ buttons.buttonModal(text="Add Price", dataTarget="#addPrice") }} 
+            {% if asset.private_name %}
+            	{{ buttons.buttonModal(text="Add Price", dataTarget="#addPrice") }} 
+            {% endif %}
         </div>
 		<table class="table ">
 		    {{ table.head(["Date", "Price", "Action"]) }}
 		    <tbody class="table--body">
 		        {% for price in prices %}
 		            {% set tablebuttons %}
-		                <div class="d-flex flex-row">
-		                    <form method="POST" action="{{ url('crypto:delete_price', args=[user.slug, asset.slug,]) }}">
-							   	<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-							   	<input type="hidden" name="price" value="{{ price.pk }}">
-							   	<input type="submit" class='btn btn-sm btn-danger' value="Delete">
-							</form> 
-		                </div> 
+			            {% if asset.private_name %}
+			                <div class="d-flex flex-row">
+			                    <form method="POST" action="{{ url('crypto:delete_price', args=[user.slug, asset.slug,]) }}">
+								   	<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+								   	<input type="hidden" name="price" value="{{ price.pk }}">
+								   	<input type="submit" class='btn btn-sm btn-danger' value="Delete">
+								</form> 
+			                </div> 
+			            {% else %}
+			            	None
+		                {% endif %}
 		            {% endset %}
 		            {{ table.row([price.get_date(), price.price, tablebuttons | safe]) }}
 		        {% endfor %}
@@ -152,6 +158,8 @@
 
 
 {% block modals %}
-	{% import "modules/crypto/modals.njk" as modals %}
-	{{ modals.addPriceModal(user, asset, csrf_token) }}
+	{% if asset.private_name %}
+		{% import "modules/crypto/modals.njk" as modals %}
+		{{ modals.addPriceModal(user, asset, csrf_token) }}
+	{% endif %}
 {% endblock %}

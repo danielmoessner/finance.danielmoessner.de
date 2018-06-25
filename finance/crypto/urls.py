@@ -51,16 +51,24 @@ urlpatterns = [
 
     # add-asset/
     url(r"^add-asset/$",
-        login_required(form_views.IndexCreateAssetView.as_view()),
+        login_required(form_views.IndexConnectDepotAssetView.as_view()),
         name="add_asset"),
-    # edit-asset/
-    url(r"^edit-asset/$",
-        login_required(form_views.IndexUpdateAssetView.as_view()),
-        name="edit_asset"),
+    # add-private-asset/
+    url(r"^add-private-asset/$",
+        login_required(form_views.IndexCreatePrivateAssetView.as_view()),
+        name="add_private_asset"),
+    # edit-private-asset/
+    url(r"^edit-private-asset/$",
+        login_required(form_views.IndexUpdatePrivateAssetView.as_view()),
+        name="edit_private_asset"),
     # delete-asset/
-    url(r"^delete-asset/$",
-        login_required(form_views.IndexDeleteAssetView.as_view()),
-        name="delete_asset"),
+    url(r"^remove-asset/$",
+        login_required(form_views.IndexRemoveAssetView.as_view()),
+        name="remove_asset"),
+    # delete-private-asset/
+    url(r"^delete-private-asset/$",
+        login_required(form_views.IndexDeletePrivateAssetView.as_view()),
+        name="delete_private_asset"),
 
     # add-trade/
     url(r"^add-trade/$",

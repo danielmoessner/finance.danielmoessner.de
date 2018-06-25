@@ -36,7 +36,6 @@ def signup(request):
 
 def login(request):
     if request.user.is_authenticated:
-        print(request.user.front_page)
         if request.user.front_page == "BANKING":
             url = reverse_lazy("banking:index", args=[request.user.slug])
         elif request.user.front_page == "CRYPTO":

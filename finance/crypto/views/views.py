@@ -2,7 +2,6 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views import generic
 
-from finance.crypto.models import Account
 from finance.crypto.models import Asset
 from finance.crypto.models import Depot
 from finance.crypto.models import Movie
@@ -11,9 +10,6 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from datetime import datetime
-from decimal import Decimal
-import pytz
 
 
 # VIEWS
@@ -21,24 +17,31 @@ class IndexView(generic.TemplateView):
     template_name = "crypto_index.njk"
 
     def get_context_data(self, **kwargs):
-        context = super(IndexView, self).get_context_data(**kwargs)
-        context["user"] = self.request.user
+        # general
+        context = dict(user=self.request.user)
         context["depot"] = context["user"].crypto_depots.get(is_active=True)
-        context["accounts"] = context["depot"].accounts.order_by("name")
-        movies = context["depot"].movies.filter(
-            account__in=context["accounts"], asset=None).order_by("account__name")
-        assert len(context["accounts"]) == len(movies)
-        context["accounts_movies"] = zip(context["accounts"], movies)
-        context["assets_all"] = context["depot"].assets.order_by("name")
-        assets = context["assets_all"].exclude(
-            symbol=context["user"].get_currency_display()).order_by("name")
-        movies = context["depot"].movies.filter(asset__in=assets, account=None).order_by(
-            "asset__name")
-        assert len(assets) == len(movies)
-        context["assets_movies"] = zip(assets, movies)
         context["timespans"] = context["depot"].timespans.all()
-
+        # accounts
+        context["accounts"] = context["depot"].accounts.order_by("name")
+        account_movies = context["depot"].movies.filter(
+            account__in=context["accounts"], asset=None).order_by("account__name")
+        context["accounts_movies"] = zip(context["accounts"], account_movies)
+        # assets
+        context["assets"] = context["depot"].assets.order_by("symbol", "private_name")
+        context["private_assets"] = context["assets"].exclude(private_symbol=None)
+        context["public_assets"] = context["assets"].exclude(symbol=None)
+        context["asset_symbol_choices"] = Asset.SYMBOL_CHOICES
+        asset_movies = context["depot"].movies.filter(asset__in=context["assets"], account=None)\
+            .order_by("asset__symbol", "asset__private_symbol")
+        context["assets_movies"] = zip(context["assets"], asset_movies)
+        # movie
         context["movie"] = context["depot"].movies.get(account=None, asset=None)
+        # error
+        if (not len(context["assets"]) == len(asset_movies)) or \
+                (not len(context["accounts"]) == len(account_movies)):
+            context["depot"].get_movie().update_all(disable_update=True)
+            context = self.get_context_data(**kwargs)
+        # return
         return context
 
 
@@ -46,24 +49,36 @@ class AccountView(generic.TemplateView):
     template_name = "crypto_account.njk"
 
     def get_context_data(self, **kwargs):
-        context = {"user": self.request.user}
+        # general
+        context = dict(user=self.request.user)
         context["depot"] = context["user"].crypto_depots.get(is_active=True)
-        context["accounts"] = context["depot"].accounts.all()
-        context["assets_all"] = context["depot"].assets.order_by("name")
         context["timespans"] = context["depot"].timespans.all()
-        context["account"] = context["depot"].accounts.get(slug=kwargs["slug"])
-        assets = context["assets_all"].exclude(
-            symbol=context["user"].get_currency_display()).order_by("name")
-        movies = context["account"].movies.filter(asset__in=assets).order_by("asset__name")
-        assert len(assets) == len(movies)
-        context["assets_movies"] = zip(assets, movies)
+        # account(s)
+        context["accounts"] = context["depot"].accounts.all()
+        context["account"] = context["accounts"].get(slug=kwargs["slug"])
+        # assets
+        context["assets"] = context["depot"].assets.order_by("symbol", "private_name")
+        context["private_assets"] = context["assets"].exclude(private_symbol=None)
+        context["public_assets"] = context["assets"].exclude(symbol=None)
+        context["asset_symbol_choices"] = Asset.SYMBOL_CHOICES
+        asset_movies = context["depot"].movies.filter(asset__in=context["assets"], account=None) \
+            .order_by("asset__symbol", "asset__private_symbol")
+        context["assets_movies"] = zip(context["assets"], asset_movies)
+        # trades
         context["trades"] = context["account"].trades.order_by("-date").select_related(
             "account", "buy_asset", "sell_asset", "fees_asset")
+        # transactions
         to_transactions = context["account"].to_transactions.all()
         from_transactions = context["account"].from_transactions.all()
         context["transactions"] = (to_transactions | from_transactions).order_by(
             "-date").select_related("from_account", "to_account", "asset")
+        # movie
         context["movie"] = context["depot"].movies.get(account=context["account"], asset=None)
+        # error
+        if not len(context["assets"]) == len(asset_movies):
+            context["depot"].get_movie().update_all(disable_update=True)
+            context = self.get_context_data(**kwargs)
+        # return
         return context
 
 
@@ -71,46 +86,32 @@ class AssetView(generic.TemplateView):
     template_name = "crypto_asset.njk"
 
     def get_context_data(self, **kwargs):
-        context = super(AssetView, self).get_context_data(**kwargs)
-        context["user"] = self.request.user
+        # general
+        context = dict(user=self.request.user)
         context["depot"] = context["user"].crypto_depots.get(is_active=True)
-        context["accounts"] = context["depot"].accounts.all()
-        context["assets_all"] = context["depot"].assets.order_by("name")
-        context["assets"] = context["assets_all"].exclude(
-            symbol=context["user"].get_currency_display()).order_by("name")
         context["timespans"] = context["depot"].timespans.all()
-
-        context["asset"] = Asset.objects.get(slug=kwargs["slug"])
+        # account
+        context["accounts"] = context["depot"].accounts.all()
+        # asset(s)
+        context["assets"] = context["depot"].assets.order_by("symbol", "private_name")
+        context["asset"] = context["assets"].get(slug=kwargs["slug"])
+        # prices
         context["prices"] = context["asset"].prices.order_by("-date")
+        # trades
         buy_trades = context["asset"].buy_trades.all()
         sell_trades = context["asset"].sell_trades.all()
         context["trades"] = (buy_trades | sell_trades).order_by("-date").select_related(
             "account", "buy_asset", "sell_asset", "fees_asset")
+        # transactions
         context["transactions"] = context["asset"].transactions.order_by("-date").select_related(
             "from_account", "to_account", "asset")
+        # movie
         context["movie"] = context["depot"].movies.get(account=None, asset=context["asset"])
+        # return
         return context
 
 
 # FUNCTIONS
-def move_asset(request, *args, **kwargs):
-    if request.method == "POST":
-        if all(k in request.POST for k in ("from_account", "asset", "to_account", "fees", "date",
-                                           "amount")):
-            from_account = Account.objects.get(pk=request.POST["from_account"])
-            to_account = Account.objects.get(pk=request.POST["to_account"])
-            asset = Asset.objects.get(pk=request.POST["asset"])
-            tx_fees = Decimal(request.POST["fees"])
-            date = datetime.strptime(request.POST["date"], '%Y-%m-%dT%H:%M')\
-                .replace(tzinfo=pytz.utc)
-            amount = Decimal(request.POST["amount"])
-            asset.move(date, from_account, amount, to_account, tx_fees)
-            return HttpResponseRedirect(
-                reverse_lazy("crypto:account", args=[request.user.slug, from_account.slug, ]))
-        else:
-            pass  # error correction
-
-
 def update_prices(request, *args, **kwargs):
     depot = Depot.objects.get(name="CMain")
     depot.update_prices()
@@ -119,7 +120,7 @@ def update_prices(request, *args, **kwargs):
 
 def update_movies(request, *args, **kwargs):
     depot = request.user.crypto_depots.get(is_active=True)
-    Movie.update_all(depot, force_update=True)
+    depot.get_movie().update_all(force_update=True)
     return HttpResponseRedirect(reverse_lazy("crypto:index", args=[request.user.slug, ]))
 
 
@@ -254,5 +255,5 @@ class AssetData(APIView):
         depot = user.crypto_depots.get(is_active=True)
         asset = Asset.objects.get(slug=slug)
         timespan = depot.timespans.get(is_active=True)
-        pi = asset.get_movie().get_data(timespan)
+        pi = asset.get_movie(depot).get_data(timespan)
         return json_data(pi, ttwr=False)

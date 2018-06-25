@@ -102,7 +102,7 @@
 		                </div> 
 		            {% endset %}
 		            {%- set assetData = movie.get_values(user, ["p", "ca", "v"]) -%}
-                    {{ table.row([ asset.name, assetData.p, assetData.ca, assetData.v, tablebuttons | safe]) }}
+                    {{ table.row([ asset.get_name(), assetData.p, assetData.ca, assetData.v, tablebuttons | safe]) }}
 		        {% endfor %}
 		    </tbody>
 		</table>
@@ -190,6 +190,6 @@
 {% block modals %}
 	{% import "modules/crypto/modals.njk" as modals %}
 	{{ modals.addTransactionModal(user, account, accounts, csrf_token) }}
-	{{ modals.addTradeModal(user, accounts, assets_all, csrf_token) }}
-	{{ modals.editTradeModal(user, account, accounts, assets_all, csrf_token) }}
+	{{ modals.addTradeModal(user, accounts, assets, csrf_token) }}
+	{{ modals.editTradeModal(user, account, accounts, assets, csrf_token) }}
 {% endblock %}

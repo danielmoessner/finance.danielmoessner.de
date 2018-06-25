@@ -1,5 +1,6 @@
 from django import forms
 
+from finance.core.utils import create_slug
 from .models import Depot
 from .models import Asset
 from .models import Trade
@@ -13,7 +14,7 @@ import pytz
 
 
 # DEPOT
-class AddDepotForm(forms.ModelForm):
+class CreateDepotForm(forms.ModelForm):
     class Meta:
         model = Depot
         fields = (
@@ -53,23 +54,50 @@ class UpdateAccountForm(forms.ModelForm):
 
 
 # ASSET
-class CreateAssetForm(forms.ModelForm):
+class ConnectDepotAssetForm(forms.ModelForm):
     class Meta:
         model = Asset
         fields = (
-            "name",
-            "symbol"
+            "symbol",
         )
 
 
-class UpdateAssetForm(forms.ModelForm):
+class CreatePrivateAssetForm(forms.ModelForm):
+    class Meta:
+        model = Asset
+        fields = (
+            "private_name",
+            "private_symbol"
+        )
+
+    def clean_private_name(self):
+        data = self.cleaned_data["private_name"]
+        if data is None:
+            raise forms.ValidationError("The name of the asset can not be left empty.")
+        return data
+
+    def clean_private_symbol(self):
+        data = self.cleaned_data["private_symbol"]
+        if data is None:
+            raise forms.ValidationError("The symbol of the asset can not be left empty.")
+        data = str(data).upper()
+        return data
+
+    def save(self, commit=True):
+        asset = super(CreatePrivateAssetForm, self).save(commit=False)
+        asset.slug = create_slug(asset, on=asset.private_name)
+        asset.save()
+        return asset
+
+
+class UpdatePrivateAssetForm(forms.ModelForm):
     pk = forms.IntegerField(min_value=0)
 
     class Meta:
         model = Asset
         fields = (
-            "name",
-            "symbol",
+            "private_name",
+            "private_symbol",
             "pk"
         )
 

@@ -51,13 +51,23 @@
 	</div>
 {% endmacro %}
 
-
 {% macro tupleSelect(label, name, items, selected=None) %}
 	<div class="form-child">
 		<label class="form-child--label">{{ label }}</label>
 		<select class="form-child--select select{{ name }}" name="{{ name }}" required>
 			{% for item in items %}
 				<option value="{{ item[0] }}" {% if item[0]==selected %}selected{% endif %}>{{ item[1] }}</option>
+			{% endfor %}
+		</select>
+	</div>
+{% endmacro %}
+
+{% macro pkGetNameSelect(label, name, items, selected=None) %}
+	<div class="form-child">
+		<label class="form-child--label">{{ label }}</label>
+		<select class="form-child--select select{{ name }}" name="{{ name }}" required>
+			{% for item in items %}
+				<option value="{{ item.pk }}" {% if item.pk==selected %}selected{% endif %}>{{ item.get_name() }}</option>
 			{% endfor %}
 		</select>
 	</div>

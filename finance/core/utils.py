@@ -11,27 +11,18 @@ def print_df(df):
         print(table)
 
 
-def create_slug(instance, slug=None):
+def create_slug(instance, on=None, slug=None):
     if slug is None:
-        slug = slugify(instance.name)
+        if on:
+            slug = slugify(on)
+        else:
+            slug = slugify(instance.name)
 
     instance_class = instance.__class__
     qs = instance_class.objects.filter(slug=slug).order_by("-pk")
     if qs.exists():
         new_slug = "%s-%s" % (slug, qs.first().pk)
-        return create_slug(instance=instance, slug=new_slug)
-    return slug
-
-
-def create_slug_on_username(instance, slug=None):
-    if slug is None:
-        slug = slugify(instance.username)
-
-    instance_class = instance.__class__
-    qs = instance_class.objects.filter(slug=slug).order_by("-pk")
-    if qs.exists():
-        new_slug = "%s-%s" % (slug, qs.first().pk)
-        return create_slug(instance=instance, slug=new_slug)
+        return create_slug(instance=instance, on=on, slug=new_slug)
     return slug
 
 
@@ -44,4 +35,12 @@ def form_invalid_universal(view, form, errors_name, heading="Something went wron
         )
     while "" in context[errors_name]:
         context[errors_name].remove("")
+    return view.render_to_response(context)
+
+
+def errors_to_view(view, errors_heading="Something went wrong.", errors=()):
+    errors = list(errors)
+    errors.insert(0, errors_heading)
+    context = view.get_context_data()
+    context["errors"] = errors
     return view.render_to_response(context)

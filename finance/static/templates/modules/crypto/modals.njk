@@ -78,43 +78,60 @@
 {% endmacro %} 
 
 <!-- Asset -->
-{% macro addAssetModal(user, csrf_token) %}
+{% macro addAssetModal(user, asset_symbol_choices, csrf_token) %}
 	{% set content %}
-		{{ childs.textInput("Name", "name")}}
-		{{ childs.textInput("Symbol", "symbol", maxlength=5)}}
+		{{ childs.tupleSelect("Select An Asset", "symbol", asset_symbol_choices)}}
 	{% endset %}
 	{%- set url=url("crypto:add_asset", args=[user.slug,]) -%}
 	{{ modals.modal(content, url, "addAsset", "Add Asset", csrf_token, "Save", "Cancel") }}
 {% endmacro %}
 
-{% macro editAssetModal(user, csrf_token) %}
+{% macro addPrivateAssetModal(user, csrf_token) %}
 	{% set content %}
-		{{ childs.textInput("Name", "name")}}
-		{{ childs.textInput("Symbol", "symbol", maxlength=5)}}
+		{{ childs.textInput("Name", "private_name")}}
+		{{ childs.textInput("Symbol", "private_symbol", maxlength=5)}}
+	{% endset %}
+	{%- set url=url("crypto:add_private_asset", args=[user.slug,]) -%}
+	{{ modals.modal(content, url, "addPrivateAsset", "Add Private Asset", csrf_token, "Save", "Cancel") }}
+{% endmacro %}
+
+{% macro editPrivateAssetModal(user, csrf_token) %}
+	{% set content %}
+		{{ childs.textInput("Name", "private_name")}}
+		{{ childs.textInput("Symbol", "private_symbol", maxlength=5)}}
 		<input type="hidden" class="inputpk" name="pk" value="">
 		<script type="text/javascript">
 	        jQuery(function(){
-	            $("#editAsset").on("show.bs.modal", function(e) {
+	            $("#editPrivateAsset").on("show.bs.modal", function(e) {
 				    var data = e.relatedTarget.dataset.all;
 					data = data.replace(/'/g, '"')
 					data = JSON.parse(data)
-					$("#editAsset .inputpk").attr("value", data.pk)
-					$("#editAsset .inputname").attr("value", data.name)
-					$("#editAsset .inputsymbol").attr("value", data.symbol)
+					console.log(data)
+					$("#editPrivateAsset .inputpk").attr("value", data.pk)
+					$("#editPrivateAsset .inputprivate_name").attr("value", data.private_name)
+					$("#editPrivateAsset .inputprivate_symbol").attr("value", data.private_symbol)
 				});
 	        });
 	    </script> 
 	{% endset %}
-	{%- set url=url("crypto:edit_asset", args=[user.slug,]) -%}
-	{{ modals.modal(content, url, "editAsset", "Edit Asset", csrf_token, "Update", "Cancel") }}
+	{%- set url=url("crypto:edit_private_asset", args=[user.slug,]) -%}
+	{{ modals.modal(content, url, "editPrivateAsset", "Edit Private Asset", csrf_token, "Update", "Cancel") }}
 {% endmacro %}
 
-{% macro deleteAssetModal(user, assets, csrf_token) %}
+{% macro deletePrivateAssetModal(user, assets, csrf_token) %}
 	{% set content %}
-		{{ childs.pkNameSelect("Select An Asset", "pk", assets) }}
+		{{ childs.pkGetNameSelect("Select An Asset", "pk", assets) }}
 	{% endset %}
-	{%- set url=url("crypto:delete_asset", args=[user.slug,]) -%}
-	{{ modals.modal(content, url, "deleteAsset", "Remove Asset", csrf_token, "Remove", "Cancel") }}
+	{%- set url=url("crypto:delete_private_asset", args=[user.slug,]) -%}
+	{{ modals.modal(content, url, "deletePrivateAsset", "Remove Private Asset", csrf_token, "Remove", "Cancel") }}
+{% endmacro %}
+
+{% macro removeAssetModal(user, assets, csrf_token) %}
+	{% set content %}
+		{{ childs.pkGetNameSelect("Select An Asset", "pk", assets) }}
+	{% endset %}
+	{%- set url=url("crypto:remove_asset", args=[user.slug,]) -%}
+	{{ modals.modal(content, url, "removeAsset", "Remove Asset", csrf_token, "Remove", "Cancel") }}
 {% endmacro %}
 
 

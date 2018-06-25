@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.utils.functional import cached_property
 from django.urls import reverse_lazy
 
-from finance.core.utils import create_slug_on_username
+from finance.core.utils import create_slug
 
 
 class StandardUser(AbstractUser):
@@ -36,7 +36,7 @@ class StandardUser(AbstractUser):
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if not self.slug:
-            self.slug = create_slug_on_username(self)
+            self.slug = create_slug(self, on=self.username)
         super(StandardUser, self).save(force_insert, force_update, using, update_fields)
 
     # setters

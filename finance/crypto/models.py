@@ -6,7 +6,6 @@ from finance.users.models import StandardUser
 from finance.core.models import Timespan as CoreTimespan
 from finance.core.models import Account as CoreAccount
 from finance.core.models import Depot as CoreDepot
-from finance.core.utils import create_slug
 
 from datetime import datetime
 import pandas as pd
@@ -29,11 +28,12 @@ class Depot(CoreDepot):
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         super(Depot, self).save(force_insert, force_update, using, update_fields)
-        Movie.update_all(depot=self, disable_update=True)
+        self.get_movie().update_all(disable_update=True)
 
     # getters
     def get_movie(self):
-        return self.movies.get(account=None, asset=None)
+        movie, created = Movie.objects.get_or_create(depot=self, account=None, asset=None)
+        return movie
 
     # update
     def update_prices(self):
@@ -61,7 +61,7 @@ class Account(CoreAccount):
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         super(Account, self).save(force_insert, force_update, using, update_fields)
-        Movie.update_all(self.depot, disable_update=True)
+        self.get_movie().update_all(disable_update=True)
 
     # getters
     def get_movie(self):
@@ -69,26 +69,49 @@ class Account(CoreAccount):
 
 
 class Asset(models.Model):
-    name = models.CharField(max_length=300)
-    symbol = models.CharField(max_length=5, unique=True)
+    private_name = models.CharField(max_length=80, blank=True, null=True)
+    private_symbol = models.CharField(max_length=5, blank=True, null=True)
+    SYMBOL_CHOICES = (("BTC", "Bitcoin"), ("ETH", "Ethereum"), ("XRP", "Ripple"),
+                      ("BCH", "Bitcoin Cash"), ("EOS", "EOS"), ("LTC", "Litecoin"),
+                      ("XLM", "Stellar"), ("ADA", "Cardano"), ("TRX", "TRON"), ("MIOTA", "IOTA"),
+                      ("USDT", "Tether"), ("NEO", "NEO"), ("DASH", "Dash"),
+                      ("BNB", "Binance Coin"), ("XMR", "Monero"), ("ETC", "Ethereum Classic"),
+                      ("VEN", "VeChain"), ("XEM", "NEM"), ("OMG", "OmiseGO"), ("ONT", "Ontology"),
+                      ("QTUM", "Qtum"), ("ZEC", "Zcash"), ("ICX", "ICON"), ("LSK", "Lisk"),
+                      ("DCR", "Decred"), ("ZIL", "Zilliqa"), ("BCN", "Bytecoin"),
+                      ("AE", "Aeternity"), ("BTG", "Bitcoin Gold"), ("BTM", "Bytom"),
+                      ("SC", "Siacoin"), ("ZRX", "0x"), ("XVG", "Verge"), ("BTS", "BitShares"),
+                      ("STEEM", "Steem"), ("NANO", "Nano"), ("REP", "Augur"), ("MKR", "Maker"),
+                      ("BCD", "Bitcoin Diamond"), ("DOGE", "Dogecoin"), ("RHOC", "RChain"),
+                      ("WAVES", "Waves"), ("WAN", "Wanchain"), ("GNT", "Golem"),
+                      ("BTCP", "Bitcoin Private"), ("STRAT", "Stratis"),
+                      ("BAT", "Basic Attention Token"), ("PPT", "Populous"), ("DGB", "DigiByte"),
+                      ("HT", "Huobi Token"), ("KCS", "KuCoin Shares"), ("SNT", "Status"),
+                      ("NAS", "Nebulas"), ("WTC", "Waltonchain"), ("HSR", "Hshare"),
+                      ("IOST", "IOST"), ("DGD", "DigixDAO"), ("AION", "Aion"), ("FCT", "Factom"),
+                      ("LRC", "Loopring"), ("GXS", "GXChain"), ("CNX", "Cryptonex"),
+                      ("KMD", "Komodo"), ("BNT", "Bancor"), ("RDD", "ReddCoin"), ("PAY", "TenX"),
+                      ("ARDR", "Ardor"), ("GTC", "Game.com"), ("ARK", "Ark"), ("EUR", "Euro"),
+                      ("MONA", "MonaCoin"), ("MAID", "MaidSafeCoin"), ("MOAC", "MOAC"))
+    symbol = models.CharField(choices=SYMBOL_CHOICES, max_length=5, null=True, blank=True)
     slug = models.SlugField(unique=True)
-    depot = models.ForeignKey(Depot, on_delete=models.PROTECT, related_name="assets")
+    depots = models.ManyToManyField(Depot, related_name="assets")
 
     def __str__(self):
-        return str(self.symbol)
-
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        if not self.slug:
-            self.slug = create_slug(self)
-        super(Asset, self).save(force_insert, force_update, using, update_fields)
-        Movie.update_all(depot=self.depot, disable_update=True)
+        asset_symbol = self.symbol if self.symbol else self.private_symbol
+        return "{}".format(asset_symbol)
 
     # getters
-    def get_movie(self):
-        return self.movies.get(depot=self.depot, account=None)
+    def get_movie(self, depot):
+        return self.movies.get(depot=depot, account=None)
 
-    def get_acc_movie(self, account):
-        return self.movies.get(depot=self.depot, account=account)
+    def get_acc_movie(self, depot, account):
+        return self.movies.get(depot=depot, account=account)
+
+    def get_name(self):
+        name = self.get_symbol_display() if self.symbol else self.private_name
+        name = "{}".format(name)
+        return name
 
     def get_worth(self, date, amount):
         prices = Price.objects.filter(asset=self)
@@ -172,10 +195,7 @@ class Price(models.Model):
         unique_together = ("asset", "date", "currency")
 
     def __str__(self):
-        asset = str(self.asset)
-        date = self.date.strftime("%Y-%m-%d")
-        price = str(self.price)
-        return asset + " " + date + " " + price
+        return "{} {} {}".format(self.asset, self.date.strftime("%Y-%m-%d"), self.price)
 
     # getters
     def get_date(self):
@@ -294,26 +314,27 @@ class Movie(models.Model):
         return data
 
     # update
-    @staticmethod
-    def update_all(depot, force_update=False, disable_update=False):
+    def update_all(self, force_update=False, disable_update=False):
         if force_update:
-            depot.movies.update(update_needed=True)
+            self.depot.movies.update(update_needed=True)
 
         t1 = time.time()
-        for account in depot.accounts.all():
-            for asset in depot.assets.exclude(symbol=depot.user.get_currency_display()):
-                movie, created = Movie.objects.get_or_create(depot=depot, account=account,
+        for account in self.depot.accounts.all():
+            for asset in self.depot.assets.exclude(symbol=self.depot.user.get_currency_display()):
+                movie, created = Movie.objects.get_or_create(depot=self.depot, account=account,
                                                              asset=asset)
                 if movie.update_needed and not disable_update:
                     movie.update()
-            movie, created = Movie.objects.get_or_create(depot=depot, account=account, asset=None)
+            movie, created = Movie.objects.get_or_create(depot=self.depot, account=account,
+                                                         asset=None)
             if movie.update_needed and not disable_update:
                 movie.update()
-        for asset in depot.assets.exclude(symbol=depot.user.get_currency_display()):
-            movie, created = Movie.objects.get_or_create(depot=depot, account=None, asset=asset)
+        for asset in self.depot.assets.exclude(symbol=self.depot.user.get_currency_display()):
+            movie, created = Movie.objects.get_or_create(depot=self.depot, account=None,
+                                                         asset=asset)
             if movie.update_needed and not disable_update:
                 movie.update()
-        movie, created = Movie.objects.get_or_create(depot=depot, account=None, asset=None)
+        movie, created = Movie.objects.get_or_create(depot=self.depot, account=None, asset=None)
         if movie.update_needed and not disable_update:
             movie.update()
         t2 = time.time()
@@ -354,9 +375,6 @@ class Movie(models.Model):
         if old_df.equals(df[:len(old_df)]):
             df = df[len(old_df):]
         else:
-            from finance.core.utils import print_df
-            print_df(df)
-            print_df(old_df)
             self.pictures.all().delete()
 
         t3 = time.time()
@@ -629,11 +647,12 @@ class Movie(models.Model):
         # assets
         asset_dfs_values = list()
         for asset in self.depot.assets.exclude(symbol="EUR"):
-            movie = asset.get_acc_movie(self.account)
+            movie = asset.get_acc_movie(self.depot, self.account)
             asset_df = movie.get_df()
             asset_df = asset_df[["v", "d"]]
-            asset_df.rename(columns={"v": asset.name + "__value", "d": "date"}, inplace=True)
-            asset_dfs_values.append(asset.name + "__value")
+            asset_name = asset.get_symbol_display() if asset.symbol else asset.private_name
+            asset_df.rename(columns={"v": asset_name + "__value", "d": "date"}, inplace=True)
+            asset_dfs_values.append(asset_name + "__value")
             df = pd.concat([df, asset_df], join="outer", ignore_index=True, sort=False)
 
         # all together
@@ -658,13 +677,14 @@ class Movie(models.Model):
         asset_dfs_values = list()
         asset_dfs_current_sums = list()
         for asset in self.depot.assets.exclude(symbol="EUR"):
-            movie = asset.get_movie()
+            movie = asset.get_movie(self.depot)
             asset_df = movie.get_df()
             asset_df = asset_df[["v", "d", "cs"]]
-            asset_df.rename(columns={"v": asset.name + "__value", "d": "date",
-                                     "cs": asset.name + "__current_sum"}, inplace=True)
-            asset_dfs_values.append(asset.name + "__value")
-            asset_dfs_current_sums.append(asset.name + "__current_sum")
+            asset_name = asset.get_symbol_display() if asset.symbol else asset.private_name
+            asset_df.rename(columns={"v": asset_name + "__value", "d": "date",
+                                     "cs": asset_name + "__current_sum"}, inplace=True)
+            asset_dfs_values.append(asset_name + "__value")
+            asset_dfs_current_sums.append(asset_name + "__current_sum")
             df = pd.concat([df, asset_df], join="outer", ignore_index=False, sort=False)
 
         # all together

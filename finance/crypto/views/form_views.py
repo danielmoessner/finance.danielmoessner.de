@@ -1,6 +1,7 @@
 from django.views import generic
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
+from django.db.models import Q
 
 from finance.crypto.views.views import AccountView
 from finance.crypto.views.views import IndexView
@@ -13,6 +14,9 @@ from finance.crypto.models import Asset
 from finance.crypto.models import Trade
 from finance.crypto.models import Price
 from finance.crypto.forms import UpdateActiveOnTimespanForm
+from finance.crypto.forms import UpdatePrivateAssetForm
+from finance.crypto.forms import CreatePrivateAssetForm
+from finance.crypto.forms import ConnectDepotAssetForm
 from finance.crypto.forms import UpdateTransactionForm
 from finance.crypto.forms import CreateTransactionForm
 from finance.crypto.forms import CreateTimespanForm
@@ -21,9 +25,8 @@ from finance.crypto.forms import CreateAccountForm
 from finance.crypto.forms import CreateTradeForm
 from finance.crypto.forms import UpdateTradeForm
 from finance.crypto.forms import CreatePriceForm
-from finance.crypto.forms import CreateAssetForm
-from finance.crypto.forms import UpdateAssetForm
 from finance.core.utils import form_invalid_universal
+from finance.core.utils import errors_to_view
 
 
 # ACCOUNT
@@ -77,14 +80,15 @@ class IndexDeleteAccountView(IndexView, CustomDeleteView):
 
 
 # ASSET
-class IndexCreateAssetView(IndexView, generic.CreateView):
-    form_class = CreateAssetForm
+class IndexConnectDepotAssetView(IndexView, generic.CreateView):
+    form_class = ConnectDepotAssetForm
     model = Asset
 
     def form_valid(self, form):
-        asset = form.save(commit=False)
-        asset.depot = self.request.user.crypto_depots.get(is_active=True)
-        asset.save()
+        symbol = form.cleaned_data["symbol"]
+        asset = Asset.objects.get(symbol=symbol)
+        user = self.request.user
+        asset.depots.add(self.request.user.crypto_depots.get(is_active=True))
         success_url = reverse_lazy("crypto:index", args=[self.request.user.slug, ])
         return HttpResponseRedirect(success_url)
 
@@ -93,9 +97,24 @@ class IndexCreateAssetView(IndexView, generic.CreateView):
                                       heading="Asset could not be created.")
 
 
-class IndexUpdateAssetView(IndexView):
+class IndexCreatePrivateAssetView(IndexView, generic.CreateView):
+    form_class = CreatePrivateAssetForm
+    model = Asset
+
+    def form_valid(self, form):
+        asset = form.save()
+        asset.depots.add(self.request.user.crypto_depots.get(is_active=True))
+        success_url = reverse_lazy("crypto:index", args=[self.request.user.slug, ])
+        return HttpResponseRedirect(success_url)
+
+    def form_invalid(self, form):
+        return form_invalid_universal(self, form, "errors",
+                                      heading="Asset could not be created.")
+
+
+class IndexUpdatePrivateAssetView(IndexView):
     def post(self, request, *args, **kwargs):
-        form = UpdateAssetForm(request.POST)
+        form = UpdatePrivateAssetForm(request.POST)
         if form.is_valid():
             return self.form_valid(form)
         else:
@@ -104,7 +123,8 @@ class IndexUpdateAssetView(IndexView):
     def form_valid(self, form):
         asset = form.save(commit=False)
         asset.pk = form.cleaned_data["pk"]
-        asset.depot = self.request.user.crypto_depots.get(is_active=True)
+        asset.depots.clear()
+        asset.depots.add(self.request.user.crypto_depots.get(is_active=True))
         asset.save()
         success_url = reverse_lazy("crypto:index", args=[self.request.user.slug, ])
         return HttpResponseRedirect(success_url)
@@ -114,10 +134,33 @@ class IndexUpdateAssetView(IndexView):
                                       heading="Asset could not be edited.")
 
 
-class IndexDeleteAssetView(IndexView, CustomDeleteView):
+class IndexRemoveAssetView(IndexView, CustomDeleteView):
     def form_valid(self, form):
         asset_pk = form.cleaned_data["pk"]
         asset = Asset.objects.get(pk=asset_pk)
+        depot = self.request.user.crypto_depots.get(is_active=True)
+        if Trade.objects.filter(Q(buy_asset=asset) | Q(sell_asset=asset),
+                                account__in=depot.accounts.all()).exists():
+            return errors_to_view(self, errors_heading="Asset could not be removed.",
+                                  errors=("There still exist trades with that asset.",))
+        if Transaction.objects.filter(Q(from_account__in=depot.accounts.all()) | Q(
+                to_account__in=depot.accounts.all()), asset=asset).exists():
+            return errors_to_view(self, errors_heading="Asset could not be removed.",
+                                  errors=("There still exist transactions with that asset.",))
+        asset.depots.remove(depot)
+        success_url = reverse_lazy("crypto:index", args=[self.request.user.slug, ])
+        return HttpResponseRedirect(success_url)
+
+    def form_invalid(self, form, **kwargs):
+        return form_invalid_universal(self, form, "errors",
+                                      heading="Asset could not be removed.", **kwargs)
+
+
+class IndexDeletePrivateAssetView(IndexView, CustomDeleteView):
+    def form_valid(self, form):
+        asset_pk = form.cleaned_data["pk"]
+        asset = Asset.objects.get(pk=asset_pk)
+        assert asset.symbol is None
         asset.delete()
         success_url = reverse_lazy("crypto:index", args=[self.request.user.slug, ])
         return HttpResponseRedirect(success_url)

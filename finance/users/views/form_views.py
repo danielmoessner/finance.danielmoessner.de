@@ -10,8 +10,8 @@ from finance.users.views.views import SettingsView
 from finance.banking.forms import UpdateDepotForm as EditBankingDepotForm
 from finance.banking.forms import CreateDepotForm as AddBankingDepotForm
 from finance.banking.models import Depot as BankingDepot
-from finance.crypto.forms import AddDepotForm as EditCryptoDepotForm
-from finance.crypto.forms import AddDepotForm as AddCryptoDepotForm
+from finance.crypto.forms import CreateDepotForm as EditCryptoDepotForm
+from finance.crypto.forms import CreateDepotForm as AddCryptoDepotForm
 from finance.crypto.models import Depot as CryptoDepot
 from finance.core.utils import form_invalid_universal
 from finance.core.views.views import CustomDeleteView
