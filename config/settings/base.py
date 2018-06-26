@@ -73,7 +73,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.jinja2.Jinja2',
         'DIRS': [
-            os.path.join(APPS_DIR, 'static/templates'),
+            os.path.join(APPS_DIR, 'templates'),
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -150,14 +150,12 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# used for additional static files
 STATICFILES_DIRS = [
-    os.path.join(APPS_DIR, 'static'),
+    os.path.join(APPS_DIR, 'files/app'),
 ]
 
-# supposed to be the folder in which all the static files get copied into
-STATIC_ROOT = ""  # define as soon as it gets into production
+STATIC_ROOT = os.path.join(APPS_DIR, 'static')
 
 MEDIA_URL = '/media/'
 
-MEDIA_ROOT = os.path.join(APPS_DIR, 'media')  # define as soon as it gets into production
+MEDIA_ROOT = os.path.join(APPS_DIR, 'media')

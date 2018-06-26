@@ -1,0 +1,165 @@
+{% extends "static/lm.njk" %}
+
+
+{% set activePage="crypto" %}
+{% set headingCategory="Asset" %}
+{% set headingHeading=asset.get_name() %}
+{% set title="Asset " + asset.get_name() + " | Crypto" %}
+
+
+{% block head %}
+	<script type="text/javascript" src="{{ static('js/line_chart_2_axes.js') }}" api-data="{{ url('crypto:api_data_asset', args=[user.slug, asset.slug, ]) }}"></script>
+{% endblock %}
+
+
+{% block chart %}
+	<div class="hs-3"></div>
+    <canvas id="line_chart"></canvas>
+    <div class="hs-3"></div>
+    <hr class="hr"> 
+{% endblock %}
+
+
+{% block main %}
+
+
+    {% import "modules/table.njk" as table %}
+    {% import "modules/buttons.njk" as buttons %}
+    {% import "modules/modals.njk" as modals %}
+    {% import "modules/cards.njk" as cards %}
+   
+	
+	<div class="hs-1"></div>
+
+
+	<div class="divider">
+        <div class="divider--content"> 
+            <div class="console" data-toggle="buttons">
+                <label class="console--button active" data-target=".console_stats">
+                    <input type="radio">Stats
+                </label>
+                <label class="console--button" data-target=".console_prices">
+                    <input type="radio">Price History
+                </label>
+                <label class="console--button" data-target=".console_trades">
+                    <input type="radio">Trades
+                </label>
+                <label class="console--button" data-target=".console_transactions">
+                    <input type="radio">Transactions
+                </label>
+            </div>
+        </div>
+    </div>
+
+	
+	<div class="hs-3"></div>
+
+	
+	<div class="wrapper console-target console_stats">
+		<div class="table-heading">
+            <h2 class="table-heading--heading">Stats</h2>
+        </div>
+        <hr class="hr">
+        {%- set assetData = movie.get_values(user, ["cs", "g", "v", "cr"]) -%}
+        <div class="card-deck">
+            {{ cards.statsCard("Invested Capital", assetData.cs, user.currency) }}
+            {{ cards.statsCard("Profit", assetData.g, user.currency) }}
+            {{ cards.statsCard("Value", assetData.v, user.currency) }}
+        </div>
+        <div class="card-deck">
+            {{ cards.statsCard("Current Return", assetData.cr, "%") }}
+        </div>
+		{% for ts in timespans %}
+		    {% if ts.start_date and ts.is_active %}
+		        <div class="hs-3"></div>
+		        <div class="table-heading">
+		            <h3 class="table-heading--heading">{{ ts.name }}</h3>
+		        </div>
+		        <hr class="hr"></hr>
+		        <div class="card-deck">
+		            {% for data in movie.get_values(user, ["g", "cr", ], ts) %}
+		                {% set heading %}
+		                    {{ data.start_date }}-{{ data.end_date }}  
+		                {% endset %}
+		                {% set value %}
+		                    Profit: {{ data.g }} <br>
+		                    Current Return: {{ data.cr }}
+		                {% endset %}
+		                {{ cards.statsCard(heading=heading, value=value, small=True) }}
+		            {% endfor %}
+		        </div>
+		    {% endif %}
+		{% endfor %}
+	</div>
+
+	
+	<div class="wrapper console-target is-hidden console_prices">
+		<div class="table-heading">
+            <h2 class="table-heading--heading">Price history</h2> 
+            {% if asset.private_name %}
+            	{{ buttons.buttonModal(text="Add Price", dataTarget="#addPrice") }} 
+            {% endif %}
+        </div>
+		<table class="table ">
+		    {{ table.head(["Date", "Price", "Action"]) }}
+		    <tbody class="table--body">
+		        {% for price in prices %}
+		            {% set tablebuttons %}
+			            {% if asset.private_name %}
+			                <div class="d-flex flex-row">
+			                    <form method="POST" action="{{ url('crypto:delete_price', args=[user.slug, asset.slug,]) }}">
+								   	<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+								   	<input type="hidden" name="price" value="{{ price.pk }}">
+								   	<input type="submit" class='btn btn-sm btn-danger' value="Delete">
+								</form> 
+			                </div> 
+			            {% else %}
+			            	None
+		                {% endif %}
+		            {% endset %}
+		            {{ table.row([price.get_date(), price.price, tablebuttons | safe]) }}
+		        {% endfor %}
+		    </tbody>
+		</table>
+	</div>
+	
+	
+	<div class="wrapper console-target is-hidden console_trades">
+		<div class="table-heading">
+            <h2 class="table-heading--heading">Trades</h2> 
+        </div>
+		<table class="table">
+		    {{ table.head(["Date", "Account", "Buy", "Buy Asset", "Sell", "Sell Asset", "Fees", "Fees Asset"]) }}
+		    <tbody class="table--body">
+		        {% for trade in trades %}
+		            {{ table.row([trade.date, trade.account, trade.buy_amount, trade.buy_asset, trade.sell_amount, trade.sell_asset, trade.fees, trade.fees_asset]) }}
+		        {% endfor %}
+		    </tbody>
+		</table>
+	</div>
+	
+
+	<div class="wrapper console-target is-hidden console_transactions">
+		<div class="table-heading">
+            <h2 class="table-heading--heading">Transactions</h2> 
+        </div>
+		<table class="table">
+		    {{ table.head(["Date", "Asset", "From Account", "To Account", "Amount", "Fees"]) }}
+		    <tbody class="table--body">
+		        {% for transaction in transactions %}
+		            {{ table.row([transaction.date, transaction.asset, transaction.from_account, transaction.to_account, transaction.amount, transaction.fees]) }}
+		        {% endfor %}
+		    </tbody>
+		</table>
+	</div>
+
+	
+{% endblock %}
+
+
+{% block modals %}
+	{% if asset.private_name %}
+		{% import "modules/crypto/modals.njk" as modals %}
+		{{ modals.addPriceModal(user, asset, csrf_token) }}
+	{% endif %}
+{% endblock %}

@@ -73,13 +73,13 @@ class CreatePrivateAssetForm(forms.ModelForm):
     def clean_private_name(self):
         data = self.cleaned_data["private_name"]
         if data is None:
-            raise forms.ValidationError("The name of the asset can not be left empty.")
+            raise forms.ValidationError("The name of the asset must not be left empty.")
         return data
 
     def clean_private_symbol(self):
         data = self.cleaned_data["private_symbol"]
         if data is None:
-            raise forms.ValidationError("The symbol of the asset can not be left empty.")
+            raise forms.ValidationError("The symbol of the asset must not be left empty.")
         data = str(data).upper()
         return data
 

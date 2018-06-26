@@ -1,0 +1,105 @@
+{% extends "static/lm.njk" %}
+
+
+{% set activePage="banking" %}
+{% set headingCategory="Category" %}
+{% set headingHeading=category.name %}
+{% set title="Category " + category.name + " | Banking" %}
+
+
+{% block head %}
+    <script type="text/javascript" src="{{ static('js/bar_chart.js') }}" api-data="{{ url('banking:api_data_category', args=[user.slug, category.slug, ]) }}"></script>
+{% endblock %}
+
+
+{% block chart %}
+    <div class="hs-3"></div>
+    <canvas id="bar_chart"></canvas>
+    <div class="hs-3"></div>
+    <hr class="hr"> 
+{% endblock %}
+ 
+
+{% block main %}
+    
+
+    {% import "modules/table.njk" as table %}
+    {% import "modules/buttons.njk" as buttons %}
+    {% import "modules/cards.njk" as cards %}
+   
+
+    <div class="hs-1"></div>
+    
+    
+    <div class="divider">
+        <div class="divider--content"> 
+            <div class="console" data-toggle="buttons">
+                <label class="console--button active" data-target=".console_stats">
+                    <input type="radio">Stats
+                </label>
+                <label class="console--button" data-target=".console_changes">
+                    <input type="radio">Changes
+                </label>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="hs-3"></div>
+    
+    
+    <div class="wrapper console-target console_stats">
+        <div class="table-heading">
+            <h2 class="table-heading--heading">Stats</h2>
+        </div>
+        <hr class="hr">
+        <div class="card-deck">
+            {% set value %}
+                {{ movie.get_values(user, ["b",])["b"] }} {{ user.currency }}
+            {% endset %}
+            {{ cards.statsCard(heading="Total", value=value) }}
+        </div>
+        {% for ts in timespans %}
+            {% if ts.start_date and ts.is_active %}
+                <div class="hs-3"></div>
+                <div class="table-heading">
+                    <h3 class="table-heading--heading">{{ ts.name }}</h3>
+                </div>
+                <hr class="hr"></hr>
+                <div class="card-deck">
+                    {% for data in movie.get_values(user, ["b",], ts) %}
+                        {% set heading %}
+                            {{ data.start_date }}-{{ data.end_date }}
+                        {% endset %}
+                        {% set value %}
+                            Change: {{ data.b }}
+                        {% endset %}
+                        {{ cards.statsCard(heading=heading, value=value, small=True) }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+
+    <div class="wrapper console-target is-hidden console_changes">
+        <div class="table-heading">
+            <h2 class="table-heading--heading">Changes</h2>  
+        </div>
+        <table class="table">
+            {{ table.head(["Date", "Category", "Description", "Change"]) }}
+            <tbody class="table--body">
+                {% for change in changes %}
+                    {{ table.row([change.get_date(user), category, change.get_description(), change.change]) }}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+
+{% endblock %}
+
+
+{% block modals %}
+
+{% endblock %}
