@@ -3,14 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="2963ab0c-7f32-4334-befc-b04bf7fbeb4e" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/db.sqlite3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/banking/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/finance/banking/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/templates/banking_account.njk" beforeDir="false" afterPath="$PROJECT_DIR$/finance/templates/banking_account.njk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/debug.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/debug.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/error.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/error.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/info.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/info.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/task.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/task.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/warning.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/warning.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/finance/templates/modules/form_childs.njk" beforeDir="false" afterPath="$PROJECT_DIR$/finance/templates/modules/form_childs.njk" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -51,8 +44,8 @@
       <file leaf-file-name="models.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/finance/banking/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="358">
-              <caret line="238" column="60" selection-start-line="238" selection-start-column="60" selection-end-line="238" selection-end-column="60" />
+            <state relative-caret-position="222">
+              <caret line="236" column="38" lean-forward="true" selection-start-line="236" selection-start-column="38" selection-end-line="236" selection-end-column="38" />
             </state>
           </provider>
         </entry>
@@ -468,20 +461,6 @@
       <option name="presentableId" value="Default" />
       <updated>1508076092352</updated>
     </task>
-    <task id="LOCAL-00003" summary="cleaned up code">
-      <created>1527002645887</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1527002645887</updated>
-    </task>
-    <task id="LOCAL-00004" summary="cleaned up some code &#10;finished trello #54">
-      <created>1527003241654</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1527003241654</updated>
-    </task>
     <task id="LOCAL-00005" summary="completed trello #60">
       <created>1527419810974</created>
       <option name="number" value="00005" />
@@ -811,7 +790,21 @@
       <option name="project" value="LOCAL" />
       <updated>1530048627077</updated>
     </task>
-    <option name="localTasksCounter" value="52" />
+    <task id="LOCAL-00052" summary="bug showed the wrong total in banking stats pictures were ordered only by date">
+      <created>1530132873873</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1530132873874</updated>
+    </task>
+    <task id="LOCAL-00053" summary="trello #81 quick fix try by adding styles cursor=pointer attribute">
+      <created>1530132975460</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1530132975460</updated>
+    </task>
+    <option name="localTasksCounter" value="54" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -888,8 +881,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added forms into the crypto app &#10;assets are bound to a depot now and not app wide (dunno if that's smarter we'll see)" />
-    <MESSAGE value="trello #67" />
     <MESSAGE value="trello #68" />
     <MESSAGE value="trello #69" />
     <MESSAGE value="trello #56" />
@@ -913,7 +904,9 @@
     <MESSAGE value="changed the static file structure + care taking of node modules" />
     <MESSAGE value="added comment" />
     <MESSAGE value="trello #81 attempt try to pull prices automatically" />
-    <option name="LAST_COMMIT_MESSAGE" value="trello #81 attempt try to pull prices automatically" />
+    <MESSAGE value="bug showed the wrong total in banking stats pictures were ordered only by date" />
+    <MESSAGE value="trello #81 quick fix try by adding styles cursor=pointer attribute" />
+    <option name="LAST_COMMIT_MESSAGE" value="trello #81 quick fix try by adding styles cursor=pointer attribute" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1256,8 +1249,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/finance/banking/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="358">
-          <caret line="238" column="60" selection-start-line="238" selection-start-column="60" selection-end-line="238" selection-end-column="60" />
+        <state relative-caret-position="222">
+          <caret line="236" column="38" lean-forward="true" selection-start-line="236" selection-start-column="38" selection-end-line="236" selection-end-column="38" />
         </state>
       </provider>
     </entry>
