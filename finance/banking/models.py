@@ -225,18 +225,20 @@ class Movie(models.Model):
         if timespan and timespan.start_date:
             data["start_date"] = timespan.start_date.strftime(user.date_format)
             try:
-                start_picture = self.pictures.filter(d__lt=timespan.start_date).latest("d")
+                start_picture = self.pictures.filter(d__lt=timespan.start_date).order_by(
+                    "d", "pk").last()
             except ObjectDoesNotExist:
                 pass
         if timespan and timespan.end_date:
             data["end_date"] = timespan.end_date.strftime(user.date_format)
             try:
-                end_picture = self.pictures.filter(d__lte=timespan.end_date).latest("d")
+                end_picture = self.pictures.filter(d__lte=timespan.end_date).order_by(
+                    "d", "pk").last()
             except ObjectDoesNotExist:
                 pass
         else:
             try:
-                end_picture = self.pictures.latest("d")
+                end_picture = self.pictures.order_by("d", "pk").last()
             except ObjectDoesNotExist:
                 pass
 
