@@ -543,6 +543,8 @@ class Movie(models.Model):
         prices = Price.objects.filter(asset=self.asset)
         prices = prices.values("date", "price")
         price_df = pd.DataFrame(list(prices), dtype=np.float64)
+        if price_df.empty:
+            price_df = pd.DataFrame(columns=["date", "price"])
         price_df.set_index("date", inplace=True)
 
         # all together
@@ -623,6 +625,8 @@ class Movie(models.Model):
         prices = Price.objects.filter(asset=self.asset)
         prices = prices.values("date", "price")
         price_df = pd.DataFrame(list(prices), dtype=np.float64)
+        if price_df.empty:
+            price_df = pd.DataFrame(columns=["date", "price"])
         price_df.set_index("date", inplace=True)
 
         # all together

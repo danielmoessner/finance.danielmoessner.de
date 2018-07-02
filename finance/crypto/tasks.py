@@ -2,6 +2,7 @@ from background_task import background
 from django.conf import settings
 import logging
 
+from datetime import datetime
 import urllib.request
 import urllib.error
 import json
@@ -13,7 +14,15 @@ logger = logging.getLogger("background_tasks")
 
 
 @background()
+def test():
+    logger.info("test")
+
+
+@background()
 def update_prices():
+    time_now = datetime.now()
+    text = "{} - Fetching coinmarketcap prices.".format(time_now)
+    logger.info(text)
     file_path = os.path.join(settings.MEDIA_ROOT, "crypto/prices")
     file_name = time.strftime("%Y%m%d") + ".json"
     file = os.path.join(file_path, file_name)
@@ -27,6 +36,7 @@ def update_prices():
                 file = os.path.join(file_path, file_name)
                 with open(file, "w+") as file:
                     json.dump(data, file)
-            logger.debug("Price data was successfully pulled.")
         except urllib.error.HTTPError as e:
             logger.error(str(e))
+    else:
+        logger.info("Prices have already been fetched.")
