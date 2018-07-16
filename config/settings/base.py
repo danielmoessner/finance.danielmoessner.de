@@ -12,12 +12,10 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 
 import os
 import json
-# Normally you should not import anything from django directrly into your settings,
-# but ImproperlyConfigured is an exception
 from django.core.exceptions import ImproperlyConfigured
 
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+# Paths
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 APPS_DIR = os.path.join(BASE_DIR, "finance")
@@ -38,63 +36,6 @@ def get_secret(setting, secrets=secrets_json):
 
 
 SECRET_KEY = get_secret("SECRET_KEY")
-
-
-# Logging
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': True,
-    'handlers': {
-        # 'debug': {
-        #     'level': 'DEBUG',
-        #     'class': 'logging.FileHandler',
-        #     'filename': os.path.join(BASE_DIR, 'logs/debug.log'),
-        # },
-        'info': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs/info.log'),
-        },
-        'warning': {
-            'level': 'WARNING',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs/warning.log'),
-        },
-        'error': {
-            'level': 'ERROR',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs/error.log'),
-        },
-        'critical': {
-            'level': 'CRITICAL',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs/critical.log'),
-        },
-        'task': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs/task.log'),
-        },
-        'mail_admins': {
-            'level': 'ERROR',
-            'class': 'django.utils.log.AdminEmailHandler',
-            'include_html': True,
-        }
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['info', 'warning', 'error', 'critical', 'mail_admins'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'background_tasks': {
-            'handlers': ['task'],
-            'level': 'INFO',
-            'propagate': False,
-        }
-    },
-}
 
 
 # Application definition
