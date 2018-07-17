@@ -24,8 +24,6 @@ urlpatterns = [
     # FUNCTIONS
     # update-movie/
     url(r"^update-movies", login_required(views.update_movies), name="update_movies"),
-    # update-prices/
-    url(r"^update-prices/$", login_required(views.update_prices), name="update_prices"),
 
     # asset/bitcoin/add-price/
     url(r"^asset/(?P<slug>[0-9a-zA-Z-#]*)/add-price/$",

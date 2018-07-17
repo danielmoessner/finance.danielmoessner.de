@@ -136,8 +136,6 @@
     <div class="wrapper console-target is-hidden console_assets">
        	<div class="table-heading">
             <h2 class="table-heading--heading">Assets</h2>  
-            {{ buttons.buttonLink(text="Update Prices", url=url("crypto:update_prices", args=[user.slug,])) }}
-            <div class="placeholder"></div>
             {{ buttons.buttonModal(text="Add Asset", dataTarget="#addAsset") }}
             <div class="placeholder"></div>
             {{ buttons.buttonModal(text="Remove Asset", dataTarget="#removeAsset", class="btn-danger") }}  

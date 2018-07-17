@@ -112,12 +112,6 @@ class AssetView(generic.TemplateView):
 
 
 # FUNCTIONS
-def update_prices(request, *args, **kwargs):
-    depot = Depot.objects.get(name="CMain")
-    depot.update_prices()
-    return HttpResponseRedirect(reverse_lazy("crypto:index", args=[request.user.slug, ]))
-
-
 def update_movies(request, *args, **kwargs):
     depot = request.user.crypto_depots.get(is_active=True)
     depot.get_movie().update_all(force_update=True)

@@ -1,5 +1,4 @@
 from django.core.exceptions import ObjectDoesNotExist
-from django.conf import settings
 from django.db import models
 
 from finance.users.models import StandardUser
@@ -7,15 +6,9 @@ from finance.core.models import Timespan as CoreTimespan
 from finance.core.models import Account as CoreAccount
 from finance.core.models import Depot as CoreDepot
 
-from datetime import datetime
 import pandas as pd
 import numpy as np
-import urllib.request
-import urllib.error
-import pytz
 import time
-import json
-import os
 
 
 def init_crypto(user):
@@ -34,26 +27,6 @@ class Depot(CoreDepot):
     def get_movie(self):
         movie, created = Movie.objects.get_or_create(depot=self, account=None, asset=None)
         return movie
-
-    # update
-    def update_prices(self):
-        file_path = os.path.join(settings.MEDIA_ROOT, "crypto/prices")
-        file_name = time.strftime("%Y%m%d") + ".json"
-        file = os.path.join(file_path, file_name)
-        if not os.path.exists(file):
-            try:
-                with urllib.request.urlopen("https://api.coinmarketcap.com/v1/ticker/?convert=" +
-                                            self.user.get_currency_display()) as url:
-                    data = json.loads(url.read().decode())
-                    file_path = os.path.join(settings.MEDIA_ROOT, "crypto/prices")
-                    file_name = time.strftime("%Y%m%d") + ".json"
-                    file = os.path.join(file_path, file_name)
-                    with open(file, "w+") as file:
-                        json.dump(data, file)
-            except urllib.error.HTTPError:
-                return  # error correction
-        for asset in Asset.objects.all():
-            asset.update_price()
 
 
 class Account(CoreAccount):
@@ -120,27 +93,6 @@ class Asset(models.Model):
         index = dates.index(closest_date)
         price = prices[index].price
         return float(price * amount)
-
-    # update
-    def update_price(self):
-        file_path = os.path.join(settings.MEDIA_ROOT, "crypto/prices")
-        file_name = time.strftime("%Y%m%d") + ".json"
-        file = os.path.join(file_path, file_name)
-        if os.path.exists(file):
-            with open(file, "r") as file:
-                data = json.load(file)
-                for entry in data:
-                    if entry["symbol"] == self.symbol:
-                        data_price = entry["price_" + "eur"]
-                        data_time = int(entry["last_updated"])
-                        data_time = datetime.fromtimestamp(data_time)
-                        data_time = data_time.replace(tzinfo=pytz.utc)
-                        if not Price.objects\
-                                .filter(asset=self, date=data_time, currency="EUR").exists():
-                            price = Price(asset=self, date=data_time, price=data_price,
-                                          currency="EUR")
-                            price.save()
-                        break
 
 
 class Trade(models.Model):
