@@ -9,7 +9,12 @@
 {% macro dateInput(name) %}
 	<div class="form-child">
 		<label class="form-child--label">Date</label>
-		<input type="datetime-local" class="form-child--input input{{ name }}" name="{{ name }}" value="2018-01-01T00:00" required>
+		<input type="datetime-local" class="form-child--input input{{ name }} dateInput" name="{{ name }}" required>
+		<script type="text/javascript">
+			$(document).ready( function() {
+			    $(".dateInput").val(new Date().toDateInputValue());
+			});​
+		</script>
 	</div>
 {% endmacro %}
 
