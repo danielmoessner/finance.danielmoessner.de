@@ -13,14 +13,12 @@
 		@extend .card-header;
 		@extend .h5;
 		@extend .m-0;
-		&-small{
-			font-size: 1.25rem;
-		}
+	}
+	&--small-heading{
+		@extend .card--heading;
+		font-size: 1.25rem;
 	}
 	&--body{
 		@extend .card-body;
-	}
-	&-stats{
-		min-width: 190px;
 	}
 }

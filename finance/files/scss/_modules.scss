@@ -1,17 +1,18 @@
 @import "modules/welcome";  
 @import "modules/table";
-@import "modules/lm-heading";
+@import "modules/heading";
 @import "modules/link";
 @import "modules/modal";
-@import "modules/table-heading";
-@import "modules/divider";
+@import "modules/box";
 @import "modules/card";
 @import "modules/hr";
 @import "modules/timespans";
 @import "modules/console";
 @import "modules/login";
-@import "modules/settings";
-@import "modules/errors";
 @import "modules/column";
+@import "modules/spacer";
 @import "modules/form-child";
- 
+@import "modules/sign-up-in";
+@import "modules/messages";
+@import "modules/button";
+@import "modules/django-form";

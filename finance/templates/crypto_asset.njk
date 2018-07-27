@@ -13,9 +13,9 @@
 
 
 {% block chart %}
-	<div class="hs-3"></div>
+	<div class="vs-3"></div>
     <canvas id="line_chart"></canvas>
-    <div class="hs-3"></div>
+    <div class="vs-3"></div>
     <hr class="hr"> 
 {% endblock %}
 
@@ -25,15 +25,18 @@
 
     {% import "modules/table.njk" as table %}
     {% import "modules/buttons.njk" as buttons %}
+    {% import "modules/button.njk" as button %}
     {% import "modules/modals.njk" as modals %}
     {% import "modules/cards.njk" as cards %}
    
-	
-	<div class="hs-1"></div>
+
+	{%- set addPriceButton=button.modalButton("Add Price", "#addPrice") -%}
 
 
-	<div class="divider">
-        <div class="divider--content"> 
+	<div class="vs-1"></div>
+
+
+	<div class="center-box">
             <div class="console" data-toggle="buttons">
                 <label class="console--button active" data-target=".console_stats">
                     <input type="radio">Stats
@@ -48,35 +51,28 @@
                     <input type="radio">Transactions
                 </label>
             </div>
-        </div>
     </div>
 
 	
-	<div class="hs-3"></div>
+	<div class="vs-3"></div>
 
 	
 	<div class="wrapper console-target console_stats">
-		<div class="table-heading">
-            <h2 class="table-heading--heading">Stats</h2>
-        </div>
-        <hr class="hr">
-        {%- set assetData = movie.get_values(user, ["cs", "g", "v", "cr"]) -%}
-        <div class="card-deck">
-            {{ cards.statsCard("Invested Capital", assetData.cs, user.currency) }}
-            {{ cards.statsCard("Profit", assetData.g, user.currency) }}
-            {{ cards.statsCard("Value", assetData.v, user.currency) }}
-        </div>
-        <div class="card-deck">
-            {{ cards.statsCard("Current Return", assetData.cr, "%") }}
+        {{ heading.smallLmHeading("Stats") }}
+        <div class="vs-1"></div>
+        <div class="items-box">
+        	{%- set assetData = movie.get_values(user, ["cs", "g", "v", "cr"]) -%}
+            {{ cards.statsCard("Invested Capital", assetData.cs, ext=user.currency) }}
+            {{ cards.statsCard("Profit", assetData.g, ext=user.currency) }}
+            {{ cards.statsCard("Value", assetData.v, ext=user.currency) }}
+            {{ cards.statsCard("Current Return", assetData.cr, ext="%") }}
         </div>
 		{% for ts in timespans %}
 		    {% if ts.start_date and ts.is_active %}
-		        <div class="hs-3"></div>
-		        <div class="table-heading">
-		            <h3 class="table-heading--heading">{{ ts.name }}</h3>
-		        </div>
-		        <hr class="hr"></hr>
-		        <div class="card-deck">
+		        <div class="vs-3"></div>
+		        {{ heading.smallLmHeading(ts.name) }}
+		        <div class="vs-1"></div>
+		        <div class="items-box">
 		            {% for data in movie.get_values(user, ["g", "cr", ], ts) %}
 		                {% set heading %}
 		                    {{ data.start_date }}-{{ data.end_date }}  
@@ -85,7 +81,7 @@
 		                    Profit: {{ data.g }} <br>
 		                    Current Return: {{ data.cr }}
 		                {% endset %}
-		                {{ cards.statsCard(heading=heading, value=value, small=True) }}
+		                {{ cards.statsCard(heading, value) }}
 		            {% endfor %}
 		        </div>
 		    {% endif %}
@@ -94,12 +90,7 @@
 
 	
 	<div class="wrapper console-target is-hidden console_prices">
-		<div class="table-heading">
-            <h2 class="table-heading--heading">Price history</h2> 
-            {% if asset.private_name %}
-            	{{ buttons.buttonModal(text="Add Price", dataTarget="#addPrice") }} 
-            {% endif %}
-        </div>
+        {{ heading.smallLmHeading("Price history", buttons=[addPriceButton]) }}
 		<table class="table ">
 		    {{ table.head(["Date", "Price", "Action"]) }}
 		    <tbody class="table--body">
@@ -125,9 +116,7 @@
 	
 	
 	<div class="wrapper console-target is-hidden console_trades">
-		<div class="table-heading">
-            <h2 class="table-heading--heading">Trades</h2> 
-        </div>
+        {{ heading.smallLmHeading("Trades") }}
 		<table class="table">
 		    {{ table.head(["Date", "Account", "Buy", "Buy Asset", "Sell", "Sell Asset", "Fees", "Fees Asset"]) }}
 		    <tbody class="table--body">
@@ -140,9 +129,7 @@
 	
 
 	<div class="wrapper console-target is-hidden console_transactions">
-		<div class="table-heading">
-            <h2 class="table-heading--heading">Transactions</h2> 
-        </div>
+		{{ heading.smallLmHeading("Transactions") }}
 		<table class="table">
 		    {{ table.head(["Date", "Asset", "From Account", "To Account", "Amount", "Fees"]) }}
 		    <tbody class="table--body">

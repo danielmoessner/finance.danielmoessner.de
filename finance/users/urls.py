@@ -14,21 +14,21 @@ urlpatterns = [
     # login/
     url(r"^login/$", views.login, name="login"),
     # moesibert/
-    url(r"^(?P<slug>[0-9a-zA-Z@.+_-]*)/$", login_required(views.SettingsView.as_view()),
-        name="settings"),
+    url(r"^$", login_required(views.SettingsView.as_view()), name="settings"),
 
     # ADD / EDIT / DELETE
-    # moesibert/edit-user/
-    url(r"^(?P<slug>[0-9a-zA-Z@.+_-]*)/edit-user/$",
-        login_required(form_views.SettingsEditUserView.as_view()), name="edit_user"),
-    # moesibert/edit-user-password/
-    url(r"^(?P<slug>[0-9a-zA-Z@.+_-]*)/edit-user-password/$",
-        login_required(form_views.SettingsEditUserPasswordView.as_view()),
+    url(r"^edit-user/(?P<slug>[\w-]+)/$",
+        login_required(form_views.EditUserSettingsView.as_view()),
+        name="edit_user"),
+    url(r"^edit-user-password/(?P<slug>[\w-]+)/$",
+        login_required(form_views.EditUserPasswordSettingsView.as_view()),
         name="edit_user_password"),
-    # moesibert/edit-user-specials/
-    url(r"^(?P<slug>[0-9a-zA-Z@.+_-]*)/edit-user-specials/$",
-        login_required(form_views.SettingsEditUserSpecialsView.as_view()),
-        name="edit_user_specials"),
+    url(r"^edit-user-general/(?P<slug>[\w-]+)/$",
+        login_required(form_views.EditUserGeneralSettingsView.as_view()),
+        name="edit_user_general"),
+    url(r"^edit-user-crypto/(?P<slug>[\w-]+)/$",
+        login_required(form_views.EditUserCryptoSettingsView.as_view()),
+        name="edit_user_crypto"),
 
     # moesibert/add-banking-depot/
     url(r"^(?P<slug>[0-9a-zA-Z@.+_-]*)/add-banking-depot/$",

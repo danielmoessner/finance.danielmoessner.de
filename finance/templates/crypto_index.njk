@@ -14,10 +14,10 @@
 
 
 {% block chart %}
-    <div class="hs-3"></div>
+    <div class="vs-3"></div>
     <canvas class="console-target console_accounts console_stats console_timespans" id="line_chart"></canvas>
     <canvas class="console-target console_assets is-hidden" id="pie_chart"></canvas>
-    <div class="hs-3"></div>
+    <div class="vs-3"></div>
     <hr class="hr"> 
 {% endblock %}
 
@@ -27,61 +27,61 @@
 
     {% import "modules/table.njk" as table %}
     {% import "modules/buttons.njk" as buttons %}
-    {% import "modules/modals.njk" as modals %}
+    {% import "modules/button.njk" as button %}
     {% import "modules/cards.njk" as cards %}
     {% import "modules/timespan.njk" as timespan %}
 
     
-    <div class="hs-1"></div>
+    {%- set addAccountButton=button.modalButton("Add Account", "#addAccount") -%}
+    {%- set deleteAccountButton=button.modalButton("Delete Account", "#deleteAccount") -%}
+    {%- set addAssetButton=button.modalButton("Add Asset", "#addAsset") -%}
+    {%- set removeAssetButton=button.modalButton("Remove Asset", "#removeAsset") -%}
+    {%- set addPrivateAssetButton=button.modalButton("Add Private Asset", "#addPrivateAsset") -%}
+    {%- set deletePrivateAssetButton=button.modalButton("Delete Private Asset", "#deletePrivateAsset") -%}
+    {%- set updateButton=button.hrefButton("Update", url("crypto:update_movies", args=[user.slug])) -%}
 
 
-    <div class="divider">
-        <div class="divider--content"> 
-            <div class="console" data-toggle="buttons">
-                <label class="console--button active" data-target=".console_stats">
-                    <input type="radio">Stats
-                </label>
-                <label class="console--button" data-target=".console_accounts">
-                    <input type="radio">Accounts
-                </label>
-                <label class="console--button" data-target=".console_assets">
-                    <input type="radio">Assets
-                </label>
-                <label class="console--button" data-target=".console_timespans">
-                    <input type="radio">Time Spans
-                </label>
-            </div>
+    <div class="vs-1"></div>
+
+
+    <div class="center-box">
+        <div class="console" data-toggle="buttons">
+            <label class="console--button active" data-target=".console_stats">
+                <input type="radio">Stats
+            </label>
+            <label class="console--button" data-target=".console_accounts">
+                <input type="radio">Accounts
+            </label>
+            <label class="console--button" data-target=".console_assets">
+                <input type="radio">Assets
+            </label>
+            <label class="console--button" data-target=".console_timespans">
+                <input type="radio">Time Spans
+            </label>
         </div>
     </div> 
     
 
-    <div class="hs-3"></div>
+    <div class="vs-3"></div>
  
     
     <div class="wrapper console-target console_stats">
-        <div class="table-heading">
-            <h2 class="table-heading--heading">Stats</h2>
-            {{ buttons.buttonLink(text="Update", url=url("crypto:update_movies", args=[user.slug,])) }}
-        </div>
-        <hr class="hr">
-        {%- set depotData = movie.get_values(user, ["cs", "g", "v", "cr", "ttwr"]) -%}
-        <div class="card-deck">
-            {{ cards.statsCard("Invested Capital", depotData.cs, user.currency) }}
-            {{ cards.statsCard("Profit", depotData.g, user.currency) }}
-            {{ cards.statsCard("Value", depotData.v, user.currency) }}
-        </div>
-        <div class="card-deck">
-            {{ cards.statsCard("Current Return", depotData.cr, "%") }}
-            {{ cards.statsCard("True time weighted return", depotData.ttwr, "%")}}
+        {{ heading.smallLmHeading("Stats", buttons=[updateButton]) }}
+        <div class="vs-1"></div>
+        <div class="items-box">
+            {%- set depotData = movie.get_values(user, ["cs", "g", "v", "cr", "ttwr"]) -%}
+            {{ cards.statsCard("Invested Capital", depotData.cs, ext=user.currency) }}
+            {{ cards.statsCard("Profit", depotData.g, ext=user.currency) }}
+            {{ cards.statsCard("Value", depotData.v, ext=user.currency) }}
+            {{ cards.statsCard("Current Return", depotData.cr, ext="%") }}
+            {{ cards.statsCard("True time weighted return", depotData.ttwr, ext="%")}}
         </div>
         {% for ts in timespans %}
             {% if ts.start_date and ts.is_active %}
-                <div class="hs-3"></div>
-                <div class="table-heading">
-                    <h3 class="table-heading--heading">{{ ts.name }}</h3>
-                </div>
-                <hr class="hr"></hr>
-                <div class="card-deck">
+                <div class="vs-3"></div>
+                {{ heading.smallLmHeading(ts.name) }}
+                <div class="vs-1"></div>
+                <div class="items-box">
                     {% for data in movie.get_values(user, ["g", "cr", ], ts) %}
                         {% set heading %}
                             {{ data.start_date }}-{{ data.end_date }}  
@@ -90,7 +90,7 @@
                             Profit: {{ data.g }} <br>
                             Current Return: {{ data.cr }}
                         {% endset %}
-                        {{ cards.statsCard(heading=heading, value=value, small=True) }}
+                        {{ cards.statsCard(heading, value) }}
                     {% endfor %}
                 </div>
             {% endif %}
@@ -99,12 +99,7 @@
     
     
     <div class="wrapper console-target is-hidden console_accounts">
-    	<div class="table-heading">
-            <h2 class="table-heading--heading">Accounts</h2>  
-            {{ buttons.buttonModal(text="Add Account", dataTarget="#addAccount") }}  
-            <div class="placeholder"></div>
-            {{ buttons.buttonModal(text="Delete Account", dataTarget="#deleteAccount", class="btn-danger") }}     
-        </div>
+        {{ heading.smallLmHeading("Stats", buttons=[addAccountButton, deleteAccountButton]) }}
         <table class="table">
             {{ table.head(["Account", "Assets Value", "Action"]) }}
             <tbody class="table--body">
@@ -126,7 +121,7 @@
                             {{ buttons.buttonModalNew(text="Edit", dataTarget="#editAccount", data=data) }}
                         </div>  
                     {% endset %} 
-                    {{ table.row([name | safe, value, tablebuttons | safe]) }}
+                    {{ table.row([name|safe, value, tablebuttons | safe]) }}
                 {% endfor %}
             </tbody>
         </table>
@@ -134,16 +129,7 @@
     
 
     <div class="wrapper console-target is-hidden console_assets">
-       	<div class="table-heading">
-            <h2 class="table-heading--heading">Assets</h2>  
-            {{ buttons.buttonModal(text="Add Asset", dataTarget="#addAsset") }}
-            <div class="placeholder"></div>
-            {{ buttons.buttonModal(text="Remove Asset", dataTarget="#removeAsset", class="btn-danger") }}  
-            <div class="placeholder"></div>
-            {{ buttons.buttonModal(text="Add Private Asset", dataTarget="#addPrivateAsset") }}
-            <div class="placeholder"></div>
-            {{ buttons.buttonModal(text="Delete Private Asset", dataTarget="#deletePrivateAsset", class="btn-danger") }}  
-        </div>
+        {{ heading.smallLmHeading("Assets", buttons=[addAssetButton, removeAssetButton, addPrivateAssetButton, deletePrivateAssetButton]) }}
         <table class="table">
             {{ table.head(["Asset", "Current Price", "Amount", "Value", "Profit", "Yield", "Action"]) }}
             <tbody class="table--body">
@@ -152,7 +138,7 @@
                         <div class="d-flex flex-row">
                             {{ buttons.buttonModal(text="Buy/Sell", dataTarget="#addTrade", data="pk=" + asset.pk|string) }} 
                             {% if asset.private_symbol %}
-                                <div class="placeholder"></div>
+                                <div class="hs-1"></div>
                                 {% set data %}
                                     {% raw %} { {% endraw %}
                                         'pk': '{{ asset.pk }}', 
@@ -176,11 +162,8 @@
 
 
     <div class="wrapper console-target is-hidden console_timespans">
-        <div class="table-heading">
-            <h2 class="table-heading--heading">Timespans</h2>  
-        </div>
-        <hr class="hr">
-        <div class="hs-1"></div>
+        {{ heading.smallLmHeading("Timespans") }}
+        <div class="vs-1"></div>
         <ul class="timespans">
             {% for ts in timespans %} 
                 {{ timespan.timespan(ts, depot, url('crypto:set_timespan', args=[user.slug,]), url('crypto:delete_timespan', args=[user.slug,]), reverse, csrf_token) }}

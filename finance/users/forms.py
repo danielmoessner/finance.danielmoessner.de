@@ -1,11 +1,11 @@
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django.contrib.auth.forms import UserCreationForm
 from django import forms
 
 from .models import StandardUser
 
 
-# STANDARDUSER
-class AddStandardUserForm(UserCreationForm):
+# standard user
+class CreateStandardUserForm(UserCreationForm):
     class Meta:
         model = StandardUser
         fields = (
@@ -15,22 +15,39 @@ class AddStandardUserForm(UserCreationForm):
         )
 
 
-class EditStandardUserForm(UserChangeForm):
+class UpdateStandardUserForm(forms.ModelForm):
+    email = forms.EmailField(required=False)
+
     class Meta:
         model = StandardUser
         fields = (
             "username",
-            "email",
-            "password",
+            "email"
         )
 
 
-class EditStandardUserSpecialsForm(forms.ModelForm):
+class UpdateGeneralStandardUserForm(forms.ModelForm):
     class Meta:
         model = StandardUser
         fields = (
             "currency",
             "date_format",
-            "rounded_numbers",
             "front_page"
+        )
+        help_texts = {
+            "currency": "USD is not enabled yet."
+        }
+
+    def clean_currency(self):
+        data = self.cleaned_data["currency"]
+        if data == "$":
+            raise forms.ValidationError("USD is not enabled yet.")
+        return data
+
+
+class UpdateCryptoStandardUserForm(forms.ModelForm):
+    class Meta:
+        model = StandardUser
+        fields = (
+            "rounded_numbers",
         )

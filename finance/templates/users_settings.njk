@@ -12,60 +12,52 @@
 
 	{% import "modules/form_childs.njk" as childs %}
 	{% import "modules/buttons.njk" as buttons %}
+	{% import "modules/button.njk" as button %}
 	{% import "modules/table.njk" as table %}
+	{% import "modules/form.njk" as form_generator %}
+	{% import "modules/heading.njk" as heading %}
+	
+
+	{%- set addBankingDepotButton=button.modalButton("Add Depot", "#addBankingDepot") -%}
+	{%- set addCryptoDepotButton=button.modalButton("Add Depot", "#addCryptoDepot") -%}
 
 
-	<div class="hs-1"></div>
+	<div class="vs-1"></div>
 
 
-	<div class="divider">
-        <div class="divider--content"> 
-            <div class="console" data-toggle="buttons">
-                <label class="console--button active" data-target=".console_general">
-                    <input type="radio">General
-                </label>
-                <label class="console--button" data-target=".console_user">
-                    <input type="radio">User
-                </label>
-                {% if user.banking_is_active %}
+	<div class="center-box">
+        <div class="console" data-toggle="buttons">
+            <label class="console--button active" data-target=".console_general">
+                <input type="radio">General
+            </label>
+            <label class="console--button" data-target=".console_user">
+                <input type="radio">User
+            </label>
+            {% if user.banking_is_active %}
                 <label class="console--button" data-target=".console_banking">
                     <input type="radio">Banking
                 </label>
-                {% endif %}
-                {% if user.crypto_is_active %}
+            {% endif %}
+            {% if user.crypto_is_active %}
                 <label class="console--button" data-target=".console_crypto">
                     <input type="radio">Crypto
                 </label>
-                {% endif %}
-            </div>
+            {% endif %}
         </div>
     </div>
 
 
-	<div class="hs-3"></div>
+	<div class="vs-3"></div>
 
 
 	<div class="wrapper console-target console_general">
-		<div class="table-heading">
-	        <h2 class="table-heading--heading">General</h2>
-	    </div>
-		<hr class="hr">
-		<div class="settings">
-			<form action="{{ url('users:edit_user_specials', args=[user.slug,]) }}" method="POST">
-				<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-				<input type="hidden" name="rounded_numbers" value="{{ rounded_numbers }}">
-				{{ childs.tupleSelect("Select A Date Format", "date_format", date_formats[1], selected=date_formats[0]) }}
-				{{ childs.tupleSelect("Select A Currency", "currency", currencies[1], selected=currencies[0]) }}
-				{{ childs.tupleSelect("Front Page", "front_page", front_pages[1], selected=front_pages[0])}}
-				<input type="submit" value="Update" class="form-child--submit-button">
-			</form> 
+		{{ heading.smallLmHeading("General") }}
+		<div class="lm-box">
+			{{ form_generator.form(edit_user_general_form, url('users:edit_user_general', args=[user.slug]), csrf_token) }}
 		</div> 
 
-		<div class="table-heading">
-	        <h2 class="table-heading--heading">Apps</h2>
-	    </div>
-		<hr class="hr">
-		<div class="settings">
+		{{ heading.smallLmHeading("Apps") }}
+		<div class="lm-box">
 			<div class="column">
 				<div class="column--left">
 					<h3 class="column--heading">Banking</h3>
@@ -87,40 +79,20 @@
 
 
 	<div class="wrapper console-target console_user is-hidden">	
-		<div class="table-heading">
-	        <h2 class="table-heading--heading">@{{ user.username }}</h2>
-	    </div>
-		<hr class="hr">
-		<div class="settings">
-			<form action="{{ url('users:edit_user', args=[user.slug,]) }}" method="POST">
-				<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-				{{ childs.textInput("Username", "username", value=user.username) }}
-				{{ childs.textInput("E-Mail", "email", value=user.email) }}
-				<input type="submit" value="Update" class="form-child--submit-button">
-			</form>
+		{{ heading.smallLmHeading("@"+user.username) }}
+		<div class="lm-box">
+			{{ form_generator.form(edit_user_form, url('users:edit_user', args=[user.slug]), csrf_token) }}
 		</div>
 
-		<div class="table-heading">
-	        <h3 class="table-heading--heading">Password</h3>
-	    </div>
-	    <hr class="hr">
-		<div class="settings">
-			<form action="{{ url('users:edit_user_password', args=[user.slug,]) }}" method="POST">
-				<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-				{{ childs.passwordInput("Old Password", "old_password") }}
-				{{ childs.passwordInput("New Password", "new_password1") }}
-				{{ childs.passwordInput("Retype New Password", "new_password2") }}
-				<input type="submit" value="Change Password" class="form-child--submit-button">
-			</form>
+		{{ heading.smallLmHeading("Password") }}
+		<div class="lm-box">
+			{{ form_generator.form(edit_user_password_form, url('users:edit_user_password', args=[user.slug]), csrf_token) }}
 		</div> 
 	</div>
 
 
 	<div class="wrapper console-target console_banking is-hidden">
-		<div class="table-heading">
-	        <h2 class="table-heading--heading">Depots</h2>
-	        {{ buttons.buttonModal(text="Add Depot", dataTarget="#addBankingDepot") }} 
-	    </div>
+	    {{ heading.smallLmHeading("Depots", buttons=[addBankingDepotButton]) }}
 		<table class="table">
             {{ table.head(["Depot", "Action"]) }}
             <tbody class="table--body">
@@ -128,7 +100,7 @@
                     {% set tablebuttons %}
                         <div class="d-flex flex-row">  
                         	<a type="button" href={{ url("users:set_banking_depot_active", args=[user.slug, depot.pk, ]) }} class="btn btn-sm btn-info {% if depot.is_active==True %}disabled{% endif %}" role="button">Set Active</a>
-                            <div class="placeholder"></div>
+                            <div class="vs-1"></div>
                             {% set data %}
                                 {% raw %} { {% endraw %}
                                     'pk': '{{ depot.pk }}', 
@@ -136,7 +108,7 @@
                                 {% raw %} } {% endraw %}
                             {% endset %}
                             {{ buttons.buttonModalNew(text="Edit", dataTarget="#editBankingDepot", data=data) }}
-                            <div class="placeholder"></div>
+                            <div class="vs-1"></div>
                             <form method="POST" action="{{ url('users:delete_banking_depot', args=[user.slug,]) }}" class="">
                                 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                                 <input type="hidden" name="pk" value="{{ depot.pk }}">
@@ -152,26 +124,16 @@
 
 
 	<div class="wrapper console-target console_crypto is-hidden">
-		<div class="table-heading">
-	        <h2 class="table-heading--heading">General</h2>
-	    </div>
-	    <hr class="hr">
-		<div class="settings">
-			<form action="{{ url('users:edit_user_specials', args=[user.slug,]) }}" method="POST">
+		{{ heading.smallLmHeading("General") }}
+		<div class="lm-box">
+			<form action="{{ url('users:edit_user_crypto', args=[user.slug]) }}" method="POST">
 				<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-				<input type="hidden" name="date_format" value="{{ date_formats[0] }}">
-				<input type="hidden" name="currency" value="{{ currencies[0] }}">
-				<input type="hidden" name="front_page" value="{{ front_pages[0] }}">
-				{{ childs.select("Round Numbers To 2 Decimal Places", "rounded_numbers", ["True", "False"], selected=rounded_numbers)}}
-
+				{{ edit_user_crypto_form.as_p() }}
 				<input type="submit" value="Update" class="form-child--submit-button">
 			</form> 
 		</div> 
-
-		<div class="table-heading">
-	        <h2 class="table-heading--heading">Depots</h2>
-	        {{ buttons.buttonModal(text="Add Depot", dataTarget="#addCryptoDepot") }}
-	    </div>
+		
+		{{ heading.smallLmHeading("Depots", buttons=[addCryptoDepotButton]) }}
 		<table class="table">
             {{ table.head(["Depot", "Action"]) }}
             <tbody class="table--body">
@@ -179,7 +141,7 @@
                     {% set tablebuttons %}
                         <div class="d-flex flex-row">  
                         	<a type="button" href={{ url("users:set_crypto_depot_active", args=[user.slug, depot.pk, ]) }} class="btn btn-sm btn-info {% if depot.is_active==True %}disabled{% endif %}"" role="button">Set Active</a>
-                            <div class="placeholder"></div>
+                            <div class="vs-1"></div>
                             {% set data %}
                                 {% raw %} { {% endraw %}
                                     'pk': '{{ depot.pk }}', 
@@ -187,7 +149,7 @@
                                 {% raw %} } {% endraw %}
                             {% endset %}
                             {{ buttons.buttonModalNew(text="Edit", dataTarget="#editCryptoDepot", data=data) }}
-                            <div class="placeholder"></div>
+                            <div class="vs-1"></div>
                             <form method="POST" action="{{ url('users:delete_crypto_depot', args=[user.slug,]) }}" class="">
                                 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                                 <input type="hidden" name="pk" value="{{ depot.pk }}">

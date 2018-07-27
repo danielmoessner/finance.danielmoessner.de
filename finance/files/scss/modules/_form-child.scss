@@ -2,7 +2,7 @@
 	@extend .form-group;
 	&--label{
 
-	}
+	} 
 	&--input{
 		@extend .form-control;
 	}
@@ -21,7 +21,15 @@
 		@extend .btn-primary;
 		@extend .w-100;
 	}
+	&--helptext{
+		@extend .form-text;
+		@extend .text-muted;
+	}
+	&--errors{
+		@extend .invalid-feedback;
+		display: block;
+	}
 	&--cancel-button{
 		// todo
 	}
-}
+} 

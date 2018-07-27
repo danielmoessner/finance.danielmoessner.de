@@ -1,63 +1,40 @@
 from django.contrib.auth.forms import PasswordChangeForm
+from django.db.models import ProtectedError
+from django.views import generic
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-from django.views import generic
-from django.db.models import ProtectedError
 
-from finance.users.forms import EditStandardUserForm, EditStandardUserSpecialsForm
-from finance.users.models import StandardUser
 from finance.users.views.views import SettingsView
+from finance.core.views.views import CustomInvalidFormMixin
+from finance.core.views.views import CustomDeleteView
 from finance.banking.forms import UpdateDepotForm as EditBankingDepotForm
 from finance.banking.forms import CreateDepotForm as AddBankingDepotForm
-from finance.banking.models import Depot as BankingDepot
 from finance.crypto.forms import CreateDepotForm as EditCryptoDepotForm
 from finance.crypto.forms import CreateDepotForm as AddCryptoDepotForm
+from finance.banking.models import Depot as BankingDepot
 from finance.crypto.models import Depot as CryptoDepot
+from finance.users.models import StandardUser
+from finance.users.forms import UpdateStandardUserForm, UpdateCryptoStandardUserForm
+from finance.users.forms import UpdateGeneralStandardUserForm
 from finance.core.utils import form_invalid_universal
-from finance.core.views.views import CustomDeleteView
 
 
-class SettingsEditUserSpecialsView(SettingsView, generic.UpdateView):
-    form_class = EditStandardUserSpecialsForm
+# user
+class EditUserSettingsView(SettingsView, CustomInvalidFormMixin, generic.UpdateView):
+    form_class = UpdateStandardUserForm
     model = StandardUser
+    success_url = reverse_lazy("users:settings")
 
-    def form_valid(self, form):
-        # form is invalid if this is true
-        if form.cleaned_data["currency"] != self.request.user.currency:
-            context = self.get_context_data()
-            context["errors"] = [
-                "At the moment it's not allowed to change the currency once it was set.",
-            ]
-            return self.render_to_response(context)
-        # form valid
-        self.success_url = reverse_lazy("users:settings", args=[self.request.user.slug, ])
-        return super(SettingsEditUserSpecialsView, self).form_valid(form)
-
-    def form_invalid(self, form):
-        return form_invalid_universal(self, form, "errors",
-                                      heading="User data could not be edited:")
+    def get_context_data(self, **kwargs):
+        context = super(EditUserSettingsView, self).get_context_data()
+        context["edit_user_form"] = self.get_form()
+        return context
 
 
-class SettingsEditUserView(SettingsView, generic.UpdateView):
-    form_class = EditStandardUserForm
-    model = StandardUser
-
-    def form_valid(self, form):
-        self.success_url = reverse_lazy("users:settings", args=[self.request.user.slug, ])
-        return super(SettingsEditUserView, self).form_valid(form)
-
-    def form_invalid(self, form):
-        return form_invalid_universal(self, form, "errors",
-                                      heading="User data could not be edited:")
-
-
-class SettingsEditUserPasswordView(SettingsView, generic.UpdateView):
+class EditUserPasswordSettingsView(SettingsView, CustomInvalidFormMixin, generic.UpdateView):
     form_class = PasswordChangeForm
     model = StandardUser
-
-    def form_valid(self, form):
-        self.success_url = reverse_lazy("users:settings", args=[self.request.user.slug, ])
-        return super(SettingsEditUserPasswordView, self).form_valid(form)
+    success_url = reverse_lazy("users:settings")
 
     def post(self, request, *args, **kwargs):
         form = PasswordChangeForm(request.user, request.POST)
@@ -66,11 +43,35 @@ class SettingsEditUserPasswordView(SettingsView, generic.UpdateView):
         else:
             return self.form_invalid(form)
 
-    def form_invalid(self, form):
-        return form_invalid_universal(self, form, "errors",
-                                      heading="Password could not be changed:")
+    def get_context_data(self, **kwargs):
+        context = super(EditUserPasswordSettingsView, self).get_context_data()
+        context["edit_user_password_form"] = self.get_form()
+        return context
 
 
+class EditUserGeneralSettingsView(SettingsView, CustomInvalidFormMixin, generic.UpdateView):
+    form_class = UpdateGeneralStandardUserForm
+    model = StandardUser
+    success_url = reverse_lazy("users:settings")
+
+    def get_context_data(self, **kwargs):
+        context = super(EditUserGeneralSettingsView, self).get_context_data()
+        context["edit_user_general_form"] = self.get_form()
+        return context
+
+
+class EditUserCryptoSettingsView(SettingsView, CustomInvalidFormMixin, generic.UpdateView):
+    form_class = UpdateCryptoStandardUserForm
+    model = StandardUser
+    success_url = reverse_lazy("users:settings")
+
+    def get_context_data(self, **kwargs):
+        context = super(EditUserCryptoSettingsView, self).get_context_data()
+        context["edit_user_crypto_form"] = self.get_form()
+        return context
+
+
+# banking
 class SettingsAddBankingDepotView(SettingsView, generic.CreateView):
     form_class = AddBankingDepotForm
     model = BankingDepot
@@ -124,6 +125,7 @@ class SettingsDeleteBankingDepotView(SettingsView, CustomDeleteView):
         return form_invalid_universal(self, form, "errors", heading="Depot could not be deleted.")
 
 
+# crypto
 class SettingsAddCryptoDepotView(SettingsView, generic.CreateView):
     form_class = AddCryptoDepotForm
     model = CryptoDepot

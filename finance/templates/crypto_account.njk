@@ -13,9 +13,9 @@
 
 
 {% block chart %}
-	<div class="hs-3"></div>
+	<div class="vs-3"></div>
     <canvas id="pie_chart"></canvas>
-    <div class="hs-3"></div>
+    <div class="vs-3"></div>
     <hr class="hr"> 
 {% endblock %}
 
@@ -26,13 +26,16 @@
     {% import "modules/table.njk" as table %}
     {% import "modules/buttons.njk" as buttons %}
     {% import "modules/cards.njk" as cards %}
-   
+    {% import "modules/button.njk" as button %}
+   	
+
+   	{%- set addTradeButton=button.modalButton("Buy/Sell Asset", "#addTrade") -%}
 	
-	<div class="hs-1"></div>
+
+	<div class="vs-1"></div>
 
 
-	<div class="divider">
-        <div class="divider--content"> 
+	<div class="center-box">
             <div class="console" data-toggle="buttons">
             	<label class="console--button active" data-target=".console_stats">
                     <input type="radio">Stats
@@ -47,30 +50,25 @@
                     <input type="radio">Transactions
                 </label>
             </div>
-        </div>
     </div>
 
 
-	<div class="hs-3"></div>
+	<div class="vs-3"></div>
 
 	
 	<div class="wrapper console-target console_stats">
-		<div class="table-heading">
-            <h2 class="table-heading--heading">Stats</h2>
-        </div>
-        <hr class="hr">
-        {%- set accountData = movie.get_values(user, ["v", ]) -%}
-        <div class="card-deck">
-            {{ cards.statsCard("Value", accountData.v, user.currency) }}
+        {{ heading.smallLmHeading("Stats") }}
+        <div class="vs-1"></div>
+        <div class="items-box">
+        	{%- set accountData = movie.get_values(user, ["v", ]) -%}
+            {{ cards.statsCard("Value", accountData.v, ext=user.currency) }}
         </div>
 		{% for ts in timespans %}
 		    {% if ts.start_date and ts.is_active %}
-		        <div class="hs-3"></div>
-		        <div class="table-heading">
-		            <h3 class="table-heading--heading">{{ ts.name }}</h3>
-		        </div>
-		        <hr class="hr"></hr>
-		        <div class="card-deck">
+		        <div class="vs-3"></div>
+		        {{ heading.smallLmHeading(ts.name) }}
+		        <div class="vs-1"></div>
+		        <div class="items-box">
 		            {% for data in movie.get_values(user, ["g", "cr", ], ts) %}
 		                {% set heading %}
 		                    {{ data.start_date }}-{{ data.end_date }}  
@@ -79,7 +77,7 @@
 		                    Profit: {{ data.g }} <br>
 		                    Current Return: {{ data.cr }}
 		                {% endset %}
-		                {{ cards.statsCard(heading=heading, value=value, small=True) }}
+		                {{ cards.statsCard(heading, value) }}
 		            {% endfor %}
 		        </div>
 		    {% endif %}
@@ -88,10 +86,7 @@
 	
 	
 	<div class="wrapper console-target is-hidden console_assets">
-		<div class="table-heading">
-            <h2 class="table-heading--heading">Assets</h2> 
-            {{ buttons.buttonModal(text="Buy/Sell Asset", dataTarget="#addTrade") }}
-        </div>
+        {{ heading.smallLmHeading("Assets", buttons=[addTradeButton]) }}
 		<table class="table ">
 		    {{ table.head(["Asset", "Current Price", "Amount", "Value", "Action"]) }}
 		    <tbody class="table--body">
@@ -110,9 +105,7 @@
 	
 	
 	<div class="wrapper console-target is-hidden console_trades">
-		<div class="table-heading">
-            <h2 class="table-heading--heading">Trades</h2> 
-        </div>
+        {{ heading.smallLmHeading("Trades") }}
 		<table class="table ">
 		    {{ table.head(["Date", "Account", "Buy", "Buy Asset", "Sell", "Sell Asset", "Fees", "Fees Asset", "Action"]) }}
 		    <tbody class="table--body">
@@ -133,7 +126,7 @@
 		                        {% raw %} } {% endraw %}
 		                    {% endset %}
 		                    {{ buttons.buttonModalNew(text="Edit", dataTarget="#editTrade", data=data) }}
-		                    <div class="placeholder"></div>
+		                    <div class="hs-1"></div>
 		                	<form method="POST" action="{{ url('crypto:delete_trade', args=[user.slug, account.slug]) }}">
 							   	<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 							   	<input type="hidden" name="trade" value="{{ trade.pk }}">
@@ -149,9 +142,7 @@
 
 
 	<div class="wrapper console-target is-hidden console_transactions">
-		<div class="table-heading">
-            <h2 class="table-heading--heading">Transactions</h2> 
-        </div>
+        {{ heading.smallLmHeading("Transactions") }}
 		<table class="table ">
 		    {{ table.head(["Date", "Asset", "From Account", "To Account", "Amount", "Fees", "Action"]) }}
 		    <tbody class="table--body">
@@ -169,7 +160,7 @@
 		                        {% raw %} } {% endraw %}
 		                    {% endset %}
 		                    {{ buttons.buttonModalNew(text="Edit", dataTarget="#editTrade", data=data) }}
-		                    <div class="placeholder"></div>
+		                    <div class="hs-1"></div>
 		                	<form method="POST" action="{{ url('crypto:delete_transaction', args=[user.slug, account.slug]) }}">
 							   	<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 							   	<input type="hidden" name="pk" value="{{ transaction.pk }}">

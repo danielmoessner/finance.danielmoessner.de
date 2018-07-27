@@ -1,3 +1,4 @@
+from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import logout as logout_user
 from django.contrib.auth import login as login_user
 from django.contrib.auth import authenticate
@@ -7,7 +8,10 @@ from django.utils.html import strip_tags
 from django.urls import reverse_lazy
 from django.views import generic
 
-from finance.users.forms import AddStandardUserForm
+from finance.users.forms import CreateStandardUserForm
+from finance.users.forms import UpdateCryptoStandardUserForm
+from finance.users.forms import UpdateGeneralStandardUserForm
+from finance.users.forms import UpdateStandardUserForm
 from finance.banking.models import Depot as BankingDepot
 from finance.banking.models import init_banking as banking_init_banking
 from finance.crypto.models import init_crypto as crypto_init_crypto
@@ -19,7 +23,7 @@ def signup(request):
         return HttpResponseRedirect(reverse_lazy("users:settings", args=[request.user.slug, ]))
 
     if request.method == "POST":
-        form = AddStandardUserForm(request.POST)
+        form = CreateStandardUserForm(request.POST)
         if form.is_valid():
             user = form.save()
             login_user(request, user)
@@ -36,12 +40,13 @@ def signup(request):
 
 def login(request):
     if request.user.is_authenticated:
-        if request.user.front_page == "BANKING":
+        front_page = request.user.front_page
+        if front_page == "BANKING":
             url = reverse_lazy("banking:index", args=[request.user.slug])
-        elif request.user.front_page == "CRYPTO":
+        elif front_page == "CRYPTO":
             url = reverse_lazy("crypto:index", args=[request.user.slug])
         else:
-            url = reverse_lazy("users:settings", args=[request.user.slug])
+            url = reverse_lazy("users:settings")
         return HttpResponseRedirect(url)
 
     if request.method == "POST":
@@ -70,19 +75,16 @@ class SettingsView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = dict()
         context["user"] = self.request.user
-        # general
-        currencies = context["user"]._meta.get_field("currency").choices
-        context["currencies"] = (context["user"].currency, currencies)
-        date_formats = context["user"]._meta.get_field("date_format").choices
-        context["date_formats"] = (context["user"].date_format, date_formats)
-        front_pages = context["user"]._meta.get_field("front_page").choices
-        context["front_pages"] = (context["user"].front_page, front_pages)
+        context["edit_user_form"] = UpdateStandardUserForm(instance=self.request.user)
+        context["edit_user_password_form"] = PasswordChangeForm(user=self.request.user)
+        context["edit_user_general_form"] = UpdateGeneralStandardUserForm(
+            instance=self.request.user)
+
         # banking
         context["banking_depots"] = context["user"].banking_depots.all()
         # crypto
         context["crypto_depots"] = context["user"].crypto_depots.all()
-        context["rounded_numbers"] = context["user"].rounded_numbers
-
+        context["edit_user_crypto_form"] = UpdateCryptoStandardUserForm(instance=self.request.user)
         return context
 
 

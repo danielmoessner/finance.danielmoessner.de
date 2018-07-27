@@ -1,34 +1,12 @@
 {% extends "static/m.njk" %}
 
 
-{% set activePage="" %}
-{% set reverse=url("users:signup") %}
 {% set title="Sign Up" %}
 
 
 {% block main %}
     
-	{% import "modules/form_childs.njk" as childs %}
-	<div class="login">
-		<div class="wrapper">
-			<h1 class="login--heading">Sign Up</h1>
-			{% if errors %}
-				<div class="login--errors">
-					{% for error in errors %}
-						<p class="login--errors--error">{{ error|safe }}</p>
-					{% endfor %}
-				</div>
-			{% endif %}
-			<form action="{{ url('users:signup') }}" method="POST">
-				<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-    			{{ childs.textInput("Username", "username") }}
-				{{ childs.passwordInput("Password", "password1") }}
-				{{ childs.passwordInput("Password", "password2") }}
-				<input type="submit" value="Sign Up" class="login--login-button">
-			</form>
-			<a type="button" href="{{ url('users:login') }}" class="login--signup-button" role="button">Go to the login page.</a>
-		</div>
-	</div>
+	{% import "modules/sign-up-in.njk" as sign %}
+	{{ sign.signUp(csrf_token, errors) }}
 	
-
 {% endblock %}
