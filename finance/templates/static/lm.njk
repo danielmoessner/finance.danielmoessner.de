@@ -1,6 +1,9 @@
 {% extends "static/base.njk" %}
 
+
 {% import "modules/heading.njk" as heading %}
+{% import "modules/messages.njk" as messages %}
+
 
 {% block body %}
     <body id="lm">
@@ -13,7 +16,6 @@
                 {% block chart %}
                 {% endblock %}
             </div>
-            {% import "modules/messages.njk" as messages %}
             {{ messages.lmMessages(request) }}
             {% block main %}
             {% endblock %}

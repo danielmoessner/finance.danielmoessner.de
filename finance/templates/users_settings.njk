@@ -10,11 +10,10 @@
 {% block main %} 
 	
 
-	{% import "modules/form_childs.njk" as childs %}
 	{% import "modules/buttons.njk" as buttons %}
 	{% import "modules/button.njk" as button %}
 	{% import "modules/table.njk" as table %}
-	{% import "modules/form.njk" as form_generator %}
+	{% import "modules/form.njk" as fg %}
 	{% import "modules/heading.njk" as heading %}
 	
 
@@ -53,7 +52,7 @@
 	<div class="wrapper console-target console_general">
 		{{ heading.smallLmHeading("General") }}
 		<div class="lm-box">
-			{{ form_generator.form(edit_user_general_form, url('users:edit_user_general', args=[user.slug]), csrf_token) }}
+			{{ fg.formGenerator(edit_user_general_form, url('users:edit_user_general', args=[user.slug]), csrf_token) }}
 		</div> 
 
 		{{ heading.smallLmHeading("Apps") }}
@@ -81,12 +80,12 @@
 	<div class="wrapper console-target console_user is-hidden">	
 		{{ heading.smallLmHeading("@"+user.username) }}
 		<div class="lm-box">
-			{{ form_generator.form(edit_user_form, url('users:edit_user', args=[user.slug]), csrf_token) }}
+			{{ fg.formGenerator(edit_user_form, url('users:edit_user', args=[user.slug]), csrf_token) }}
 		</div>
 
 		{{ heading.smallLmHeading("Password") }}
 		<div class="lm-box">
-			{{ form_generator.form(edit_user_password_form, url('users:edit_user_password', args=[user.slug]), csrf_token) }}
+			{{ fg.formGenerator(edit_user_password_form, url('users:edit_user_password', args=[user.slug]), csrf_token) }}
 		</div> 
 	</div>
 

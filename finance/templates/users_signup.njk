@@ -7,15 +7,18 @@
 {% block main %}
     
     
-    {% import "modules/form.njk" as form_generator %}
+    {% import "modules/form.njk" as fg %}
 	{% import "modules/messages.njk" as messages %}
 	<div class="sign-up-in">
 		<div class="wrapper">
 			<h1 class="sign-up-in--heading">Sign Up</h1>
-			<div class="vs-1"></div>
-        	{{ messages.messages(request) }}
-        	<div class="vs-1"></div>
-			{{ form_generator.form(sign_up_form, url('users:signup'), csrf_token) }}
+			{% with msgs=get_messages(request) %}
+				{% if messages %}
+        			{{ messages.messages(msgs) }}
+        			<div class="vs-1"></div>
+		        {% endif %}
+			{% endwith %}
+			{{ fg.formGenerator(sign_up_form, url('users:signup'), csrf_token) }}
 		</div>
 		<a type="button" href="{{ url('users:signin') }}" class="sign-up-in--switch-button" role="button">Go to the login page.</a>
 	</div>
