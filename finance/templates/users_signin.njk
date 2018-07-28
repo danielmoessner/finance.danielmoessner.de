@@ -1,0 +1,27 @@
+{% extends "static/m.njk" %}
+
+
+{% set title="Sign In" %}
+
+
+{% block main %} 
+
+
+	{% import "modules/form.njk" as fg %}
+	{% import "modules/messages.njk" as messages %}
+	<div class="sign-up-in">
+		<div class="wrapper">
+			<h1 class="sign-up-in--heading">Sign In</h1>
+			{% with msgs=get_messages(request) %}
+				{% if messages %}
+        			{{ messages.messages(msgs) }}
+        			<div class="vs-1"></div>
+		        {% endif %}
+			{% endwith %}
+			{{ fg.formGenerator(sign_in_form, url('users:signin'), csrf_token) }}
+		</div>
+		<a type="button" href="{{ url('users:signup') }}" class="sign-up-in--switch-button" role="button">Sign up as a new user.</a>
+	</div>
+
+
+{% endblock %}

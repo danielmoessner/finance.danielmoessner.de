@@ -1,7 +1,7 @@
 {% extends "static/base.njk" %}
 
 
-{% import "modules/heading.njk" as heading %}
+{% import "modules/heading.njk" as hg %}
 {% import "modules/messages.njk" as messages %}
 
 
@@ -11,7 +11,7 @@
             {% include "layout/left.njk" %}
         </aside>
         <main id="lm-main">
-            {{ heading.bigLmHeading(headingCategory, headingHeading) }}
+            {{ hg.bigLmHeading(headingCategory, headingHeading) }}
             <div class="wrapper">
                 {% block chart %}
                 {% endblock %}

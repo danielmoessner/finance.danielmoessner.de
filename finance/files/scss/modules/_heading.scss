@@ -1,0 +1,45 @@
+.big-lm-heading{
+	&--top{
+		margin: 0;
+	}
+	&--heading{
+
+	}
+	&--hr{
+		width: 100%;
+		border-top: 1px solid $hr-color;
+		margin-bottom: 0;
+	}
+	&--subrow{
+		@extend .mt-2;
+		margin-bottom: 0;
+		display: flex;
+		flex-direction: row-reverse;
+	}
+}
+
+.small-lm-heading{
+	@extend .d-flex;
+	@extend .flex-column;
+	&--row{
+		@extend .d-flex;
+		@extend .flex-row;
+		align-items: center;
+	}
+	&--heading{
+		@extend .mr-auto;
+	}
+	&--button{
+		@extend .btn-sm;
+	}
+	&--hr{
+		width: 100%;
+		border-top: 1px solid $hr-color;
+		margin-top: 0;
+		margin-bottom: 0;
+	}
+	&--spacer{
+		padding-left: .125rem;
+		padding-right: .125rem;
+	}
+}

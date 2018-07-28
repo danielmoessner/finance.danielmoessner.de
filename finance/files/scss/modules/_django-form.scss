@@ -1,0 +1,23 @@
+.django-form{
+	p{
+		@extend .form-child;
+		label{
+			// @extend .form-child--label;
+		} 
+		input{
+			@extend .form-child--input;
+		}
+		select{
+			@extend .form-child--select;
+		}
+		textarea{
+			@extend .form-child--textarea;
+		}
+		.helptext{
+			@extend .form-child--helptext;
+		}
+	}
+	&--submit-button{
+		@extend .submit-button;
+	}
+}

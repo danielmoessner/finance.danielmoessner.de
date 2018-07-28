@@ -27,6 +27,8 @@ class IndexView(generic.TemplateView):
         context["accounts"] = context["depot"].accounts.order_by("name")
         context["categories"] = context["depot"].categories.order_by("name")
         context["timespans"] = context["depot"].timespans.all()
+        context["timespan"] = context["depot"].timespans.get(is_active=True)
+        print(context["timespan"])
 
         context["movie"] = context["depot"].movies.get(account=None, category=None)
         context["accounts_movies"] = zip(context["accounts"], context["depot"].movies.filter(
@@ -44,6 +46,7 @@ class AccountView(generic.TemplateView):
         context["accounts"] = context["depot"].accounts.order_by("name")
         context["categories"] = context["depot"].categories.order_by("name")
         context["timespans"] = context["depot"].timespans.all()
+        context["timespan"] = context["depot"].timespans.get(is_active=True)
 
         context["account"] = context["depot"].accounts.get(slug=kwargs["slug"])
         context["movie"] = context["depot"].movies.get(account=context["account"], category=None)
@@ -64,6 +67,7 @@ class CategoryView(generic.TemplateView):
         context["accounts"] = context["depot"].accounts.order_by("name")
         context["categories"] = context["depot"].categories.order_by("name")
         context["timespans"] = context["depot"].timespans.all()
+        context["timespan"] = context["depot"].timespans.get(is_active=True)
 
         context["category"] = context["depot"].categories.get(slug=kwargs["slug"])
         context["movie"] = context["depot"].movies.get(account=None, category=context["category"])

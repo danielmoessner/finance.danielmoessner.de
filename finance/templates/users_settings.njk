@@ -14,7 +14,7 @@
 	{% import "modules/button.njk" as button %}
 	{% import "modules/table.njk" as table %}
 	{% import "modules/form.njk" as fg %}
-	{% import "modules/heading.njk" as heading %}
+	{% import "modules/hg.njk" as heading %}
 	
 
 	{%- set addBankingDepotButton=button.modalButton("Add Depot", "#addBankingDepot") -%}
@@ -50,12 +50,12 @@
 
 
 	<div class="wrapper console-target console_general">
-		{{ heading.smallLmHeading("General") }}
+		{{ hg.smallLmHeading("General") }}
 		<div class="lm-box">
 			{{ fg.formGenerator(edit_user_general_form, url('users:edit_user_general', args=[user.slug]), csrf_token) }}
 		</div> 
 
-		{{ heading.smallLmHeading("Apps") }}
+		{{ hg.smallLmHeading("Apps") }}
 		<div class="lm-box">
 			<div class="column">
 				<div class="column--left">
@@ -78,12 +78,12 @@
 
 
 	<div class="wrapper console-target console_user is-hidden">	
-		{{ heading.smallLmHeading("@"+user.username) }}
+		{{ hg.smallLmHeading("@"+user.username) }}
 		<div class="lm-box">
 			{{ fg.formGenerator(edit_user_form, url('users:edit_user', args=[user.slug]), csrf_token) }}
 		</div>
 
-		{{ heading.smallLmHeading("Password") }}
+		{{ hg.smallLmHeading("Password") }}
 		<div class="lm-box">
 			{{ fg.formGenerator(edit_user_password_form, url('users:edit_user_password', args=[user.slug]), csrf_token) }}
 		</div> 
@@ -91,7 +91,7 @@
 
 
 	<div class="wrapper console-target console_banking is-hidden">
-	    {{ heading.smallLmHeading("Depots", buttons=[addBankingDepotButton]) }}
+	    {{ hg.smallLmHeading("Depots", buttons=[addBankingDepotButton]) }}
 		<table class="table">
             {{ table.head(["Depot", "Action"]) }}
             <tbody class="table--body">
@@ -123,7 +123,7 @@
 
 
 	<div class="wrapper console-target console_crypto is-hidden">
-		{{ heading.smallLmHeading("General") }}
+		{{ hg.smallLmHeading("General") }}
 		<div class="lm-box">
 			<form action="{{ url('users:edit_user_crypto', args=[user.slug]) }}" method="POST">
 				<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
@@ -132,7 +132,7 @@
 			</form> 
 		</div> 
 		
-		{{ heading.smallLmHeading("Depots", buttons=[addCryptoDepotButton]) }}
+		{{ hg.smallLmHeading("Depots", buttons=[addCryptoDepotButton]) }}
 		<table class="table">
             {{ table.head(["Depot", "Action"]) }}
             <tbody class="table--body">

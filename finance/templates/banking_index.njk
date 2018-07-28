@@ -29,7 +29,7 @@
 	{% import "modules/buttons.njk" as buttons %}
 	{% import "modules/button.njk" as button %}
 	{% import "modules/cards.njk" as cards %}
-	{% import "modules/timespan.njk" as timespan %}
+	{% import "modules/timespan.njk" as tg %}
 
 
 	{%- set addAccountButton=button.modalButton("Add Account", "#addAccount") -%}
@@ -64,34 +64,27 @@
 
 	
 	<div class="wrapper console-target console_stats">
-		{{ heading.smallLmHeading("Stats", buttons=[updateButton]) }}
+		{{ hg.smallLmHeading("Stats", buttons=[updateButton]) }}
 		<div class="vs-1"></div>
 		<div class="items-box">
 			{{ cards.statsCard("Total", movie.get_values(user, ["b",])["b"], ext=user.currency) }}
 		</div>
-		{% for ts in timespans %}
-			{% if ts.start_date and ts.is_active %}
-				<div class="vs-3"></div>
-				{{ heading.smallLmHeading(ts.name) }}
-				<div class="vs-1"></div>
-				<div class="items-box">
-					{% for data in movie.get_values(user, ["b",], ts) %}
-						{% set heading %}
-							{{ data.start_date }}-{{ data.end_date }}
-						{% endset %}
-						{% set value %}
-							Change: {{ data.b }}
-						{% endset %}
-						{{ cards.statsCard(heading, value) }}
-					{% endfor %}
-				</div>
-			{% endif %}
-		{% endfor %}
+		{% if timespan.start_date and timespan.is_active %}
+			<div class="vs-3"></div>
+			{{ hg.smallLmHeading(timespan.name) }}
+			<div class="vs-1"></div>
+			<div class="items-box">
+				{%- set data = movie.get_values(user, ["b",], timespan) -%}
+				{%- set heading=data.start_date+"-"+data.end_date -%}
+				{%- set value="Change: "+data.b|string -%}
+				{{ cards.statsCard(heading, value) }}
+			</div>
+		{% endif %}
 	</div>
 
 
 	<div class="wrapper console-target is-hidden console_accounts">
-		{{ heading.smallLmHeading("Accounts", buttons=[addAccountButton, deleteAccountButton]) }}
+		{{ hg.smallLmHeading("Accounts", buttons=[addAccountButton, deleteAccountButton]) }}
 		<table class="table">
 			{{ table.head(["Account", "Balance", "Action"]) }}
 			<tbody class="table--body">
@@ -123,7 +116,7 @@
 
  
 	<div class="wrapper console-target is-hidden console_categories">
-		{{ heading.smallLmHeading("Categories", buttons=[addCategoryButton, deleteCategoryButton]) }}
+		{{ hg.smallLmHeading("Categories", buttons=[addCategoryButton, deleteCategoryButton]) }}
 		<table class="table">
 			{{ table.head(["Category", "Description", "Action"]) }}
 			<tbody class="table--body">
@@ -151,13 +144,13 @@
 	
 
 	<div class="wrapper console-target is-hidden console_timespans">
-		{{ heading.smallLmHeading("Timespans") }}
+		{{ hg.smallLmHeading("Timespans") }}
 		<div class="vs-1"></div>
 		<ul class="timespans">
 			{% for ts in timespans %} 
-				{{ timespan.timespan(ts, depot, url('banking:set_timespan', args=[user.slug,]), url('banking:delete_timespan', args=[user.slug,]), reverse, csrf_token)}}
+				{{ tg.timespan(ts, depot, url('banking:set_timespan', args=[user.slug,]), url('banking:delete_timespan', args=[user.slug,]), reverse, csrf_token)}}
 			{% endfor %}
-			{{ timespan.createTimespan(False, url('banking:add_timespan', args=[user.slug,]), reverse, csrf_token) }}
+			{{ tg.createTimespan(False, url('banking:add_timespan', args=[user.slug,]), reverse, csrf_token) }}
 		</ul>
 	</div>
 

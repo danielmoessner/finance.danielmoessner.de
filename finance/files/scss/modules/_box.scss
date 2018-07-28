@@ -1,0 +1,20 @@
+.lm-box{
+	@extend .pt-3;
+	@extend .pb-5;
+}
+
+.center-box{
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+}
+
+.items-box{
+	display: flex;
+	flex-wrap: wrap;
+	margin: -.25rem;
+	& > div{ 
+		margin: .25rem;
+		flex-grow: 1;
+	}
+}

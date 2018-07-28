@@ -1,0 +1,7 @@
+{% macro modalButton(text, target) %}
+	<button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="{{ target }}">{{ text }}</button>
+{% endmacro %}
+
+{% macro hrefButton(text, url) %}
+	<a type="button" class="btn btn-sm btn-info" href="{{ url }}">{{ text }}</a>
+{% endmacro %}
