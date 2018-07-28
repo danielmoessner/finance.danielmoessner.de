@@ -13,7 +13,8 @@
                 {% block chart %}
                 {% endblock %}
             </div>
-            {% include "modules/messages.njk" %}
+            {% import "modules/messages.njk" as messages %}
+            {{ messages.lmMessages(request) }}
             {% block main %}
             {% endblock %}
         </main>

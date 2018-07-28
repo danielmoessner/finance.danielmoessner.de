@@ -1,72 +1,77 @@
 from django.contrib.auth.forms import PasswordChangeForm
+from django.views.generic import View
 from django.contrib.auth import logout as logout_user
 from django.contrib.auth import login as login_user
 from django.contrib.auth import authenticate
 from django.shortcuts import render, redirect
-from django.http import HttpResponseRedirect
-from django.utils.html import strip_tags
-from django.urls import reverse_lazy
+from django.contrib import messages
 from django.views import generic
+from django.http import HttpResponseRedirect
+from django.urls import reverse_lazy
+from django.conf import settings
 
-from finance.users.forms import CreateStandardUserForm
+from finance.core.views.views import CustomInvalidFormMixin
+from finance.banking.models import init_banking as banking_init_banking
+from finance.banking.models import Depot as BankingDepot
+from finance.crypto.models import init_crypto as crypto_init_crypto
+from finance.crypto.models import Depot as CryptoDepot
+from finance.users.forms import SignInUserForm
 from finance.users.forms import UpdateCryptoStandardUserForm
 from finance.users.forms import UpdateGeneralStandardUserForm
 from finance.users.forms import UpdateStandardUserForm
-from finance.banking.models import Depot as BankingDepot
-from finance.banking.models import init_banking as banking_init_banking
-from finance.crypto.models import init_crypto as crypto_init_crypto
-from finance.crypto.models import Depot as CryptoDepot
+from finance.users.forms import CreateStandardUserForm
+from finance.users.models import StandardUser
 
 
-def signup(request):
-    if request.user.is_authenticated:
-        return HttpResponseRedirect(reverse_lazy("users:settings", args=[request.user.slug, ]))
+class SignUpView(CustomInvalidFormMixin, generic.CreateView):
+    form_class = CreateStandardUserForm
+    model = StandardUser
+    template_name = "users_signup.njk"
+    success_url = reverse_lazy(settings.LOGIN_URL)
 
-    if request.method == "POST":
-        form = CreateStandardUserForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login_user(request, user)
-            return HttpResponseRedirect(reverse_lazy("users:settings", args=[request.user.slug, ]))
+    def get_context_data(self, **kwargs):
+        context = super(SignUpView, self).get_context_data()
+        context["sign_up_form"] = self.get_form()
+        return context
+
+    def form_valid(self, form):
+        user = form.save()
+        login_user(self.request, user)
+        return HttpResponseRedirect(self.success_url)
+
+
+class SignInView(View):
+    def get(self, request):
+        if request.user.is_authenticated:
+            front_page = request.user.front_page
+            if front_page == "BANKING":
+                url = reverse_lazy("banking:index", args=[request.user.slug])
+            elif front_page == "CRYPTO":
+                url = reverse_lazy("crypto:index", args=[request.user.slug])
+            else:
+                url = reverse_lazy("users:settings")
+            return HttpResponseRedirect(url)
         else:
-            errors = list()
-            for field in form:
-                errors.append(strip_tags(field.errors).replace(".", ". ").replace("  ", " "))
-            errors.remove("")
-            return render(request, "users_signup.njk", {"errors": errors})
-    else:
-        return render(request, "users_signup.njk")
+            context = {"sign_in_form": SignInUserForm()}
+            return render(request, "users_signin.njk", context=context)
+
+    def post(self, request):
+        form = SignInUserForm(request.POST)
+        if not request.user.is_authenticated and form.is_valid():
+            username = form.cleaned_data["username"]
+            password = form.cleaned_data["password"]
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login_user(request, user)
+            else:
+                messages.error(request, "This combination of username and password doesn't exist.")
+        return HttpResponseRedirect(reverse_lazy(settings.LOGIN_URL))
 
 
-def login(request):
-    if request.user.is_authenticated:
-        front_page = request.user.front_page
-        if front_page == "BANKING":
-            url = reverse_lazy("banking:index", args=[request.user.slug])
-        elif front_page == "CRYPTO":
-            url = reverse_lazy("crypto:index", args=[request.user.slug])
-        else:
-            url = reverse_lazy("users:settings")
-        return HttpResponseRedirect(url)
-
-    if request.method == "POST":
-        username = request.POST["username"]
-        password = request.POST["password"]
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login_user(request, user)
-            return HttpResponseRedirect(reverse_lazy("users:login"))
-        else:
-            errors = list()
-            errors.append("This combination of username and password doesn't exist")
-            return render(request, "users_login.njk", {"errors": errors})
-    else:
-        return render(request, "users_login.njk")
-
-
-def logout(request, slug):
-    logout_user(request)
-    return redirect("users:login")
+class LogoutView(View):
+    def get(self, request):
+        logout_user(request)
+        return redirect(settings.LOGIN_URL)
 
 
 class SettingsView(generic.TemplateView):

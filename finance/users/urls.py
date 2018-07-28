@@ -10,9 +10,9 @@ app_name = "users"
 urlpatterns = [
     # PAGE
     # signup/
-    url(r"^signup/$", views.signup, name="signup"),
+    url(r"^signup/$", views.SignUpView.as_view(), name="signup"),
     # login/
-    url(r"^login/$", views.login, name="login"),
+    url(r"^signin/$", views.SignInView.as_view(), name="signin"),
     # moesibert/
     url(r"^$", login_required(views.SettingsView.as_view()), name="settings"),
 
@@ -57,7 +57,7 @@ urlpatterns = [
 
     # CHANGE STATE / UPDATE
     # moesibert/logout/
-    url(r"^(?P<slug>[0-9a-zA-Z@.+_-]*)/logout/$", views.logout, name="logout"),
+    url(r"^logout/$", views.LogoutView.as_view(), name="logout"),
 
     # moesibert/init-banking/
     url(r"^(?P<slug>[0-9a-zA-Z@.+_-]*)/init-banking/$", views.init_banking, name="init_banking"),

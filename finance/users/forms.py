@@ -15,6 +15,17 @@ class CreateStandardUserForm(UserCreationForm):
         )
 
 
+class SignInUserForm(forms.Form):
+    username = forms.CharField()
+    password = forms.CharField(label="Password", strip=False, widget=forms.PasswordInput)
+
+    class Meta:
+        fields = (
+            "username",
+            "password"
+        )
+
+
 class UpdateStandardUserForm(forms.ModelForm):
     email = forms.EmailField(required=False)
 

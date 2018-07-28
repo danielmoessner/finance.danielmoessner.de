@@ -109,7 +109,7 @@ DATABASES = {
 
 # User
 
-LOGIN_URL = "users:login"
+LOGIN_URL = "users:signin"
 
 AUTH_USER_MODEL = "users.StandardUser"
 

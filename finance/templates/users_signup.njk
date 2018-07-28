@@ -6,7 +6,19 @@
 
 {% block main %}
     
-	{% import "modules/sign-up-in.njk" as sign %}
-	{{ sign.signUp(csrf_token, errors) }}
+    
+    {% import "modules/form.njk" as form_generator %}
+	{% import "modules/messages.njk" as messages %}
+	<div class="sign-up-in">
+		<div class="wrapper">
+			<h1 class="sign-up-in--heading">Sign Up</h1>
+			<div class="vs-1"></div>
+        	{{ messages.messages(request) }}
+        	<div class="vs-1"></div>
+			{{ form_generator.form(sign_up_form, url('users:signup'), csrf_token) }}
+		</div>
+		<a type="button" href="{{ url('users:signin') }}" class="sign-up-in--switch-button" role="button">Go to the login page.</a>
+	</div>
+
 	
 {% endblock %}
