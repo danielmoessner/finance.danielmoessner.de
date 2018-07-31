@@ -57,36 +57,29 @@
 
 	
 	<div class="wrapper console-target console_stats">
-        {{ heading.smallLmHeading("Stats") }}
+        {{ hg.smallLmHeading("Stats") }}
         <div class="vs-1"></div>
         <div class="items-box">
         	{%- set accountData = movie.get_values(user, ["v", ]) -%}
             {{ cards.statsCard("Value", accountData.v, ext=user.currency) }}
         </div>
-		{% for ts in timespans %}
-		    {% if ts.start_date and ts.is_active %}
-		        <div class="vs-3"></div>
-		        {{ heading.smallLmHeading(ts.name) }}
-		        <div class="vs-1"></div>
-		        <div class="items-box">
-		            {% for data in movie.get_values(user, ["g", "cr", ], ts) %}
-		                {% set heading %}
-		                    {{ data.start_date }}-{{ data.end_date }}  
-		                {% endset %}
-		                {% set value %}
-		                    Profit: {{ data.g }} <br>
-		                    Current Return: {{ data.cr }}
-		                {% endset %}
-		                {{ cards.statsCard(heading, value) }}
-		            {% endfor %}
-		        </div>
-		    {% endif %}
-		{% endfor %}
+		{% if timespan.start_date %}
+			<div class="vs-3"></div>
+			{{ hg.smallLmHeading(timespan.name) }}
+			<div class="vs-1"></div>
+			<div class="items-box">
+				{% with data=movie.get_values(user, ["v"], timespan) %}
+					{%- set heading=data.start_date+"-"+data.end_date -%}
+					{%- set value="Value Change: "+data.v|string -%}
+					{{ cards.statsCard(heading, value) }}
+				{% endwith %}
+			</div>
+		{% endif %}
 	</div>
 	
 	
 	<div class="wrapper console-target is-hidden console_assets">
-        {{ heading.smallLmHeading("Assets", buttons=[addTradeButton]) }}
+        {{ hg.smallLmHeading("Assets", buttons=[addTradeButton]) }}
 		<table class="table ">
 		    {{ table.head(["Asset", "Current Price", "Amount", "Value", "Action"]) }}
 		    <tbody class="table--body">
@@ -105,7 +98,7 @@
 	
 	
 	<div class="wrapper console-target is-hidden console_trades">
-        {{ heading.smallLmHeading("Trades") }}
+        {{ hg.smallLmHeading("Trades") }}
 		<table class="table ">
 		    {{ table.head(["Date", "Account", "Buy", "Buy Asset", "Sell", "Sell Asset", "Fees", "Fees Asset", "Action"]) }}
 		    <tbody class="table--body">
@@ -142,7 +135,7 @@
 
 
 	<div class="wrapper console-target is-hidden console_transactions">
-        {{ heading.smallLmHeading("Transactions") }}
+        {{ hg.smallLmHeading("Transactions") }}
 		<table class="table ">
 		    {{ table.head(["Date", "Asset", "From Account", "To Account", "Amount", "Fees", "Action"]) }}
 		    <tbody class="table--body">

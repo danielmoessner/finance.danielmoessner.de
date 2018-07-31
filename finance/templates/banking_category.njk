@@ -8,7 +8,7 @@
 
 
 {% block head %}
-    <script type="text/javascript" src="{{ static('js/bar_chart.js') }}" api-data="{{ url('banking:api_data_category', args=[user.slug, category.slug, ]) }}"></script>
+    <script type="text/javascript" src="{{ static('js/bar_chart.js') }}" api-data="{{ url('banking:api_data_category', args=[category.slug]) }}"></script>
 {% endblock %}
 
 
@@ -48,34 +48,28 @@
     
     
     <div class="wrapper console-target console_stats">
-        {{ heading.smallLmHeading("Stats") }}
+        {{ hg.smallLmHeading("Stats") }}
         <div class="vs-1"></div>
         <div class="items-box">
             {{ cards.statsCard("Total", movie.get_values(user, ["b",])["b"], ext=user.currency) }}
         </div>
-        {% for ts in timespans %}
-            {% if ts.start_date and ts.is_active %}
-                <div class="vs-3"></div>
-                {{ heading.smallLmHeading(ts.name) }}
-                <div class="vs-1"></div>
-                <div class="items-box">
-                    {% for data in movie.get_values(user, ["b",], ts) %}
-                        {% set heading %}
-                            {{ data.start_date }}-{{ data.end_date }}
-                        {% endset %}
-                        {% set value %}
-                            Change: {{ data.b }}
-                        {% endset %}
-                        {{ cards.statsCard(heading, value, small=True) }}
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endfor %}
+        {% if timespan.start_date %}
+            <div class="vs-3"></div>
+            {{ hg.smallLmHeading(timespan.name) }}
+            <div class="vs-1"></div>
+            <div class="items-box">
+                {% with data=movie.get_values(user, ["b",], timespan) %}
+                    {%- set heading=data.start_date+"-"+data.end_date -%}
+                    {%- set value="Change: "+data.b|string -%}
+                    {{ cards.statsCard(heading, value) }}
+                {% endwith %}
+            </div>
+        {% endif %}
     </div>
 
 
     <div class="wrapper console-target is-hidden console_changes">
-        {{ heading.smallLmHeading("Changes") }}
+        {{ hg.smallLmHeading("Changes") }}
         <table class="table">
             {{ table.head(["Date", "Category", "Description", "Change"]) }}
             <tbody class="table--body">

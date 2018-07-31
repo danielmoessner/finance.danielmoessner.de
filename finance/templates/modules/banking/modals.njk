@@ -7,7 +7,7 @@
 	{% set content %}
 		{{ childs.textInput("Name", "name") }}
 	{% endset %}
-	{%- set url=url("users:add_banking_depot", args=[user.slug,]) -%}
+	{%- set url=url("users:add_banking_depot") -%}
 	{{ modals.modal(content, url, "addBankingDepot", "Add Depot", csrf_token, "Save", "Cancel") }}
 {% endmacro %}
 
@@ -27,7 +27,7 @@
 	        });
 	    </script> 
 	{% endset %}
-	{%- set url=url("users:edit_banking_depot", args=[user.slug, ]) -%}
+	{%- set url=url("users:edit_banking_depot") -%}
 	{{ modals.modal(content, url, "editBankingDepot", "Edit Depot", csrf_token, "Update", "Cancel") }}
 {% endmacro %}
 
@@ -35,7 +35,7 @@
 	{% set content %}
 		{{ childs.pkNameSelect("Select A Depot", "pk", depots) }}
 	{% endset %}
-	{%- set url=url("users:delete_banking_depot", args=[user.slug,]) -%}
+	{%- set url=url("users:delete_banking_depot") -%}
 	{{ modals.modal(content, url, "deleteBankingDepot", "Delete Depot", csrf_token, "Delete", "Cancel") }}
 {% endmacro %} 
 
@@ -46,7 +46,7 @@
 		{{ childs.textInput("Name", "name") }}
 		<input type="hidden" class="inputdepot" name="depot" value="{{ depot }}">
 	{% endset %}
-	{%- set url=url("banking:add_account", args=[user.slug,]) -%}
+	{%- set url=url("banking:add_account") -%}
 	{{ modals.modal(content, url, "addAccount", "Add Account", csrf_token, "Save", "Cancel") }}
 {% endmacro %}
 
@@ -66,7 +66,7 @@
 	        });
 	    </script> 
 	{% endset %}
-	{%- set url=url("banking:edit_account", args=[user.slug,]) -%}
+	{%- set url=url("banking:edit_account") -%}
 	{{ modals.modal(content, url, "editAccount", "Edit Account", csrf_token, "Update", "Cancel") }}
 {% endmacro %}
 
@@ -74,7 +74,7 @@
 	{% set content %}
 		{{ childs.pkNameSelect("Select An Account", "pk", accounts) }}
 	{% endset %}
-	{%- set url=url("banking:delete_account", args=[user.slug,]) -%}
+	{%- set url=url("banking:delete_account") -%}
 	{{ modals.modal(content, url, "deleteAccount", "Delete Account", csrf_token, "Delete", "Cancel") }}
 {% endmacro %} 
 
@@ -85,7 +85,7 @@
 		{{ childs.textInput("Name", "name") }}
 		{{ childs.textarea("Description", "description") }}
 	{% endset %}
-	{%- set url=url('banking:add_category', args=[user.slug,]) -%}
+	{%- set url=url('banking:add_category') -%}
 	{{ modals.modal(content, url, "addCategory", "Add Category", csrf_token, "Save", "Cancel") }}
 {% endmacro %}
 
@@ -107,7 +107,7 @@
 	        });
 	    </script>
 	{% endset %}
-	{%- set url=url('banking:edit_category', args=[user.slug,]) -%}
+	{%- set url=url('banking:edit_category') -%}
 	{{ modals.modal(content, url, "editCategory", "Edit Category", csrf_token, "Update", "Cancel") }}
 {% endmacro %}
 
@@ -115,7 +115,7 @@
 	{% set content %}
 		{{ childs.pkNameSelect("Select A Category", "pk", categories) }}
 	{% endset %}
-	{%- set url=url("banking:delete_category", args=[user.slug,]) -%}
+	{%- set url=url("banking:delete_category") -%}
 	{{ modals.modal(content, url, "deleteCategory", "Delete Category", csrf_token, "Delete", "Cancel") }}
 {% endmacro %}
 
@@ -165,6 +165,6 @@
 	        });
 	    </script>
 	{% endset %}
-	{%- set url=url("banking:edit_change", args=[user.slug, account.slug]) -%}
+	{%- set url=url("banking:edit_change", args=[account.slug]) -%}
 	{{ modals.modal(content, url, "editChange", "Edit Change", csrf_token, "Update", "Cancel") }}
 {% endmacro %}

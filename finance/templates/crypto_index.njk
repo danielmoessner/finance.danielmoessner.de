@@ -29,7 +29,7 @@
     {% import "modules/buttons.njk" as buttons %}
     {% import "modules/button.njk" as button %}
     {% import "modules/cards.njk" as cards %}
-    {% import "modules/timespan.njk" as timespan %}
+    {% import "modules/timespan.njk" as tg %}
 
     
     {%- set addAccountButton=button.modalButton("Add Account", "#addAccount") -%}
@@ -66,7 +66,7 @@
  
     
     <div class="wrapper console-target console_stats">
-        {{ heading.smallLmHeading("Stats", buttons=[updateButton]) }}
+        {{ hg.smallLmHeading("Stats", buttons=[updateButton]) }}
         <div class="vs-1"></div>
         <div class="items-box">
             {%- set depotData = movie.get_values(user, ["cs", "g", "v", "cr", "ttwr"]) -%}
@@ -76,30 +76,26 @@
             {{ cards.statsCard("Current Return", depotData.cr, ext="%") }}
             {{ cards.statsCard("True time weighted return", depotData.ttwr, ext="%")}}
         </div>
-        {% for ts in timespans %}
-            {% if ts.start_date and ts.is_active %}
-                <div class="vs-3"></div>
-                {{ heading.smallLmHeading(ts.name) }}
-                <div class="vs-1"></div>
-                <div class="items-box">
-                    {% for data in movie.get_values(user, ["g", "cr", ], ts) %}
-                        {% set heading %}
-                            {{ data.start_date }}-{{ data.end_date }}  
-                        {% endset %}
-                        {% set value %}
-                            Profit: {{ data.g }} <br>
-                            Current Return: {{ data.cr }}
-                        {% endset %}
-                        {{ cards.statsCard(heading, value) }}
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endfor %}
+        {% if timespan.start_date %}
+            <div class="vs-3"></div>
+            {{ hg.smallLmHeading(timespan.name) }}
+            <div class="vs-1"></div>
+            <div class="items-box">
+                {% with data=movie.get_values(user, ["g", "cr", ], timespan) %}
+                    {%- set heading=data.start_date+"-"+data.end_date -%}
+                    {% set value %}
+                        Profit: {{ data.g }} <br>
+                        Current Return: {{ data.cr }}
+                    {% endset %}
+                    {{ cards.statsCard(heading, value) }}
+                {% endwith %}
+            </div>
+        {% endif %}
     </div>
     
     
     <div class="wrapper console-target is-hidden console_accounts">
-        {{ heading.smallLmHeading("Stats", buttons=[addAccountButton, deleteAccountButton]) }}
+        {{ hg.smallLmHeading("Stats", buttons=[addAccountButton, deleteAccountButton]) }}
         <table class="table">
             {{ table.head(["Account", "Assets Value", "Action"]) }}
             <tbody class="table--body">
@@ -129,7 +125,7 @@
     
 
     <div class="wrapper console-target is-hidden console_assets">
-        {{ heading.smallLmHeading("Assets", buttons=[addAssetButton, removeAssetButton, addPrivateAssetButton, deletePrivateAssetButton]) }}
+        {{ hg.smallLmHeading("Assets", buttons=[addAssetButton, removeAssetButton, addPrivateAssetButton, deletePrivateAssetButton]) }}
         <table class="table">
             {{ table.head(["Asset", "Current Price", "Amount", "Value", "Profit", "Yield", "Action"]) }}
             <tbody class="table--body">
@@ -162,13 +158,13 @@
 
 
     <div class="wrapper console-target is-hidden console_timespans">
-        {{ heading.smallLmHeading("Timespans") }}
+        {{ hg.smallLmHeading("Timespans") }}
         <div class="vs-1"></div>
         <ul class="timespans">
             {% for ts in timespans %} 
-                {{ timespan.timespan(ts, depot, url('crypto:set_timespan', args=[user.slug,]), url('crypto:delete_timespan', args=[user.slug,]), reverse, csrf_token) }}
+                {{ tg.timespan(ts, depot, url('crypto:set_timespan', args=[user.slug,]), url('crypto:delete_timespan', args=[user.slug,]), reverse, csrf_token) }}
             {% endfor %}
-            {{ timespan.createTimespan(False, url('crypto:add_timespan', args=[user.slug,]), reverse, csrf_token) }}
+            {{ tg.createTimespan(False, url('crypto:add_timespan', args=[user.slug,]), reverse, csrf_token) }}
         </ul>
     </div>
 

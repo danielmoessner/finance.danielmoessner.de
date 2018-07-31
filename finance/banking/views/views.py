@@ -1,19 +1,41 @@
+from django.contrib import messages
+from django.views import generic
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-from django.views import generic
 
-from finance.banking.models import Timespan
 from finance.banking.models import Category
 from finance.banking.models import Account
-from finance.banking.models import Movie
 from finance.banking.models import Depot
+from finance.banking.tasks import update_movies_task
 
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from background_task.models import Task
 from rest_framework.views import APIView
 from datetime import timedelta
+from datetime import datetime
 import pandas as pd
+import json
+
+
+# messenger
+def messenger(request):
+    if request.user.banking_depots.get(is_active=True).movies.filter(update_needed=True).exists():
+        hit = False
+        tasks = Task.objects.filter(task_name="finance.banking.tasks.update_movies_task")
+        for task in tasks:
+            depot_pk = json.loads(task.task_params)[0][0]
+            if depot_pk == request.user.banking_depots.get(is_active=True).pk:
+                text = "One update is scheduled. You will be notified as soon as it succeeded."
+                messages.info(request, text)
+                hit = True
+        if not hit:
+            text = "New data is available. Hit the update button so that I can update everything."
+            messages.info(request, text)
+    else:
+        text = "Everything is up to date."
+        messages.success(request, text)
 
 
 # VIEWS
@@ -21,6 +43,7 @@ class IndexView(generic.TemplateView):
     template_name = "banking_index.njk"
 
     def get_context_data(self, **kwargs):
+        messenger(self.request)
         context = super(IndexView, self).get_context_data(**kwargs)
         context["user"] = self.request.user
         context["depot"] = context["user"].banking_depots.get(is_active=True)
@@ -28,7 +51,6 @@ class IndexView(generic.TemplateView):
         context["categories"] = context["depot"].categories.order_by("name")
         context["timespans"] = context["depot"].timespans.all()
         context["timespan"] = context["depot"].timespans.get(is_active=True)
-        print(context["timespan"])
 
         context["movie"] = context["depot"].movies.get(account=None, category=None)
         context["accounts_movies"] = zip(context["accounts"], context["depot"].movies.filter(
@@ -40,6 +62,7 @@ class AccountView(generic.TemplateView):
     template_name = "banking_account.njk"
 
     def get_context_data(self, **kwargs):
+        messenger(self.request)
         context = super(AccountView, self).get_context_data(**kwargs)
         context["user"] = self.request.user
         context["depot"] = context["user"].banking_depots.get(is_active=True)
@@ -52,8 +75,6 @@ class AccountView(generic.TemplateView):
         context["movie"] = context["depot"].movies.get(account=context["account"], category=None)
         context["changes"] = context["account"].changes.order_by("-date", "-pk").select_related(
             "category")
-        # pictures = context["movie"].pictures.filter(change__in=changes).order_by("d", "pk")
-        # context["changes_pictures"] = zip(changes, pictures)
         return context
 
 
@@ -61,6 +82,7 @@ class CategoryView(generic.TemplateView):
     template_name = "banking_category.njk"
 
     def get_context_data(self, **kwargs):
+        messenger(self.request)
         context = super(CategoryView, self).get_context_data(**kwargs)
         context["user"] = self.request.user
         context["depot"] = context["user"].banking_depots.get(is_active=True)
@@ -73,16 +95,14 @@ class CategoryView(generic.TemplateView):
         context["movie"] = context["depot"].movies.get(account=None, category=context["category"])
         context["changes"] = context["category"].changes.order_by("-date", "-pk").select_related(
             "account")
-        # pictures = context["movie"].pictures.filter(change__in=changes).order_by("d", "pk")
-        # context["changes_pictures"] = zip(changes, pictures)
         return context
 
 
 # FUNCTIONS
-def update_movies(request, user_slug):
-    depot = request.user.banking_depots.get(is_active=True)
-    Movie.update_all(depot)
-    return HttpResponseRedirect(reverse_lazy("banking:index", args=[request.user.slug, ]))
+def update_movies(request):
+    depot_pk = request.user.banking_depots.get(is_active=True).pk
+    update_movies_task(depot_pk)
+    return HttpResponseRedirect(reverse_lazy("banking:index"))
 
 
 # API
@@ -90,7 +110,7 @@ class IndexData(APIView):
     authentication_classes = (SessionAuthentication, BasicAuthentication)
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request, user_slug):
+    def get(self, request):
         user = request.user
         depot = Depot.objects.get(user=user, is_active=True)
 
@@ -130,7 +150,7 @@ class AccountData(APIView):
     authentication_classes = (SessionAuthentication, BasicAuthentication)
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request, user_slug, slug, format=None):
+    def get(self, request, slug, format=None):
         user = request.user
         depot = Depot.objects.get(user=user, is_active=True)
         account = Account.objects.get(slug=slug)
@@ -193,7 +213,7 @@ class CategoryData(APIView):
     authentication_classes = (SessionAuthentication, BasicAuthentication)
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request, user_slug, slug, format=None):
+    def get(self, request, slug, format=None):
         user = request.user
         depot = user.banking_depots.get(is_active=True)
         category = Category.objects.get(slug=slug)
@@ -203,8 +223,12 @@ class CategoryData(APIView):
         df.rename(columns={"d": "date", "c": "change"}, inplace=True)
         df.drop(["b"], axis=1, inplace=True)
         df.set_index("date", inplace=True)
-        first_date = min(df.index)
-        last_date = max(df.index)
+        if df.empty:
+            first_date = datetime.now() - timedelta(hours=12)
+            last_date = datetime.now()
+        else:
+            first_date = min(df.index)
+            last_date = max(df.index)
         date_range = pd.date_range(first_date, last_date, freq="27D")
         df_date_range = pd.DataFrame(0, index=date_range, columns=["change"])
         df = pd.concat([df, df_date_range], sort=False)
@@ -231,7 +255,7 @@ class CategoriesData(APIView):
     authentication_classes = (SessionAuthentication, BasicAuthentication)
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request, user_slug):
+    def get(self, request):
         user = request.user
         depot = user.banking_depots.get(is_active=True)
         categories = depot.categories.all()

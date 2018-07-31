@@ -21,6 +21,8 @@ class IndexView(generic.TemplateView):
         context = dict(user=self.request.user)
         context["depot"] = context["user"].crypto_depots.get(is_active=True)
         context["timespans"] = context["depot"].timespans.all()
+        context["timespan"] = context["depot"].timespans.get(is_active=True)
+        print(context["timespan"].start_date)
         # accounts
         context["accounts"] = context["depot"].accounts.order_by("name")
         account_movies = context["depot"].movies.filter(
@@ -53,6 +55,7 @@ class AccountView(generic.TemplateView):
         context = dict(user=self.request.user)
         context["depot"] = context["user"].crypto_depots.get(is_active=True)
         context["timespans"] = context["depot"].timespans.all()
+        context["timespan"] = context["depot"].timespans.get(is_active=True)
         # account(s)
         context["accounts"] = context["depot"].accounts.all()
         context["account"] = context["accounts"].get(slug=kwargs["slug"])
@@ -90,6 +93,7 @@ class AssetView(generic.TemplateView):
         context = dict(user=self.request.user)
         context["depot"] = context["user"].crypto_depots.get(is_active=True)
         context["timespans"] = context["depot"].timespans.all()
+        context["timespan"] = context["depot"].timespans.get(is_active=True)
         # account
         context["accounts"] = context["depot"].accounts.all()
         # asset(s)
@@ -184,7 +188,7 @@ class AccountData(APIView):
     def get(self, request, user_slug, slug, format=None):
         user = request.user
         depot = user.crypto_depots.get(is_active=True)
-        timespan = depot.timespans.get(is_active=True)
+        # timespan = depot.timespans.get(is_active=True)
         account = depot.accounts.get(slug=slug)
         assets = depot.assets.exclude(symbol=user.get_currency_display())
         movies = depot.movies.filter(account=account, asset__in=assets).select_related("asset")
@@ -192,7 +196,7 @@ class AccountData(APIView):
         labels = list()
         data = list()
         for movie in movies:
-            value = movie.get_values(user, ["v", ], timespan)["v"]
+            value = movie.get_values(user, ["v"])["v"]
             if value != "x" and round(value, 2) != 0.00:
                 labels.append(str(movie.asset))
                 data.append(value)

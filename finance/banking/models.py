@@ -1,3 +1,4 @@
+from django.db.models.signals import pre_delete, pre_save
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db import models
@@ -118,34 +119,34 @@ class Change(models.Model):
         change = str(self.change)
         return account + " " + date + " " + change + " " + str(self.pk)
 
-    def save(self, *args, **kwargs):
-        date = self.date
-        if self.pk:
-            date = min(self.date, Picture.objects.filter(change=self).first().d)
-        movies = Movie.objects.filter(
-            Q(depot=self.account.depot, account=None, category=None) |
-            Q(depot=self.account.depot, account=self.account, category=None) |
-            Q(depot=self.account.depot, account=None, category=self.category) |
-            Q(depot=self.account.depot, account=self.account, category=self.category)
-        )
-        [movie.pictures.filter(d__gte=date).delete() for movie in movies]
-        for movie in movies:
-            movie.update_needed = True
-            movie.save()
-        super(Change, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     date = self.date
+    #     if self.pk:
+    #         date = min(self.date, Picture.objects.filter(change=self).first().d)
+    #     movies = Movie.objects.filter(
+    #         Q(depot=self.account.depot, account=None, category=None) |
+    #         Q(depot=self.account.depot, account=self.account, category=None) |
+    #         Q(depot=self.account.depot, account=None, category=self.category) |
+    #         Q(depot=self.account.depot, account=self.account, category=self.category)
+    #     )
+    #     [movie.pictures.filter(d__gte=date).delete() for movie in movies]
+    #     for movie in movies:
+    #         movie.update_needed = True
+    #         movie.save()
+    #     super(Change, self).save(*args, **kwargs)
 
-    def delete(self, using=None, keep_parents=False):
-        movies = Movie.objects.filter(
-            Q(depot=self.account.depot, account=None, category=None) |
-            Q(depot=self.account.depot, account=self.account, category=None) |
-            Q(depot=self.account.depot, account=None, category=self.category) |
-            Q(depot=self.account.depot, account=self.account, category=self.category)
-        )
-        [movie.pictures.filter(d__gte=self.date).delete() for movie in movies]
-        for movie in movies:
-            movie.update_needed = True
-            movie.save()
-        super(Change, self).delete(using, keep_parents)
+    # def delete(self, using=None, keep_parents=False):
+    #     movies = Movie.objects.filter(
+    #         Q(depot=self.account.depot, account=None, category=None) |
+    #         Q(depot=self.account.depot, account=self.account, category=None) |
+    #         Q(depot=self.account.depot, account=None, category=self.category) |
+    #         Q(depot=self.account.depot, account=self.account, category=self.category)
+    #     )
+    #     [movie.pictures.filter(d__gte=self.date).delete() for movie in movies]
+    #     for movie in movies:
+    #         movie.update_needed = True
+    #         movie.save()
+    #     super(Change, self).delete(using, keep_parents)
 
     # getters
     def get_date(self, user):
@@ -159,9 +160,9 @@ class Change(models.Model):
             return "update"
 
     def get_description(self):
-        description = self.description[:35]
-        if len(description) < len(self.description):
-            description += "..."
+        description = self.description
+        if len(self.description) > 35:
+            description = self.description[:35] + "..."
         return description
 
 
@@ -253,11 +254,25 @@ class Movie(models.Model):
 
     # update
     @staticmethod
+    def init_update(sender, instance, **kwargs):
+        if sender is Change:
+            depot = instance.account.depot
+            q1 = Q(depot=depot, account=None, category=None)
+            q2 = Q(depot=depot, account=instance.account, category=None)
+            q3 = Q(depot=depot, account=None, category=instance.category)
+            q4 = Q(depot=depot, account=instance.account, category=instance.category)
+            movies = Movie.objects.filter(q1 | q2 | q3 | q4)
+            date = instance.date
+            if instance.pk:
+                date = min(instance.date, Picture.objects.filter(change=instance).first().d)
+            Picture.objects.filter(movie__in=movies, d__gte=date).delete()
+            movies.update(update_needed=True)
+
+    @staticmethod
     def update_all(depot, disable_update=False, force_update=False):
         if force_update:
             depot.movies.all().delete()
 
-        t1 = time.time()
         for account in depot.accounts.all():
             for category in Category.objects.all():
                 movie, created = Movie.objects.get_or_create(depot=depot, account=account,
@@ -276,9 +291,6 @@ class Movie(models.Model):
         movie, created = Movie.objects.get_or_create(depot=depot, account=None, category=None)
         if not disable_update and movie.update_needed:
             movie.update()
-        t2 = time.time()
-
-        print("this took", str((t2 - t1) / 60), "minutes")
 
     def update(self):
         t2 = time.time()
@@ -372,3 +384,7 @@ class Picture(models.Model):
         c = str(self.c)
         b = str(self.b)
         return stats + " " + d + " " + c + " " + b
+
+
+pre_save.connect(Movie.init_update, sender=Change)
+pre_delete.connect(Movie.init_update, sender=Change)

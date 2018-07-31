@@ -29,7 +29,7 @@ class IndexCreateAccountView(IndexView, generic.CreateView):
         account = form.save(commit=False)
         account.depot = self.request.user.banking_depots.get(is_active=True)
         account.save()
-        success_url = reverse_lazy("banking:index", args=[self.request.user.slug, ])
+        success_url = reverse_lazy("banking:index")
         return HttpResponseRedirect(success_url)
 
     def form_invalid(self, form):
@@ -50,7 +50,7 @@ class IndexUpdateAccountView(IndexView):
         account = Account.objects.get(pk=account_pk)
         account.name = form.cleaned_data["name"]
         account.save()
-        success_url = reverse_lazy("banking:index", args=[self.request.user.slug, ])
+        success_url = reverse_lazy("banking:index")
         return HttpResponseRedirect(success_url)
 
     def form_invalid(self, form):
@@ -62,7 +62,7 @@ class IndexDeleteAccountView(IndexView, CustomDeleteView):
         account_pk = form.cleaned_data["pk"]
         account = Account.objects.get(pk=account_pk)
         account.delete()
-        success_url = reverse_lazy("banking:index", args=[self.request.user.slug, ])
+        success_url = reverse_lazy("banking:index")
         return HttpResponseRedirect(success_url)
 
     def form_invalid(self, form, **kwargs):
@@ -79,7 +79,7 @@ class IndexCreateCategoryView(IndexView, generic.CreateView):
         category = form.save(commit=False)
         category.depot = self.request.user.banking_depots.get(is_active=True)
         category.save()
-        success_url = reverse_lazy("banking:index", args=[self.request.user.slug, ])
+        success_url = reverse_lazy("banking:index")
         return HttpResponseRedirect(success_url)
 
     def form_invalid(self, form):
@@ -100,7 +100,7 @@ class IndexUpdateCategoryView(IndexView):
         category.pk = form.cleaned_data["pk"]
         category.depot = self.request.user.banking_depots.get(is_active=True)
         category.save()
-        success_url = reverse_lazy("banking:index", args=[self.request.user.slug, ])
+        success_url = reverse_lazy("banking:index")
         return HttpResponseRedirect(success_url)
 
     def form_invalid(self, form):
@@ -113,7 +113,7 @@ class IndexDeleteCategoryView(IndexView, CustomDeleteView):
         category_pk = form.cleaned_data["pk"]
         category = Category.objects.get(pk=category_pk)
         category.delete()
-        success_url = reverse_lazy("banking:index", args=[self.request.user.slug, ])
+        success_url = reverse_lazy("banking:index")
         return HttpResponseRedirect(success_url)
 
     def form_invalid(self, form, **kwargs):
@@ -128,7 +128,7 @@ class IndexCreateChangeView(IndexView, generic.CreateView):
 
     def form_valid(self, form):
         change = form.save()
-        success_url = reverse_lazy("banking:index", args=[self.request.user.slug, ])
+        success_url = reverse_lazy("banking:index")
         return HttpResponseRedirect(success_url)
 
     def form_invalid(self, form):
@@ -143,7 +143,7 @@ class AccountCreateChangeView(AccountView, generic.CreateView):
     def form_valid(self, form):
         change = form.save()
         account = change.account
-        success_url = reverse_lazy("banking:account", args=[self.request.user.slug, account.slug])
+        success_url = reverse_lazy("banking:account", args=[account.slug])
         return HttpResponseRedirect(success_url)
 
     def form_invalid(self, form):
@@ -164,7 +164,7 @@ class AccountUpdateChangeView(AccountView):
         change.pk = form.cleaned_data["pk"]
         change.save()
         account = change.account
-        success_url = reverse_lazy("banking:account", args=[self.request.user.slug, account.slug])
+        success_url = reverse_lazy("banking:account", args=[account.slug])
         return HttpResponseRedirect(success_url)
 
     def form_invalid(self, form, **kwargs):
@@ -178,7 +178,7 @@ class AccountDeleteChangeView(AccountView, CustomDeleteView):
         change = Change.objects.get(pk=change_pk)
         change.delete()
         account = change.account
-        success_url = reverse_lazy("banking:account", args=[self.request.user.slug, account.slug])
+        success_url = reverse_lazy("banking:account", args=[account.slug])
         return HttpResponseRedirect(success_url)
 
     def form_invalid(self, form, **kwargs):
@@ -196,7 +196,7 @@ class IndexCreateTimespanView(IndexView, generic.CreateView):
         timespan.depot = self.request.user.banking_depots.get(is_active=True)
         timespan.is_active = False
         timespan.save()
-        success_url = reverse_lazy("banking:index", args=[self.request.user.slug, ])
+        success_url = reverse_lazy("banking:index")
         return HttpResponseRedirect(success_url)
 
     def form_invalid(self, form):
@@ -216,7 +216,7 @@ class IndexUpdateActiveOnTimespanView(IndexView):
         self.request.user.banking_depots.get(is_active=True).timespans.update(is_active=False)
         timespan_pk = form.cleaned_data["pk"]
         Timespan.objects.filter(pk=timespan_pk).update(is_active=True)
-        success_url = reverse_lazy("banking:index", args=[self.request.user.slug, ])
+        success_url = reverse_lazy("banking:index")
         return HttpResponseRedirect(success_url)
 
     def form_invalid(self, form):
@@ -234,7 +234,7 @@ class IndexDeleteTimespanView(IndexView, CustomDeleteView):
                                            "active.",
                                    **self.request.kwargs)
         timespan.delete()
-        success_url = reverse_lazy("banking:index", args=[self.request.user.slug, ])
+        success_url = reverse_lazy("banking:index")
         return HttpResponseRedirect(success_url)
 
     def form_invalid(self, form, **kwargs):
