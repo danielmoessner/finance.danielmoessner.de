@@ -1,15 +1,38 @@
+from django.contrib import messages
+from django.views import generic
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-from django.views import generic
 
 from finance.crypto.models import Asset
-from finance.crypto.models import Depot
-from finance.crypto.models import Movie
+from finance.crypto.tasks import update_movies_task
+
 
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from background_task.models import Task
 from rest_framework.views import APIView
+import json
+
+
+# messenger
+def messenger(request):
+    if request.user.crypto_depots.get(is_active=True).movies.exclude(
+            asset__symbol=request.user.currency).filter(update_needed=True).exists():
+        hit = False
+        tasks = Task.objects.filter(task_name="finance.crypto.tasks.update_movies_task")
+        for task in tasks:
+            depot_pk = json.loads(task.task_params)[0][0]
+            if depot_pk == request.user.crypto_depots.get(is_active=True).pk:
+                text = "One update is scheduled. You will be notified as soon as it succeeded."
+                messages.info(request, text)
+                hit = True
+        if not hit:
+            text = "New data is available. Hit the update button so that I can update everything."
+            messages.info(request, text)
+    else:
+        text = "Everything is up to date."
+        messages.success(request, text)
 
 
 # VIEWS
@@ -17,6 +40,7 @@ class IndexView(generic.TemplateView):
     template_name = "crypto_index.njk"
 
     def get_context_data(self, **kwargs):
+        messenger(self.request)
         # general
         context = dict(user=self.request.user)
         context["depot"] = context["user"].crypto_depots.get(is_active=True)
@@ -51,6 +75,7 @@ class AccountView(generic.TemplateView):
     template_name = "crypto_account.njk"
 
     def get_context_data(self, **kwargs):
+        messenger(self.request)
         # general
         context = dict(user=self.request.user)
         context["depot"] = context["user"].crypto_depots.get(is_active=True)
@@ -89,6 +114,7 @@ class AssetView(generic.TemplateView):
     template_name = "crypto_asset.njk"
 
     def get_context_data(self, **kwargs):
+        messenger(self.request)
         # general
         context = dict(user=self.request.user)
         context["depot"] = context["user"].crypto_depots.get(is_active=True)
@@ -117,8 +143,8 @@ class AssetView(generic.TemplateView):
 
 # FUNCTIONS
 def update_movies(request, *args, **kwargs):
-    depot = request.user.crypto_depots.get(is_active=True)
-    depot.get_movie().update_all(force_update=True)
+    depot_pk = request.user.crypto_depots.get(is_active=True).pk
+    update_movies_task(depot_pk)
     return HttpResponseRedirect(reverse_lazy("crypto:index", args=[request.user.slug, ]))
 
 

@@ -7,7 +7,7 @@
 	{% set content %}
 		{{ childs.textInput("Name", "name") }}
 	{% endset %}
-	{%- set url=url("users:add_banking_depot") -%}
+	{%- set url=url("users:add_banking_depot", args=[user.slug]) -%}
 	{{ modals.modal(content, url, "addBankingDepot", "Add Depot", csrf_token, "Save", "Cancel") }}
 {% endmacro %}
 
@@ -27,7 +27,7 @@
 	        });
 	    </script> 
 	{% endset %}
-	{%- set url=url("users:edit_banking_depot") -%}
+	{%- set url=url("users:edit_banking_depot", args=[user.slug]) -%}
 	{{ modals.modal(content, url, "editBankingDepot", "Edit Depot", csrf_token, "Update", "Cancel") }}
 {% endmacro %}
 
@@ -35,7 +35,7 @@
 	{% set content %}
 		{{ childs.pkNameSelect("Select A Depot", "pk", depots) }}
 	{% endset %}
-	{%- set url=url("users:delete_banking_depot") -%}
+	{%- set url=url("users:delete_banking_depot", args=[user.slug]) -%}
 	{{ modals.modal(content, url, "deleteBankingDepot", "Delete Depot", csrf_token, "Delete", "Cancel") }}
 {% endmacro %} 
 

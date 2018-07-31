@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.utils.functional import cached_property
 from django.urls import reverse_lazy
 
 from finance.core.utils import create_slug
@@ -15,8 +14,8 @@ class StandardUser(AbstractUser):
     )
     date_format = models.CharField(max_length=8, choices=DATE_FORMAT_CHOICES)
     CURRENCY_CHOICES = (
-        ("€", "EUR"),
-        ("$", "USD"),
+        ("EUR", "€"),
+        ("USD", "$"),
     )
     currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES)
     banking_url = reverse_lazy("banking:index", kwargs={})

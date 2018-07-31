@@ -3,6 +3,8 @@ from django.db.utils import IntegrityError
 
 from .models import Asset
 from .models import Price
+from .models import Depot
+from .models import Movie
 
 from background_task import background
 from datetime import timedelta
@@ -22,8 +24,27 @@ logger = logging.getLogger("background_tasks")
 
 
 @background()
-def test():
-    logger.info("test")
+def update_movies_task(depot_pk, disable_update=False, force_update=False):
+    depot = Depot.objects.get(pk=depot_pk)
+
+    if force_update:
+        depot.movies.update(update_needed=True)
+
+    for account in depot.accounts.all():
+        for asset in depot.assets.exclude(symbol=depot.user.get_currency_display()):
+            movie, created = Movie.objects.get_or_create(depot=depot, account=account, asset=asset)
+            if movie.update_needed and not disable_update:
+                movie.update()
+        movie, created = Movie.objects.get_or_create(depot=depot, account=account, asset=None)
+        if movie.update_needed and not disable_update:
+            movie.update()
+    for asset in depot.assets.exclude(symbol=depot.user.get_currency_display()):
+        movie, created = Movie.objects.get_or_create(depot=depot, account=None, asset=asset)
+        if movie.update_needed and not disable_update:
+            movie.update()
+    movie, created = Movie.objects.get_or_create(depot=depot, account=None, asset=None)
+    if movie.update_needed and not disable_update:
+        movie.update()
 
 
 @background()

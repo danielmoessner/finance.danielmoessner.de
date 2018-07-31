@@ -291,7 +291,7 @@ class Movie(models.Model):
 
         t1 = time.time()
         for account in self.depot.accounts.all():
-            for asset in self.depot.assets.exclude(symbol=self.depot.user.get_currency_display()):
+            for asset in self.depot.assets.exclude(symbol=self.depot.user.currency):
                 movie, created = Movie.objects.get_or_create(depot=self.depot, account=account,
                                                              asset=asset)
                 if movie.update_needed and not disable_update:
@@ -300,7 +300,7 @@ class Movie(models.Model):
                                                          asset=None)
             if movie.update_needed and not disable_update:
                 movie.update()
-        for asset in self.depot.assets.exclude(symbol=self.depot.user.get_currency_display()):
+        for asset in self.depot.assets.exclude(symbol=self.depot.user.currency):
             movie, created = Movie.objects.get_or_create(depot=self.depot, account=None,
                                                          asset=asset)
             if movie.update_needed and not disable_update:

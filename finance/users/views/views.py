@@ -45,7 +45,7 @@ class SignInView(View):
         if request.user.is_authenticated:
             front_page = request.user.front_page
             if front_page == "BANKING":
-                url = reverse_lazy("banking:index", args=[request.user.slug])
+                url = reverse_lazy("banking:index")
             elif front_page == "CRYPTO":
                 url = reverse_lazy("crypto:index", args=[request.user.slug])
             else:
