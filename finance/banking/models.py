@@ -119,35 +119,6 @@ class Change(models.Model):
         change = str(self.change)
         return account + " " + date + " " + change + " " + str(self.pk)
 
-    # def save(self, *args, **kwargs):
-    #     date = self.date
-    #     if self.pk:
-    #         date = min(self.date, Picture.objects.filter(change=self).first().d)
-    #     movies = Movie.objects.filter(
-    #         Q(depot=self.account.depot, account=None, category=None) |
-    #         Q(depot=self.account.depot, account=self.account, category=None) |
-    #         Q(depot=self.account.depot, account=None, category=self.category) |
-    #         Q(depot=self.account.depot, account=self.account, category=self.category)
-    #     )
-    #     [movie.pictures.filter(d__gte=date).delete() for movie in movies]
-    #     for movie in movies:
-    #         movie.update_needed = True
-    #         movie.save()
-    #     super(Change, self).save(*args, **kwargs)
-
-    # def delete(self, using=None, keep_parents=False):
-    #     movies = Movie.objects.filter(
-    #         Q(depot=self.account.depot, account=None, category=None) |
-    #         Q(depot=self.account.depot, account=self.account, category=None) |
-    #         Q(depot=self.account.depot, account=None, category=self.category) |
-    #         Q(depot=self.account.depot, account=self.account, category=self.category)
-    #     )
-    #     [movie.pictures.filter(d__gte=self.date).delete() for movie in movies]
-    #     for movie in movies:
-    #         movie.update_needed = True
-    #         movie.save()
-    #     super(Change, self).delete(using, keep_parents)
-
     # getters
     def get_date(self, user):
         # user in args because of sql query optimization

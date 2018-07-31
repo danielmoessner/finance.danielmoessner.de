@@ -1,4 +1,6 @@
+from django.db.models.signals import post_save, post_delete
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 from django.db import models
 
 from finance.users.models import StandardUser
@@ -266,6 +268,23 @@ class Movie(models.Model):
         return data
 
     # update
+    @staticmethod
+    def init_update(sender, instance, **kwargs):
+        if sender is Price:
+            q1 = Q(asset=instance.asset)
+            movies = Movie.objects.filter(q1)
+            movies.update(update_needed=True)
+        elif sender is Transaction:
+            q1 = Q(account=instance.from_account) | Q(account=instance.to_account)
+            q2 = Q(asset=instance.asset, depot=instance.from_account.depot)
+            movies = Movie.objects.filter(q1 & q2)
+            movies.update(update_needed=True)
+        elif sender is Trade:
+            q1 = Q(depot=instance.account.depot, account=instance.account)
+            q2 = Q(asset=instance.buy_asset) | Q(asset=instance.sell_asset)
+            movies = Movie.objects.filter(q1 & q2)
+            movies.update(update_needed=True)
+
     def update_all(self, force_update=False, disable_update=False):
         if force_update:
             self.depot.movies.update(update_needed=True)
@@ -682,3 +701,11 @@ class Picture(models.Model):
     ttwr = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=3)
     ca = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=8)
     cs = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=3)
+
+
+post_save.connect(Movie.init_update, sender=Price)
+post_delete.connect(Movie.init_update, sender=Price)
+post_save.connect(Movie.init_update, sender=Trade)
+post_delete.connect(Movie.init_update, sender=Trade)
+post_save.connect(Movie.init_update, sender=Transaction)
+post_delete.connect(Movie.init_update, sender=Transaction)
