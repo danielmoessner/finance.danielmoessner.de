@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2963ab0c-7f32-4334-befc-b04bf7fbeb4e" name="Default" comment="">
+    <list default="true" id="2963ab0c-7f32-4334-befc-b04bf7fbeb4e" name="Default" comment="added messages to banking and crypto; turned crypto update into a background update">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/banking/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/finance/banking/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/crypto/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/finance/crypto/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/db.sqlite3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/finance/files/app/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/finance/files/app/css/main.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/finance/files/scss/modules/_timespans.scss" beforeDir="false" afterPath="$PROJECT_DIR$/finance/files/scss/modules/_timespans.scss" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -21,36 +22,104 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="models.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/finance/crypto/models.py">
+      <file leaf-file-name="forms.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/finance/users/forms.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="832">
-              <caret line="711" lean-forward="true" selection-start-line="711" selection-end-line="711" />
+            <state relative-caret-position="68">
+              <caret line="7" column="35" selection-start-line="7" selection-start-column="35" selection-end-line="7" selection-end-column="35" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="apps.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/finance/users/apps.py">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file leaf-file-name="admin.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/finance/users/admin.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state>
               <folding>
-                <element signature="e#0#59#0" expanded="true" />
-                <element signature="e#8690#8816#0" />
-                <element signature="e#8849#8973#0" />
-                <element signature="e#9034#9593#0" />
-                <element signature="e#9642#10482#0" />
-                <element signature="e#10545#11863#0" />
-                <element signature="e#16957#17129#0" />
-                <element signature="e#17189#17361#0" />
-                <element signature="e#17470#19505#0" />
-                <element signature="e#19558#24236#0" />
-                <element signature="e#24280#28365#0" />
-                <element signature="e#28403#29513#0" />
-                <element signature="e#29549#31711#0" />
-                <element signature="e#31747#32456#0" />
+                <element signature="e#0#32#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="__init__.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/finance/users/__init__.py">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file leaf-file-name="form_views.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/finance/users/views/form_views.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="2516">
+              <caret line="166" column="52" selection-start-line="166" selection-start-column="52" selection-end-line="166" selection-end-column="52" />
+              <folding>
+                <element signature="e#0#56#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="views.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/finance/banking/views/views.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="17">
+              <caret line="19" selection-start-line="19" selection-end-line="19" />
+              <folding>
+                <element signature="e#0#35#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file leaf-file-name="models.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/finance/banking/models.py">
+        <entry file="file://$PROJECT_DIR$/finance/crypto/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret column="45" lean-forward="true" selection-end-line="1" />
+            <state relative-caret-position="4675">
+              <caret line="287" column="29" selection-start-line="287" selection-start-column="29" selection-end-line="287" selection-end-column="29" />
+              <folding>
+                <element signature="e#0#59#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="models.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/finance/users/models.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="204">
+              <caret line="16" column="21" selection-start-line="16" selection-start-column="21" selection-end-line="16" selection-end-column="21" />
+              <folding>
+                <element signature="e#0#28#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="views.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/finance/users/views/views.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="340">
+              <caret line="42" column="23" selection-start-line="42" selection-start-column="23" selection-end-line="42" selection-end-column="23" />
+              <folding>
+                <element signature="e#0#56#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="views.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/finance/crypto/views/views.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="238">
+              <caret line="14" column="11" selection-start-line="14" selection-start-column="11" selection-end-line="14" selection-end-column="11" />
+              <folding>
+                <element signature="e#0#35#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -67,7 +136,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>comdirect</find>
       <find>drop</find>
       <find>.divide</find>
       <find>Movie.update_all</find>
@@ -97,6 +165,7 @@
       <find>args=[self.request.user.slug</find>
       <find>args=[self.request.user.slug,</find>
       <find>update</find>
+      <find>get_currency_display()</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -121,7 +190,6 @@
         <option value="$PROJECT_DIR$/finance/banking/forms.py" />
         <option value="$PROJECT_DIR$/finance/banking/urls.py" />
         <option value="$PROJECT_DIR$/finance/banking/tests.py" />
-        <option value="$PROJECT_DIR$/finance/users/models.py" />
         <option value="$PROJECT_DIR$/finance/crypto/tests.py" />
         <option value="$PROJECT_DIR$/finance/users/tests.py" />
         <option value="$PROJECT_DIR$/finance/crypto/views/form_views.py" />
@@ -138,24 +206,25 @@
         <option value="$PROJECT_DIR$/finance/templates/error_templates/404.html" />
         <option value="$PROJECT_DIR$/finance/templates/error_templates/403.html" />
         <option value="$PROJECT_DIR$/finance/templates/error_templates/400.html" />
-        <option value="$PROJECT_DIR$/finance/crypto/tasks.py" />
         <option value="$PROJECT_DIR$/config/settings/production.py" />
         <option value="$PROJECT_DIR$/finance/crypto/urls.py" />
         <option value="$PROJECT_DIR$/config/settings/local.py" />
         <option value="$PROJECT_DIR$/config/jinja2.py" />
         <option value="$PROJECT_DIR$/finance/core/views/views.py" />
-        <option value="$PROJECT_DIR$/finance/users/views/form_views.py" />
         <option value="$PROJECT_DIR$/config/settings/base.py" />
         <option value="$PROJECT_DIR$/finance/users/urls.py" />
         <option value="$PROJECT_DIR$/finance/users/forms.py" />
-        <option value="$PROJECT_DIR$/finance/users/views/views.py" />
-        <option value="$PROJECT_DIR$/finance/crypto/views/views.py" />
         <option value="$PROJECT_DIR$/config/urls.py" />
         <option value="$PROJECT_DIR$/finance/banking/views/form_views.py" />
         <option value="$PROJECT_DIR$/finance/banking/tasks.py" />
         <option value="$PROJECT_DIR$/finance/banking/views/views.py" />
         <option value="$PROJECT_DIR$/finance/banking/models.py" />
+        <option value="$PROJECT_DIR$/finance/crypto/tasks.py" />
+        <option value="$PROJECT_DIR$/finance/users/views/views.py" />
+        <option value="$PROJECT_DIR$/finance/users/views/form_views.py" />
+        <option value="$PROJECT_DIR$/finance/users/models.py" />
         <option value="$PROJECT_DIR$/finance/crypto/models.py" />
+        <option value="$PROJECT_DIR$/finance/crypto/views/views.py" />
       </list>
     </option>
   </component>
@@ -235,6 +304,26 @@
               <item name="finance" type="462c0819:PsiDirectoryNode" />
               <item name="finance" type="462c0819:PsiDirectoryNode" />
               <item name="crypto" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="finance" type="b2602c69:ProjectViewProjectNode" />
+              <item name="finance" type="462c0819:PsiDirectoryNode" />
+              <item name="finance" type="462c0819:PsiDirectoryNode" />
+              <item name="crypto" type="462c0819:PsiDirectoryNode" />
+              <item name="views" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="finance" type="b2602c69:ProjectViewProjectNode" />
+              <item name="finance" type="462c0819:PsiDirectoryNode" />
+              <item name="finance" type="462c0819:PsiDirectoryNode" />
+              <item name="users" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="finance" type="b2602c69:ProjectViewProjectNode" />
+              <item name="finance" type="462c0819:PsiDirectoryNode" />
+              <item name="finance" type="462c0819:PsiDirectoryNode" />
+              <item name="users" type="462c0819:PsiDirectoryNode" />
+              <item name="views" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -439,20 +528,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1508076092352</updated>
-    </task>
-    <task id="LOCAL-00017" summary="some renaiming changed designs">
-      <created>1527977695322</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1527977695322</updated>
-    </task>
-    <task id="LOCAL-00018" summary="added error templates 400 403 404 500&#10;minor design changes">
-      <created>1528044240110</created>
-      <option name="number" value="00018" />
-      <option name="presentableId" value="LOCAL-00018" />
-      <option name="project" value="LOCAL" />
-      <updated>1528044240110</updated>
     </task>
     <task id="LOCAL-00019" summary="trying to get error templates to work">
       <created>1528059143384</created>
@@ -783,7 +858,21 @@
       <option name="project" value="LOCAL" />
       <updated>1533040002800</updated>
     </task>
-    <option name="localTasksCounter" value="66" />
+    <task id="LOCAL-00066" summary="pre and post save delete in crypto">
+      <created>1533071609719</created>
+      <option name="number" value="00066" />
+      <option name="presentableId" value="LOCAL-00066" />
+      <option name="project" value="LOCAL" />
+      <updated>1533071609719</updated>
+    </task>
+    <task id="LOCAL-00067" summary="added messages to banking and crypto; turned crypto update into a background update">
+      <created>1533074553531</created>
+      <option name="number" value="00067" />
+      <option name="presentableId" value="LOCAL-00067" />
+      <option name="project" value="LOCAL" />
+      <updated>1533074553531</updated>
+    </task>
+    <option name="localTasksCounter" value="68" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -804,25 +893,25 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1696" height="1066" extended-state="6" />
+    <frame x="-8" y="-8" width="1696" height="1066" extended-state="7" />
     <layout>
       <window_info content_ui="combo" x="0" y="0" width="1916" height="1080" id="Project" order="2" sideWeight="0.4819103" visible="true" weight="0.17068757" />
       <window_info anchor="bottom" id="TODO" internal_type="SLIDING" order="5" type="SLIDING" weight="0.32760364" />
       <window_info anchor="bottom" id="Event Log" order="6" sideWeight="0.5179136" side_tool="true" weight="0.44004172" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.21435794" />
       <window_info anchor="bottom" id="Python Console" order="10" sideWeight="0.4873551" weight="0.3649635" />
+      <window_info active="true" anchor="bottom" id="Run" order="8" sideWeight="0.48208642" visible="true" weight="0.29927006" />
       <window_info id="Structure" internal_type="SLIDING" order="0" side_tool="true" type="SLIDING" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="9" sideWeight="0.48314014" weight="0.3826903" />
       <window_info id="Favorites" order="1" sideWeight="0.5180897" side_tool="true" weight="0.18651211" />
+      <window_info anchor="bottom" id="Debug" order="2" weight="0.35085946" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="3" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="4" weight="0.4" />
-      <window_info anchor="bottom" id="Cvs" order="3" weight="0.25" />
       <window_info anchor="right" auto_hide="true" id="Data View" order="0" weight="0.5522388" />
       <window_info anchor="right" id="Commander" order="1" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="2" weight="0.25" />
-      <window_info anchor="bottom" id="Run" order="8" sideWeight="0.48208642" weight="0.29927006" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.3265925" />
-      <window_info anchor="bottom" id="Debug" order="2" weight="0.35085946" />
+      <window_info anchor="bottom" id="Cvs" order="3" weight="0.25" />
       <window_info anchor="bottom" id="Message" order="0" />
     </layout>
   </component>
@@ -859,8 +948,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="trello #29 faster crypto calc&#10;trello #30 ttwr removed from coin" />
-    <MESSAGE value="trello #29 calc helpers optimized" />
     <MESSAGE value="trello #29 finished" />
     <MESSAGE value="trello #75 removed the duplicate date rows in calc depot df and calc account df" />
     <MESSAGE value="trello #76 balance removed from banking changes" />
@@ -884,7 +971,9 @@
     <MESSAGE value="renamed njk module complete template improvements" />
     <MESSAGE value="trying to bug fix" />
     <MESSAGE value="implemented django backgrounds tasks for the banking update" />
-    <option name="LAST_COMMIT_MESSAGE" value="implemented django backgrounds tasks for the banking update" />
+    <MESSAGE value="pre and post save delete in crypto" />
+    <MESSAGE value="added messages to banking and crypto; turned crypto update into a background update" />
+    <option name="LAST_COMMIT_MESSAGE" value="added messages to banking and crypto; turned crypto update into a background update" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -899,34 +988,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/finance/media/crypto/prices/20180621.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="34">
-          <caret column="388" selection-start-column="378" selection-end-column="388" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/finance/media/crypto/prices/20180625.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret column="881" selection-start-column="853" selection-end-column="881" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/Program Files (x86)/Python36-32/Lib/logging/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1386">
-          <caret line="1307" column="8" selection-start-line="1307" selection-start-column="8" selection-end-line="1307" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/finance/media/crypto/prices/tmp.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="425">
-          <caret line="25" column="15" lean-forward="true" selection-start-line="25" selection-start-column="15" selection-end-line="25" selection-end-column="15" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/config/settings/production.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="170">
@@ -962,13 +1023,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="119">
           <caret line="7" column="2" selection-start-line="7" selection-start-column="2" selection-end-line="7" selection-end-column="2" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/finance/users/models.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="51">
-          <caret line="8" column="6" selection-start-line="8" selection-start-column="6" selection-end-line="8" selection-end-column="6" />
         </state>
       </provider>
     </entry>
@@ -1010,13 +1064,6 @@
     <entry file="file://$PROJECT_DIR$/finance/core/views/form_views.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/finance/users/views/form_views.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="459">
-          <caret line="28" column="4" selection-start-line="28" selection-start-column="4" selection-end-line="31" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/finance/core/views/views.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="153">
@@ -1038,13 +1085,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/finance/users/urls.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
-          <caret line="14" column="33" selection-start-line="14" selection-start-column="33" selection-end-line="14" selection-end-column="33" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/Envs/financeenv/Lib/site-packages/django/forms/fields.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17">
@@ -1056,20 +1096,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="368">
           <caret line="86" column="15" selection-start-line="86" selection-start-column="15" selection-end-line="86" selection-end-column="15" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/finance/users/forms.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="7" column="35" selection-start-line="7" selection-start-column="35" selection-end-line="7" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/finance/users/views/views.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-640">
-          <caret line="19" column="61" selection-start-line="19" selection-start-column="61" selection-end-line="19" selection-end-column="61" />
         </state>
       </provider>
     </entry>
@@ -1091,13 +1117,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="204">
           <caret line="16" column="19" lean-forward="true" selection-start-line="16" selection-start-column="19" selection-end-line="16" selection-end-column="19" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/finance/crypto/views/views.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3366">
-          <caret line="209" column="21" lean-forward="true" selection-start-line="209" selection-start-column="21" selection-end-line="209" selection-end-column="21" />
         </state>
       </provider>
     </entry>
@@ -1139,13 +1158,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/finance/crypto/tasks.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="355">
-          <caret line="21" lean-forward="true" selection-start-line="21" selection-end-line="21" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../../farming_project/farming/farming/eco/models.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="3400">
@@ -1171,9 +1183,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="85">
           <caret line="9" selection-start-line="9" selection-end-line="9" />
-          <folding>
-            <element signature="e#0#32#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1185,13 +1194,7 @@
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/Envs/financeenv/Lib/site-packages/django/contrib/messages/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <folding>
-            <element signature="e#0#49#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$USER_HOME$/Envs/financeenv/Lib/site-packages/background_task/models.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -1207,13 +1210,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/finance/banking/views/views.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="7" selection-start-line="7" selection-end-line="7" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/finance/banking/views/form_views.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="3145">
@@ -1222,6 +1218,43 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../../farming_project/farming/farming/companies/views/views.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/finance/banking/tasks.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="170">
+          <caret line="10" selection-start-line="10" selection-end-line="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/finance/crypto/tasks.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="498">
+          <caret line="46" column="17" selection-start-line="46" selection-start-column="17" selection-end-line="46" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/finance/banking/models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="113">
+          <caret line="265" column="8" selection-start-line="265" selection-start-column="8" selection-end-line="265" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/finance/users/tests.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/finance/users/urls.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="143">
+          <caret line="14" column="33" selection-start-line="14" selection-start-column="33" selection-end-line="14" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/finance/users/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/finance/users/admin.py">
       <provider selected="true" editor-type-id="text-editor">
         <state>
           <folding>
@@ -1230,42 +1263,72 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/finance/banking/tasks.py">
+    <entry file="file://$PROJECT_DIR$/finance/users/apps.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/finance/users/forms.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="10" selection-start-line="10" selection-end-line="10" />
+        <state relative-caret-position="68">
+          <caret line="7" column="35" selection-start-line="7" selection-start-column="35" selection-end-line="7" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/finance/users/views/form_views.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2516">
+          <caret line="166" column="52" selection-start-line="166" selection-start-column="52" selection-end-line="166" selection-end-column="52" />
           <folding>
-            <element signature="e#0#43#0" expanded="true" />
+            <element signature="e#0#56#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/finance/banking/models.py">
+    <entry file="file://$PROJECT_DIR$/finance/banking/views/views.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="45" lean-forward="true" selection-end-line="1" />
+        <state relative-caret-position="17">
+          <caret line="19" selection-start-line="19" selection-end-line="19" />
+          <folding>
+            <element signature="e#0#35#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/finance/crypto/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="832">
-          <caret line="711" lean-forward="true" selection-start-line="711" selection-end-line="711" />
+        <state relative-caret-position="4675">
+          <caret line="287" column="29" selection-start-line="287" selection-start-column="29" selection-end-line="287" selection-end-column="29" />
           <folding>
             <element signature="e#0#59#0" expanded="true" />
-            <element signature="e#8690#8816#0" />
-            <element signature="e#8849#8973#0" />
-            <element signature="e#9034#9593#0" />
-            <element signature="e#9642#10482#0" />
-            <element signature="e#10545#11863#0" />
-            <element signature="e#16957#17129#0" />
-            <element signature="e#17189#17361#0" />
-            <element signature="e#17470#19505#0" />
-            <element signature="e#19558#24236#0" />
-            <element signature="e#24280#28365#0" />
-            <element signature="e#28403#29513#0" />
-            <element signature="e#29549#31711#0" />
-            <element signature="e#31747#32456#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/finance/users/models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="204">
+          <caret line="16" column="21" selection-start-line="16" selection-start-column="21" selection-end-line="16" selection-end-column="21" />
+          <folding>
+            <element signature="e#0#28#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/finance/users/views/views.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="340">
+          <caret line="42" column="23" selection-start-line="42" selection-start-column="23" selection-end-line="42" selection-end-column="23" />
+          <folding>
+            <element signature="e#0#56#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/finance/crypto/views/views.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="14" column="11" selection-start-line="14" selection-start-column="11" selection-end-line="14" selection-end-column="11" />
+          <folding>
+            <element signature="e#0#35#0" expanded="true" />
           </folding>
         </state>
       </provider>

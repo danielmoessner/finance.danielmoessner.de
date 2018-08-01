@@ -25,17 +25,19 @@
 		@extend .btn-primary;
 		border-color: rgba(0,0,0,0);
 	}
-	&--add-button{
-		@extend .timespan--button;
+	&--add-button, &--add-button:focus{
+		@extend .form-control;
+		@extend .btn;
+		@extend .btn-primary;
 		@extend .ml-1;
 	}
-	&--set-button{
-		@extend .timespan--button;
+	&--set-button, &--set-button:focus{
+		@extend .btn;
 		@extend .btn-info;
 		height: 100%;
 	}
-	&--remove-button{
-		@extend .timespan--button;
+	&--remove-button, &--remove-button:focus{
+		@extend .btn;
 		@extend .btn-danger;
 		height: 100%;
 	}
