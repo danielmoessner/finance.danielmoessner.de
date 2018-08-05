@@ -50,7 +50,7 @@ class IndexView(generic.TemplateView):
         context["accounts"] = context["depot"].accounts.order_by("name")
         context["categories"] = context["depot"].categories.order_by("name")
         context["timespans"] = context["depot"].timespans.all()
-        context["timespan"] = context["depot"].timespans.get(is_active=True)
+        context["timespan"] = context["depot"].timespans.filter(is_active=True).first()
 
         context["movie"] = context["depot"].movies.get(account=None, category=None)
         context["accounts_movies"] = zip(context["accounts"], context["depot"].movies.filter(
@@ -69,7 +69,7 @@ class AccountView(generic.TemplateView):
         context["accounts"] = context["depot"].accounts.order_by("name")
         context["categories"] = context["depot"].categories.order_by("name")
         context["timespans"] = context["depot"].timespans.all()
-        context["timespan"] = context["depot"].timespans.get(is_active=True)
+        context["timespan"] = context["depot"].timespans.filter(is_active=True).first()
 
         context["account"] = context["depot"].accounts.get(slug=kwargs["slug"])
         context["movie"] = context["depot"].movies.get(account=context["account"], category=None)
@@ -89,7 +89,7 @@ class CategoryView(generic.TemplateView):
         context["accounts"] = context["depot"].accounts.order_by("name")
         context["categories"] = context["depot"].categories.order_by("name")
         context["timespans"] = context["depot"].timespans.all()
-        context["timespan"] = context["depot"].timespans.get(is_active=True)
+        context["timespan"] = context["depot"].timespans.filter(is_active=True).first()
 
         context["category"] = context["depot"].categories.get(slug=kwargs["slug"])
         context["movie"] = context["depot"].movies.get(account=None, category=context["category"])
@@ -114,7 +114,7 @@ class IndexData(APIView):
         user = request.user
         depot = Depot.objects.get(user=user, is_active=True)
 
-        timespan = depot.timespans.get(is_active=True)
+        timespan = depot.timespans.filter(is_active=True).first()
         df1 = depot.get_movie().get_df(timespan)
         df1.rename(columns={"d": "dates", "b": "Total"}, inplace=True)
         df1.drop(["c"], axis=1, inplace=True)
@@ -156,7 +156,7 @@ class AccountData(APIView):
         account = Account.objects.get(slug=slug)
 
         movie = account.get_movie()
-        timespan = depot.timespans.get(is_active=True)
+        timespan = depot.timespans.filter(is_active=True).first()
         df = movie.get_df(timespan)
         if df.empty:
             return Response(dict())
@@ -174,7 +174,7 @@ class AccountData(APIView):
             df_c["d"] = df_c["d"].dt.date
             df_c.rename(columns={"d": "dates", "c": str(category)}, inplace=True)
             df_c.set_index("dates", inplace=True)
-            for index in df_c.index.get_duplicates():
+            for index in df_c.index[df_c.index.duplicated()].unique():
                 for column in df_c.columns:
                     df_c.loc[index, column] = df_c.loc[index, column].sum()
             df_c = df_c.groupby(df_c.index).last()
@@ -217,7 +217,7 @@ class CategoryData(APIView):
         user = request.user
         depot = user.banking_depots.get(is_active=True)
         category = Category.objects.get(slug=slug)
-        timespan = depot.timespans.get(is_active=True)
+        timespan = depot.timespans.filter(is_active=True).first()
 
         df = category.get_movie().get_df(timespan)
         df.rename(columns={"d": "date", "c": "change"}, inplace=True)
@@ -261,10 +261,11 @@ class CategoriesData(APIView):
         categories = depot.categories.all()
         movies = depot.movies.filter(account=None, category__in=categories).select_related(
             "category")
+        timespan = depot.timespans.filter(is_active=True).first()
 
         labels_data = list()
         for movie in movies:
-            value = movie.get_values(user, ["b", ], depot.timespans.get(is_active=True))
+            value = movie.get_values(user, ["b"], timespan)
             if value != 0:
                 labels_data.append((str(movie.category), value["b"]))
         labels_data.sort(key=lambda x: x[1])

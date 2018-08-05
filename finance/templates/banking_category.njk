@@ -24,23 +24,21 @@
     
 
     {% import "modules/table.njk" as table %}
-    {% import "modules/button.njk" as button %}
-    {% import "modules/buttons.njk" as buttons %}
-    {% import "modules/cards.njk" as cards %}
+    {% import "modules/card.njk" as cg %}
    
 
     <div class="vs-1"></div>
     
     
     <div class="center-box">
-            <div class="console" data-toggle="buttons">
-                <label class="console--button active" data-target=".console_stats">
-                    <input type="radio">Stats
-                </label>
-                <label class="console--button" data-target=".console_changes">
-                    <input type="radio">Changes
-                </label>
-            </div>
+        <div class="console" data-toggle="buttons">
+            <label class="console--button active" data-target=".console_stats">
+                <input type="radio">Stats
+            </label>
+            <label class="console--button" data-target=".console_changes">
+                <input type="radio">Changes
+            </label>
+        </div>
     </div>
 
 
@@ -51,7 +49,7 @@
         {{ hg.smallLmHeading("Stats") }}
         <div class="vs-1"></div>
         <div class="items-box">
-            {{ cards.statsCard("Total", movie.get_values(user, ["b",])["b"], ext=user.currency) }}
+            {{ cg.statsCard("Total", movie.get_values(user, ["b",])["b"], ext=user.currency) }}
         </div>
         {% if timespan.start_date %}
             <div class="vs-3"></div>
@@ -61,7 +59,7 @@
                 {% with data=movie.get_values(user, ["b",], timespan) %}
                     {%- set heading=data.start_date+"-"+data.end_date -%}
                     {%- set value="Change: "+data.b|string -%}
-                    {{ cards.statsCard(heading, value) }}
+                    {{ cg.statsCard(heading, value) }}
                 {% endwith %}
             </div>
         {% endif %}
@@ -80,10 +78,5 @@
         </table>
     </div>
     
-
-{% endblock %}
-
-
-{% block modals %}
 
 {% endblock %}

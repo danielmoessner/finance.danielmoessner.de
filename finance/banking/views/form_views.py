@@ -1,242 +1,129 @@
+from django.views.generic.edit import FormMixin
 from django.views import generic
-from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 
-from finance.banking.views.views import AccountView
-from finance.banking.views.views import IndexView
-from finance.core.views.views import CustomDeleteView
 from finance.banking.models import Timespan
 from finance.banking.models import Category
 from finance.banking.models import Account
 from finance.banking.models import Change
-from finance.banking.forms import UpdateActiveOnTimespanForm
-from finance.banking.forms import CreateTimespanForm
-from finance.banking.forms import CreateAccountForm
-from finance.banking.forms import UpdateAccountForm
-from finance.banking.forms import CreateChangeForm
-from finance.banking.forms import CreateCategoryForm
-from finance.banking.forms import UpdateCategoryForm
-from finance.banking.forms import UpdateChangeForm
-from finance.core.utils import form_invalid_universal
+from finance.banking.forms import ChangeWoAccountForm
+from finance.banking.forms import CategorySelectForm
+from finance.banking.forms import TimespanActiveForm
+from finance.banking.forms import AccountSelectForm
+from finance.banking.forms import TimespanForm
+from finance.banking.forms import CategoryForm
+from finance.banking.forms import AccountForm
+from finance.banking.forms import ChangeForm
+from finance.core.views import CustomAjaxDeleteMixin
+from finance.core.views import CustomAjaxFormMixin
+from django.http import HttpResponse
+
+import json
+
+
+# mixins
+class CustomGetFormMixin(FormMixin):
+    def get_form(self, form_class=None):
+        if form_class is None:
+            form_class = self.get_form_class()
+        depot = self.request.user.banking_depots.get(is_active=True)
+        return form_class(depot, **self.get_form_kwargs())
 
 
 # ACCOUNT
-class IndexCreateAccountView(IndexView, generic.CreateView):
-    form_class = CreateAccountForm
+class AddAccountView(CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
+    form_class = AccountForm
     model = Account
+    template_name = "modules/form_snippet.njk"
+
+
+class EditAccountView(CustomGetFormMixin, CustomAjaxFormMixin, generic.UpdateView):
+    model = Account
+    form_class = AccountForm
+    template_name = "modules/form_snippet.njk"
+
+
+class DeleteAccountView(CustomGetFormMixin, CustomAjaxFormMixin, generic.FormView):
+    model = Account
+    template_name = "modules/form_snippet.njk"
+    form_class = AccountSelectForm
 
     def form_valid(self, form):
-        account = form.save(commit=False)
-        account.depot = self.request.user.banking_depots.get(is_active=True)
-        account.save()
-        success_url = reverse_lazy("banking:index")
-        return HttpResponseRedirect(success_url)
-
-    def form_invalid(self, form):
-        return form_invalid_universal(self, form, "errors",
-                                      heading="Account could not be created.")
-
-
-class IndexUpdateAccountView(IndexView):
-    def post(self, request, *args, **kwargs):
-        form = UpdateAccountForm(request.POST)
-        if form.is_valid():
-            return self.form_valid(form)
-        else:
-            return self.form_invalid(form)
-
-    def form_valid(self, form):
-        account_pk = form.cleaned_data["pk"]
-        account = Account.objects.get(pk=account_pk)
-        account.name = form.cleaned_data["name"]
-        account.save()
-        success_url = reverse_lazy("banking:index")
-        return HttpResponseRedirect(success_url)
-
-    def form_invalid(self, form):
-        return form_invalid_universal(self, form, "errors", heading="Account could not be edited.")
-
-
-class IndexDeleteAccountView(IndexView, CustomDeleteView):
-    def form_valid(self, form):
-        account_pk = form.cleaned_data["pk"]
-        account = Account.objects.get(pk=account_pk)
+        account = form.cleaned_data["account"]
         account.delete()
-        success_url = reverse_lazy("banking:index")
-        return HttpResponseRedirect(success_url)
-
-    def form_invalid(self, form, **kwargs):
-        return form_invalid_universal(self, form, "errors",
-                                      heading="Account could not be deleted.", **kwargs)
+        return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
 
 
 # CATEGORY
-class IndexCreateCategoryView(IndexView, generic.CreateView):
-    form_class = CreateCategoryForm
+class AddCategoryView(CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
+    form_class = CategoryForm
     model = Category
+    template_name = "modules/form_snippet.njk"
+
+
+class EditCategoryView(CustomGetFormMixin, CustomAjaxFormMixin, generic.UpdateView):
+    model = Category
+    form_class = CategoryForm
+    template_name = "modules/form_snippet.njk"
+
+
+class DeleteCategoryView(CustomGetFormMixin, CustomAjaxFormMixin, generic.FormView):
+    model = Category
+    template_name = "modules/form_snippet.njk"
+    form_class = CategorySelectForm
 
     def form_valid(self, form):
-        category = form.save(commit=False)
-        category.depot = self.request.user.banking_depots.get(is_active=True)
-        category.save()
-        success_url = reverse_lazy("banking:index")
-        return HttpResponseRedirect(success_url)
-
-    def form_invalid(self, form):
-        return form_invalid_universal(self, form, "errors",
-                                      heading="Category could not be created.")
-
-
-class IndexUpdateCategoryView(IndexView):
-    def post(self, request, *args, **kwargs):
-        form = UpdateCategoryForm(request.POST)
-        if form.is_valid():
-            return self.form_valid(form)
-        else:
-            return self.form_invalid(form)
-
-    def form_valid(self, form):
-        category = form.save(commit=False)
-        category.pk = form.cleaned_data["pk"]
-        category.depot = self.request.user.banking_depots.get(is_active=True)
-        category.save()
-        success_url = reverse_lazy("banking:index")
-        return HttpResponseRedirect(success_url)
-
-    def form_invalid(self, form):
-        return form_invalid_universal(self, form, "errors",
-                                      heading="Category could not be edited.")
-
-
-class IndexDeleteCategoryView(IndexView, CustomDeleteView):
-    def form_valid(self, form):
-        category_pk = form.cleaned_data["pk"]
-        category = Category.objects.get(pk=category_pk)
+        category = form.cleaned_data["category"]
         category.delete()
-        success_url = reverse_lazy("banking:index")
-        return HttpResponseRedirect(success_url)
-
-    def form_invalid(self, form, **kwargs):
-        return form_invalid_universal(self, form, "errors",
-                                      heading="Account could not be deleted.", **kwargs)
+        return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
 
 
 # CHANGE
-class IndexCreateChangeView(IndexView, generic.CreateView):
-    form_class = CreateChangeForm
+class AddChangeIndexView(CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
     model = Change
-
-    def form_valid(self, form):
-        change = form.save()
-        success_url = reverse_lazy("banking:index")
-        return HttpResponseRedirect(success_url)
-
-    def form_invalid(self, form):
-        return form_invalid_universal(self, form, "errors",
-                                      heading="Change could not be created.")
+    form_class = ChangeForm
+    template_name = "modules/form_snippet.njk"
 
 
-class AccountCreateChangeView(AccountView, generic.CreateView):
-    form_class = CreateChangeForm
+class AddChangeAccountView(CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
     model = Change
+    form_class = ChangeWoAccountForm
+    template_name = "modules/form_snippet.njk"
 
     def form_valid(self, form):
-        change = form.save()
-        account = change.account
-        success_url = reverse_lazy("banking:account", args=[account.slug])
-        return HttpResponseRedirect(success_url)
-
-    def form_invalid(self, form):
-        return form_invalid_universal(self, form, "errors",
-                                      heading="Change could not be created.")
-
-
-class AccountUpdateChangeView(AccountView):
-    def post(self, request, *args, **kwargs):
-        form = UpdateChangeForm(request.POST)
-        if form.is_valid():
-            return self.form_valid(form)
-        else:
-            return self.form_invalid(form, **kwargs)
-
-    def form_valid(self, form):
+        account = Account.objects.get(slug=self.kwargs["slug"])
         change = form.save(commit=False)
-        change.pk = form.cleaned_data["pk"]
+        change.account = account
         change.save()
-        account = change.account
-        success_url = reverse_lazy("banking:account", args=[account.slug])
-        return HttpResponseRedirect(success_url)
-
-    def form_invalid(self, form, **kwargs):
-        return form_invalid_universal(self, form, "errors",
-                                      heading="Change could not be edited.", **kwargs)
+        return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
 
 
-class AccountDeleteChangeView(AccountView, CustomDeleteView):
-    def form_valid(self, form):
-        change_pk = form.cleaned_data["pk"]
-        change = Change.objects.get(pk=change_pk)
-        change.delete()
-        account = change.account
-        success_url = reverse_lazy("banking:account", args=[account.slug])
-        return HttpResponseRedirect(success_url)
+class EditChangeView(CustomGetFormMixin, CustomAjaxFormMixin, generic.UpdateView):
+    model = Change
+    form_class = ChangeForm
+    template_name = "modules/form_snippet.njk"
 
-    def form_invalid(self, form, **kwargs):
-        return form_invalid_universal(self, form, "errors",
-                                      heading="Change could not be deleted.", **kwargs)
+
+class DeleteChangeView(CustomAjaxDeleteMixin, generic.DeleteView):
+    model = Change
+    template_name = "modules/delete_snippet.njk"
 
 
 # TIMESPAN
-class IndexCreateTimespanView(IndexView, generic.CreateView):
-    form_class = CreateTimespanForm
+class AddTimespanView(CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
+    form_class = TimespanForm
     model = Timespan
-
-    def form_valid(self, form):
-        timespan = form.save(commit=False)
-        timespan.depot = self.request.user.banking_depots.get(is_active=True)
-        timespan.is_active = False
-        timespan.save()
-        success_url = reverse_lazy("banking:index")
-        return HttpResponseRedirect(success_url)
-
-    def form_invalid(self, form):
-        return form_invalid_universal(self, form, "errors",
-                                      heading="Timespan could not be created.")
+    template_name = "modules/form_snippet.njk"
 
 
-class IndexUpdateActiveOnTimespanView(IndexView):
-    def post(self, request, *args, **kwargs):
-        form = UpdateActiveOnTimespanForm(request.POST)
-        if form.is_valid():
-            return self.form_valid(form)
-        else:
-            return self.form_invalid(form)
-
-    def form_valid(self, form):
-        self.request.user.banking_depots.get(is_active=True).timespans.update(is_active=False)
-        timespan_pk = form.cleaned_data["pk"]
-        Timespan.objects.filter(pk=timespan_pk).update(is_active=True)
-        success_url = reverse_lazy("banking:index")
-        return HttpResponseRedirect(success_url)
-
-    def form_invalid(self, form):
-        return form_invalid_universal(self, form, "errors",
-                                      heading="Timespan could not be created.")
+class SetActiveTimespanView(CustomGetFormMixin, generic.UpdateView):
+    model = Timespan
+    form_class = TimespanActiveForm
+    template_name = "modules/form_snippet.njk"
+    success_url = reverse_lazy("banking:index")
 
 
-class IndexDeleteTimespanView(IndexView, CustomDeleteView):
-    def form_valid(self, form):
-        timespan_pk = form.cleaned_data["pk"]
-        timespan = Timespan.objects.get(pk=timespan_pk)
-        if timespan.is_active:
-            form_invalid_universal(self, form, "errors",
-                                   heading="Timespan could not be deleted, because it's still "
-                                           "active.",
-                                   **self.request.kwargs)
-        timespan.delete()
-        success_url = reverse_lazy("banking:index")
-        return HttpResponseRedirect(success_url)
-
-    def form_invalid(self, form, **kwargs):
-        return form_invalid_universal(self, form, "errors",
-                                      heading="Timespan could not be deleted.", **kwargs)
+class DeleteTimespanView(CustomGetFormMixin, CustomAjaxDeleteMixin, generic.DeleteView):
+    model = Timespan
+    template_name = "modules/delete_snippet.njk"
+    form_class = TimespanForm

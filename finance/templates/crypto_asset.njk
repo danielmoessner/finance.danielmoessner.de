@@ -27,7 +27,7 @@
     {% import "modules/buttons.njk" as buttons %}
     {% import "modules/button.njk" as button %}
     {% import "modules/modals.njk" as modals %}
-    {% import "modules/cards.njk" as cards %}
+    {% import "modules/card.njk" as cg %}
    
 
 	{%- set addPriceButton=button.modalButton("Add Price", "#addPrice") -%}
@@ -62,10 +62,10 @@
         <div class="vs-1"></div>
         <div class="items-box">
         	{%- set assetData = movie.get_values(user, ["cs", "g", "v", "cr"]) -%}
-            {{ cards.statsCard("Invested Capital", assetData.cs, ext=user.currency) }}
-            {{ cards.statsCard("Profit", assetData.g, ext=user.currency) }}
-            {{ cards.statsCard("Value", assetData.v, ext=user.currency) }}
-            {{ cards.statsCard("Current Return", assetData.cr, ext="%") }}
+            {{ cg.statsCard("Invested Capital", assetData.cs, ext=user.currency) }}
+            {{ cg.statsCard("Profit", assetData.g, ext=user.currency) }}
+            {{ cg.statsCard("Value", assetData.v, ext=user.currency) }}
+            {{ cg.statsCard("Current Return", assetData.cr, ext="%") }}
         </div>
 		{% if timespan.start_date %}
 			<div class="vs-3"></div>
@@ -78,7 +78,7 @@
 	                    Profit: {{ data.g }} <br>
 	                    Current Return: {{ data.cr }}
 	                {% endset %}
-					{{ cards.statsCard(heading, value) }}
+					{{ cg.statsCard(heading, value) }}
 				{% endwith %}
 			</div>
 		{% endif %}

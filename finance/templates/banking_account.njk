@@ -23,13 +23,13 @@
 {% block main %} 
 
 
-    {% import "modules/table.njk" as table %}
-    {% import "modules/buttons.njk" as buttons %}
-    {% import "modules/button.njk" as button %}
-    {% import "modules/cards.njk" as cards %}
+    {% import "modules/table.njk" as tg %}
+    {% import "modules/button.njk" as bg %}
+    {% import "modules/card.njk" as cg %}
+    {% import "modules/modal.njk" as mg %}
 	   
        
-    {%- set addChangeButton=button.modalButton("Deposit / Withdraw", "#addChange") -%}
+    {%- set addChangeButton=bg.modalButton("Deposit / Withdraw", "#addChange") -%}
 
 
     <div class="vs-1"></div>
@@ -54,7 +54,7 @@
         {{ hg.smallLmHeading("Stats") }}
         <div class="vs-1"></div>
         <div class="items-box">
-            {{ cards.statsCard("Total", movie.get_values(user, ["b",])["b"], ext=user.currency) }}
+            {{ cg.statsCard("Total", movie.get_values(user, ["b",])["b"], ext=user.currency) }}
         </div>
         {% if timespan.start_date %}
             <div class="vs-3"></div>
@@ -64,7 +64,7 @@
                 {% with data=movie.get_values(user, ["b",], timespan) %}
                     {%- set heading=data.start_date+"-"+data.end_date -%}
                     {%- set value="Change: "+data.b|string -%}
-                    {{ cards.statsCard(heading, value) }}
+                    {{ cg.statsCard(heading, value) }}
                 {% endwith %}
             </div>
         {% endif %}
@@ -74,43 +74,29 @@
 	<div class="wrapper console-target is-hidden console_changes">
         {{ hg.smallLmHeading("Changes", buttons=[addChangeButton]) }}
 		<table class="table">
-            {{ table.head(["Date", "Category", "Description", "Change", "Action"]) }}
+            {{ tg.head(["Date", "Category", "Description", "Change", "Action"]) }}
             <tbody class="table--body">
                 {% for change in changes %}
                     {% set tablebuttons %}
-                        <div class="d-flex flex-row">
-                            {% set data %}
-                                {% raw %} { {% endraw %}
-                                    'pk': '{{ change.pk }}', 
-                                    'account': '{{ account.pk }}',
-                                    'category': '{{ change.category.pk }}',
-                                    'date': '{{ change.date }}',
-                                    'description': '{{ change.description }}',
-                                    'change': '{{ change.change }}'
-                                {% raw %} } {% endraw %}
-                            {% endset %}
-                            {{ buttons.buttonModalNew(text="Edit", dataTarget="#editChange", data=data) }}
+                        <div class="table--buttons">
+                            {{ bg.modalButton("Edit", "#editChange"+change.pk|string) }}
                             <div class="hs-1"></div>
-                            <form method="POST" action="{{ url('banking:delete_change', args=[account.slug]) }}">
-                                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-                                <input type="hidden" name="pk" value="{{ change.pk }}">
-                                <input type="submit" class='btn btn-sm btn-danger' value="Delete">
-                            </form>
+                            {{ bg.modalButton("Delete", "#deleteChange"+change.pk|string) }}
                         </div>  
+                        {{ mg.djangoModal("Edit Change", "editChange"+change.pk|string, url("banking:edit_change", args=[account.slug, change.pk])) }}
+                        {{ mg.djangoModal("Delete Change", "deleteChange"+change.pk|string, url("banking:delete_change", args=[account.slug, change.pk])) }}
                     {% endset %} 
-                    {{ table.row([change.get_date(user), change.category, change.get_description(), change.change, tablebuttons | safe]) }}
-                    {#{ table.row([change.get_date(user), change.category, change.get_description(), change.change, picture.b, tablebuttons | safe]) }#}
+                    {{ tg.row([change.get_date(user), change.category, change.get_description(), change.change, tablebuttons | safe]) }}
                 {% endfor %}
             </tbody>
         </table>
 	</div>
-	
+
 
 {% endblock %}
 
 
 {% block modals %}
-    {% import "modules/banking/modals.njk" as modals %}
-    {{ modals.editChangeModal(user, account, accounts, categories, csrf_token) }}
-	{{ modals.addChangeModal(user, url("banking:add_change", args=[account.slug]), categories, csrf_token) }}
+    {% import "modules/modal.njk" as mg %}
+    {{ mg.djangoModal("Deposit / Withdraw", "addChange", url("banking:add_change", args=[account.slug])) }}
 {% endblock %}

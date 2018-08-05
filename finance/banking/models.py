@@ -1,4 +1,4 @@
-from django.db.models.signals import pre_delete, pre_save
+from django.db.models.signals import pre_delete, pre_save, post_save
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db import models
@@ -7,7 +7,6 @@ from finance.users.models import StandardUser
 from finance.core.models import Timespan as CoreTimespan
 from finance.core.models import Account as CoreAccount
 from finance.core.models import Depot as CoreDepot
-from finance.core.utils import create_slug
 
 import pandas as pd
 import numpy as np
@@ -52,10 +51,6 @@ class Depot(CoreDepot):
     user = models.ForeignKey(StandardUser, editable=False, related_name="banking_depots",
                              on_delete=models.CASCADE)
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        super(Depot, self).save(force_insert, force_update, using, update_fields)
-        Movie.update_all(depot=self, disable_update=True)
-
     # getters
     def get_movie(self):
         return self.movies.get(account=None, category=None)
@@ -63,12 +58,6 @@ class Depot(CoreDepot):
 
 class Account(CoreAccount):
     depot = models.ForeignKey(Depot, on_delete=models.PROTECT, related_name="accounts")
-
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        if not self.slug:
-            self.slug = create_slug(self)
-        super(Account, self).save(force_insert, force_update, using, update_fields)
-        Movie.update_all(depot=self.depot, disable_update=True)
 
     # getters
     def get_movie(self):
@@ -87,12 +76,6 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
-
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        if not self.slug:
-            self.slug = create_slug(self)
-        super(Category, self).save(force_insert, force_update, using, update_fields)
-        Movie.update_all(depot=self.depot, disable_update=True)
 
     # getters
     def get_movie(self):
@@ -225,6 +208,18 @@ class Movie(models.Model):
 
     # update
     @staticmethod
+    def init_movies(sender, instance, **kwargs):
+        depot = instance.depot
+        if sender is Account:
+            for category in Category.objects.all():
+                Movie.objects.get_or_create(depot=depot, account=instance, category=category)
+            Movie.objects.get_or_create(depot=depot, account=instance, category=None)
+        elif sender is Category:
+            Movie.objects.get_or_create(depot=depot, account=None, category=instance)
+        elif sender is Depot:
+            Movie.objects.get_or_create(depot=depot, account=None, category=None)
+
+    @staticmethod
     def init_update(sender, instance, **kwargs):
         if sender is Change:
             depot = instance.account.depot
@@ -234,8 +229,9 @@ class Movie(models.Model):
             q4 = Q(depot=depot, account=instance.account, category=instance.category)
             movies = Movie.objects.filter(q1 | q2 | q3 | q4)
             date = instance.date
-            if instance.pk:
-                date = min(instance.date, Picture.objects.filter(change=instance).first().d)
+            pictures = Picture.objects.filter(change=instance)
+            if instance.pk and pictures.exists():
+                date = min(instance.date, pictures.first().d)
             Picture.objects.filter(movie__in=movies, d__gte=date).delete()
             movies.update(update_needed=True)
 
@@ -359,3 +355,6 @@ class Picture(models.Model):
 
 pre_save.connect(Movie.init_update, sender=Change)
 pre_delete.connect(Movie.init_update, sender=Change)
+post_save.connect(Movie.init_movies, sender=Account)
+post_save.connect(Movie.init_movies, sender=Category)
+post_save.connect(Movie.init_movies, sender=Depot)

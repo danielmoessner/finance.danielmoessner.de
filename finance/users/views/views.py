@@ -10,7 +10,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.conf import settings
 
-from finance.core.views.views import CustomInvalidFormMixin
+from finance.core.views import CustomInvalidFormMixin
 from finance.banking.models import init_banking as banking_init_banking
 from finance.banking.models import Depot as BankingDepot
 from finance.crypto.models import init_crypto as crypto_init_crypto

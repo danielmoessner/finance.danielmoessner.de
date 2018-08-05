@@ -1,15 +1,37 @@
-from django.views import generic
-from django.shortcuts import render
-from django.utils.html import strip_tags
-from finance.core.forms import DeleteForm
 from django.views.generic.edit import FormMixin
+from django.template.loader import render_to_string
+from finance.core.forms import DeleteForm
+from django.utils.html import strip_tags
+from django.shortcuts import render
 from django.contrib import messages
+from django.views import generic
+from django.http import HttpResponse
+
+import json
 
 
 # mixins
-class CustomInvalidFormMixin(FormMixin):
+class CustomAjaxDeleteMixin(object):
+    def delete(self, request, *args, **kwargs):
+        object = self.get_object()
+        object.delete()
+        return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
+
+
+class CustomAjaxFormMixin(object):
     def form_invalid(self, form):
-        context = self.get_context_data(form=form)
+        html = render_to_string(self.template_name, self.get_context_data(form=form),
+                                request=self.request)
+        return HttpResponse(json.dumps({"valid": False, "html": html}),
+                            content_type="application/json")
+
+    def form_valid(self, form):
+        form.save()
+        return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
+
+
+class CustomInvalidFormMixin(object):
+    def form_invalid(self, form):
         message = ["Form Error(s):"]
         for field in form:
             if field.errors:
@@ -17,9 +39,10 @@ class CustomInvalidFormMixin(FormMixin):
                 message.append(text)
         message = "<br>".join(message)
         messages.warning(self.request, message)
-        return self.render_to_response(self.get_context_data(edit_user_form=form))
+        return self.render_to_response(self.get_context_data(form=form))
 
 
+# views
 class CustomDeleteView(generic.View):
     def post(self, request, *args, **kwargs):
         form = DeleteForm(request.POST)

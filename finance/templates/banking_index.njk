@@ -25,18 +25,19 @@
 {% block main %}
 
 	
-	{% import "modules/table.njk" as table %}
-	{% import "modules/buttons.njk" as buttons %}
-	{% import "modules/button.njk" as button %}
-	{% import "modules/cards.njk" as cards %}
-	{% import "modules/timespan.njk" as tg %}
+	{% import "modules/table.njk" as tg %}
+	{% import "modules/button.njk" as bg %}
+	{% import "modules/card.njk" as cg %}
+	{% import "modules/timespan.njk" as tsg %}
+	{% import "modules/modal.njk" as mg %}
 
 
-	{%- set addAccountButton=button.modalButton("Add Account", "#addAccount") -%}
-	{%- set deleteAccountButton=button.modalButton("Delete Account", "#deleteAccount") -%}
-	{%- set addCategoryButton=button.modalButton("Add Category", "#addCategory") -%}
-	{%- set deleteCategoryButton=button.modalButton("Delete Category", "#deleteCategory") -%}
-	{%- set updateButton=button.hrefButton("Update", url("banking:update_stats")) -%}
+	{%- set addAccountButton=bg.modalButton("Add Account", "#addAccount") -%}
+	{%- set deleteAccountButton=bg.modalButton("Delete Account", "#deleteAccount") -%}
+	{%- set addCategoryButton=bg.modalButton("Add Category", "#addCategory") -%}
+	{%- set deleteCategoryButton=bg.modalButton("Delete Category", "#deleteCategory") -%}
+	{%- set addTimespanButton=bg.modalButton("Add Timespan", "#addTimespan") -%}
+	{%- set updateButton=bg.hrefButton("Update", url("banking:update_stats")) -%}
 	
 
 	<div class="vs-1"></div>
@@ -67,7 +68,7 @@
 		{{ hg.smallLmHeading("Stats", buttons=[updateButton]) }}
 		<div class="vs-1"></div>
 		<div class="items-box">
-			{{ cards.statsCard("Total", movie.get_values(user, ["b",])["b"], ext=user.currency) }}
+			{{ cg.statsCard("Total", movie.get_values(user, ["b",])["b"], ext=user.currency) }}
 		</div>
 		{% if timespan.start_date %}
 			<div class="vs-3"></div>
@@ -77,7 +78,7 @@
 				{% with data=movie.get_values(user, ["b",], timespan) %}
 					{%- set heading=data.start_date+"-"+data.end_date -%}
 					{%- set value="Change: "+data.b|string -%}
-					{{ cards.statsCard(heading, value) }}
+					{{ cg.statsCard(heading, value) }}
 				{% endwith %}
 			</div>
 		{% endif %}
@@ -87,29 +88,23 @@
 	<div class="wrapper console-target is-hidden console_accounts">
 		{{ hg.smallLmHeading("Accounts", buttons=[addAccountButton, deleteAccountButton]) }}
 		<table class="table">
-			{{ table.head(["Account", "Balance", "Action"]) }}
+			{{ tg.head(["Account", "Balance", "Action"]) }}
 			<tbody class="table--body">
 				{% for account, movie in accounts_movies %}
-					{% set name %}
-						<a href="{{ url('banking:account', args=[account.slug]) }}" class="link-bold">{{ account.name }}</a>
-					{% endset %}
 					{% set tablebuttons %}
-						<div class="d-flex flex-row">
-							{{ buttons.buttonModal(text="Deposit / Withdraw", dataTarget="#addChange", data="accountpk=" + account.pk|string ) }}
+						<div class="table--buttons">
+							{{ bg.modalButton("Deposit / Withdraw", "#addChange"+account.slug) }}
 							<div class="hs-1"></div>
-							{% set data %}
-								{% raw %} { {% endraw %}
-									'pk': '{{ account.pk }}', 
-									'name': '{{ account.name }}'
-								{% raw %} } {% endraw %}
-							{% endset %}
-							{{ buttons.buttonModalNew(text="Edit", dataTarget="#editAccount", data=data) }}  
-						</div> 
+							{{ bg.modalButton("Edit", "#editAccount"+account.slug) }}  
+						</div>
+						{{ mg.djangoModal("Deposit / Withdraw", "addChange"+account.slug, url("banking:add_change", args=[account.slug])) }}
+						{{ mg.djangoModal("Edit Account", "editAccount"+account.slug, url("banking:edit_account", args=[account.slug])) }}
 					{% endset %}
-					{% set balance %}
-						{{ movie.get_values(user, ["b",])["b"] }} {{ user.currency }}
+					{% set name %}
+						<a href="{{ url('banking:account', args=[account.slug]) }}" class="link-bold">{{ account.name }}</a> 
 					{% endset %}
-					{{ table.row([name | safe, balance, tablebuttons | safe]) }}
+					{%- set values=movie.get_values(user, ["b"]) -%}
+					{{ tg.row([name|safe, values["b"], tablebuttons|safe]) }}
 				{% endfor %}
 			</tbody>
 		</table>
@@ -119,25 +114,17 @@
 	<div class="wrapper console-target is-hidden console_categories">
 		{{ hg.smallLmHeading("Categories", buttons=[addCategoryButton, deleteCategoryButton]) }}
 		<table class="table">
-			{{ table.head(["Category", "Description", "Action"]) }}
+			{{ tg.head(["Category", "Description", "Action"]) }}
 			<tbody class="table--body">
 				{% for category in categories %}
+					{% set tablebuttons %}
+						{{ bg.modalButton("Edit", "#editCategory"+category.slug) }}  
+						{{ mg.djangoModal("Edit Category", "editCategory"+category.slug, url("banking:edit_category", args=[category.slug])) }}
+					{% endset %} 
 					{% set name %}
 						<a href="{{ url('banking:category', args=[category.slug]) }}" class="link-bold">{{ category.name }}</a>
-					{% endset %} 
-					{% set tablebuttons %}
-						<div class="d-flex flex-row">
-							{% set data %}
-								{% raw %} { {% endraw %}
-									'pk': '{{ category.pk }}', 
-									'name': '{{ category.name }}',
-									'description': '{{ category.description }}'
-								{% raw %} } {% endraw %}
-							{% endset %}
-							{{ buttons.buttonModalNew(text="Edit", dataTarget="#editCategory", data=data) }}
-						</div>  
-					{% endset %} 
-					{{ table.row([name | safe, category.description, tablebuttons | safe]) }}
+					{% endset %}
+					{{ tg.row([name|safe, category.description, tablebuttons|safe]) }}
 				{% endfor %}
 			</tbody>
 		</table>
@@ -145,14 +132,30 @@
 	
 
 	<div class="wrapper console-target is-hidden console_timespans">
-		{{ hg.smallLmHeading("Timespans") }}
-		<div class="vs-1"></div>
+		{{ hg.smallLmHeading("Timespans", buttons=[addTimespanButton]) }}
+		<table class="table">
+			{{ tg.head(["Name", "Start Date", "End Date", "Action"]) }}
+			<tbody class="table--body">
+				{% for timespan in timespans %}
+					{% set tablebuttons %}
+						<div class="table--buttons">
+							{{ tsg.setActiveForm(timespan, csrf_token) }}
+							<div class="hs-1"></div>
+							{{ tsg.deleteButton(timespan, csrf_token) }}
+						</div>
+						{{ mg.djangoModal("Delete", "deleteTimespan"+timespan.pk|string, url("banking:delete_timespan", args=[timespan.pk])) }}
+					{% endset %} 
+					{{ tg.row([timespan.name, timespan.start_date, timespan.end_date, tablebuttons|safe]) }}
+				{% endfor %}
+			</tbody>
+		</table>
+		{#<div class="vs-1"></div>
 		<ul class="timespans">
 			{% for ts in timespans %} 
 				{{ tg.timespan(ts, depot, url('banking:set_timespan'), url('banking:delete_timespan'), reverse, csrf_token)}}
 			{% endfor %}
 			{{ tg.createTimespan(False, url('banking:add_timespan'), reverse, csrf_token) }}
-		</ul>
+		</ul>#}
 	</div>
 
 
@@ -160,12 +163,10 @@
 
 
 {% block modals %}
-	{% import "modules/banking/modals.njk" as modals %}
-	{{ modals.addAccountModal(user, depot.pk, csrf_token) }}
-	{{ modals.editAccountModal(user, csrf_token) }}
-	{{ modals.deleteAccountModal(user, accounts, csrf_token) }}
-	{{ modals.addChangeModal(user, url("banking:add_change"), categories, csrf_token) }}
-	{{ modals.addCategoryModal(user, csrf_token) }}
-	{{ modals.editCategoryModal(user, csrf_token) }}
-	{{ modals.deleteCategoryModal(user, categories, csrf_token) }}
+	{% import "modules/modal.njk" as mg %}
+	{{ mg.djangoModal("Add Account", "addAccount", url("banking:add_account")) }}
+	{{ mg.djangoModal("Delete Account", "deleteAccount", url("banking:delete_account")) }}
+	{{ mg.djangoModal("Add Category", "addCategory", url("banking:add_category")) }}
+	{{ mg.djangoModal("Delete Category", "deleteCategory", url("banking:delete_category")) }}
+	{{ mg.djangoModal("Add Timespan", "addTimespan", url("banking:add_timespan")) }}	
 {% endblock %}

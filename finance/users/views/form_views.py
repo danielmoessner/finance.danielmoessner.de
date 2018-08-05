@@ -5,8 +5,8 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 
 from finance.users.views.views import SettingsView
-from finance.core.views.views import CustomInvalidFormMixin
-from finance.core.views.views import CustomDeleteView
+from finance.core.views import CustomInvalidFormMixin
+from finance.core.views import CustomDeleteView
 from finance.banking.forms import UpdateDepotForm as EditBankingDepotForm
 from finance.banking.forms import CreateDepotForm as AddBankingDepotForm
 from finance.crypto.forms import CreateDepotForm as EditCryptoDepotForm

@@ -46,7 +46,6 @@ class IndexView(generic.TemplateView):
         context["depot"] = context["user"].crypto_depots.get(is_active=True)
         context["timespans"] = context["depot"].timespans.all()
         context["timespan"] = context["depot"].timespans.get(is_active=True)
-        print(context["timespan"].start_date)
         # accounts
         context["accounts"] = context["depot"].accounts.order_by("name")
         account_movies = context["depot"].movies.filter(

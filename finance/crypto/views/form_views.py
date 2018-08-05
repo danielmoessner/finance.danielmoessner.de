@@ -6,7 +6,7 @@ from django.db.models import Q
 from finance.crypto.views.views import AccountView
 from finance.crypto.views.views import IndexView
 from finance.crypto.views.views import AssetView
-from finance.core.views.views import CustomDeleteView
+from finance.core.views import CustomDeleteView
 from finance.crypto.models import Transaction
 from finance.crypto.models import Timespan
 from finance.crypto.models import Account

@@ -1,8 +1,0 @@
-{% macro statsCard(heading, value, ext=None) %}
-	<div class="card">
-		<h2 class="card--heading">{{ heading }}</h2>
-		<div class="card--body">
-			{{ value }} {% if ext %}{{ ext }}{% endif %}
-		</div>
-	</div>
-{% endmacro %}

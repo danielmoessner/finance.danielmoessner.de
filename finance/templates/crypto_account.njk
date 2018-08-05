@@ -25,7 +25,7 @@
 
     {% import "modules/table.njk" as table %}
     {% import "modules/buttons.njk" as buttons %}
-    {% import "modules/cards.njk" as cards %}
+    {% import "modules/card.njk" as cg %}
     {% import "modules/button.njk" as button %}
    	
 
@@ -61,7 +61,7 @@
         <div class="vs-1"></div>
         <div class="items-box">
         	{%- set accountData = movie.get_values(user, ["v", ]) -%}
-            {{ cards.statsCard("Value", accountData.v, ext=user.currency) }}
+            {{ cg.statsCard("Value", accountData.v, ext=user.currency) }}
         </div>
 		{% if timespan.start_date %}
 			<div class="vs-3"></div>
@@ -71,7 +71,7 @@
 				{% with data=movie.get_values(user, ["v"], timespan) %}
 					{%- set heading=data.start_date+"-"+data.end_date -%}
 					{%- set value="Value Change: "+data.v|string -%}
-					{{ cards.statsCard(heading, value) }}
+					{{ cg.statsCard(heading, value) }}
 				{% endwith %}
 			</div>
 		{% endif %}

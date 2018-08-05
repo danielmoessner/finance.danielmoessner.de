@@ -28,7 +28,7 @@
     {% import "modules/table.njk" as table %}
     {% import "modules/buttons.njk" as buttons %}
     {% import "modules/button.njk" as button %}
-    {% import "modules/cards.njk" as cards %}
+    {% import "modules/card.njk" as cg %}
     {% import "modules/timespan.njk" as tg %}
 
     
@@ -70,11 +70,11 @@
         <div class="vs-1"></div>
         <div class="items-box">
             {%- set depotData = movie.get_values(user, ["cs", "g", "v", "cr", "ttwr"]) -%}
-            {{ cards.statsCard("Invested Capital", depotData.cs, ext=user.currency) }}
-            {{ cards.statsCard("Profit", depotData.g, ext=user.currency) }}
-            {{ cards.statsCard("Value", depotData.v, ext=user.currency) }}
-            {{ cards.statsCard("Current Return", depotData.cr, ext="%") }}
-            {{ cards.statsCard("True time weighted return", depotData.ttwr, ext="%")}}
+            {{ cg.statsCard("Invested Capital", depotData.cs, ext=user.currency) }}
+            {{ cg.statsCard("Profit", depotData.g, ext=user.currency) }}
+            {{ cg.statsCard("Value", depotData.v, ext=user.currency) }}
+            {{ cg.statsCard("Current Return", depotData.cr, ext="%") }}
+            {{ cg.statsCard("True time weighted return", depotData.ttwr, ext="%")}}
         </div>
         {% if timespan.start_date %}
             <div class="vs-3"></div>
@@ -87,7 +87,7 @@
                         Profit: {{ data.g }} <br>
                         Current Return: {{ data.cr }}
                     {% endset %}
-                    {{ cards.statsCard(heading, value) }}
+                    {{ cg.statsCard(heading, value) }}
                 {% endwith %}
             </div>
         {% endif %}

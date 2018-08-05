@@ -9,6 +9,7 @@
 	&--select{
 		@extend .form-control;
 		@extend .custom-select;
+		display: block;
 	}
 	&--textarea{
 		@extend .form-control;
@@ -20,6 +21,7 @@
 		@extend .btn;
 		@extend .btn-primary;
 		@extend .w-100;
+		padding-bottom: .5rem;
 	}
 	&--helptext{
 		@extend .form-text;
@@ -31,6 +33,6 @@
 		font-size: 1rem;
 	}
 	&--cancel-button{
-		// todo
+		padding-bottom: .5rem;
 	}
 } 

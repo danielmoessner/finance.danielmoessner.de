@@ -1,13 +1,13 @@
 from django import forms
 
-from finance.banking.models import Depot
-from finance.banking.models import Change
-from finance.banking.models import Account
-from finance.banking.models import Category
 from finance.banking.models import Timespan
+from finance.banking.models import Category
+from finance.banking.models import Account
+from finance.banking.models import Change
+from finance.banking.models import Depot
+from finance.core.utils import create_slug
 
 from datetime import datetime
-import pytz
 
 
 # DEPOT
@@ -31,27 +31,37 @@ class UpdateDepotForm(forms.ModelForm):
 
 
 # ACCOUNT
-class CreateAccountForm(forms.ModelForm):
+class AccountForm(forms.ModelForm):
     class Meta:
         model = Account
         fields = (
             "name",
         )
 
+    def __init__(self, depot, *args, **kwargs):
+        super(AccountForm, self).__init__(*args, **kwargs)
+        self.instance.depot = depot
 
-class UpdateAccountForm(forms.ModelForm):
-    pk = forms.IntegerField(min_value=0)
+    def save(self, commit=True):
+        self.instance.slug = create_slug(self.instance, self.instance.name)
+        return super(AccountForm, self).save(commit=commit)
+
+
+class AccountSelectForm(forms.Form):
+    account = forms.ModelChoiceField(widget=forms.Select, queryset=None)
 
     class Meta:
-        model = Account
         fields = (
-            "name",
-            "pk"
+            "account",
         )
+
+    def __init__(self, depot, *args, **kwargs):
+        super(AccountSelectForm, self).__init__(*args, **kwargs)
+        self.fields["account"].queryset = depot.accounts.all()
 
 
 # CATEGORY
-class CreateCategoryForm(forms.ModelForm):
+class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
         fields = (
@@ -59,22 +69,33 @@ class CreateCategoryForm(forms.ModelForm):
             "description",
         )
 
+    def __init__(self, depot, *args, **kwargs):
+        super(CategoryForm, self).__init__(*args, **kwargs)
+        self.instance.depot = depot
 
-class UpdateCategoryForm(forms.ModelForm):
-    pk = forms.IntegerField(min_value=0)
+    def save(self, commit=True):
+        self.instance.slug = create_slug(self.instance, self.instance.name)
+        return super(CategoryForm, self).save(commit=commit)
+
+
+class CategorySelectForm(forms.Form):
+    category = forms.ModelChoiceField(widget=forms.Select, queryset=None)
 
     class Meta:
-        model = Category
         fields = (
-            "pk",
-            "name",
-            "description",
+            "category",
         )
+
+    def __init__(self, depot, *args, **kwargs):
+        super(CategorySelectForm, self).__init__(*args, **kwargs)
+        self.fields["category"].queryset = depot.categories.all()
 
 
 # CHANGE
-class CreateChangeForm(forms.ModelForm):
-    date = forms.CharField(max_length=16, min_length=16)
+class ChangeForm(forms.ModelForm):
+    date = forms.DateTimeField(widget=forms.DateTimeInput(attrs={"type": "datetime-local"},
+                                                          format="%Y-%m-%dT%H:%M"),
+                               input_formats=["%Y-%m-%dT%H:%M"], label="Date")
 
     class Meta:
         model = Change
@@ -86,37 +107,41 @@ class CreateChangeForm(forms.ModelForm):
             "change"
         )
 
-    def clean_date(self):
-        date = self.cleaned_data["date"]
-        date = datetime.strptime(date, '%Y-%m-%dT%H:%M').replace(tzinfo=pytz.utc)
-        return date
+    def __init__(self, depot, *args, **kwargs):
+        super(ChangeForm, self).__init__(*args, **kwargs)
+        self.fields["account"].queryset = depot.accounts.all()
+        self.fields["category"].queryset = depot.categories.all()
+        self.fields["date"].initial = datetime.now()
 
 
-class UpdateChangeForm(forms.ModelForm):
-    pk = forms.IntegerField(min_value=0)
-    date = forms.CharField(max_length=16, min_length=16)
+class ChangeWoAccountForm(forms.ModelForm):
+    date = forms.DateTimeField(widget=forms.DateTimeInput(attrs={"type": "datetime-local"},
+                                                          format="%Y-%m-%dT%H:%M"),
+                               input_formats=["%Y-%m-%dT%H:%M"], label="Date")
 
     class Meta:
         model = Change
         fields = (
-            "pk",
-            "account",
             "date",
             "category",
             "description",
             "change"
         )
 
-    def clean_date(self):
-        date = self.cleaned_data["date"]
-        date = datetime.strptime(date, '%Y-%m-%dT%H:%M').replace(tzinfo=pytz.utc)
-        return date
+    def __init__(self, depot, *args, **kwargs):
+        super(ChangeWoAccountForm, self).__init__(*args, **kwargs)
+        self.fields["category"].queryset = depot.categories.all()
+        self.fields["date"].initial = datetime.now()
 
 
 # TIMESPAN
-class CreateTimespanForm(forms.ModelForm):
-    start_date = forms.CharField(max_length=16, min_length=16)
-    end_date = forms.CharField(max_length=16, min_length=16)
+class TimespanForm(forms.ModelForm):
+    start_date = forms.DateTimeField(widget=forms.DateTimeInput(
+        attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
+        input_formats=["%Y-%m-%dT%H:%M"], label="Date")
+    end_date = forms.DateTimeField(widget=forms.DateTimeInput(
+        attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
+        input_formats=["%Y-%m-%dT%H:%M"], label="Date")
 
     class Meta:
         model = Timespan
@@ -126,22 +151,16 @@ class CreateTimespanForm(forms.ModelForm):
             "end_date"
         )
 
-    def clean_start_date(self):
-        start_date = self.cleaned_data["start_date"]
-        start_date = datetime.strptime(start_date, '%Y-%m-%dT%H:%M').replace(tzinfo=pytz.utc)
-        return start_date
-
-    def clean_end_date(self):
-        end_date = self.cleaned_data["end_date"]
-        end_date = datetime.strptime(end_date, '%Y-%m-%dT%H:%M').replace(tzinfo=pytz.utc)
-        return end_date
+    def __init__(self, depot, *args, **kwargs):
+        super(TimespanForm, self).__init__(*args, **kwargs)
+        self.instance.depot = depot
 
 
-class UpdateActiveOnTimespanForm(forms.ModelForm):
-    pk = forms.IntegerField(min_value=0)
-
+class TimespanActiveForm(forms.ModelForm):
     class Meta:
         model = Timespan
-        fields = (
-            "pk",
-        )
+        fields = ("is_active",)
+
+    def __init__(self, depot, *args, **kwargs):
+        super(TimespanActiveForm, self).__init__(*args, **kwargs)
+        depot.timespans.update(is_active=False)

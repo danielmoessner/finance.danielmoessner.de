@@ -2,4 +2,30 @@
 	@extend .btn;
 	@extend .btn-info;
 	@extend .w-100;
+	cursor: pointer;
+	&--small{
+		@extend .submit-button;
+		@extend .btn-sm;
+	}
+}
+
+.cancel-button{
+	@extend .btn;
+	@extend .btn-secondary;
+	@extend .w-100;
+	cursor: pointer;
+}
+
+.modal-button{
+	@extend .btn;
+	@extend .btn-info;
+	@extend .btn-sm;
+	cursor: pointer;
+}
+
+.href-button{
+	@extend .btn;
+	@extend .btn-info;
+	@extend .btn-sm;
+	cursor: pointer;
 }
