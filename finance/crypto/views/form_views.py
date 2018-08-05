@@ -7,6 +7,7 @@ from finance.crypto.models import Account
 from finance.crypto.models import Asset
 from finance.crypto.models import Trade
 from finance.crypto.models import Depot
+from finance.crypto.models import Movie
 from finance.crypto.forms import TimespanActiveForm
 from finance.crypto.forms import AccountSelectForm
 from finance.crypto.forms import AssetSelectForm
@@ -119,6 +120,7 @@ class RemoveAssetView(CustomGetFormMixin, CustomAjaxFormMixin, generic.FormView)
         asset = form.cleaned_data["asset"]
         depot = self.request.user.crypto_depots.get(is_active=True)
         asset.depots.remove(depot)
+        Movie.objects.filter(depot=depot, asset=asset).delete()
         asset.save()
         return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
 
