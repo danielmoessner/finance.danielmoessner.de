@@ -144,7 +144,7 @@ class AssetView(generic.TemplateView):
 def update_movies(request, *args, **kwargs):
     depot_pk = request.user.crypto_depots.get(is_active=True).pk
     update_movies_task(depot_pk)
-    return HttpResponseRedirect(reverse_lazy("crypto:index", args=[request.user.slug, ]))
+    return HttpResponseRedirect(reverse_lazy("crypto:index"))
 
 
 # API DATA

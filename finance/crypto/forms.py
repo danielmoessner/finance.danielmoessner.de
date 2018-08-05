@@ -12,24 +12,40 @@ from .models import Depot
 from datetime import datetime
 
 
-# DEPOT
-class CreateDepotForm(forms.ModelForm):
+# depot
+class DepotForm(forms.ModelForm):
     class Meta:
         model = Depot
         fields = (
             "name",
         )
 
+    def __init__(self, user, *args, **kwargs):
+        super(DepotForm, self).__init__(*args, **kwargs)
+        self.instance.user = user
 
-class UpdateDepotForm(forms.ModelForm):
-    pk = forms.IntegerField(min_value=0)
+
+class DepotSelectForm(forms.Form):
+    depot = forms.ModelChoiceField(widget=forms.Select, queryset=None)
 
     class Meta:
-        model = Depot
         fields = (
-            "name",
-            "pk",
+            "depot",
         )
+
+    def __init__(self, user, *args, **kwargs):
+        super(DepotSelectForm, self).__init__(*args, **kwargs)
+        self.fields["depot"].queryset = user.crypto_depots.all()
+
+
+class DepotActiveForm(forms.ModelForm):
+    class Meta:
+        model = Depot
+        fields = ("is_active",)
+
+    def __init__(self, user, *args, **kwargs):
+        super(DepotActiveForm, self).__init__(*args, **kwargs)
+        user.crypto_depots.update(is_active=False)
 
 
 # account

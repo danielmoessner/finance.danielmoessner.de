@@ -275,7 +275,7 @@ class Movie(models.Model):
                 Movie.objects.get_or_create(depot=depot, account=None, asset=instance)
         elif sender is Depot:
             depot = instance
-            Movie.objects.get_or_create(depot=depot, account=None, category=None)
+            Movie.objects.get_or_create(depot=depot, account=None, asset=None)
 
     @staticmethod
     def init_update(sender, instance, **kwargs):

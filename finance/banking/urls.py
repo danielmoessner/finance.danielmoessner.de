@@ -27,6 +27,20 @@ urlpatterns = [
     # update-movies/
     url(r"^update-movies", login_required(views.update_movies), name="update_stats"),
 
+    # depot
+    url(r"^add-depot/$",
+        login_required(form_views.AddDepotView.as_view()),
+        name="add_depot"),
+    url(r"^edit-depot/(?P<pk>\d+)/$",
+        login_required(form_views.EditDepotView.as_view()),
+        name="edit_depot"),
+    url(r"^delete-depot/$",
+        login_required(form_views.DeleteDepotView.as_view()),
+        name="delete_depot"),
+    url(r"^set-depot/(?P<pk>\d+)/$",
+        login_required(form_views.SetActiveDepotView.as_view()),
+        name="set_depot"),
+
     # account
     url(r"^add-account/$",
         login_required(form_views.AddAccountView.as_view()),

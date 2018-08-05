@@ -67,3 +67,12 @@
 			</p>
 		{% endfor %}
 {% endmacro %}
+
+
+{% macro setActiveButtonForm(object, url, csrf_token) %}
+	<form method="post" action="{{ url }}">
+		<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+		<input type="hidden" name="is_active" id="id_is_active" value="True">
+		<button type="submit" class="submit-button--small" role="button" {{ "disabled" if object.is_active else "" }}>Set Active</button>
+	</form>
+{% endmacro %}
