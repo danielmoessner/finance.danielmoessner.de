@@ -149,13 +149,6 @@
 				{% endfor %}
 			</tbody>
 		</table>
-		{#<div class="vs-1"></div>
-		<ul class="timespans">
-			{% for ts in timespans %} 
-				{{ tg.timespan(ts, depot, url('banking:set_timespan'), url('banking:delete_timespan'), reverse, csrf_token)}}
-			{% endfor %}
-			{{ tg.createTimespan(False, url('banking:add_timespan'), reverse, csrf_token) }}
-		</ul>#}
 	</div>
 
 

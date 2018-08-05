@@ -12,7 +12,7 @@
     {% endif %}
     {% if user.crypto_is_active %}
     <li class="nav-item">
-        <a class="nav-link {% if activePage=='crypto' %}active{% endif %}" href="{{ url('crypto:index', args=[user.slug,]) }}">Crypto</a>
+        <a class="nav-link {% if activePage=='crypto' %}active{% endif %}" href="{{ url('crypto:index') }}">Crypto</a>
     </li>
     {% endif %}
     <li class="m-2"></li>

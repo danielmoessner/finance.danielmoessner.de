@@ -198,7 +198,7 @@ class IndexData(APIView):
     authentication_classes = (SessionAuthentication, BasicAuthentication)
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request, user_slug, format=None):
+    def get(self, request, format=None):
         user = request.user
         depot = user.crypto_depots.get(is_active=True)
         timespan = depot.timespans.get(is_active=True)
@@ -210,7 +210,7 @@ class AccountData(APIView):
     authentication_classes = (SessionAuthentication, BasicAuthentication)
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request, user_slug, slug, format=None):
+    def get(self, request, slug, format=None):
         user = request.user
         depot = user.crypto_depots.get(is_active=True)
         # timespan = depot.timespans.get(is_active=True)
@@ -242,17 +242,16 @@ class AssetsData(APIView):
     authentication_classes = (SessionAuthentication, BasicAuthentication)
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request, user_slug, format=None):
+    def get(self, request, format=None):
         user = request.user
         depot = user.crypto_depots.get(is_active=True)
-        timespan = depot.timespans.get(is_active=True)
         assets = depot.assets.exclude(symbol=user.get_currency_display())
         movies = depot.movies.filter(account=None, asset__in=assets).select_related("asset")
         datasets = list()
         labels = list()
         data = list()
         for movie in movies:
-            value = movie.get_values(user, ["v", ], timespan)["v"]
+            value = movie.get_values(user, ["v"])["v"]
             if value != "x" and round(value, 2) != 0.00:
                 labels.append(str(movie.asset))
                 data.append(value)
@@ -273,7 +272,7 @@ class AssetData(APIView):
     authentication_classes = (SessionAuthentication, BasicAuthentication)
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request, user_slug, slug, format=None):
+    def get(self, request, slug, format=None):
         user = request.user
         depot = user.crypto_depots.get(is_active=True)
         asset = Asset.objects.get(slug=slug)

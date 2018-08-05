@@ -6,7 +6,6 @@ from finance.banking.models import Timespan
 from finance.banking.models import Category
 from finance.banking.models import Account
 from finance.banking.models import Change
-from finance.banking.forms import ChangeWoAccountForm
 from finance.banking.forms import CategorySelectForm
 from finance.banking.forms import TimespanActiveForm
 from finance.banking.forms import AccountSelectForm
@@ -30,7 +29,7 @@ class CustomGetFormMixin(FormMixin):
         return form_class(depot, **self.get_form_kwargs())
 
 
-# ACCOUNT
+# account
 class AddAccountView(CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
     form_class = AccountForm
     model = Account
@@ -78,7 +77,7 @@ class DeleteCategoryView(CustomGetFormMixin, CustomAjaxFormMixin, generic.FormVi
         return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
 
 
-# CHANGE
+# change
 class AddChangeIndexView(CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
     model = Change
     form_class = ChangeForm
@@ -87,15 +86,14 @@ class AddChangeIndexView(CustomGetFormMixin, CustomAjaxFormMixin, generic.Create
 
 class AddChangeAccountView(CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
     model = Change
-    form_class = ChangeWoAccountForm
+    form_class = ChangeForm
     template_name = "modules/form_snippet.njk"
 
-    def form_valid(self, form):
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
         account = Account.objects.get(slug=self.kwargs["slug"])
-        change = form.save(commit=False)
-        change.account = account
-        change.save()
-        return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
+        kwargs.update({"initial": {"account": account}})
+        return kwargs
 
 
 class EditChangeView(CustomGetFormMixin, CustomAjaxFormMixin, generic.UpdateView):
@@ -109,7 +107,7 @@ class DeleteChangeView(CustomAjaxDeleteMixin, generic.DeleteView):
     template_name = "modules/delete_snippet.njk"
 
 
-# TIMESPAN
+# timespan
 class AddTimespanView(CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
     form_class = TimespanForm
     model = Timespan

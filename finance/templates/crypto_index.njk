@@ -8,8 +8,8 @@
 
 
 {% block head %}
-    <script src="{{ static('js/line_chart_2_axes.js') }}" api-data="{{ url('crypto:api_data_index', args=[user.slug,]) }}"></script>
-    <script src="{{ static('js/pie_chart.js') }}" api-data="{{ url('crypto:api_data_assets', args=[user.slug,]) }}"></script>
+    <script src="{{ static('js/line_chart_2_axes.js') }}" api-data="{{ url('crypto:api_data_index') }}"></script>
+    <script src="{{ static('js/pie_chart.js') }}" api-data="{{ url('crypto:api_data_assets') }}"></script>
 {% endblock %}
 
 
@@ -25,20 +25,23 @@
 {% block main %}
 
 
-    {% import "modules/table.njk" as table %}
-    {% import "modules/buttons.njk" as buttons %}
-    {% import "modules/button.njk" as button %}
+    {% import "modules/table.njk" as tg %}
+    {% import "modules/button.njk" as bg %}
     {% import "modules/card.njk" as cg %}
-    {% import "modules/timespan.njk" as tg %}
+    {% import "modules/timespan.njk" as tsg %}
+    {% import "modules/modal.njk" as mg %}
 
     
-    {%- set addAccountButton=button.modalButton("Add Account", "#addAccount") -%}
-    {%- set deleteAccountButton=button.modalButton("Delete Account", "#deleteAccount") -%}
-    {%- set addAssetButton=button.modalButton("Add Asset", "#addAsset") -%}
-    {%- set removeAssetButton=button.modalButton("Remove Asset", "#removeAsset") -%}
-    {%- set addPrivateAssetButton=button.modalButton("Add Private Asset", "#addPrivateAsset") -%}
-    {%- set deletePrivateAssetButton=button.modalButton("Delete Private Asset", "#deletePrivateAsset") -%}
-    {%- set updateButton=button.hrefButton("Update", url("crypto:update_movies", args=[user.slug])) -%}
+    {%- set addAccountButton=bg.modalButton("Add Account", "#addAccount") -%}
+    {%- set addTradeButton=bg.modalButton("Buy/Sell", "#addTrade") -%}
+    {%- set addTransactionButton=bg.modalButton("Send/Receive", "#addTransaction") -%}
+    {%- set deleteAccountButton=bg.modalButton("Delete Account", "#deleteAccount") -%}
+    {%- set addAssetButton=bg.modalButton("Add Asset", "#addAsset") -%}
+    {%- set removeAssetButton=bg.modalButton("Remove Asset", "#removeAsset") -%}
+    {%- set addPrivateAssetButton=bg.modalButton("Add Private Asset", "") -%}
+    {%- set deletePrivateAssetButton=bg.modalButton("Delete Private Asset", "") -%}
+    {%- set addTimespanButton=bg.modalButton("Add Timespan", "#addTimespan") -%}
+    {%- set updateButton=bg.hrefButton("Update", url("crypto:update_movies", args=[])) -%}
 
 
     <div class="vs-1"></div>
@@ -95,29 +98,20 @@
     
     
     <div class="wrapper console-target is-hidden console_accounts">
-        {{ hg.smallLmHeading("Stats", buttons=[addAccountButton, deleteAccountButton]) }}
+        {{ hg.smallLmHeading("Accounts", buttons=[addAccountButton, deleteAccountButton]) }}
         <table class="table">
-            {{ table.head(["Account", "Assets Value", "Action"]) }}
+            {{ tg.head(["Account", "Assets Value", "Action"]) }}
             <tbody class="table--body">
                 {% for account, movie in accounts_movies %}
-                    {% set name %}
-                        <a href="{{ url('crypto:account', args=[user.slug, account.slug, ]) }}" class="link-bold">{{ account.name }}</a>
-                    {% endset %} 
-                    {% set value %}
-                        {{ movie.get_values(user, ["v",])["v"] }} {{ user.currency }}
-                    {% endset %}
                     {% set tablebuttons %}
-                        <div class="d-flex flex-row">
-                            {% set data %}
-                                {% raw %} { {% endraw %}
-                                    'pk': '{{ account.pk }}', 
-                                    'name': '{{ account.name }}'
-                                {% raw %} } {% endraw %}
-                            {% endset %}
-                            {{ buttons.buttonModalNew(text="Edit", dataTarget="#editAccount", data=data) }}
-                        </div>  
+                        {{ bg.modalButton("Edit", "#editAccount"+account.slug) }}
+                        {{ mg.djangoModal("Edit Account", "editAccount"+account.slug, url("crypto:edit_account", args=[account.slug])) }}
                     {% endset %} 
-                    {{ table.row([name|safe, value, tablebuttons | safe]) }}
+                    {% set name %}
+                        <a href="{{ url('crypto:account', args=[ account.slug, ]) }}" class="link-bold">{{ account.name }}</a>
+                    {% endset %} 
+                    {%- set values=movie.get_values(user, ["v",]) -%}
+                    {{ tg.row([name|safe, values.v, tablebuttons|safe]) }}
                 {% endfor %}
             </tbody>
         </table>
@@ -127,11 +121,15 @@
     <div class="wrapper console-target is-hidden console_assets">
         {{ hg.smallLmHeading("Assets", buttons=[addAssetButton, removeAssetButton, addPrivateAssetButton, deletePrivateAssetButton]) }}
         <table class="table">
-            {{ table.head(["Asset", "Current Price", "Amount", "Value", "Profit", "Yield", "Action"]) }}
+            {{ tg.head(["Asset", "Current Price", "Amount", "Value", "Profit", "Yield", "Action"]) }}
             <tbody class="table--body">
                 {% for asset, movie in assets_movies %}
                     {% set tablebuttons %}
-                        <div class="d-flex flex-row">
+                        <div class="table--buttons">
+                            {{ addTradeButton }}
+                            <div class="hs-1"></div>
+                            {{ addTransactionButton }}
+                            {#
                             {{ buttons.buttonModal(text="Buy/Sell", dataTarget="#addTrade", data="pk=" + asset.pk|string) }} 
                             {% if asset.private_symbol %}
                                 <div class="hs-1"></div>
@@ -144,13 +142,14 @@
                                 {% endset %}
                                 {{ buttons.buttonModalNew(text="Edit", dataTarget="#editPrivateAsset", data=data) }} 
                             {% endif %}
+                            #}
                         </div> 
                     {% endset %}
                     {% set name %}
-                        <a href="{{ url('crypto:asset', args=[user.slug, asset.slug, ]) }}" class="link-bold">{{ asset.get_name() }}</a>
+                        <a href="{{ url('crypto:asset', args=[ asset.slug, ]) }}" class="link-bold">{{ asset.get_name() }}</a>
                     {% endset %} 
                     {%- set assetData = movie.get_values(user, ["p", "ca", "v", "g", "cr"]) -%}
-                    {{ table.row([name, assetData.p, assetData.ca, assetData.v, assetData.g, assetData.cr, tablebuttons | safe]) }}
+                    {{ tg.row([name, assetData.p, assetData.ca, assetData.v, assetData.g, assetData.cr, tablebuttons | safe]) }}
                 {% endfor %}
             </tbody>
         </table>
@@ -158,29 +157,36 @@
 
 
     <div class="wrapper console-target is-hidden console_timespans">
-        {{ hg.smallLmHeading("Timespans") }}
-        <div class="vs-1"></div>
-        <ul class="timespans">
-            {% for ts in timespans %} 
-                {{ tg.timespan(ts, depot, url('crypto:set_timespan', args=[user.slug,]), url('crypto:delete_timespan', args=[user.slug,]), reverse, csrf_token) }}
-            {% endfor %}
-            {{ tg.createTimespan(False, url('crypto:add_timespan', args=[user.slug,]), reverse, csrf_token) }}
-        </ul>
+        {{ hg.smallLmHeading("Timespans", buttons=[addTimespanButton]) }}
+        <table class="table">
+            {{ tg.head(["Name", "Start Date", "End Date", "Action"]) }}
+            <tbody class="table--body">
+                {% for timespan in timespans %}
+                    {% set tablebuttons %}
+                        <div class="table--buttons">
+                            {{ tsg.setActiveCryptoButton(timespan, csrf_token) }}
+                            <div class="hs-1"></div>
+                            {{ tsg.deleteButton(timespan, csrf_token) }}
+                        </div>
+                        {{ mg.djangoModal("Delete", "deleteTimespan"+timespan.pk|string, url("crypto:delete_timespan", args=[timespan.pk])) }}
+                    {% endset %} 
+                    {{ tg.row([timespan.name, timespan.start_date, timespan.end_date, tablebuttons|safe]) }}
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 
 
 {% endblock %} 
 
 
-{% block modals %}
-    {% import "modules/crypto/modals.njk" as modals %}
-    {{ modals.addAccountModal(user, csrf_token) }}
-    {{ modals.editAccountModal(user, csrf_token) }}
-    {{ modals.deleteAccountModal(user, accounts, csrf_token) }}
-    {{ modals.addAssetModal(user, asset_symbol_choices, csrf_token) }}
-    {{ modals.addPrivateAssetModal(user, csrf_token) }}
-    {{ modals.editPrivateAssetModal(user, csrf_token) }}
-    {{ modals.removeAssetModal(user, public_assets, csrf_token) }}
-    {{ modals.deletePrivateAssetModal(user, private_assets, csrf_token) }}
-    {{ modals.addTradeModal(user, accounts, assets, csrf_token) }}
+{% block modals %}   
+    {% import "modules/modal.njk" as mg %}
+    {{ mg.djangoModal("Add Timespan", "addTimespan", url("crypto:add_timespan")) }}
+    {{ mg.djangoModal("Add Account", "addAccount", url("crypto:add_account")) }}
+    {{ mg.djangoModal("Delete Account", "deleteAccount", url("crypto:delete_account")) }}
+    {{ mg.djangoModal("Add Trade", "addTrade", url("crypto:add_trade")) }}
+    {{ mg.djangoModal("Add Transaction", "addTransaction", url("crypto:add_transaction")) }}
+    {{ mg.djangoModal("Add Asset", "addAsset", url("crypto:add_asset")) }}
+    {{ mg.djangoModal("Remove Asset", "removeAsset", url("crypto:remove_asset")) }}
 {% endblock %}

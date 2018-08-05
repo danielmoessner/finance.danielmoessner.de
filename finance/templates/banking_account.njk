@@ -74,7 +74,7 @@
 	<div class="wrapper console-target is-hidden console_changes">
         {{ hg.smallLmHeading("Changes", buttons=[addChangeButton]) }}
 		<table class="table">
-            {{ tg.head(["Date", "Category", "Description", "Change", "Action"]) }}
+            {{ tg.head(["Date", "Category", "Description", "Change", "Balance", "Action"]) }}
             <tbody class="table--body">
                 {% for change in changes %}
                     {% set tablebuttons %}
@@ -86,7 +86,7 @@
                         {{ mg.djangoModal("Edit Change", "editChange"+change.pk|string, url("banking:edit_change", args=[account.slug, change.pk])) }}
                         {{ mg.djangoModal("Delete Change", "deleteChange"+change.pk|string, url("banking:delete_change", args=[account.slug, change.pk])) }}
                     {% endset %} 
-                    {{ tg.row([change.get_date(user), change.category, change.get_description(), change.change, tablebuttons | safe]) }}
+                    {{ tg.row([change.get_date(user), change.category, change.get_description(), change.change, change.get_balance(movie), tablebuttons | safe]) }}
                 {% endfor %}
             </tbody>
         </table>

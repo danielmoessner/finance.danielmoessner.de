@@ -21,10 +21,6 @@ class Depot(CoreDepot):
     user = models.ForeignKey(StandardUser, editable=False, related_name="crypto_depots",
                              on_delete=models.CASCADE)
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        super(Depot, self).save(force_insert, force_update, using, update_fields)
-        self.get_movie().update_all(disable_update=True)
-
     # getters
     def get_movie(self):
         movie, created = Movie.objects.get_or_create(depot=self, account=None, asset=None)
@@ -33,10 +29,6 @@ class Depot(CoreDepot):
 
 class Account(CoreAccount):
     depot = models.ForeignKey(Depot, on_delete=models.PROTECT, related_name="accounts")
-
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        super(Account, self).save(force_insert, force_update, using, update_fields)
-        self.get_movie().update_all(disable_update=True)
 
     # getters
     def get_movie(self):
@@ -77,6 +69,9 @@ class Asset(models.Model):
         return "{}".format(asset_symbol)
 
     # getters
+    def get_is_private(self):
+        return False if self.symbol else True
+
     def get_movie(self, depot):
         return self.movies.get(depot=depot, account=None)
 
@@ -268,6 +263,20 @@ class Movie(models.Model):
         return data
 
     # update
+    @staticmethod
+    def init_movies(sender, instance, **kwargs):
+        if sender is Account:
+            depot = instance.depot
+            for asset in depot.assets.exclude(symbol=depot.user.currency):
+                Movie.objects.get_or_create(depot=depot, account=instance, asset=asset)
+            Movie.objects.get_or_create(depot=depot, account=instance, asset=None)
+        elif sender is Asset:
+            for depot in instance.depots.all():
+                Movie.objects.get_or_create(depot=depot, account=None, asset=instance)
+        elif sender is Depot:
+            depot = instance
+            Movie.objects.get_or_create(depot=depot, account=None, category=None)
+
     @staticmethod
     def init_update(sender, instance, **kwargs):
         if sender is Price:
@@ -709,3 +718,6 @@ post_save.connect(Movie.init_update, sender=Trade)
 post_delete.connect(Movie.init_update, sender=Trade)
 post_save.connect(Movie.init_update, sender=Transaction)
 post_delete.connect(Movie.init_update, sender=Transaction)
+post_save.connect(Movie.init_movies, sender=Account)
+post_save.connect(Movie.init_movies, sender=Asset)
+post_save.connect(Movie.init_movies, sender=Depot)

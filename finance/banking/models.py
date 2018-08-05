@@ -209,14 +209,16 @@ class Movie(models.Model):
     # update
     @staticmethod
     def init_movies(sender, instance, **kwargs):
-        depot = instance.depot
         if sender is Account:
+            depot = instance.depot
             for category in Category.objects.all():
                 Movie.objects.get_or_create(depot=depot, account=instance, category=category)
             Movie.objects.get_or_create(depot=depot, account=instance, category=None)
         elif sender is Category:
+            depot = instance.depot
             Movie.objects.get_or_create(depot=depot, account=None, category=instance)
         elif sender is Depot:
+            depot = instance
             Movie.objects.get_or_create(depot=depot, account=None, category=None)
 
     @staticmethod

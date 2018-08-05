@@ -8,7 +8,7 @@
 
 
 {% block head %}
-	<script type="text/javascript" src="{{ static('js/pie_chart.js') }}" api-data="{{ url('crypto:api_data_account', args=[user.slug, account.slug, ]) }}"></script>
+	<script type="text/javascript" src="{{ static('js/pie_chart.js') }}" api-data="{{ url('crypto:api_data_account', args=[account.slug]) }}"></script>
 {% endblock %}
 
 
@@ -23,13 +23,14 @@
 {% block main %}
 
 
-    {% import "modules/table.njk" as table %}
-    {% import "modules/buttons.njk" as buttons %}
+    {% import "modules/table.njk" as tg %}
     {% import "modules/card.njk" as cg %}
-    {% import "modules/button.njk" as button %}
+    {% import "modules/button.njk" as bg %}
+    {% import "modules/modal.njk" as mg %}
    	
 
-   	{%- set addTradeButton=button.modalButton("Buy/Sell Asset", "#addTrade") -%}
+   	{%- set addTradeButton=bg.modalButton("Buy/Sell Asset", "#addTrade") -%}
+   	{%- set addTransactionButton=bg.modalButton("Send/Receive Asset", "#addTransaction") -%}
 	
 
 	<div class="vs-1"></div>
@@ -79,18 +80,13 @@
 	
 	
 	<div class="wrapper console-target is-hidden console_assets">
-        {{ hg.smallLmHeading("Assets", buttons=[addTradeButton]) }}
+        {{ hg.smallLmHeading("Assets", buttons=[addTradeButton, addTransactionButton]) }}
 		<table class="table ">
-		    {{ table.head(["Asset", "Current Price", "Amount", "Value", "Action"]) }}
+		    {{ tg.head(["Asset", "Current Price", "Amount", "Value"]) }}
 		    <tbody class="table--body">
 		        {% for asset, movie in assets_movies %}
-		            {% set tablebuttons %}
-		                <div class="d-flex flex-row">
-		                	{{ buttons.buttonModal(text="Send", dataTarget="#addTransaction", data="assetpk=" + asset.pk|string) }}
-		                </div> 
-		            {% endset %}
 		            {%- set assetData = movie.get_values(user, ["p", "ca", "v"]) -%}
-                    {{ table.row([ asset.get_name(), assetData.p, assetData.ca, assetData.v, tablebuttons | safe]) }}
+                    {{ tg.row([asset.get_name(), assetData.p, assetData.ca, assetData.v]) }}
 		        {% endfor %}
 		    </tbody>
 		</table>
@@ -98,36 +94,21 @@
 	
 	
 	<div class="wrapper console-target is-hidden console_trades">
-        {{ hg.smallLmHeading("Trades") }}
+        {{ hg.smallLmHeading("Trades", buttons=[addTradeButton]) }}
 		<table class="table ">
-		    {{ table.head(["Date", "Account", "Buy", "Buy Asset", "Sell", "Sell Asset", "Fees", "Fees Asset", "Action"]) }}
+		    {{ tg.head(["Date", "Account", "Buy", "Buy Asset", "Sell", "Sell Asset", "Fees", "Fees Asset", "Action"]) }}
 		    <tbody class="table--body">
 		        {% for trade in trades %}
 		            {% set tablebuttons %}
-		                <div class="d-flex flex-row">
-		                	{% set data %}
-		                        {% raw %} { {% endraw %}
-		                            'pk': '{{ trade.pk }}', 
-		                            'date': '{{ trade.date }}',
-		                            'account': '{{ trade.account }}',
-		                            'buy_amount': '{{ trade.buy_amount }}',
-		                            'buy_asset': '{{ trade.buy_asset }}',
-		                            'sell_amount': '{{ trade.sell_amount }}',
-		                            'sell_asset': '{{ trade.sell_asset }}',
-		                            'fees': '{{ trade.fees }}',
-		                            'fees_asset': '{{ trade.fees_asset }}'
-		                        {% raw %} } {% endraw %}
-		                    {% endset %}
-		                    {{ buttons.buttonModalNew(text="Edit", dataTarget="#editTrade", data=data) }}
+		                <div class="table--buttons">
+		                    {{ bg.modalButton("Edit", "#editTrade"+trade.pk|string) }}
 		                    <div class="hs-1"></div>
-		                	<form method="POST" action="{{ url('crypto:delete_trade', args=[user.slug, account.slug]) }}">
-							   	<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-							   	<input type="hidden" name="trade" value="{{ trade.pk }}">
-							   	<input type="submit" class='btn btn-sm btn-danger' value="Delete">
-							</form>
+		                	{{ bg.modalButton("Delete", "#deleteTrade"+trade.pk|string) }}
 		                </div> 
+		                {{ mg.djangoModal("Edit Trade", "editTrade"+trade.pk|string, url("crypto:edit_trade", args=[trade.pk])) }}
+		                {{ mg.djangoModal("Delete Trade", "deleteTrade"+trade.pk|string, url("crypto:delete_trade", args=[trade.pk])) }}
 		            {% endset %}
-		            {{ table.row([trade.date, trade.account, trade.buy_amount, trade.buy_asset, trade.sell_amount, trade.sell_asset, trade.fees, trade.fees_asset, tablebuttons | safe]) }}
+		            {{ tg.row([trade.date, trade.account, trade.buy_amount, trade.buy_asset, trade.sell_amount, trade.sell_asset, trade.fees, trade.fees_asset, tablebuttons|safe]) }}
 		        {% endfor %}
 		    </tbody>
 		</table>
@@ -135,33 +116,21 @@
 
 
 	<div class="wrapper console-target is-hidden console_transactions">
-        {{ hg.smallLmHeading("Transactions") }}
+        {{ hg.smallLmHeading("Transactions", buttons=[addTransactionButton]) }}
 		<table class="table ">
-		    {{ table.head(["Date", "Asset", "From Account", "To Account", "Amount", "Fees", "Action"]) }}
+		    {{ tg.head(["Date", "Asset", "From Account", "To Account", "Amount", "Fees", "Action"]) }}
 		    <tbody class="table--body">
 		        {% for transaction in transactions %}
 		            {% set tablebuttons %}
-		                <div class="d-flex flex-row">
-		                	{% set data %}
-		                        {% raw %} { {% endraw %}
-		                            'pk': '{{ transaction.pk }}', 
-		                            'date': '{{ transaction.date }}',
-		                            'from_account': '{{ transaction.from_account }}',
-		                            'to_account': '{{ transaction.to_account }}',
-		                            'amount': '{{ transaction.amount }}',
-		                            'fees': '{{ transaction.fees }}'
-		                        {% raw %} } {% endraw %}
-		                    {% endset %}
-		                    {{ buttons.buttonModalNew(text="Edit", dataTarget="#editTrade", data=data) }}
+		                <div class="table--buttons">
+		             		{{ bg.modalButton("Edit", "#editTransaction"+transaction.pk|string) }}
 		                    <div class="hs-1"></div>
-		                	<form method="POST" action="{{ url('crypto:delete_transaction', args=[user.slug, account.slug]) }}">
-							   	<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-							   	<input type="hidden" name="pk" value="{{ transaction.pk }}">
-							   	<input type="submit" class='btn btn-sm btn-danger' value="Delete">
-							</form>
+		                	{{ bg.modalButton("Delete", "#deleteTransaction"+transaction.pk|string) }}
 		                </div>
+		                {{ mg.djangoModal("Edit Transaction", "editTransaction"+transaction.pk|string, url("crypto:edit_transaction", args=[transaction.pk])) }}
+		                {{ mg.djangoModal("Delete Transaction", "deleteTransaction"+transaction.pk|string, url("crypto:delete_transaction", args=[transaction.pk])) }}
 		            {% endset %}
-		            {{ table.row([transaction.date, transaction.asset, transaction.from_account, transaction.to_account, transaction.amount, transaction.fees, tablebuttons | safe]) }}
+		            {{ tg.row([transaction.date, transaction.asset, transaction.from_account, transaction.to_account, transaction.amount, transaction.fees, tablebuttons | safe]) }}
 		        {% endfor %}
 		    </tbody>
 		</table>
@@ -172,8 +141,7 @@
 
 
 {% block modals %}
-	{% import "modules/crypto/modals.njk" as modals %}
-	{{ modals.addTransactionModal(user, account, accounts, csrf_token) }}
-	{{ modals.addTradeModal(user, accounts, assets, csrf_token) }}
-	{{ modals.editTradeModal(user, account, accounts, assets, csrf_token) }}
+	{% import "modules/modal.njk" as mg %}
+    {{ mg.djangoModal("Add Trade", "addTrade", url("crypto:add_trade", args=[account.slug])) }}
+    {{ mg.djangoModal("Add Transaction", "addTransaction", url("crypto:add_transaction")) }}
 {% endblock %}

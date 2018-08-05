@@ -30,7 +30,7 @@ class UpdateDepotForm(forms.ModelForm):
         )
 
 
-# ACCOUNT
+# account
 class AccountForm(forms.ModelForm):
     class Meta:
         model = Account
@@ -60,7 +60,7 @@ class AccountSelectForm(forms.Form):
         self.fields["account"].queryset = depot.accounts.all()
 
 
-# CATEGORY
+# category
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
@@ -91,7 +91,7 @@ class CategorySelectForm(forms.Form):
         self.fields["category"].queryset = depot.categories.all()
 
 
-# CHANGE
+# change
 class ChangeForm(forms.ModelForm):
     date = forms.DateTimeField(widget=forms.DateTimeInput(attrs={"type": "datetime-local"},
                                                           format="%Y-%m-%dT%H:%M"),
@@ -114,27 +114,7 @@ class ChangeForm(forms.ModelForm):
         self.fields["date"].initial = datetime.now()
 
 
-class ChangeWoAccountForm(forms.ModelForm):
-    date = forms.DateTimeField(widget=forms.DateTimeInput(attrs={"type": "datetime-local"},
-                                                          format="%Y-%m-%dT%H:%M"),
-                               input_formats=["%Y-%m-%dT%H:%M"], label="Date")
-
-    class Meta:
-        model = Change
-        fields = (
-            "date",
-            "category",
-            "description",
-            "change"
-        )
-
-    def __init__(self, depot, *args, **kwargs):
-        super(ChangeWoAccountForm, self).__init__(*args, **kwargs)
-        self.fields["category"].queryset = depot.categories.all()
-        self.fields["date"].initial = datetime.now()
-
-
-# TIMESPAN
+# timespan
 class TimespanForm(forms.ModelForm):
     start_date = forms.DateTimeField(widget=forms.DateTimeInput(
         attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),

@@ -24,7 +24,7 @@ urlpatterns = [
     url(r'^$', RedirectView.as_view(url='/user/signin/')),
     url(r'^user/', include('finance.users.urls')),
     url(r'^banking/', include('finance.banking.urls')),
-    url(r'^(?P<user_slug>[a-zA-Z@.+_-]*)/crypto/', include('finance.crypto.urls')),
+    url(r'^crypto/', include('finance.crypto.urls')),
 ]
 
 

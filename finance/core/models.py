@@ -1,7 +1,4 @@
 from django.db import models
-from django.core.exceptions import ObjectDoesNotExist
-
-from finance.core.utils import create_slug
 
 
 class Timespan(models.Model):
@@ -44,8 +41,3 @@ class Account(models.Model):
 
     def __str__(self):
         return self.name
-
-    # def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-    #     if not self.slug:
-    #         self.slug = create_slug(self)
-    #     super(Account, self).save(force_insert, force_update, using, update_fields)
