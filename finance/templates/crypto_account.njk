@@ -108,7 +108,7 @@
 		                {{ mg.djangoModal("Edit Trade", "editTrade"+trade.pk|string, url("crypto:edit_trade", args=[trade.pk])) }}
 		                {{ mg.djangoModal("Delete Trade", "deleteTrade"+trade.pk|string, url("crypto:delete_trade", args=[trade.pk])) }}
 		            {% endset %}
-		            {{ tg.row([trade.date, trade.account, trade.buy_amount, trade.buy_asset, trade.sell_amount, trade.sell_asset, trade.fees, trade.fees_asset, tablebuttons|safe]) }}
+		            {{ tg.row([trade.get_date(), trade.account, trade.buy_amount, trade.buy_asset, trade.sell_amount, trade.sell_asset, trade.fees, trade.fees_asset, tablebuttons|safe]) }}
 		        {% endfor %}
 		    </tbody>
 		</table>
@@ -130,7 +130,7 @@
 		                {{ mg.djangoModal("Edit Transaction", "editTransaction"+transaction.pk|string, url("crypto:edit_transaction", args=[transaction.pk])) }}
 		                {{ mg.djangoModal("Delete Transaction", "deleteTransaction"+transaction.pk|string, url("crypto:delete_transaction", args=[transaction.pk])) }}
 		            {% endset %}
-		            {{ tg.row([transaction.date, transaction.asset, transaction.from_account, transaction.to_account, transaction.amount, transaction.fees, tablebuttons | safe]) }}
+		            {{ tg.row([transaction.get_date(), transaction.asset, transaction.from_account, transaction.to_account, transaction.amount, transaction.fees, tablebuttons | safe]) }}
 		        {% endfor %}
 		    </tbody>
 		</table>

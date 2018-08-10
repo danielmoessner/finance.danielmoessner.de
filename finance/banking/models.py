@@ -27,8 +27,8 @@ def init_banking(user):
                                         description="This category is for test purposes only.")
     category3 = Category.objects.create(depot=depot, name="Category #3",
                                         description="This category is for test purposes only.")
-    timespan = Timespan.objects.create(depot=depot, name="Default Timespan", start_date=None,
-                                       end_date=None, period=None, is_active=True)
+    Timespan.objects.create(depot=depot, name="Default Timespan", start_date=None, end_date=None, period=None,
+                            is_active=True)
     changes = list()
     for i in range(0, 100):
         random_number = random.randint(1, 2)
@@ -115,7 +115,7 @@ class Change(models.Model):
 
     def get_description(self):
         description = self.description
-        if len(self.description) > 35:
+        if len(str(self.description)) > 35:
             description = self.description[:35] + "..."
         return description
 

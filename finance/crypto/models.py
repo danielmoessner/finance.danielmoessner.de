@@ -1,6 +1,7 @@
 from django.db.models.signals import post_save, post_delete
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
+from django.utils import timezone
 from django.db import models
 
 from finance.users.models import StandardUser
@@ -117,10 +118,9 @@ class Trade(models.Model):
         return "{} {} {} {} {} {} {} {}".format(date, account, buy_amount, buy_asset, sell_amount,
                                                 sell_asset, fees, fees_asset)
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        if self.buy_asset != self.fees_asset and self.sell_asset != self.fees_asset:
-            raise TypeError("The fees asset must be the same as the buy or the sell asset")
-        super(Trade, self).save(force_insert, force_update, using, update_fields)
+    # getters
+    def get_date(self):
+        return timezone.localtime(self.date).strftime("%d.%m.%Y %H:%M")
 
 
 class Transaction(models.Model):
@@ -132,6 +132,10 @@ class Transaction(models.Model):
                                    on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=20, decimal_places=8)
     fees = models.DecimalField(max_digits=20, decimal_places=8)
+
+    # getters
+    def get_date(self):
+        return timezone.localtime(self.date).strftime("%d.%m.%Y %H:%M")
 
 
 class Price(models.Model):
@@ -148,7 +152,7 @@ class Price(models.Model):
 
     # getters
     def get_date(self):
-        return str(self.date.strftime("%Y-%m-%d %H:%M"))
+        return timezone.localtime(self.date).strftime("%d.%m.%Y")
 
     # clean
     @staticmethod
@@ -169,6 +173,13 @@ class Price(models.Model):
 class Timespan(CoreTimespan):
     depot = models.ForeignKey(Depot, editable=False, related_name="timespans",
                               on_delete=models.CASCADE)
+
+    # getters
+    def get_start_date(self):
+        return timezone.localtime(self.start_date).strftime("%d.%m.%Y %H:%M") if self.start_date else None
+
+    def get_end_date(self):
+        return timezone.localtime(self.end_date).strftime("%d.%m.%Y %H:%M") if self.end_date else None
 
 
 class Movie(models.Model):
@@ -281,17 +292,20 @@ class Movie(models.Model):
     def init_update(sender, instance, **kwargs):
         if sender is Price:
             q1 = Q(asset=instance.asset)
-            movies = Movie.objects.filter(q1)
+            q2 = Q(asset=None, account=None)
+            movies = Movie.objects.filter(q1 | q2)
             movies.update(update_needed=True)
         elif sender is Transaction:
-            q1 = Q(account=instance.from_account) | Q(account=instance.to_account)
-            q2 = Q(asset=instance.asset, depot=instance.from_account.depot)
-            movies = Movie.objects.filter(q1 & q2)
+            q1 = Q(account=instance.from_account, asset=instance.asset)
+            q2 = Q(account=instance.to_account, asset=instance.asset)
+            q3 = Q(depot=instance.from_account.depot, account=None, asset=None)
+            movies = Movie.objects.filter(q1 | q2 | q3)
             movies.update(update_needed=True)
         elif sender is Trade:
-            q1 = Q(depot=instance.account.depot, account=instance.account)
-            q2 = Q(asset=instance.buy_asset) | Q(asset=instance.sell_asset)
-            movies = Movie.objects.filter(q1 & q2)
+            q1 = Q(asset=instance.buy_asset, account=instance.account)
+            q2 = Q(asset=instance.sell_asset, account=instance.account)
+            q3 = Q(depot=instance.account.depot, account=None, asset=None)
+            movies = Movie.objects.filter(q1 | q2 | q3)
             movies.update(update_needed=True)
 
     def update_all(self, force_update=False, disable_update=False):

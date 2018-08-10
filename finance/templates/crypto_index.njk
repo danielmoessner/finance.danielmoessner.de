@@ -170,7 +170,7 @@
                         </div>
                         {{ mg.djangoModal("Delete", "deleteTimespan"+timespan.pk|string, url("crypto:delete_timespan", args=[timespan.pk])) }}
                     {% endset %} 
-                    {{ tg.row([timespan.name, timespan.start_date, timespan.end_date, tablebuttons|safe]) }}
+                    {{ tg.row([timespan.name, timespan.get_start_date(), timespan.get_end_date(), tablebuttons|safe]) }}
                 {% endfor %}
             </tbody>
         </table>

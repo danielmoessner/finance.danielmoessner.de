@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.db import models
 
 
@@ -14,6 +15,7 @@ class Timespan(models.Model):
     def __str__(self):
         return str(self.name)
 
+    # getters
     @staticmethod
     def get_default_intelligent_timespan():  # this is useless but cant remove it cuz of migrations
         pts, created = Timespan.objects.get_or_create(
