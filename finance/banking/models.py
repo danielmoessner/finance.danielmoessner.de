@@ -258,7 +258,7 @@ class Movie(models.Model):
     def init_movies(sender, instance, **kwargs):
         if sender is Account:
             depot = instance.depot
-            for category in Category.objects.all():
+            for category in depot.categories.all():
                 Movie.objects.get_or_create(depot=depot, account=instance, category=category)
             Movie.objects.get_or_create(depot=depot, account=instance, category=None)
         elif sender is Category:

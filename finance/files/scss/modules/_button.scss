@@ -7,6 +7,9 @@
 		@extend .submit-button;
 	}
 }
+.submit-button:hover{
+	border-color: #23272b;
+}
 
 .cancel-button{
 	@extend .btn;
@@ -25,8 +28,15 @@
 .href-button{
 	@extend .btn;
 	@extend .btn-warning;
-	@extend .btn-sm;
 	background-color: #ff8716;
 	border-color: #ff8716;
 	cursor: pointer; 
+	&--small{
+		@extend .href-button;
+		@extend .btn-sm;
+	}
+}
+.href-button:hover{
+	background-color: #C76911;
+	border-color: #C76911;
 }
