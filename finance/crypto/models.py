@@ -159,11 +159,14 @@ class Asset(models.Model):
         return name
 
     def get_worth(self, date, amount):
-        prices = Price.objects.filter(asset=self)
+        prices = Price.objects.filter(asset=self)  # maybe improve that by getting values list
         dates = [price.date for price in prices]
-        closest_date = min(dates, key=lambda d: abs(d - date))
-        index = dates.index(closest_date)
-        price = float(prices[index].price)
+        if len(dates) > 0:
+            closest_date = min(dates, key=lambda d: abs(d - date))
+            index = dates.index(closest_date)
+            price = float(prices[index].price)
+        else:
+            price = 0
         return price * float(amount)
 
 

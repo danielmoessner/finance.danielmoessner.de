@@ -22,7 +22,6 @@ import json
 # messenger
 def messenger(request, depot):
     if depot.movies.filter(update_needed=True).exists():
-        print(depot.movies.filter(update_needed=True))
         hit = False
         tasks = Task.objects.filter(task_name="finance.banking.tasks.update_movies_task")
         for task in tasks:
