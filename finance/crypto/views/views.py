@@ -109,7 +109,7 @@ class AccountView(generic.TemplateView):
         context["movie"] = context["depot"].movies.get(account=context["account"], asset=None)
         # error
         if not len(context["assets"]) == len(asset_movies):
-            context["depot"].get_movie().update_all(disable_update=True)
+            context["depot"].reset_movies()
             context = self.get_context_data(**kwargs)
         # messages
         messenger(self.request, context["depot"])

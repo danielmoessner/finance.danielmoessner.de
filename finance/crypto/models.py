@@ -19,8 +19,7 @@ def init_crypto(user):
     from django.utils import timezone
     from datetime import timedelta
     import random
-    depot = Depot(name="Test Depot", user=user)
-    depot.save()
+    depot = Depot.objects.create(name="Test Depot", user=user)
     user.set_crypto_depot_active(depot)
     # account
     account1 = Account(depot=depot, name="Wallet 1")
@@ -56,8 +55,7 @@ def init_crypto(user):
     date = timezone.now() - timedelta(days=random.randint(1, 40))
     Transaction.objects.create(asset=eth, from_account=account2, to_account=account1, date=date, amount=4.05, fees=0.05)
     # timespan
-    Timespan.objects.create(depot=depot, name="Default Timespan", start_date=None, end_date=None, period=None,
-                            is_active=True)
+    Timespan.objects.create(depot=depot, name="Default Timespan", start_date=None, end_date=None, is_active=True)
     # movies
     depot.reset_movies()
 

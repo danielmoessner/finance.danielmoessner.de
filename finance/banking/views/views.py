@@ -20,13 +20,14 @@ import json
 
 
 # messenger
-def messenger(request):
-    if request.user.banking_depots.get(is_active=True).movies.filter(update_needed=True).exists():
+def messenger(request, depot):
+    if depot.movies.filter(update_needed=True).exists():
+        print(depot.movies.filter(update_needed=True))
         hit = False
         tasks = Task.objects.filter(task_name="finance.banking.tasks.update_movies_task")
         for task in tasks:
             depot_pk = json.loads(task.task_params)[0][0]
-            if depot_pk == request.user.banking_depots.get(is_active=True).pk:
+            if depot_pk == depot.pk:
                 text = "One update is scheduled. You will be notified as soon as it succeeded."
                 messages.info(request, text)
                 hit = True
@@ -38,12 +39,12 @@ def messenger(request):
         messages.success(request, text)
 
 
-# VIEWS
+# views
 class IndexView(generic.TemplateView):
     template_name = "banking_index.njk"
 
     def get_context_data(self, **kwargs):
-        messenger(self.request)
+        # general
         context = super(IndexView, self).get_context_data(**kwargs)
         context["user"] = self.request.user
         context["depot"] = context["user"].banking_depots.get(is_active=True)
@@ -51,10 +52,13 @@ class IndexView(generic.TemplateView):
         context["categories"] = context["depot"].categories.order_by("name")
         context["timespans"] = context["depot"].timespans.all()
         context["timespan"] = context["depot"].timespans.filter(is_active=True).first()
-
+        # specific
         context["movie"] = context["depot"].movies.get(account=None, category=None)
         context["accounts_movies"] = zip(context["accounts"], context["depot"].movies.filter(
             account__in=context["accounts"], category=None).order_by("account__name"))
+        # messages
+        messenger(self.request, context["depot"])
+        # return
         return context
 
 
@@ -62,7 +66,7 @@ class AccountView(generic.TemplateView):
     template_name = "banking_account.njk"
 
     def get_context_data(self, **kwargs):
-        messenger(self.request)
+        # general
         context = super(AccountView, self).get_context_data(**kwargs)
         context["user"] = self.request.user
         context["depot"] = context["user"].banking_depots.get(is_active=True)
@@ -70,11 +74,14 @@ class AccountView(generic.TemplateView):
         context["categories"] = context["depot"].categories.order_by("name")
         context["timespans"] = context["depot"].timespans.all()
         context["timespan"] = context["depot"].timespans.filter(is_active=True).first()
-
+        # specific
         context["account"] = context["depot"].accounts.get(slug=kwargs["slug"])
         context["movie"] = context["depot"].movies.get(account=context["account"], category=None)
         context["changes"] = context["account"].changes.order_by("-date", "-pk").select_related(
             "category")
+        # messages
+        messenger(self.request, context["depot"])
+        # return
         return context
 
 
@@ -82,7 +89,7 @@ class CategoryView(generic.TemplateView):
     template_name = "banking_category.njk"
 
     def get_context_data(self, **kwargs):
-        messenger(self.request)
+        # general
         context = super(CategoryView, self).get_context_data(**kwargs)
         context["user"] = self.request.user
         context["depot"] = context["user"].banking_depots.get(is_active=True)
@@ -90,18 +97,27 @@ class CategoryView(generic.TemplateView):
         context["categories"] = context["depot"].categories.order_by("name")
         context["timespans"] = context["depot"].timespans.all()
         context["timespan"] = context["depot"].timespans.filter(is_active=True).first()
-
+        # specific
         context["category"] = context["depot"].categories.get(slug=kwargs["slug"])
         context["movie"] = context["depot"].movies.get(account=None, category=context["category"])
         context["changes"] = context["category"].changes.order_by("-date", "-pk").select_related(
             "account")
+        # messages
+        messenger(self.request, context["depot"])
+        # return
         return context
 
 
-# FUNCTIONS
+# functions
 def update_movies(request):
     depot_pk = request.user.banking_depots.get(is_active=True).pk
     update_movies_task(depot_pk)
+    return HttpResponseRedirect(reverse_lazy("banking:index"))
+
+
+def reset_movies(request):
+    depot = request.user.banking_depots.get(is_active=True)
+    depot.reset_movies(delete=True)
     return HttpResponseRedirect(reverse_lazy("banking:index"))
 
 

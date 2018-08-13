@@ -96,14 +96,16 @@ class SettingsView(generic.TemplateView):
 def init_banking(request):
     user = request.user
     banking_init_banking(user)
-    user.update(banking_is_active=True)
+    user.banking_is_active = True
+    user.save()
     return HttpResponseRedirect(reverse_lazy("users:settings"))
 
 
 def init_crypto(request):
     user = request.user
     crypto_init_crypto(user)
-    user.update(crypto_is_active=True)
+    user.crypto_is_active = True
+    user.save()
     return HttpResponseRedirect(reverse_lazy("users:settings"))
 
 

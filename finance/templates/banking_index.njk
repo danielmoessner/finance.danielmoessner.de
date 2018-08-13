@@ -37,8 +37,9 @@
 	{%- set addCategoryButton=bg.modalButton("Add Category", "#addCategory") -%}
 	{%- set deleteCategoryButton=bg.modalButton("Delete Category", "#deleteCategory") -%}
 	{%- set addTimespanButton=bg.modalButton("Add Timespan", "#addTimespan") -%}
-	{%- set updateButton=bg.hrefButton("Update", url("banking:update_stats")) -%}
-	
+	{%- set updateButton=bg.hrefButton("Update", url("banking:update_movies")) -%}
+	{%- set resetButton=bg.hrefButton("Reset", url("banking:reset_movies")) -%}
+
 
 	<div class="vs-1"></div>
 
@@ -65,7 +66,7 @@
 
 	
 	<div class="wrapper console-target console_stats">
-		{{ hg.smallLmHeading("Stats", buttons=[updateButton]) }}
+		{{ hg.smallLmHeading("Stats", buttons=[updateButton, resetButton]) }}
 		<div class="vs-1"></div>
 		<div class="items-box">
 			{{ cg.statsCard("Total", movie.get_values(user, ["b",])["b"], ext=user.currency) }}

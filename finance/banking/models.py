@@ -14,32 +14,41 @@ import time
 
 
 def init_banking(user):
+    from finance.core.utils import create_slug
     from django.utils import timezone
     from datetime import timedelta
     import random
-    depot = Depot.objects.create(name="TestDepot", user=user)
+    depot = Depot.objects.create(name="Test Depot", user=user)
     user.set_banking_depot_active(depot)
     # account
-    account1 = Account.objects.create(depot=depot, name="Bank #1")
+    account1 = Account(depot=depot, name="Bank #1")
+    account1.slug = create_slug(account1)
+    account1.save()
     account2 = Account.objects.create(depot=depot, name="Bank #2")
+    account2.slug = create_slug(account1)
+    account2.save()
     # category
     category1 = Category.objects.create(depot=depot, name="Category #1",
                                         description="This category is for test purposes only.")
+    category1.slug = create_slug(category1)
+    category1.save()
     category2 = Category.objects.create(depot=depot, name="Category #2",
                                         description="This category is for test purposes only.")
+    category2.slug = create_slug(category2)
+    category2.save()
     category3 = Category.objects.create(depot=depot, name="Category #3",
                                         description="This category is for test purposes only.")
-    Timespan.objects.create(depot=depot, name="Default Timespan", start_date=None, end_date=None, period=None,
-                            is_active=True)
+    category3.slug = create_slug(category3)
+    category3.save()
     # changes
     changes = list()
-    for i in range(0, 100):
+    for i in range(0, 20):
         random_number = random.randint(1, 2)
         account = account1 if random_number == 1 else account2
         random_number = random.randint(1, 3)
         category = category1 if random_number == 1 else category2 if random_number == 2 \
             else category3
-        random_number = random.randint(-500, 1000)
+        random_number = random.randint(-400, 600)
         change = random_number
         random_number = random.randint(1, 90)
         date = timezone.now() - timedelta(days=random_number)
@@ -47,8 +56,10 @@ def init_banking(user):
         changes.append(Change(account=account, category=category, change=change, date=date,
                               description=description))
     Change.objects.bulk_create(changes)
-    # update
-    Movie.update_all(depot)
+    # timespan
+    Timespan.objects.create(depot=depot, name="Default Timespan", start_date=None, end_date=None, is_active=True)
+    # movies
+    depot.reset_movies()
 
 
 class Depot(CoreDepot):
@@ -59,9 +70,41 @@ class Depot(CoreDepot):
     def get_movie(self):
         return self.movies.get(account=None, category=None)
 
+    # movies
+    def reset_movies(self, delete=False):
+        if delete:
+            self.movies.all().delete()
+
+        for account in self.accounts.all():
+            for category in self.categories.all():
+                Movie.objects.get_or_create(depot=self, account=account, category=category)
+            Movie.objects.get_or_create(depot=self, account=account, category=None)
+        for category in self.categories.all():
+            Movie.objects.get_or_create(depot=self, account=None, category=category)
+        Movie.objects.get_or_create(depot=self, account=None, category=None)
+
+    def update_movies(self, force_update=False):
+        if force_update:
+            self.movies.update(update_needed=True)
+
+        accounts = self.accounts.all()
+        categories = self.categories.all()
+        for movie in Movie.objects.filter(depot=self, account__in=accounts, category__in=categories):
+            if movie.update_needed:
+                movie.update()
+        for movie in Movie.objects.filter(depot=self, account__in=accounts, category=None):
+            if movie.update_needed:
+                movie.update()
+        for movie in Movie.objects.filter(depot=self, account=None, category__in=categories):
+            if movie.update_needed:
+                movie.update()
+        for movie in Movie.objects.filter(depot=self, account=None, category=None):
+            if movie.update_needed:
+                movie.update()
+
 
 class Account(CoreAccount):
-    depot = models.ForeignKey(Depot, on_delete=models.PROTECT, related_name="accounts")
+    depot = models.ForeignKey(Depot, on_delete=models.CASCADE, related_name="accounts")
 
     # getters
     def get_movie(self):
@@ -96,7 +139,7 @@ class Change(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="changes")
     date = models.DateTimeField()
     category = models.ForeignKey(Category, related_name="changes", null=True,
-                                 on_delete=models.SET(Category.get_default_category))
+                                 on_delete=models.SET_NULL)
     description = models.TextField(blank=True)
     change = models.DecimalField(decimal_places=2, max_digits=15)
 
@@ -240,30 +283,6 @@ class Movie(models.Model):
                 date = min(instance.date, pictures.first().d)
             Picture.objects.filter(movie__in=movies, d__gte=date).delete()
             movies.update(update_needed=True)
-
-    @staticmethod
-    def update_all(depot, disable_update=False, force_update=False):
-        if force_update:
-            depot.movies.all().delete()
-
-        for account in depot.accounts.all():
-            for category in Category.objects.all():
-                movie, created = Movie.objects.get_or_create(depot=depot, account=account,
-                                                             category=category)
-                if not disable_update and movie.update_needed:
-                    movie.update()
-            movie, created = Movie.objects.get_or_create(depot=depot, account=account,
-                                                         category=None)
-            if not disable_update and movie.update_needed:
-                movie.update()
-        for category in depot.categories.all():
-            movie, created = Movie.objects.get_or_create(depot=depot, account=None,
-                                                         category=category)
-            if not disable_update and movie.update_needed:
-                movie.update()
-        movie, created = Movie.objects.get_or_create(depot=depot, account=None, category=None)
-        if not disable_update and movie.update_needed:
-            movie.update()
 
     def update(self):
         t2 = time.time()

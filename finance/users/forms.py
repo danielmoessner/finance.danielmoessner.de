@@ -51,7 +51,7 @@ class UpdateGeneralStandardUserForm(forms.ModelForm):
 
     def clean_currency(self):
         data = self.cleaned_data["currency"]
-        if data == "$":
+        if data == "USD":
             raise forms.ValidationError("USD is not enabled yet.")
         return data
 
