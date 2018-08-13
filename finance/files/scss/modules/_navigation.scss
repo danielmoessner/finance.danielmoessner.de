@@ -1,0 +1,24 @@
+.navigation{
+	@extend .nav;
+	@extend .flex-column;
+	position: fixed;
+	max-width: 230px;
+	width: 100%;
+	&--item{
+		@extend .nav-item;
+		border-radius: 0.25rem;
+		border: 0;
+		overflow: hidden;
+	}
+	&--link{
+		@extend .nav-link;
+		&--is-active{
+			background-color: $blue;
+		}
+	}
+	&--heading{
+		margin: 0;
+		@extend .nav-link; 
+		@extend .font-weight-bold;
+	}
+}

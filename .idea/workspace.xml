@@ -1,20 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2963ab0c-7f32-4334-befc-b04bf7fbeb4e" name="Default" comment="set app inactive if the last depot gets deleted">
+    <list default="true" id="2963ab0c-7f32-4334-befc-b04bf7fbeb4e" name="Default" comment="improved the banking update function and added a movie reset button + minor bug fixes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/db.sqlite3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/banking/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/finance/banking/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/banking/tasks.py" beforeDir="false" afterPath="$PROJECT_DIR$/finance/banking/tasks.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/banking/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/finance/banking/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/banking/views/form_views.py" beforeDir="false" afterPath="$PROJECT_DIR$/finance/banking/views/form_views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/banking/views/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/finance/banking/views/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/crypto/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/finance/crypto/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/crypto/views/form_views.py" beforeDir="false" afterPath="$PROJECT_DIR$/finance/crypto/views/form_views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/crypto/views/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/finance/crypto/views/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/templates/banking_index.njk" beforeDir="false" afterPath="$PROJECT_DIR$/finance/templates/banking_index.njk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/users/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/finance/users/forms.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finance/users/views/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/finance/users/views/views.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -39,12 +27,12 @@
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
           <entry key="py" value="4214" />
-          <entry key="txt" value="191" />
+          <entry key="txt" value="277" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="PLAIN_TEXT" value="191" />
+          <entry key="PLAIN_TEXT" value="277" />
           <entry key="Python" value="4214" />
         </counts>
       </usages-collector>
@@ -589,13 +577,6 @@
       <option name="presentableId" value="Default" />
       <updated>1508076092352</updated>
     </task>
-    <task id="LOCAL-00027" summary="trello #69">
-      <created>1528836040795</created>
-      <option name="number" value="00027" />
-      <option name="presentableId" value="LOCAL-00027" />
-      <option name="project" value="LOCAL" />
-      <updated>1528836040795</updated>
-    </task>
     <task id="LOCAL-00028" summary="trello #56">
       <created>1529182206900</created>
       <option name="number" value="00028" />
@@ -932,7 +913,14 @@
       <option name="project" value="LOCAL" />
       <updated>1534159435885</updated>
     </task>
-    <option name="localTasksCounter" value="76" />
+    <task id="LOCAL-00076" summary="improved the banking update function and added a movie reset button + minor bug fixes">
+      <created>1534162170989</created>
+      <option name="number" value="00076" />
+      <option name="presentableId" value="LOCAL-00076" />
+      <option name="project" value="LOCAL" />
+      <updated>1534162170990</updated>
+    </task>
+    <option name="localTasksCounter" value="77" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1009,7 +997,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added comment" />
     <MESSAGE value="trello #81 attempt try to pull prices automatically" />
     <MESSAGE value="bug showed the wrong total in banking stats pictures were ordered only by date" />
     <MESSAGE value="trello #81 quick fix try by adding styles cursor=pointer attribute" />
@@ -1034,7 +1021,8 @@
     <MESSAGE value="trade and transaction forms are checking if enough asset is available now" />
     <MESSAGE value="changed button colors and added crypto init func" />
     <MESSAGE value="set app inactive if the last depot gets deleted" />
-    <option name="LAST_COMMIT_MESSAGE" value="set app inactive if the last depot gets deleted" />
+    <MESSAGE value="improved the banking update function and added a movie reset button + minor bug fixes" />
+    <option name="LAST_COMMIT_MESSAGE" value="improved the banking update function and added a movie reset button + minor bug fixes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
