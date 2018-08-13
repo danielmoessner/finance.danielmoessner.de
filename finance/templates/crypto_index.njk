@@ -41,7 +41,8 @@
     {%- set addPrivateAssetButton=bg.modalButton("Add Private Asset", "") -%}
     {%- set deletePrivateAssetButton=bg.modalButton("Delete Private Asset", "") -%}
     {%- set addTimespanButton=bg.modalButton("Add Timespan", "#addTimespan") -%}
-    {%- set updateButton=bg.hrefButton("Update", url("crypto:update_movies", args=[])) -%}
+    {%- set updateButton=bg.hrefButton("Update", url("crypto:update_movies")) -%}
+    {%- set resetButton=bg.hrefButton("Reset", url("crypto:reset_movies")) -%}
 
 
     <div class="vs-1"></div>
@@ -69,7 +70,7 @@
  
     
     <div class="wrapper console-target console_stats">
-        {{ hg.smallLmHeading("Stats", buttons=[updateButton]) }}
+        {{ hg.smallLmHeading("Stats", buttons=[updateButton, resetButton]) }}
         <div class="vs-1"></div>
         <div class="items-box">
             {%- set depotData = movie.get_values(user, ["cs", "g", "v", "cr", "ttwr"]) -%}

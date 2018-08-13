@@ -15,7 +15,51 @@ import time
 
 
 def init_crypto(user):
-    pass
+    from finance.core.utils import create_slug
+    from django.utils import timezone
+    from datetime import timedelta
+    import random
+    depot = Depot(name="Test Depot", user=user)
+    depot.save()
+    user.set_crypto_depot_active(depot)
+    # account
+    account1 = Account(depot=depot, name="Wallet 1")
+    account1.slug = create_slug(account1)
+    account1.save()
+    account2 = Account(depot=depot, name="Exchange 1")
+    account2.slug = create_slug(account2)
+    account2.save()
+    # asset
+    btc = Asset.objects.get(symbol="BTC")
+    btc.depots.add(depot)
+    eth = Asset.objects.get(symbol="ETH")
+    eth.depots.add(depot)
+    ltc = Asset.objects.get(symbol="LTC")
+    ltc.depots.add(depot)
+    eur = Asset.objects.get(symbol="EUR")
+    # trade
+    date = timezone.now() - timedelta(days=random.randint(50, 300))
+    price = btc.get_worth(date, 1.1)
+    Trade.objects.create(account=account2, date=date, buy_amount=1.1, buy_asset=btc, fees=2.80, fees_asset=eur,
+                         sell_amount=price, sell_asset=eur)
+    date = timezone.now() - timedelta(days=random.randint(50, 300))
+    price = eth.get_worth(date, 4.1)
+    Trade.objects.create(account=account2, date=date, buy_amount=4.1, buy_asset=eth, fees=1.80, fees_asset=eur,
+                         sell_amount=price, sell_asset=eur)
+    date = timezone.now() - timedelta(days=random.randint(50, 300))
+    price = ltc.get_worth(date, 11.7)
+    Trade.objects.create(account=account2, date=date, buy_amount=11.7, buy_asset=ltc, fees=3.20, fees_asset=eur,
+                         sell_amount=price, sell_asset=eur)
+    # transaction
+    date = timezone.now() - timedelta(days=random.randint(1, 40))
+    Transaction.objects.create(asset=btc, from_account=account2, to_account=account1, date=date, amount=1.09, fees=0.01)
+    date = timezone.now() - timedelta(days=random.randint(1, 40))
+    Transaction.objects.create(asset=eth, from_account=account2, to_account=account1, date=date, amount=4.05, fees=0.05)
+    # timespan
+    Timespan.objects.create(depot=depot, name="Default Timespan", start_date=None, end_date=None, period=None,
+                            is_active=True)
+    # movies
+    depot.reset_movies()
 
 
 class Depot(CoreDepot):
@@ -27,9 +71,41 @@ class Depot(CoreDepot):
         movie, created = Movie.objects.get_or_create(depot=self, account=None, asset=None)
         return movie
 
+    # movies
+    def reset_movies(self, delete=False):
+        if delete:
+            self.movies.all().delete()
+
+        for account in self.accounts.all():
+            for asset in self.assets.exclude(symbol=self.user.currency):
+                Movie.objects.get_or_create(depot=self, account=account, asset=asset)
+            Movie.objects.get_or_create(depot=self, account=account, asset=None)
+        for asset in self.assets.exclude(symbol=self.user.currency):
+            Movie.objects.get_or_create(depot=self, account=None, asset=asset)
+        Movie.objects.get_or_create(depot=self, account=None, asset=None)
+
+    def update_movies(self, force_update=False):
+        if force_update:
+            self.movies.update(update_needed=True)
+
+        accounts = self.accounts.all()
+        assets = self.assets.exclude(symbol=self.user.currency)
+        for movie in Movie.objects.filter(depot=self, account__in=accounts, asset__in=assets):
+            if movie.update_needed:
+                movie.update()
+        for movie in Movie.objects.filter(depot=self, account__in=accounts, asset=None):
+            if movie.update_needed:
+                movie.update()
+        for movie in Movie.objects.filter(depot=self, account=None, asset__in=assets):
+            if movie.update_needed:
+                movie.update()
+        for movie in Movie.objects.filter(depot=self, account=None, asset=None):
+            if movie.update_needed:
+                movie.update()
+
 
 class Account(CoreAccount):
-    depot = models.ForeignKey(Depot, on_delete=models.PROTECT, related_name="accounts")
+    depot = models.ForeignKey(Depot, on_delete=models.CASCADE, related_name="accounts")
 
     # getters
     def get_movie(self):
@@ -89,8 +165,8 @@ class Asset(models.Model):
         dates = [price.date for price in prices]
         closest_date = min(dates, key=lambda d: abs(d - date))
         index = dates.index(closest_date)
-        price = prices[index].price
-        return float(price * amount)
+        price = float(prices[index].price)
+        return price * float(amount)
 
 
 class Trade(models.Model):
@@ -273,7 +349,7 @@ class Movie(models.Model):
 
         return data
 
-    # update
+    # init
     @staticmethod
     def init_movies(sender, instance, **kwargs):
         if sender is Account:
@@ -308,34 +384,7 @@ class Movie(models.Model):
             movies = Movie.objects.filter(q1 | q2 | q3)
             movies.update(update_needed=True)
 
-    def update_all(self, force_update=False, disable_update=False):
-        if force_update:
-            self.depot.movies.update(update_needed=True)
-
-        t1 = time.time()
-        for account in self.depot.accounts.all():
-            for asset in self.depot.assets.exclude(symbol=self.depot.user.currency):
-                movie, created = Movie.objects.get_or_create(depot=self.depot, account=account,
-                                                             asset=asset)
-                if movie.update_needed and not disable_update:
-                    movie.update()
-            movie, created = Movie.objects.get_or_create(depot=self.depot, account=account,
-                                                         asset=None)
-            if movie.update_needed and not disable_update:
-                movie.update()
-        for asset in self.depot.assets.exclude(symbol=self.depot.user.currency):
-            movie, created = Movie.objects.get_or_create(depot=self.depot, account=None,
-                                                         asset=asset)
-            if movie.update_needed and not disable_update:
-                movie.update()
-        movie, created = Movie.objects.get_or_create(depot=self.depot, account=None, asset=None)
-        if movie.update_needed and not disable_update:
-            movie.update()
-        t2 = time.time()
-
-        text = "This update took {} minutes.".format(round((t2 - t1) / 60, 2))
-        print(text)
-
+    # update
     def update(self):
         t1 = time.time()
         if self.account and self.asset:
@@ -476,8 +525,8 @@ class Movie(models.Model):
     # calc
     def calc_asset_depot(self):
         # buy_trades
-        buy_trades = Trade.objects.filter(buy_asset=self.asset).select_related("sell_asset",
-                                                                               "fees_asset")
+        buy_trades = Trade.objects.filter(buy_asset=self.asset, account__in=self.depot.accounts.all()).select_related(
+            "sell_asset", "fees_asset")
         buy_trades_values = buy_trades.values("date", "buy_amount")
         buy_trades_df = pd.DataFrame(list(buy_trades_values), dtype=np.float64)
         buy_trades_df["type"] = "BUY"
@@ -491,7 +540,8 @@ class Movie(models.Model):
         buy_trades_df.set_index("date", inplace=True)
 
         # sell_trades
-        sell_trades = Trade.objects.filter(sell_asset=self.asset).select_related("buy_asset")
+        sell_trades = Trade.objects.filter(sell_asset=self.asset, account__in=self.depot.accounts.all()).select_related(
+            "buy_asset")
         sell_trades_values = sell_trades.values("date", "sell_amount", "fees", "fees_asset",
                                                 "sell_asset")
         sell_trades_df = pd.DataFrame(list(sell_trades_values), dtype=np.float64)
@@ -507,7 +557,7 @@ class Movie(models.Model):
         sell_trades_df.set_index("date", inplace=True)
 
         # transactions
-        transactions = Transaction.objects.filter(asset=self.asset)
+        transactions = Transaction.objects.filter(asset=self.asset, from_account__in=self.depot.accounts.all())
         transactions = transactions.values("date", "fees")
         transactions_df = pd.DataFrame(list(transactions), dtype=np.float64)
         transactions_df["type"] = "TRANSACTION"

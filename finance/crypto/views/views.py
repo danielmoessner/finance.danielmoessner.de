@@ -3,6 +3,7 @@ from django.views import generic
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 
+from finance.crypto.models import Depot
 from finance.crypto.models import Asset
 from finance.crypto.tasks import update_movies_task
 
@@ -16,14 +17,14 @@ import json
 
 
 # messenger
-def messenger(request):
-    if request.user.crypto_depots.get(is_active=True).movies.exclude(
-            asset__symbol=request.user.currency).filter(update_needed=True).exists():
+def messenger(request, depot):
+    # update message
+    if depot.movies.exclude(asset__symbol=request.user.currency).filter(update_needed=True).exists():
         hit = False
         tasks = Task.objects.filter(task_name="finance.crypto.tasks.update_movies_task")
         for task in tasks:
             depot_pk = json.loads(task.task_params)[0][0]
-            if depot_pk == request.user.crypto_depots.get(is_active=True).pk:
+            if depot_pk == depot.pk:
                 text = "One update is scheduled. You will be notified as soon as it succeeded."
                 messages.info(request, text)
                 hit = True
@@ -40,10 +41,14 @@ class IndexView(generic.TemplateView):
     template_name = "crypto_index.njk"
 
     def get_context_data(self, **kwargs):
-        messenger(self.request)
         # general
         context = dict(user=self.request.user)
-        context["depot"] = context["user"].crypto_depots.get(is_active=True)
+        try:
+            context["depot"] = context["user"].crypto_depots.get(is_active=True)
+        except Depot.DoesNotExist:
+            messages.warning(self.request,
+                             "You need to set a crypto depot active. You can do that under Settings -> Crypto.")
+            context["depot"] = context["user"].crypto_depots.first()
         context["timespans"] = context["depot"].timespans.all()
         context["timespan"] = context["depot"].timespans.get(is_active=True)
         # accounts
@@ -64,8 +69,10 @@ class IndexView(generic.TemplateView):
         # error
         if (not len(context["assets"]) == len(asset_movies)) or \
                 (not len(context["accounts"]) == len(account_movies)):
-            context["depot"].get_movie().update_all(disable_update=True)
+            context["depot"].reset_movies()
             context = self.get_context_data(**kwargs)
+        # messages
+        messenger(self.request, context["depot"])
         # return
         return context
 
@@ -74,7 +81,6 @@ class AccountView(generic.TemplateView):
     template_name = "crypto_account.njk"
 
     def get_context_data(self, **kwargs):
-        messenger(self.request)
         # general
         context = dict(user=self.request.user)
         context["depot"] = context["user"].crypto_depots.get(is_active=True)
@@ -105,6 +111,8 @@ class AccountView(generic.TemplateView):
         if not len(context["assets"]) == len(asset_movies):
             context["depot"].get_movie().update_all(disable_update=True)
             context = self.get_context_data(**kwargs)
+        # messages
+        messenger(self.request, context["depot"])
         # return
         return context
 
@@ -113,7 +121,6 @@ class AssetView(generic.TemplateView):
     template_name = "crypto_asset.njk"
 
     def get_context_data(self, **kwargs):
-        messenger(self.request)
         # general
         context = dict(user=self.request.user)
         context["depot"] = context["user"].crypto_depots.get(is_active=True)
@@ -136,6 +143,8 @@ class AssetView(generic.TemplateView):
             "from_account", "to_account", "asset")
         # movie
         context["movie"] = context["depot"].movies.get(account=None, asset=context["asset"])
+        # messages
+        messenger(self.request, context["depot"])
         # return
         return context
 
@@ -144,6 +153,12 @@ class AssetView(generic.TemplateView):
 def update_movies(request, *args, **kwargs):
     depot_pk = request.user.crypto_depots.get(is_active=True).pk
     update_movies_task(depot_pk)
+    return HttpResponseRedirect(reverse_lazy("crypto:index"))
+
+
+def reset_movies(request, *args, **kwargs):
+    depot = request.user.crypto_depots.get(is_active=True)
+    depot.reset_movies(delete=True)
     return HttpResponseRedirect(reverse_lazy("crypto:index"))
 
 
@@ -200,7 +215,10 @@ class IndexData(APIView):
 
     def get(self, request, format=None):
         user = request.user
-        depot = user.crypto_depots.get(is_active=True)
+        try:
+            depot = user.crypto_depots.get(is_active=True)
+        except Depot.DoesNotExist:
+            depot = user.crypto_depots.first()
         timespan = depot.timespans.get(is_active=True)
         pi = depot.get_movie().get_data(timespan)
         return json_data(pi, p=False)
@@ -212,8 +230,10 @@ class AccountData(APIView):
 
     def get(self, request, slug, format=None):
         user = request.user
-        depot = user.crypto_depots.get(is_active=True)
-        # timespan = depot.timespans.get(is_active=True)
+        try:
+            depot = user.crypto_depots.get(is_active=True)
+        except Depot.DoesNotExist:
+            depot = user.crypto_depots.first()
         account = depot.accounts.get(slug=slug)
         assets = depot.assets.exclude(symbol=user.get_currency_display())
         movies = depot.movies.filter(account=account, asset__in=assets).select_related("asset")
@@ -244,7 +264,10 @@ class AssetsData(APIView):
 
     def get(self, request, format=None):
         user = request.user
-        depot = user.crypto_depots.get(is_active=True)
+        try:
+            depot = user.crypto_depots.get(is_active=True)
+        except Depot.DoesNotExist:
+            depot = user.crypto_depots.first()
         assets = depot.assets.exclude(symbol=user.get_currency_display())
         movies = depot.movies.filter(account=None, asset__in=assets).select_related("asset")
         datasets = list()
@@ -274,7 +297,10 @@ class AssetData(APIView):
 
     def get(self, request, slug, format=None):
         user = request.user
-        depot = user.crypto_depots.get(is_active=True)
+        try:
+            depot = user.crypto_depots.get(is_active=True)
+        except Depot.DoesNotExist:
+            depot = user.crypto_depots.first()
         asset = Asset.objects.get(slug=slug)
         timespan = depot.timespans.get(is_active=True)
         pi = asset.get_movie(depot).get_data(timespan)

@@ -1,32 +1,32 @@
-<ul class="nav flex-column">
-    <li class="nav-item">
-        <p class="nav-link m-0 font-weight-bold">Dashboards</p>
+<ul class="navigation">
+    <li class="navigation--item">
+        <p class="navigation--heading">Dashboards</p>
     </li>
-    <!-- <li class="nav-item">
-        <a class="nav-link {% if activePage=='index' %}active{% endif %}" href="index.html">Overview</a>
+    <!-- <li class="navigation--item">
+        <a class="navigation--link {% if activePage=='index' %}navigation--link--is-active{% endif %}" href="index.html">Overview</a>
     </li> -->
     {% if user.banking_is_active %}
-    <li class="nav-item">
-        <a class="nav-link {% if activePage=='banking' %}active{% endif %}" href="{{ url('banking:index') }}">Banking</a>
+    <li class="navigation--item">
+        <a class="navigation--link {% if activePage=='banking' %}navigation--link--is-active{% endif %}" href="{{ url('banking:index') }}">Banking</a>
     </li>
     {% endif %}
     {% if user.crypto_is_active %}
-    <li class="nav-item">
-        <a class="nav-link {% if activePage=='crypto' %}active{% endif %}" href="{{ url('crypto:index') }}">Crypto</a>
+    <li class="navigation--item">
+        <a class="navigation--link {% if activePage=='crypto' %}navigation--link--is-active{% endif %}" href="{{ url('crypto:index') }}">Crypto</a>
     </li>
     {% endif %}
-    <li class="m-2"></li>
-    <li class="nav-item">
-        <p class="nav-link m-0 font-weight-bold">User</p>
+    <div class="vs-2"></div>
+    <li class="navigation--item">
+        <p class="navigation--heading">User</p>
     </li>
-    <li class="nav-item">
-        <a class="nav-link {% if activePage=='settings' %}active{% endif %}" href="{{ url('users:settings') }}">Settings</a>
+    <li class="navigation--item">
+        <a class="navigation--link {% if activePage=='settings' %}navigation--link--is-active{% endif %}" href="{{ url('users:settings') }}">Settings</a>
     </li>
-    <li class="m-2"></li>
-    <li class="nav-item">
-        <p class="nav-link m-0 font-weight-bold">Finance</p>
+    <div class="vs-2"></div>
+    <li class="navigation--item">
+        <p class="navigation--heading">Finance</p>
     </li>
-    <li class="nav-item">
-        <a class="nav-link" href="{{ url('users:logout') }}">Log Out</a>
+    <li class="navigation--item">
+        <a class="navigation--link" href="{{ url('users:logout') }}">Log Out</a>
     </li>
 </ul>

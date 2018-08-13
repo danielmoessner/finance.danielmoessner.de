@@ -27,21 +27,24 @@ logger = logging.getLogger("background_tasks")
 def update_movies_task(depot_pk):
     depot = Depot.objects.get(pk=depot_pk)
 
-    for account in depot.accounts.all():
-        for asset in depot.assets.exclude(symbol=depot.user.currency):
-            movie, created = Movie.objects.get_or_create(depot=depot, account=account, asset=asset)
-            if movie.update_needed:
-                movie.update()
-        movie, created = Movie.objects.get_or_create(depot=depot, account=account, asset=None)
+    accounts = depot.accounts.all()
+    assets = depot.assets.exclude(symbol=depot.user.currency)
+
+    for movie in Movie.objects.filter(depot=depot, account__in=accounts, asset__in=assets):
         if movie.update_needed:
             movie.update()
-    for asset in depot.assets.exclude(symbol=depot.user.currency):
-        movie, created = Movie.objects.get_or_create(depot=depot, account=None, asset=asset)
+
+    for movie in Movie.objects.filter(depot=depot, account__in=accounts, asset=None):
         if movie.update_needed:
             movie.update()
-    movie, created = Movie.objects.get_or_create(depot=depot, account=None, asset=None)
-    if movie.update_needed:
-        movie.update()
+
+    for movie in Movie.objects.filter(depot=depot, account=None, asset__in=assets):
+        if movie.update_needed:
+            movie.update()
+
+    for movie in Movie.objects.filter(depot=depot, account=None, asset=None):
+        if movie.update_needed:
+            movie.update()
 
 
 @background()

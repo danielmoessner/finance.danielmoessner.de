@@ -18,9 +18,7 @@
 		@extend .input-group;
 	}
 	&--submit-button{
-		@extend .btn;
-		@extend .btn-primary;
-		@extend .w-100;
+		@extend .submit-button;
 		padding-bottom: .5rem;
 	}
 	&--helptext{

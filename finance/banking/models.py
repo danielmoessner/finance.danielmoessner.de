@@ -19,8 +19,10 @@ def init_banking(user):
     import random
     depot = Depot.objects.create(name="TestDepot", user=user)
     user.set_banking_depot_active(depot)
+    # account
     account1 = Account.objects.create(depot=depot, name="Bank #1")
     account2 = Account.objects.create(depot=depot, name="Bank #2")
+    # category
     category1 = Category.objects.create(depot=depot, name="Category #1",
                                         description="This category is for test purposes only.")
     category2 = Category.objects.create(depot=depot, name="Category #2",
@@ -29,6 +31,7 @@ def init_banking(user):
                                         description="This category is for test purposes only.")
     Timespan.objects.create(depot=depot, name="Default Timespan", start_date=None, end_date=None, period=None,
                             is_active=True)
+    # changes
     changes = list()
     for i in range(0, 100):
         random_number = random.randint(1, 2)
@@ -44,6 +47,7 @@ def init_banking(user):
         changes.append(Change(account=account, category=category, change=change, date=date,
                               description=description))
     Change.objects.bulk_create(changes)
+    # update
     Movie.update_all(depot)
 
 

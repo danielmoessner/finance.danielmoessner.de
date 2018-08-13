@@ -1,11 +1,10 @@
 .submit-button{
 	@extend .btn;
-	@extend .btn-info;
+	@extend .btn-dark;
 	@extend .w-100;
-	cursor: pointer;
 	&--small{
-		@extend .submit-button;
 		@extend .btn-sm;
+		@extend .submit-button;
 	}
 }
 
@@ -25,7 +24,9 @@
 
 .href-button{
 	@extend .btn;
-	@extend .btn-info;
+	@extend .btn-warning;
 	@extend .btn-sm;
-	cursor: pointer;
+	background-color: #ff8716;
+	border-color: #ff8716;
+	cursor: pointer; 
 }
