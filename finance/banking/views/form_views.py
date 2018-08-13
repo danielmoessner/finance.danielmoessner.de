@@ -61,7 +61,10 @@ class DeleteDepotView(CustomGetFormUserMixin, CustomAjaxFormMixin, generic.FormV
 
     def form_valid(self, form):
         depot = form.cleaned_data["depot"]
+        user = depot.user
         depot.delete()
+        if user.banking_depots.count() <= 0:
+            user.update(banking_is_active=False)
         return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
 
 
