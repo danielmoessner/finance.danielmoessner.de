@@ -9,14 +9,14 @@
 
 {% block head %}
 	<script src="{{ static('js/line_chart.js') }}" api-data="{{ url('banking:api_data_index') }}"></script>
-	<script src="{{ static('js/pie_chart.js') }}" api-data="{{ url('banking:api_data_categories') }}"></script>
+	<script src="{{ static('js/stacked_bar_chart.js') }}" api-data="{{ url('banking:api_data_categories_month') }}"></script>
 {% endblock %}
 
 
 {% block chart %}
 	<div class="vs-3"></div>
 	<canvas class="console-target is-hidden console_accounts" id="line_chart"></canvas>
-	<canvas class="console-target console_stats console_categories console_timespans" id="pie_chart"></canvas>
+	<canvas class="console-target console_stats console_categories console_timespans" id="stacked_bar_chart"></canvas>
 	<div class="vs-3"></div>
 	<hr class="hr"> 
 {% endblock %}

@@ -295,3 +295,36 @@ class CategoriesData(APIView):
         data["datasets"] = datasets
         data["labels"] = labels
         return Response(data)
+
+
+class CategoriesMonthData(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        user = request.user
+        depot = user.banking_depots.get(is_active=True)
+        categories = depot.categories.all()
+        movies = depot.movies.filter(account=None, category__in=categories).select_related("category")
+        timespan = depot.timespans.filter(is_active=True).first()
+
+        df = pd.DataFrame()
+        for movie in movies:
+            movie_df = movie.get_df(timespan=timespan).rename(columns={"c": movie.category.name}).drop("b", axis=1)
+            df = pd.concat([df, movie_df], sort=False)
+
+        df.set_index("d", inplace=True)
+        df = df.groupby(lambda x: (x.year, x.month)).sum()
+        df.index = df.index.map(lambda val: str(val[1]) + "/" + str(val[0]))
+
+        datasets = list()
+        for column in df.columns:
+            datasets.append({
+                "label": column,
+                "data": df[column]
+            })
+
+        data = dict()
+        data["labels"] = df.index
+        data["datasets"] = datasets
+        return Response(data)

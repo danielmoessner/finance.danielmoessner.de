@@ -3,9 +3,6 @@ from django.core.urlresolvers import reverse
 from django.test import Client
 
 from finance.banking.models import init_banking
-from finance.banking.models import Category
-from finance.banking.models import Account
-from finance.banking.models import Depot
 from finance.users.models import StandardUser
 
 

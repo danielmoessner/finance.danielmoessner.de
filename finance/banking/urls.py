@@ -11,17 +11,16 @@ app_name = "banking"
 urlpatterns = [
     # API DATA
     # api-data/index/
-    url(r"^api-data/index/$", login_required(views.IndexData.as_view()), name="api_data_index"),
-    # api-data/account/comdirect/
-    url(r"^api-data/account/(?P<slug>[0-9a-zA-Z-#]*)/$", login_required(
-        views.AccountData.as_view()),
-        name="api_data_account"),
-    # api-data/categories/
+    url(r"^api-data/index/$", login_required(views.IndexData.as_view()),
+        name="api_data_index"),
     url(r"^api-data/categories/$", login_required(views.CategoriesData.as_view()),
         name="api_data_categories"),
-    # api-data/category/enjoyment/
-    url(r"^api-data/category/(?P<slug>[0-9a-zA-Z-#]*)/$", login_required(
-        views.CategoryData.as_view()), name="api_data_category"),
+    url(r"^api-data/categories-month/$", login_required(views.CategoriesMonthData.as_view()),
+        name="api_data_categories_month"),
+    url(r"^api-data/account/(?P<slug>[0-9a-zA-Z-#]*)/$", login_required(views.AccountData.as_view()),
+        name="api_data_account"),
+    url(r"^api-data/category/(?P<slug>[0-9a-zA-Z-#]*)/$", login_required(views.CategoryData.as_view()),
+        name="api_data_category"),
 
     # FUNCTIONS
     # update-movies/
