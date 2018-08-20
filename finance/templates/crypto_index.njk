@@ -38,8 +38,6 @@
     {%- set deleteAccountButton=bg.modalButton("Delete Account", "#deleteAccount") -%}
     {%- set addAssetButton=bg.modalButton("Add Asset", "#addAsset") -%}
     {%- set removeAssetButton=bg.modalButton("Remove Asset", "#removeAsset") -%}
-    {%- set addPrivateAssetButton=bg.modalButton("Add Private Asset", "") -%}
-    {%- set deletePrivateAssetButton=bg.modalButton("Delete Private Asset", "") -%}
     {%- set addTimespanButton=bg.modalButton("Add Timespan", "#addTimespan") -%}
     {%- set updateButton=bg.hrefButton("Update", url("crypto:update_movies")) -%}
     {%- set resetButton=bg.hrefButton("Reset", url("crypto:reset_movies")) -%}
@@ -120,7 +118,7 @@
     
 
     <div class="wrapper console-target is-hidden console_assets">
-        {{ hg.smallLmHeading("Assets", buttons=[addAssetButton, removeAssetButton, addPrivateAssetButton, deletePrivateAssetButton]) }}
+        {{ hg.smallLmHeading("Assets", buttons=[addAssetButton, removeAssetButton]) }}
         <table class="table">
             {{ tg.head(["Asset", "Current Price", "Amount", "Value", "Profit", "Yield", "Action"]) }}
             <tbody class="table--body">

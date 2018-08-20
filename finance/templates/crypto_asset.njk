@@ -29,7 +29,6 @@
    	{% import "modules/modal.njk" as mg %}
 
 
-	{%- set addPriceButton=bg.modalButton("Add Price", "#addPrice") -%}
    	{%- set addTradeButton=bg.modalButton("Buy/Sell Asset", "#addTrade") -%}
    	{%- set addTransactionButton=bg.modalButton("Send/Receive Asset", "#addTransaction") -%}
 
@@ -87,7 +86,7 @@
 
 	
 	<div class="wrapper console-target is-hidden console_prices">
-        {{ hg.smallLmHeading("Price history", buttons=[addPriceButton]) }}
+        {{ hg.smallLmHeading("Price history") }}
 		<table class="table ">
 		    {{ tg.head(["Date", "Price"]) }}
 		    <tbody class="table--body">

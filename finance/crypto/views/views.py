@@ -57,12 +57,11 @@ class IndexView(generic.TemplateView):
             account__in=context["accounts"], asset=None).order_by("account__name")
         context["accounts_movies"] = zip(context["accounts"], account_movies)
         # assets
-        context["assets"] = context["depot"].assets.order_by("symbol", "private_name")
-        context["private_assets"] = context["assets"].exclude(private_symbol=None)
+        context["assets"] = context["depot"].assets.order_by("symbol")
         context["public_assets"] = context["assets"].exclude(symbol=None)
         context["asset_symbol_choices"] = Asset.SYMBOL_CHOICES
         asset_movies = context["depot"].movies.filter(asset__in=context["assets"], account=None)\
-            .order_by("asset__symbol", "asset__private_symbol")
+            .order_by("asset__symbol")
         context["assets_movies"] = zip(context["assets"], asset_movies)
         # movie
         context["movie"] = context["depot"].movies.get(account=None, asset=None)
@@ -90,12 +89,11 @@ class AccountView(generic.TemplateView):
         context["accounts"] = context["depot"].accounts.all()
         context["account"] = context["accounts"].get(slug=kwargs["slug"])
         # assets
-        context["assets"] = context["depot"].assets.order_by("symbol", "private_name")
-        context["private_assets"] = context["assets"].exclude(private_symbol=None)
+        context["assets"] = context["depot"].assets.order_by("symbol")
         context["public_assets"] = context["assets"].exclude(symbol=None)
         context["asset_symbol_choices"] = Asset.SYMBOL_CHOICES
         asset_movies = context["depot"].movies.filter(asset__in=context["assets"], account=None) \
-            .order_by("asset__symbol", "asset__private_symbol")
+            .order_by("asset__symbol")
         context["assets_movies"] = zip(context["assets"], asset_movies)
         # trades
         context["trades"] = context["account"].trades.order_by("-date").select_related(
@@ -129,7 +127,7 @@ class AssetView(generic.TemplateView):
         # account
         context["accounts"] = context["depot"].accounts.all()
         # asset(s)
-        context["assets"] = context["depot"].assets.order_by("symbol", "private_name")
+        context["assets"] = context["depot"].assets.order_by("symbol")
         context["asset"] = context["assets"].get(slug=kwargs["slug"])
         # prices
         context["prices"] = context["asset"].prices.order_by("-date")

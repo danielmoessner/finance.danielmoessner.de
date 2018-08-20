@@ -111,8 +111,6 @@ class Account(CoreAccount):
 
 
 class Asset(models.Model):
-    private_name = models.CharField(max_length=80, blank=True, null=True)
-    private_symbol = models.CharField(max_length=5, blank=True, null=True)
     SYMBOL_CHOICES = (("BTC", "Bitcoin"), ("ETH", "Ethereum"), ("XRP", "Ripple"),
                       ("BCH", "Bitcoin Cash"), ("EOS", "EOS"), ("LTC", "Litecoin"),
                       ("XLM", "Stellar"), ("ADA", "Cardano"), ("TRX", "TRON"), ("MIOTA", "IOTA"),
@@ -140,13 +138,9 @@ class Asset(models.Model):
     depots = models.ManyToManyField(Depot, related_name="assets")
 
     def __str__(self):
-        asset_symbol = self.symbol if self.symbol else self.private_symbol
-        return "{}".format(asset_symbol)
+        return "{}".format(self.symbol)
 
     # getters
-    def get_is_private(self):
-        return False if self.symbol else True
-
     def get_movie(self, depot):
         return self.movies.get(depot=depot, account=None)
 
@@ -154,7 +148,7 @@ class Asset(models.Model):
         return self.movies.get(depot=depot, account=account)
 
     def get_name(self):
-        name = self.get_symbol_display() if self.symbol else self.private_name
+        name = self.get_symbol_display()
         name = "{}".format(name)
         return name
 

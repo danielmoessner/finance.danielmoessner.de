@@ -312,11 +312,9 @@ class CategoriesMonthData(APIView):
         for movie in movies:
             movie_df = movie.get_df(timespan=timespan).rename(columns={"c": movie.category.name}).drop("b", axis=1)
             df = pd.concat([df, movie_df], sort=False)
-
         df.set_index("d", inplace=True)
         df = df.groupby(lambda x: (x.year, x.month)).sum()
         df.index = df.index.map(lambda val: str(val[1]) + "/" + str(val[0]))
-
         datasets = list()
         for column in df.columns:
             datasets.append({
