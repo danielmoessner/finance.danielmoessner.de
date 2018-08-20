@@ -5,3 +5,13 @@
 	@extend .pt-5;
 	padding-bottom: 200px;
 }
+#lm-left{
+	width: 25%;
+	max-width: 25%;
+	@extend .pr-4;
+}
+#lm-main{
+	width: 75%; 
+	max-width: 75%;
+	@extend .pl-4;
+}
