@@ -2,16 +2,40 @@
 	display: flex;
 	flex-direction: row;
 	@extend .container;
-	@extend .pt-5;
+	width: 100%;
+	padding-top: 15px;
 	padding-bottom: 200px;
+	@include media-breakpoint-down(md) { 
+		flex-direction: column;
+		padding: 0;
+		padding-top: 0;
+		padding-bottom: 100px;
+	}
+	@include media-breakpoint-up(lg) { 
+		padding-top: 2rem;
+	}
 }
 #lm-left{
 	width: 25%;
 	max-width: 25%;
 	@extend .pr-4;
+	@include media-breakpoint-down(md) { 
+		width: 100%;
+		max-width: 100%;
+		padding: 0!important;
+		padding-bottom: 10px;
+	}
 }
 #lm-main{
 	width: 75%; 
 	max-width: 75%;
 	@extend .pl-4;
+	@include media-breakpoint-down(md) { 
+		width: 100%;
+		max-width: 100%;
+		padding: 0;
+		padding-top: calc(10px + 50px);  //50px nav
+		padding-left: 10px!important;
+		padding-right: 10px;
+	}
 }
