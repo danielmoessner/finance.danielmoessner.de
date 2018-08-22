@@ -4,4 +4,7 @@
 		@extend .btn;
 		@extend .btn-primary;
 	}
+	&--button:focus{
+		box-shadow: 0 0 0 0 black!important;
+	}
 } 

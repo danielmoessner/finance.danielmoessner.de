@@ -28,22 +28,14 @@
 
 	<div class="center-box">
         <div class="console" data-toggle="buttons">
-            <label class="console--button active" data-target=".console_general">
-                <input type="radio">General
-            </label>
-            <label class="console--button" data-target=".console_user">
-                <input type="radio">User
-            </label>
-            {% if user.banking_is_active %}
-                <label class="console--button" data-target=".console_banking">
-                    <input type="radio">Banking
-                </label>
-            {% endif %}
+        	<button class="console--button active" type="button" data-target=".console_stats">General</button>
+        	<button class="console--button" type="button" data-target=".console_user">User</button>
+        	{% if user.banking_is_active %}
+        		<button class="console--button" type="button" data-target=".console_banking">Banking</button>
+        	{% endif %}
             {% if user.crypto_is_active %}
-                <label class="console--button" data-target=".console_crypto">
-                    <input type="radio">Crypto
-                </label>
-            {% endif %}
+        		<button class="console--button" type="button" data-target=".console_crypto">Crypto</button>
+        	{% endif %}
         </div>
     </div>
 
