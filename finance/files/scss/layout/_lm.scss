@@ -17,7 +17,7 @@
 }
 #lm-left{
 	width: 25%;
-	max-width: 25%;
+	max-width: calc(230px + 1.5rem);  // nav width + pr-4
 	@extend .pr-4;
 	@include media-breakpoint-down(md) { 
 		width: 100%;

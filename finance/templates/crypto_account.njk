@@ -73,59 +73,65 @@
 	
 	<div class="wrapper console-target is-hidden console_assets">
         {{ hg.smallLmHeading("Assets", buttons=[addTradeButton, addTransactionButton]) }}
-		<table class="table ">
-		    {{ tg.head(["Asset", "Current Price", "Amount", "Value"]) }}
-		    <tbody class="table--body">
-		        {% for asset, movie in assets_movies %}
-		            {%- set assetData = movie.get_values(user, ["p", "ca", "v"]) -%}
-                    {{ tg.row([asset.get_name(), assetData.p, assetData.ca, assetData.v]) }}
-		        {% endfor %}
-		    </tbody>
-		</table>
+		<div class="scrollbar-box">
+			<table class="table ">
+			    {{ tg.head(["Asset", "Current Price", "Amount", "Value"]) }}
+			    <tbody class="table--body">
+			        {% for asset, movie in assets_movies %}
+			            {%- set assetData = movie.get_values(user, ["p", "ca", "v"]) -%}
+	                    {{ tg.row([asset.get_name(), assetData.p, assetData.ca, assetData.v]) }}
+			        {% endfor %}
+			    </tbody>
+			</table>
+		</div>
 	</div>
 	
 	
 	<div class="wrapper console-target is-hidden console_trades">
         {{ hg.smallLmHeading("Trades", buttons=[addTradeButton]) }}
-		<table class="table ">
-		    {{ tg.head(["Date", "Account", "Buy", "Buy Asset", "Sell", "Sell Asset", "Fees", "Fees Asset", "Action"]) }}
-		    <tbody class="table--body">
-		        {% for trade in trades %}
-		            {% set tablebuttons %}
-		                <div class="table--buttons">
-		                    {{ bg.modalButton("Edit", "#editTrade"+trade.pk|string) }}
-		                    <div class="hs-1"></div>
-		                	{{ bg.modalButton("Delete", "#deleteTrade"+trade.pk|string) }}
-		                </div> 
-		                {{ mg.djangoModal("Edit Trade", "editTrade"+trade.pk|string, url("crypto:edit_trade", args=[trade.pk])) }}
-		                {{ mg.djangoModal("Delete Trade", "deleteTrade"+trade.pk|string, url("crypto:delete_trade", args=[trade.pk])) }}
-		            {% endset %}
-		            {{ tg.row([trade.get_date(), trade.account, trade.buy_amount, trade.buy_asset, trade.sell_amount, trade.sell_asset, trade.fees, trade.fees_asset, tablebuttons|safe]) }}
-		        {% endfor %}
-		    </tbody>
-		</table>
+		<div class="scrollbar-box">
+			<table class="table ">
+			    {{ tg.head(["Date", "Account", "Buy", "Buy Asset", "Sell", "Sell Asset", "Fees", "Fees Asset", "Action"]) }}
+			    <tbody class="table--body">
+			        {% for trade in trades %}
+			            {% set tablebuttons %}
+			                <div class="table--buttons">
+			                    {{ bg.modalButton("Edit", "#editTrade"+trade.pk|string) }}
+			                    <div class="hs-1"></div>
+			                	{{ bg.modalButton("Delete", "#deleteTrade"+trade.pk|string) }}
+			                </div> 
+			                {{ mg.djangoModal("Edit Trade", "editTrade"+trade.pk|string, url("crypto:edit_trade", args=[trade.pk])) }}
+			                {{ mg.djangoModal("Delete Trade", "deleteTrade"+trade.pk|string, url("crypto:delete_trade", args=[trade.pk])) }}
+			            {% endset %}
+			            {{ tg.row([trade.get_date(), trade.account, trade.buy_amount, trade.buy_asset, trade.sell_amount, trade.sell_asset, trade.fees, trade.fees_asset, tablebuttons|safe]) }}
+			        {% endfor %}
+			    </tbody>
+			</table>
+		</div>
 	</div>
 
 
 	<div class="wrapper console-target is-hidden console_transactions">
         {{ hg.smallLmHeading("Transactions", buttons=[addTransactionButton]) }}
-		<table class="table ">
-		    {{ tg.head(["Date", "Asset", "From Account", "To Account", "Amount", "Fees", "Action"]) }}
-		    <tbody class="table--body">
-		        {% for transaction in transactions %}
-		            {% set tablebuttons %}
-		                <div class="table--buttons">
-		             		{{ bg.modalButton("Edit", "#editTransaction"+transaction.pk|string) }}
-		                    <div class="hs-1"></div>
-		                	{{ bg.modalButton("Delete", "#deleteTransaction"+transaction.pk|string) }}
-		                </div>
-		                {{ mg.djangoModal("Edit Transaction", "editTransaction"+transaction.pk|string, url("crypto:edit_transaction", args=[transaction.pk])) }}
-		                {{ mg.djangoModal("Delete Transaction", "deleteTransaction"+transaction.pk|string, url("crypto:delete_transaction", args=[transaction.pk])) }}
-		            {% endset %}
-		            {{ tg.row([transaction.get_date(), transaction.asset, transaction.from_account, transaction.to_account, transaction.amount, transaction.fees, tablebuttons | safe]) }}
-		        {% endfor %}
-		    </tbody>
-		</table>
+		<div class="scrollbar-box">
+			<table class="table ">
+			    {{ tg.head(["Date", "Asset", "From Account", "To Account", "Amount", "Fees", "Action"]) }}
+			    <tbody class="table--body">
+			        {% for transaction in transactions %}
+			            {% set tablebuttons %}
+			                <div class="table--buttons">
+			             		{{ bg.modalButton("Edit", "#editTransaction"+transaction.pk|string) }}
+			                    <div class="hs-1"></div>
+			                	{{ bg.modalButton("Delete", "#deleteTransaction"+transaction.pk|string) }}
+			                </div>
+			                {{ mg.djangoModal("Edit Transaction", "editTransaction"+transaction.pk|string, url("crypto:edit_transaction", args=[transaction.pk])) }}
+			                {{ mg.djangoModal("Delete Transaction", "deleteTransaction"+transaction.pk|string, url("crypto:delete_transaction", args=[transaction.pk])) }}
+			            {% endset %}
+			            {{ tg.row([transaction.get_date(), transaction.asset, transaction.from_account, transaction.to_account, transaction.amount, transaction.fees, tablebuttons | safe]) }}
+			        {% endfor %}
+			    </tbody>
+			</table>
+		</div>
 	</div>
 	
 

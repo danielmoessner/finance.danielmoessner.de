@@ -1,5 +1,6 @@
 .console{
 	@extend .btn-group;
+	overflow-x: auto;
 	&--button{
 		@extend .btn;
 		@extend .btn-primary;

@@ -90,81 +90,73 @@
     
     <div class="wrapper console-target is-hidden console_accounts">
         {{ hg.smallLmHeading("Accounts", buttons=[addAccountButton, deleteAccountButton]) }}
-        <table class="table">
-            {{ tg.head(["Account", "Assets Value", "Action"]) }}
-            <tbody class="table--body">
-                {% for account, movie in accounts_movies %}
-                    {% set tablebuttons %}
-                        {{ bg.modalButton("Edit", "#editAccount"+account.slug) }}
-                        {{ mg.djangoModal("Edit Account", "editAccount"+account.slug, url("crypto:edit_account", args=[account.slug])) }}
-                    {% endset %} 
-                    {% set name %}
-                        <a href="{{ url('crypto:account', args=[ account.slug, ]) }}" class="link-bold">{{ account.name }}</a>
-                    {% endset %} 
-                    {%- set values=movie.get_values(user, ["v",]) -%}
-                    {{ tg.row([name|safe, values.v, tablebuttons|safe]) }}
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="scrollbar-box">
+            <table class="table">
+                {{ tg.head(["Account", "Assets Value", "Action"]) }}
+                <tbody class="table--body">
+                    {% for account, movie in accounts_movies %}
+                        {% set tablebuttons %}
+                            {{ bg.modalButton("Edit", "#editAccount"+account.slug) }}
+                            {{ mg.djangoModal("Edit Account", "editAccount"+account.slug, url("crypto:edit_account", args=[account.slug])) }}
+                        {% endset %} 
+                        {% set name %}
+                            <a href="{{ url('crypto:account', args=[ account.slug, ]) }}" class="link-bold">{{ account.name }}</a>
+                        {% endset %} 
+                        {%- set values=movie.get_values(user, ["v",]) -%}
+                        {{ tg.row([name|safe, values.v, tablebuttons|safe]) }}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
     
 
     <div class="wrapper console-target is-hidden console_assets">
         {{ hg.smallLmHeading("Assets", buttons=[addAssetButton, removeAssetButton]) }}
-        <table class="table">
-            {{ tg.head(["Asset", "Current Price", "Amount", "Value", "Profit", "Yield", "Action"]) }}
-            <tbody class="table--body">
-                {% for asset, movie in assets_movies %}
-                    {% set tablebuttons %}
-                        <div class="table--buttons">
-                            {{ addTradeButton }}
-                            <div class="hs-1"></div>
-                            {{ addTransactionButton }}
-                            {#
-                            {{ buttons.buttonModal(text="Buy/Sell", dataTarget="#addTrade", data="pk=" + asset.pk|string) }} 
-                            {% if asset.private_symbol %}
+        <div class="scrollbar-box">
+            <table class="table">
+                {{ tg.head(["Asset", "Current Price", "Amount", "Value", "Profit", "Yield", "Action"]) }}
+                <tbody class="table--body">
+                    {% for asset, movie in assets_movies %}
+                        {% set tablebuttons %}
+                            <div class="table--buttons">
+                                {{ addTradeButton }}
                                 <div class="hs-1"></div>
-                                {% set data %}
-                                    {% raw %} { {% endraw %}
-                                        'pk': '{{ asset.pk }}', 
-                                        'private_name': '{{ asset.private_name }}',
-                                        'private_symbol': '{{ asset.private_symbol }}'
-                                    {% raw %} } {% endraw %}
-                                {% endset %}
-                                {{ buttons.buttonModalNew(text="Edit", dataTarget="#editPrivateAsset", data=data) }} 
-                            {% endif %}
-                            #}
-                        </div> 
-                    {% endset %}
-                    {% set name %}
-                        <a href="{{ url('crypto:asset', args=[ asset.slug, ]) }}" class="link-bold">{{ asset.get_name() }}</a>
-                    {% endset %} 
-                    {%- set assetData = movie.get_values(user, ["p", "ca", "v", "g", "cr"]) -%}
-                    {{ tg.row([name, assetData.p, assetData.ca, assetData.v, assetData.g, assetData.cr, tablebuttons | safe]) }}
-                {% endfor %}
-            </tbody>
-        </table>
+                                {{ addTransactionButton }}
+                            </div> 
+                        {% endset %}
+                        {% set name %}
+                            <a href="{{ url('crypto:asset', args=[ asset.slug, ]) }}" class="link-bold">{{ asset.get_name() }}</a>
+                        {% endset %} 
+                        {%- set assetData = movie.get_values(user, ["p", "ca", "v", "g", "cr"]) -%}
+                        {{ tg.row([name, assetData.p, assetData.ca, assetData.v, assetData.g, assetData.cr, tablebuttons | safe]) }}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 
 
     <div class="wrapper console-target is-hidden console_timespans">
         {{ hg.smallLmHeading("Timespans", buttons=[addTimespanButton]) }}
-        <table class="table">
-            {{ tg.head(["Name", "Start Date", "End Date", "Action"]) }}
-            <tbody class="table--body">
-                {% for timespan in timespans %}
-                    {% set tablebuttons %}
-                        <div class="table--buttons">
-                            {{ tsg.setActiveCryptoButton(timespan, csrf_token) }}
-                            <div class="hs-1"></div>
-                            {{ tsg.deleteButton(timespan, csrf_token) }}
-                        </div>
-                        {{ mg.djangoModal("Delete", "deleteTimespan"+timespan.pk|string, url("crypto:delete_timespan", args=[timespan.pk])) }}
-                    {% endset %} 
-                    {{ tg.row([timespan.name, timespan.get_start_date(), timespan.get_end_date(), tablebuttons|safe]) }}
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="scrollbar-box">
+            <table class="table">
+                {{ tg.head(["Name", "Start Date", "End Date", "Action"]) }}
+                <tbody class="table--body">
+                    {% for timespan in timespans %}
+                        {% set tablebuttons %}
+                            <div class="table--buttons">
+                                {{ tsg.setActiveCryptoButton(timespan, csrf_token) }}
+                                <div class="hs-1"></div>
+                                {{ tsg.deleteButton(timespan, csrf_token) }}
+                            </div>
+                            {{ mg.djangoModal("Delete", "deleteTimespan"+timespan.pk|string, url("crypto:delete_timespan", args=[timespan.pk])) }}
+                        {% endset %} 
+                        {{ tg.row([timespan.name, timespan.get_start_date(), timespan.get_end_date(), tablebuttons|safe]) }}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 
 

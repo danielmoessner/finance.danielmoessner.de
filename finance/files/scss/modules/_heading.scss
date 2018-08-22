@@ -1,9 +1,10 @@
 .big-lm-heading{
 	&--top{
 		margin: 0;
+		word-wrap: break-word;
 	}
 	&--heading{
-
+		word-wrap: break-word;
 	}
 	&--hr{
 		width: 100%;
@@ -21,6 +22,7 @@
 .small-lm-heading{
 	@extend .d-flex;
 	@extend .flex-column;
+	overflow-x: auto;
 	&--row{
 		@extend .d-flex;
 		@extend .flex-row;

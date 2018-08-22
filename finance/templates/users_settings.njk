@@ -83,22 +83,24 @@
 
 	<div class="wrapper console-target console_banking is-hidden">
 	    {{ hg.smallLmHeading("Depots", buttons=[addBankingDepotButton, deleteBankingDepotButton]) }}
-		<table class="table">
-            {{ tg.head(["Depot", "Action"]) }}
-            <tbody class="table--body">
-                {% for depot in banking_depots %}
-                    {% set tablebuttons %}
-                        <div class="table--buttons">
-                            {{ fg.setActiveButtonForm(depot, url("banking:set_depot", args=[depot.pk]), csrf_token) }}
-                            <div class="hs-1"></div>
-                            {{ bg.modalButton("Edit", "#editBankingDepot"+depot.pk|string) }}
-                        </div>
-                        {{ mg.djangoModal("Edit Depot", "editBankingDepot"+depot.pk|string, url("banking:edit_depot", args=[depot.pk])) }}
-                    {% endset %}  
-                    {{ tg.row([depot.name, tablebuttons]) }}
-                {% endfor %}
-            </tbody>
-        </table>
+		<div class="scrollbar-box">
+			<table class="table">
+	            {{ tg.head(["Depot", "Action"]) }}
+	            <tbody class="table--body">
+	                {% for depot in banking_depots %}
+	                    {% set tablebuttons %}
+	                        <div class="table--buttons">
+	                            {{ fg.setActiveButtonForm(depot, url("banking:set_depot", args=[depot.pk]), csrf_token) }}
+	                            <div class="hs-1"></div>
+	                            {{ bg.modalButton("Edit", "#editBankingDepot"+depot.pk|string) }}
+	                        </div>
+	                        {{ mg.djangoModal("Edit Depot", "editBankingDepot"+depot.pk|string, url("banking:edit_depot", args=[depot.pk])) }}
+	                    {% endset %}  
+	                    {{ tg.row([depot.name, tablebuttons]) }}
+	                {% endfor %}
+	            </tbody>
+	        </table>
+        </div>
 	</div>
 
 
@@ -109,22 +111,24 @@
 		</div> 
 		
 		{{ hg.smallLmHeading("Depots", buttons=[addCryptoDepotButton, deleteCryptoDepotButton]) }}
-		<table class="table">
-            {{ tg.head(["Depot", "Action"]) }}
-            <tbody class="table--body">
-                {% for depot in crypto_depots %}
-                    {% set tablebuttons %}
-                        <div class="table--buttons">
-                            {{ fg.setActiveButtonForm(depot, url("crypto:set_depot", args=[depot.pk]), csrf_token) }}
-                            <div class="hs-1"></div>
-                            {{ bg.modalButton("Edit", "#editCryptoDepot"+depot.pk|string) }}
-                        </div>
-                        {{ mg.djangoModal("Edit Depot", "editCryptoDepot"+depot.pk|string, url("crypto:edit_depot", args=[depot.pk])) }}
-                    {% endset %} 
-                    {{ tg.row([depot.name, tablebuttons|safe]) }}
-                {% endfor %}
-            </tbody>
-        </table>
+		<div class="scrollbar-box">
+			<table class="table">
+	            {{ tg.head(["Depot", "Action"]) }}
+	            <tbody class="table--body">
+	                {% for depot in crypto_depots %}
+	                    {% set tablebuttons %}
+	                        <div class="table--buttons">
+	                            {{ fg.setActiveButtonForm(depot, url("crypto:set_depot", args=[depot.pk]), csrf_token) }}
+	                            <div class="hs-1"></div>
+	                            {{ bg.modalButton("Edit", "#editCryptoDepot"+depot.pk|string) }}
+	                        </div>
+	                        {{ mg.djangoModal("Edit Depot", "editCryptoDepot"+depot.pk|string, url("crypto:edit_depot", args=[depot.pk])) }}
+	                    {% endset %} 
+	                    {{ tg.row([depot.name, tablebuttons|safe]) }}
+	                {% endfor %}
+	            </tbody>
+	        </table>
+	    </div>
 	</div>
 
  

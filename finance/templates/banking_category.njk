@@ -64,14 +64,16 @@
 
     <div class="wrapper console-target is-hidden console_changes">
         {{ hg.smallLmHeading("Changes") }}
-        <table class="table">
-            {{ table.head(["Date", "Category", "Description", "Change"]) }}
-            <tbody class="table--body">
-                {% for change in changes %}
-                    {{ table.row([change.get_date(user), category, change.get_description(), change.change]) }}
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="scrollbar-box">
+            <table class="table">
+                {{ table.head(["Date", "Category", "Description", "Change"]) }}
+                <tbody class="table--body">
+                    {% for change in changes %}
+                        {{ table.row([change.get_date(user), category, change.get_description(), change.change]) }}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
     
 
