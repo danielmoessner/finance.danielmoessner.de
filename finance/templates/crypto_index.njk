@@ -49,7 +49,7 @@
 
     <div class="center-box">
         <div class="console" data-toggle="buttons">
-            <button class="console--button {{ cog.isActive(console, 'stats') }}" type="button" data-target="#stats, #line_chart">Stats</button>
+            <button class="console--button {{ cog.isActive(console, 'console-main') }}" type="button" data-target="#stats, #line_chart">Stats</button>
             <button class="console--button {{ cog.isActive(console, 'accounts') }}" type="button" data-target="#accounts, #line_chart">Accounts</button>
             <button class="console--button {{ cog.isActive(console, 'assets') }}" type="button" data-target="#assets, #pie_chart">Assets</button>
             <button class="console--button {{ cog.isActive(console, 'timespans') }}" type="button" data-target="#timespans, #line_chart">Time Spans</button>
@@ -60,7 +60,7 @@
     <div class="vs-3"></div>
  
     
-    <div class="wrapper console--target {{ cog.isHidden(console, 'stats') }}" id="stats">
+    <div class="wrapper console--target {{ cog.isHidden(console, 'console-main') }}" id="stats">
         {{ hg.smallLmHeading("Stats", buttons=[updateButton, resetButton]) }}
         <div class="vs-1"></div>
         <div class="items-box">

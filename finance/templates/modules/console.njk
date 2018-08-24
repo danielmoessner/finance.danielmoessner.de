@@ -1,5 +1,5 @@
 {% macro isHidden(console, target) %}
-	{% if console==target or (not console and target=="stats") %}
+	{% if console==target or (not console and target=="console-main") %}
 		{# nada #}
 	{% else %}
 		console--is-hidden
@@ -7,7 +7,7 @@
 {% endmacro %}
 
 {% macro isActive(console, target) %}
-	{% if console==target or (not console and target=="stats") %}
+	{% if console==target or (not console and target=="console-main") %}
 		console--is-active
 	{% else %}
 		{# nada #}

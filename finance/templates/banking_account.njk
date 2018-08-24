@@ -38,7 +38,7 @@
 
 	<div class="center-box">
         <div class="console" data-toggle="buttons">
-        	<button class="console--button {{ cog.isActive(console, 'stats') }}" data-target="#stats">Stats</button>
+        	<button class="console--button {{ cog.isActive(console, 'console-main') }}" data-target="#stats">Stats</button>
             <button class="console--button {{ cog.isActive(console, 'changes') }}" data-target="#changes">Changes</button>
         </div>
     </div>
@@ -47,7 +47,7 @@
 	<div class="vs-3"></div>
 
 
-	<div class="wrapper console--target {{ cog.isHidden(console, 'stats') }}" id="stats">
+	<div class="wrapper console--target {{ cog.isHidden(console, 'console-main') }}" id="stats">
         {{ hg.smallLmHeading("Stats") }}
         <div class="vs-1"></div>
         <div class="items-box">

@@ -39,7 +39,7 @@
 
 	<div class="center-box">
         <div class="console" data-toggle="buttons">
-        	<button class="console--button {{ cog.isActive(console, 'stats') }}" type="button" data-target="#stats">Stats</button>
+        	<button class="console--button {{ cog.isActive(console, 'console-main') }}" type="button" data-target="#stats">Stats</button>
         	<button class="console--button {{ cog.isActive(console, 'prices') }}" type="button" data-target="#prices">Prices</button>
         	<button class="console--button {{ cog.isActive(console, 'trades') }}" type="button" data-target="#trades">Trades</button>
         	<button class="console--button {{ cog.isActive(console, 'transactions') }}" type="button" data-target="#transactions">Transactions</button>
@@ -50,7 +50,7 @@
 	<div class="vs-3"></div>
 
 	
-	<div class="wrapper console--target {{ cog.isHidden(console, 'stats') }}" id="stats">
+	<div class="wrapper console--target {{ cog.isHidden(console, 'console-main') }}" id="stats">
         {{ hg.smallLmHeading("Stats") }}
         <div class="vs-1"></div>
         <div class="items-box">

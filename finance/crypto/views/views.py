@@ -99,7 +99,7 @@ class AccountView(generic.TemplateView):
         trades = context["account"].trades.order_by("-date").select_related("account", "buy_asset", "sell_asset",
                                                                             "fees_asset")
         context["trades"], success = create_paginator(self.request.GET.get("trades-page"), trades, 10)
-        context["console"] = "trades" if success else "stats"
+        context["console"] = "trades" if success else "console-main"
         # transactions
         to_transactions = context["account"].to_transactions.all()
         from_transactions = context["account"].from_transactions.all()
@@ -136,7 +136,7 @@ class AssetView(generic.TemplateView):
         # prices
         prices = context["asset"].prices.order_by("-date")
         context["prices"], success = create_paginator(self.request.GET.get("prices-page"), prices, 10)
-        context["console"] = "prices" if success else "stats"
+        context["console"] = "prices" if success else "console-main"
         # trades
         buy_trades = context["asset"].buy_trades.all()
         sell_trades = context["asset"].sell_trades.all()

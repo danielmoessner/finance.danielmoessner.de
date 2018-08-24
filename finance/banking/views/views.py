@@ -79,7 +79,7 @@ class AccountView(generic.TemplateView):
         context["movie"] = context["depot"].movies.get(account=context["account"], category=None)
         changes = context["account"].changes.order_by("-date", "-pk").select_related("category")
         context["changes"], success = create_paginator(self.request.GET.get("changes-page"), changes, 10)
-        context["console"] = "changes" if success else "stats"
+        context["console"] = "changes" if success else "console-main"
         # messages
         messenger(self.request, context["depot"])
         # return
@@ -103,7 +103,7 @@ class CategoryView(generic.TemplateView):
         context["movie"] = context["depot"].movies.get(account=None, category=context["category"])
         changes = context["category"].changes.order_by("-date", "-pk").select_related("account")
         context["changes"], success = create_paginator(self.request.GET.get("changes-page"), changes, 10)
-        context["console"] = "changes" if success else "stats"
+        context["console"] = "changes" if success else "console-main"
         # messages
         messenger(self.request, context["depot"])
         # return
