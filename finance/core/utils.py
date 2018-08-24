@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils.html import strip_tags
 from django.utils.text import slugify
 
@@ -44,3 +45,22 @@ def errors_to_view(view, errors_heading="Something went wrong.", errors=()):
     context = view.get_context_data()
     context["errors"] = errors
     return view.render_to_response(context)
+
+
+def create_paginator(page_get_param, objects, pages):
+    paginator = Paginator(objects, pages)
+    success = False
+    try:
+        objects = paginator.page(page_get_param)
+        success = True
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        objects = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        if int(page_get_param) < 1:
+            objects = paginator.page(paginator.num_pages)
+        else:
+            objects = paginator.page(1)
+        success = True
+    return objects, success

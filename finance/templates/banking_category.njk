@@ -25,6 +25,7 @@
 
     {% import "modules/table.njk" as table %}
     {% import "modules/card.njk" as cg %}
+    {% import "modules/console.njk" as cog %}
    
 
     <div class="vs-1"></div>
@@ -32,8 +33,8 @@
     
     <div class="center-box">
         <div class="console" data-toggle="buttons">
-            <button class="console--button active" type="button" data-target=".console_stats">Stats</button>
-            <button class="console--button" type="button" data-target=".console_changes">Changes</button>
+            <button class="console--button {{ cog.isActive(console, 'stats') }}" type="button" data-target="#stats">Stats</button>
+            <button class="console--button {{ cog.isActive(console, 'changes') }}" type="button" data-target="#changes">Changes</button>
         </div>
     </div>
 
@@ -41,7 +42,7 @@
     <div class="vs-3"></div>
     
     
-    <div class="wrapper console-target console_stats">
+    <div class="wrapper console-target {{ cog.isHidden(console, 'stats') }}" id="stats">
         {{ hg.smallLmHeading("Stats") }}
         <div class="vs-1"></div>
         <div class="items-box">
@@ -62,7 +63,7 @@
     </div>
 
 
-    <div class="wrapper console-target is-hidden console_changes">
+    <div class="wrapper console-target {{ cog.isHidden(console, 'changes') }}" id="changes">
         {{ hg.smallLmHeading("Changes") }}
         <div class="scrollbar-box">
             <table class="table">
@@ -73,6 +74,9 @@
                     {% endfor %}
                 </tbody>
             </table>
+            <div class="center-box">
+                {{ cog.paginatorConsole("changes", changes) }}
+            </div>
         </div>
     </div>
     

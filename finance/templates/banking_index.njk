@@ -15,8 +15,8 @@
 
 {% block chart %}
 	<div class="vs-3"></div>
-	<canvas class="console-target is-hidden console_accounts" id="line_chart"></canvas>
-	<canvas class="console-target console_stats console_categories console_timespans" id="stacked_bar_chart"></canvas>
+	<canvas class="console-target console--is-hidden" id="line_chart"></canvas>
+	<canvas class="console-target" id="stacked_bar_chart"></canvas>
 	<div class="vs-3"></div>
 	<hr class="hr"> 
 {% endblock %}
@@ -30,6 +30,7 @@
 	{% import "modules/card.njk" as cg %}
 	{% import "modules/timespan.njk" as tsg %}
 	{% import "modules/modal.njk" as mg %}
+	{% import "modules/console.njk" as cog %}
 
 
 	{%- set addAccountButton=bg.modalButton("Add Account", "#addAccount") -%}
@@ -46,10 +47,10 @@
 	
 	<div class="center-box">
 		<div class="console" data-toggle="buttons">
-			<button class="console--button active" type="button" data-target=".console_stats">Stats</button>
-			<button class="console--button" type="button" data-target=".console_accounts">Accounts</button>
-			<button class="console--button" type="button" data-target=".console_categories">Categories</button>
-			<button class="console--button" type="button" data-target=".console_timespans">Time Spans</button>
+			<button class="console--button {{ cog.isActive(console, 'stats') }}" type="button" data-target="#stats, #stacked_bar_chart">Stats</button>
+			<button class="console--button {{ cog.isActive(console, 'accounts') }}" type="button" data-target="#accounts, #line_chart">Accounts</button>
+			<button class="console--button {{ cog.isActive(console, 'categories') }}" type="button" data-target="#categories, #stacked_bar_chart">Categories</button>
+			<button class="console--button {{ cog.isActive(console, 'timespans') }}" type="button" data-target="#timespans, #stacked_bar_chart">Time Spans</button>
 		</div>
 	</div>
 
@@ -57,7 +58,7 @@
 	<div class="vs-3"></div>
 
 	
-	<div class="wrapper console-target console_stats">
+	<div class="wrapper console-target {{ cog.isHidden(console, 'stats') }}" id="stats">
 		{{ hg.smallLmHeading("Stats", buttons=[updateButton, resetButton]) }}
 		<div class="vs-1"></div>
 		<div class="items-box">
@@ -78,7 +79,7 @@
 	</div>
 
 
-	<div class="wrapper console-target is-hidden console_accounts">
+	<div class="wrapper console-target {{ cog.isHidden(console, 'accounts') }}" id="accounts">
 		{{ hg.smallLmHeading("Accounts", buttons=[addAccountButton, deleteAccountButton]) }}
 		<div class="scrollbar-box">
 			<table class="table">
@@ -106,7 +107,7 @@
 	</div>
 
  
-	<div class="wrapper console-target is-hidden console_categories">
+	<div class="wrapper console-target {{ cog.isHidden(console, 'categories') }}" id="categories">
 		{{ hg.smallLmHeading("Categories", buttons=[addCategoryButton, deleteCategoryButton]) }}
 		<div class="scrollbar-box">
 			<table class="table">
@@ -128,7 +129,7 @@
 	</div>
 	
 
-	<div class="wrapper console-target is-hidden console_timespans">
+	<div class="wrapper console-target {{ cog.isHidden(console, 'timespans') }}" id="timespans">
 		{{ hg.smallLmHeading("Timespans", buttons=[addTimespanButton]) }}
 		<div class="scrollbar-box">
 			<table class="table">

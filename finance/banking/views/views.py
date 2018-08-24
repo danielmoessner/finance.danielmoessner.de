@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib import messages
 from django.views import generic
 from django.http import HttpResponseRedirect
@@ -7,6 +8,7 @@ from finance.banking.models import Category
 from finance.banking.models import Account
 from finance.banking.models import Depot
 from finance.banking.tasks import update_movies_task
+from finance.core.utils import create_paginator
 
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -76,8 +78,9 @@ class AccountView(generic.TemplateView):
         # specific
         context["account"] = context["depot"].accounts.get(slug=kwargs["slug"])
         context["movie"] = context["depot"].movies.get(account=context["account"], category=None)
-        context["changes"] = context["account"].changes.order_by("-date", "-pk").select_related(
-            "category")
+        changes = context["account"].changes.order_by("-date", "-pk").select_related("category")
+        context["changes"], success = create_paginator(self.request.GET.get("changes-page"), changes, 10)
+        context["console"] = "changes" if success else "stats"
         # messages
         messenger(self.request, context["depot"])
         # return
@@ -99,8 +102,9 @@ class CategoryView(generic.TemplateView):
         # specific
         context["category"] = context["depot"].categories.get(slug=kwargs["slug"])
         context["movie"] = context["depot"].movies.get(account=None, category=context["category"])
-        context["changes"] = context["category"].changes.order_by("-date", "-pk").select_related(
-            "account")
+        changes = context["category"].changes.order_by("-date", "-pk").select_related("account")
+        context["changes"], success = create_paginator(self.request.GET.get("changes-page"), changes, 10)
+        context["console"] = "changes" if success else "stats"
         # messages
         messenger(self.request, context["depot"])
         # return
