@@ -84,8 +84,7 @@ def update_prices():
             datetime.combine(date, time(hour=0, minute=0))) - timedelta(hours=6)
         date_end = pytz.utc.localize(
             datetime.combine(date, time(hour=23, minute=59, second=59))) + timedelta(hours=6)
-        for asset in Asset.objects.filter(private_name=None, private_symbol=None).exclude(
-                symbol="EUR"):
+        for asset in Asset.objects.exclude(symbol="EUR"):
             if not Price.objects.filter(asset=asset, currency="EUR", date__gte=date_start,
                                         date__lte=date_end).exists():
                 with open(os.path.join(file_path, file), "r") as f:
