@@ -27,6 +27,7 @@
     {% import "modules/card.njk" as cg %}
     {% import "modules/button.njk" as bg %}
     {% import "modules/modal.njk" as mg %}
+    {% import "modules/console.njk" as cog %}
    	
 
    	{%- set addTradeButton=bg.modalButton("Buy/Sell Asset", "#addTrade") -%}
@@ -38,10 +39,10 @@
 
 	<div class="center-box">
         <div class="console" data-toggle="buttons">
-        	<button class="console--button active" type="button" data-target=".console_stats">Stats</button>
-        	<button class="console--button" type="button" data-target=".console_assets">Assets</button>
-        	<button class="console--button" type="button" data-target=".console_trades">Trades</button>
-        	<button class="console--button" type="button" data-target=".console_transactions">Transactions</button>
+        	<button class="console--button {{ cog.isActive(console, 'stats') }}" type="button" data-target="#stats">Stats</button>
+        	<button class="console--button {{ cog.isActive(console, 'assets') }}" type="button" data-target="#assets">Assets</button>
+        	<button class="console--button {{ cog.isActive(console, 'trades') }}" type="button" data-target="#trades">Trades</button>
+        	<button class="console--button {{ cog.isActive(console, 'transactions') }}" type="button" data-target="#transactions">Transactions</button>
         </div>
     </div>
 
@@ -49,7 +50,7 @@
 	<div class="vs-3"></div>
 
 	
-	<div class="wrapper console-target console_stats">
+	<div class="wrapper console--target {{ cog.isHidden(console, 'stats') }}" id="stats">
         {{ hg.smallLmHeading("Stats") }}
         <div class="vs-1"></div>
         <div class="items-box">
@@ -71,7 +72,7 @@
 	</div>
 	
 	
-	<div class="wrapper console-target is-hidden console_assets">
+	<div class="wrapper console--target {{ cog.isHidden(console, 'assets') }}" id="assets">
         {{ hg.smallLmHeading("Assets", buttons=[addTradeButton, addTransactionButton]) }}
 		<div class="scrollbar-box">
 			<table class="table ">
@@ -87,7 +88,7 @@
 	</div>
 	
 	
-	<div class="wrapper console-target is-hidden console_trades">
+	<div class="wrapper console--target {{ cog.isHidden(console, 'trades') }}" id="trades">
         {{ hg.smallLmHeading("Trades", buttons=[addTradeButton]) }}
 		<div class="scrollbar-box">
 			<table class="table ">
@@ -108,10 +109,13 @@
 			    </tbody>
 			</table>
 		</div>
+		<div class="center-box">
+            {{ cog.paginatorConsole("trades", trades) }}
+        </div>
 	</div>
 
 
-	<div class="wrapper console-target is-hidden console_transactions">
+	<div class="wrapper console--target {{ cog.isHidden(console, 'transactions') }}" id="transactions">
         {{ hg.smallLmHeading("Transactions", buttons=[addTransactionButton]) }}
 		<div class="scrollbar-box">
 			<table class="table ">
@@ -132,6 +136,9 @@
 			    </tbody>
 			</table>
 		</div>
+		<div class="center-box">
+            {{ cog.paginatorConsole("transactions", transactions) }}
+        </div>
 	</div>
 	
 

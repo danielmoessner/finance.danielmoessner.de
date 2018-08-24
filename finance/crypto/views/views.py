@@ -6,7 +6,7 @@ from django.urls import reverse_lazy
 from finance.crypto.models import Depot
 from finance.crypto.models import Asset
 from finance.crypto.tasks import update_movies_task
-
+from finance.core.utils import create_paginator
 
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -96,13 +96,17 @@ class AccountView(generic.TemplateView):
             .order_by("asset__symbol")
         context["assets_movies"] = zip(context["assets"], asset_movies)
         # trades
-        context["trades"] = context["account"].trades.order_by("-date").select_related(
-            "account", "buy_asset", "sell_asset", "fees_asset")
+        trades = context["account"].trades.order_by("-date").select_related("account", "buy_asset", "sell_asset",
+                                                                            "fees_asset")
+        context["trades"], success = create_paginator(self.request.GET.get("trades-page"), trades, 10)
+        context["console"] = "trades" if success else "stats"
         # transactions
         to_transactions = context["account"].to_transactions.all()
         from_transactions = context["account"].from_transactions.all()
-        context["transactions"] = (to_transactions | from_transactions).order_by(
-            "-date").select_related("from_account", "to_account", "asset")
+        transactions = (to_transactions | from_transactions).order_by("-date").select_related("from_account",
+                                                                                              "to_account", "asset")
+        context["transactions"], success = create_paginator(self.request.GET.get("transactions-page"), transactions, 10)
+        context["console"] = "transactions" if success else context["console"]
         # movie
         context["movie"] = context["depot"].movies.get(account=context["account"], asset=None)
         # error
@@ -130,15 +134,21 @@ class AssetView(generic.TemplateView):
         context["assets"] = context["depot"].assets.order_by("symbol")
         context["asset"] = context["assets"].get(slug=kwargs["slug"])
         # prices
-        context["prices"] = context["asset"].prices.order_by("-date")
+        prices = context["asset"].prices.order_by("-date")
+        context["prices"], success = create_paginator(self.request.GET.get("prices-page"), prices, 10)
+        context["console"] = "prices" if success else "stats"
         # trades
         buy_trades = context["asset"].buy_trades.all()
         sell_trades = context["asset"].sell_trades.all()
-        context["trades"] = (buy_trades | sell_trades).order_by("-date").select_related(
-            "account", "buy_asset", "sell_asset", "fees_asset")
+        trades = (buy_trades | sell_trades).order_by("-date").select_related("account", "buy_asset", "sell_asset",
+                                                                             "fees_asset")
+        context["trades"], success = create_paginator(self.request.GET.get("trades-page"), trades, 10)
+        context["console"] = "trades" if success else context["console"]
         # transactions
-        context["transactions"] = context["asset"].transactions.order_by("-date").select_related(
-            "from_account", "to_account", "asset")
+        transactions = context["asset"].transactions.order_by("-date").select_related("from_account", "to_account",
+                                                                                      "asset")
+        context["transactions"], success = create_paginator(self.request.GET.get("transactions-page"), transactions, 10)
+        context["console"] = "transactions" if success else context["console"]
         # movie
         context["movie"] = context["depot"].movies.get(account=None, asset=context["asset"])
         # messages

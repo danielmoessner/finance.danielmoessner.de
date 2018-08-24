@@ -72,7 +72,7 @@ jQuery(function(){
 	$(".console--button").click(function(e) {
 		$(".console--button").removeClass("console--is-active");
 		$(this).addClass("console--is-active");
-		$(".console-target").addClass("console--is-hidden");
+		$(".console--target").addClass("console--is-hidden");
 		var target = $(this).data("target");
 		$(target).removeClass("console--is-hidden");
 	});

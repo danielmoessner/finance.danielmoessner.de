@@ -15,8 +15,8 @@
 
 {% block chart %}
 	<div class="vs-3"></div>
-	<canvas class="console-target console--is-hidden" id="line_chart"></canvas>
-	<canvas class="console-target" id="stacked_bar_chart"></canvas>
+	<canvas class="console--target console--is-hidden" id="line_chart"></canvas>
+	<canvas class="console--target" id="stacked_bar_chart"></canvas>
 	<div class="vs-3"></div>
 	<hr class="hr"> 
 {% endblock %}
@@ -58,7 +58,7 @@
 	<div class="vs-3"></div>
 
 	
-	<div class="wrapper console-target {{ cog.isHidden(console, 'stats') }}" id="stats">
+	<div class="wrapper console--target {{ cog.isHidden(console, 'stats') }}" id="stats">
 		{{ hg.smallLmHeading("Stats", buttons=[updateButton, resetButton]) }}
 		<div class="vs-1"></div>
 		<div class="items-box">
@@ -79,7 +79,7 @@
 	</div>
 
 
-	<div class="wrapper console-target {{ cog.isHidden(console, 'accounts') }}" id="accounts">
+	<div class="wrapper console--target {{ cog.isHidden(console, 'accounts') }}" id="accounts">
 		{{ hg.smallLmHeading("Accounts", buttons=[addAccountButton, deleteAccountButton]) }}
 		<div class="scrollbar-box">
 			<table class="table">
@@ -107,7 +107,7 @@
 	</div>
 
  
-	<div class="wrapper console-target {{ cog.isHidden(console, 'categories') }}" id="categories">
+	<div class="wrapper console--target {{ cog.isHidden(console, 'categories') }}" id="categories">
 		{{ hg.smallLmHeading("Categories", buttons=[addCategoryButton, deleteCategoryButton]) }}
 		<div class="scrollbar-box">
 			<table class="table">
@@ -129,7 +129,7 @@
 	</div>
 	
 
-	<div class="wrapper console-target {{ cog.isHidden(console, 'timespans') }}" id="timespans">
+	<div class="wrapper console--target {{ cog.isHidden(console, 'timespans') }}" id="timespans">
 		{{ hg.smallLmHeading("Timespans", buttons=[addTimespanButton]) }}
 		<div class="scrollbar-box">
 			<table class="table">

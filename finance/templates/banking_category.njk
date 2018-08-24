@@ -42,7 +42,7 @@
     <div class="vs-3"></div>
     
     
-    <div class="wrapper console-target {{ cog.isHidden(console, 'stats') }}" id="stats">
+    <div class="wrapper console--target {{ cog.isHidden(console, 'stats') }}" id="stats">
         {{ hg.smallLmHeading("Stats") }}
         <div class="vs-1"></div>
         <div class="items-box">
@@ -63,7 +63,7 @@
     </div>
 
 
-    <div class="wrapper console-target {{ cog.isHidden(console, 'changes') }}" id="changes">
+    <div class="wrapper console--target {{ cog.isHidden(console, 'changes') }}" id="changes">
         {{ hg.smallLmHeading("Changes") }}
         <div class="scrollbar-box">
             <table class="table">
@@ -74,9 +74,9 @@
                     {% endfor %}
                 </tbody>
             </table>
-            <div class="center-box">
-                {{ cog.paginatorConsole("changes", changes) }}
-            </div>
+        </div>
+        <div class="center-box">
+            {{ cog.paginatorConsole("changes", changes) }}
         </div>
     </div>
     
