@@ -103,6 +103,112 @@ class Movie(models.Model):
                                 on_delete=models.CASCADE)
     alternative = models.ForeignKey(Alternative, blank=True, null=True, related_name="movies", on_delete=models.CASCADE)
 
+    class Meta:
+        unique_together = ("depot", "account", "alternative")
+
+    def __str__(self):
+        text = "{} {} {}".format(self.depot, self.account, self.alternative)
+        return text.replace("None ", "").replace(" None", "")
+
+    # getters
+    def get_df(self, timespan=None):
+        if timespan and timespan.start_date and timespan.end_date:
+            pictures = self.pictures.filter(d__gte=timespan.start_date,
+                                            d__lte=timespan.end_date)
+        else:
+            pictures = self.pictures
+        pictures = pictures.order_by("d")
+        pictures = pictures.values("d", "p", "v", "g", "cr", "ttwr", "ca", "cs")
+        df = pd.DataFrame(list(pictures), dtype=np.float64)
+        if df.empty:
+            df = pd.DataFrame(columns=["d", "p", "v", "g", "cr", "ttwr", "ca", "cs"])
+        return df
+
+    def get_data(self, timespan=None):
+        if timespan and timespan.start_date and timespan.end_date:
+            pictures = self.pictures.filter(d__gte=timespan.start_date,
+                                            d__lte=timespan.end_date)
+        else:
+            pictures = Picture.objects.filter(movie=self)
+        pictures = pictures.order_by("d")
+        data = dict()
+        data["d"] = (pictures.values_list("d", flat=True))
+        data["p"] = (pictures.values_list("p", flat=True))
+        data["v"] = (pictures.values_list("v", flat=True))
+        data["g"] = (pictures.values_list("g", flat=True))
+        data["cr"] = (pictures.values_list("cr", flat=True))
+        data["ttwr"] = (pictures.values_list("ttwr", flat=True))
+        data["ca"] = (pictures.values_list("ca", flat=True))
+        data["cs"] = (pictures.values_list("cs", flat=True))
+        return data
+
+    def get_values(self, user, keys, timespan=None):
+        # user in args for query optimization and ease
+        data = dict()
+        start_picture = None
+        end_picture = None
+        if timespan and timespan.start_date:
+            data["start_date"] = timespan.start_date.strftime(user.date_format)
+            try:
+                start_picture = self.pictures.filter(d__lt=timespan.start_date).latest("d")
+            except ObjectDoesNotExist:
+                pass
+        if timespan and timespan.end_date:
+            data["end_date"] = timespan.end_date.strftime(user.date_format)
+            try:
+                end_picture = self.pictures.filter(d__lte=timespan.end_date).latest("d")
+            except ObjectDoesNotExist:
+                pass
+        else:
+            try:
+                end_picture = self.pictures.latest("d")
+            except ObjectDoesNotExist:
+                pass
+
+        for key in keys:
+            if start_picture and end_picture:
+                data[key] = getattr(end_picture, key) - getattr(start_picture, key)
+            elif end_picture:
+                data[key] = getattr(end_picture, key)
+            else:
+                data[key] = 0
+            if user.rounded_numbers:
+                data[key] = round(data[key], 2)
+                if data[key] == 0.00:
+                    data[key] = "x"
+
+        return data
+
+    # init
+    @staticmethod
+    def init_movies(sender, instance, **kwargs):
+        if sender is Account:
+            depot = instance.depot
+            for alternative in depot.alternatives.all():
+                Movie.objects.get_or_create(depot=depot, account=instance, alternative=alternative)
+            Movie.objects.get_or_create(depot=depot, account=instance, alternative=None)
+        elif sender is Alternative:
+            depot = instance.depot
+            for account in depot.accounts.all():
+                Movie.objects.get_or_create(depot=depot, account=account, alternative=instance)
+            Movie.objects.get_or_create(depot=depot, account=instance, alternative=None)
+        elif sender is Depot:
+            depot = instance
+            Movie.objects.get_or_create(depot=depot, account=None, alternative=None)
+
+    @staticmethod
+    def init_update(sender, instance, **kwargs):
+        if sender is Value:
+            q1 = Q(alternative=instance.alternative)
+            q2 = Q(depot=instance.alternative.depot, alternative=None, account=None)
+            movies = Movie.objects.filter(q1 | q2)
+            movies.update(update_needed=True)
+        elif sender is Flow:
+            q1 = Q(alternative=instance.alternative)
+            q2 = Q(depot=instance.alternative.depot, alternative=None, account=None)
+            movies = Movie.objects.filter(q1 | q2)
+            movies.update(update_needed=True)
+
 
 class Picture(models.Model):
     movie = models.ForeignKey(Movie, related_name="pictures", on_delete=models.CASCADE)
@@ -117,12 +223,10 @@ class Picture(models.Model):
     cs = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=3)
 
 
-# post_save.connect(Movie.init_update, sender=Price)
-# post_delete.connect(Movie.init_update, sender=Price)
-# post_save.connect(Movie.init_update, sender=Trade)
-# post_delete.connect(Movie.init_update, sender=Trade)
-# post_save.connect(Movie.init_update, sender=Transaction)
-# post_delete.connect(Movie.init_update, sender=Transaction)
-# post_save.connect(Movie.init_movies, sender=Account)
-# post_save.connect(Movie.init_movies, sender=Asset)
-# post_save.connect(Movie.init_movies, sender=Depot)
+post_save.connect(Movie.init_update, sender=Value)
+post_delete.connect(Movie.init_update, sender=Value)
+post_save.connect(Movie.init_update, sender=Flow)
+post_delete.connect(Movie.init_update, sender=Flow)
+post_save.connect(Movie.init_movies, sender=Account)
+post_save.connect(Movie.init_movies, sender=Alternative)
+post_save.connect(Movie.init_movies, sender=Depot)

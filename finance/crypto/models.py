@@ -265,12 +265,6 @@ class Movie(models.Model):
     class Meta:
         unique_together = ("depot", "account", "asset")
 
-    def __init__(self, *args, **kwargs):
-        super(Movie, self).__init__(*args, **kwargs)
-        self.data = None
-        self.ti = None
-        self.timespan_data = None
-
     def __str__(self):
         text = "{} {} {}".format(self.depot, self.account, self.asset)
         return text.replace("None ", "").replace(" None", "")
@@ -354,6 +348,8 @@ class Movie(models.Model):
             Movie.objects.get_or_create(depot=depot, account=instance, asset=None)
         elif sender is Asset:
             for depot in instance.depots.all():
+                for account in depot.accounts.all():
+                    Movie.objects.get_or_create(depot=depot, account=account, asset=instance)
                 Movie.objects.get_or_create(depot=depot, account=None, asset=instance)
         elif sender is Depot:
             depot = instance
@@ -363,7 +359,7 @@ class Movie(models.Model):
     def init_update(sender, instance, **kwargs):
         if sender is Price:
             q1 = Q(asset=instance.asset)
-            q2 = Q(asset=None, account=None)
+            q2 = Q(depot_in=instance.asset.depots.all(), asset=None, account=None)
             movies = Movie.objects.filter(q1 | q2)
             movies.update(update_needed=True)
         elif sender is Transaction:
