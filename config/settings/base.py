@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'finance.users.apps.UsersConfig',
     'finance.banking.apps.BankingConfig',
     'finance.crypto.apps.CryptoConfig',
+    'finance.alternative.apps.AlternativeConfig',
 ]
 
 MIDDLEWARE = [

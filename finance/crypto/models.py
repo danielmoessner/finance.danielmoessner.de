@@ -219,7 +219,7 @@ class Price(models.Model):
         unique_together = ("asset", "date", "currency")
 
     def __str__(self):
-        return "{} {} {}".format(self.asset, self.date.strftime("%Y-%m-%d"), self.price)
+        return "{} {} {}".format(self.asset, self.get_date(), self.price)
 
     # getters
     def get_date(self):
