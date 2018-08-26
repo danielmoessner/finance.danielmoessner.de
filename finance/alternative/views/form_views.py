@@ -82,13 +82,13 @@ class AddAlternativeView(CustomGetFormMixin, CustomAjaxFormMixin, generic.Create
     template_name = "modules/form_snippet.njk"
 
 
-class EditCategoryView(CustomGetFormMixin, CustomAjaxFormMixin, generic.UpdateView):
+class EditAlternativeView(CustomGetFormMixin, CustomAjaxFormMixin, generic.UpdateView):
     model = Alternative
     form_class = AlternativeForm
     template_name = "modules/form_snippet.njk"
 
 
-class DeleteCategoryView(CustomGetFormMixin, CustomAjaxFormMixin, generic.FormView):
+class DeleteAlternativeView(CustomGetFormMixin, CustomAjaxFormMixin, generic.FormView):
     model = Alternative
     template_name = "modules/form_snippet.njk"
     form_class = AlternativeSelectForm
