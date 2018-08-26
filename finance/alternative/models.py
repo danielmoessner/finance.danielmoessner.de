@@ -6,7 +6,6 @@ from django.db import models
 
 from finance.users.models import StandardUser
 from finance.core.models import Timespan as CoreTimespan
-from finance.core.models import Account as CoreAccount
 from finance.core.models import Depot as CoreDepot
 
 import pandas as pd
@@ -24,15 +23,7 @@ class Depot(CoreDepot):
 
     # getters
     def get_movie(self):
-        return self.movies.get(depot=self, account=None, asset=None)
-
-
-class Account(CoreAccount):
-    depot = models.ForeignKey(Depot, on_delete=models.CASCADE, related_name="accounts")
-
-    # getters
-    def get_movie(self):
-        return self.movies.get(depot=self.depot, asset=None)
+        return self.movies.get(depot=self, alternative=None)
 
 
 class Alternative(models.Model):
@@ -40,15 +31,15 @@ class Alternative(models.Model):
     slug = models.SlugField(unique=True)
     depot = models.ForeignKey(Depot, on_delete=models.CASCADE, related_name="alternatives")
 
+    class Meta:
+        unique_together = ("depot", "name")
+
     def __str__(self):
         return "{}".format(self.name)
 
     # getters
     def get_movie(self, depot):
-        return self.movies.get(depot=depot, account=None)
-
-    def get_acc_movie(self, depot, account):
-        return self.movies.get(depot=depot, account=account)
+        return self.movies.get(depot=depot, alternative=self)
 
 
 class Value(models.Model):
@@ -99,16 +90,14 @@ class Movie(models.Model):
     update_needed = models.BooleanField(default=True)
     depot = models.ForeignKey(Depot, blank=True, null=True, related_name="movies",
                               on_delete=models.CASCADE)
-    account = models.ForeignKey(Account, blank=True, null=True, related_name="movies",
-                                on_delete=models.CASCADE)
     alternative = models.ForeignKey(Alternative, blank=True, null=True, related_name="movies", on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ("depot", "account", "alternative")
+        unique_together = ("depot", "alternative")
 
     def __str__(self):
-        text = "{} {} {}".format(self.depot, self.account, self.alternative)
-        return text.replace("None ", "").replace(" None", "")
+        text = "{} {}".format(self.depot, self.alternative).replace(" None", "")
+        return text
 
     # getters
     def get_df(self, timespan=None):
@@ -182,44 +171,177 @@ class Movie(models.Model):
     # init
     @staticmethod
     def init_movies(sender, instance, **kwargs):
-        if sender is Account:
+        if sender is Alternative:
             depot = instance.depot
-            for alternative in depot.alternatives.all():
-                Movie.objects.get_or_create(depot=depot, account=instance, alternative=alternative)
-            Movie.objects.get_or_create(depot=depot, account=instance, alternative=None)
-        elif sender is Alternative:
-            depot = instance.depot
-            for account in depot.accounts.all():
-                Movie.objects.get_or_create(depot=depot, account=account, alternative=instance)
-            Movie.objects.get_or_create(depot=depot, account=instance, alternative=None)
+            Movie.objects.get_or_create(depot=depot, alternative=None)
         elif sender is Depot:
             depot = instance
-            Movie.objects.get_or_create(depot=depot, account=None, alternative=None)
+            Movie.objects.get_or_create(depot=depot, alternative=None)
 
     @staticmethod
     def init_update(sender, instance, **kwargs):
-        if sender is Value:
+        if sender is (Value or Flow):
             q1 = Q(alternative=instance.alternative)
-            q2 = Q(depot=instance.alternative.depot, alternative=None, account=None)
+            q2 = Q(depot=instance.alternative.depot, alternative=None)
             movies = Movie.objects.filter(q1 | q2)
             movies.update(update_needed=True)
-        elif sender is Flow:
-            q1 = Q(alternative=instance.alternative)
-            q2 = Q(depot=instance.alternative.depot, alternative=None, account=None)
-            movies = Movie.objects.filter(q1 | q2)
-            movies.update(update_needed=True)
+
+    # update
+    def update(self):
+        if self.alternative:
+            df = self.calc_alternative()
+        elif not self.alternative:
+            df = self.calc_depot()
+        else:
+            raise Exception("Depot and account or asset must be defined in a movie.")
+
+        old_df = self.get_df()
+        old_df.rename(columns={"d": "date", "v": "value", "cs": "current_sum", "g": "gain", "cr": "current_return",
+                               "ttwr": "true_time_weighted_return", "p": "price", "ca": "current_amount"}, inplace=True)
+        old_df.set_index("date", inplace=True)
+        if self.alternative:
+            old_df = old_df[["value", "current_sum", "gain", "current_return", "true_time_weighted_return"]]
+        elif not self.alternative:
+            old_df = old_df[["value", "current_sum", "gain", "current_return", "true_time_weighted_return"]]
+
+        if old_df.equals(df[:len(old_df)]):
+            df = df[len(old_df):]
+        else:
+            self.pictures.all().delete()
+
+        pictures = list()
+        if self.alternative:
+            for index, row in df.iterrows():
+                picture = Picture(
+                    movie=self,
+                    d=index,
+                    v=row["value"],
+                    cs=row["current_sum"],
+                    g=row["gain"],
+                    cr=row["current_return"],
+                    p=row["price"],
+                    ca=row["current_amount"]
+                )
+                pictures.append(picture)
+        elif not self.alternative:
+            for index, row in df.iterrows():
+                picture = Picture(
+                    movie=self,
+                    d=index,
+                    v=row["value"],
+                    cs=row["current_sum"],
+                    g=row["gain"],
+                    cr=row["current_return"],
+                    ttwr=row["true_time_weighted_return"]
+                )
+                pictures.append(picture)
+        Picture.objects.bulk_create(pictures)
+
+        self.update_needed = False
+        self.save()
+
+    @staticmethod
+    def na_to_na_sum(df, column_name):
+        column = df.columns.get_loc(column_name)
+        for i in range(0, len(df)):
+            if pd.isna(df.iloc[i, column]):
+                notna_sum = 0
+                for k in range(i - 1, -1, -1):
+                    if pd.notna(df.iloc[k, column]):
+                        notna_sum += df.iloc[k, column]
+                    else:
+                        break
+                df.loc[df.index[i], "helper"] = notna_sum
+        df.iloc[:, column] = df.loc[:, "helper"]
+        df.drop(["helper"], axis=1, inplace=True)
+
+    def calc_alternative(self):
+        # values
+        values = Value.objects.filter(alternative=self.alternative)
+        values = values.values("date", "value")
+        values_df = pd.DataFrame(list(values), dtype=np.float64).set_index("date")
+        # flows
+        flows = Flow.objects.filter(alternative=self.alternative)
+        flows = flows.values("date", "flow")
+        flows_df = pd.DataFrame(list(flows), dtype=np.float64).set_index("date")
+        # df
+        df = pd.concat([values_df, flows_df], sort=False)
+        df.sort_index(inplace=True)
+        # add flows into the value row
+        Movie.na_to_na_sum(df, "flow")
+        df = df.loc[pd.notna(df.loc[:, "value"])]
+        if not df.empty:
+            df = pd.concat([df, df.iloc[0:1]])
+            df.sort_index(inplace=True)
+            df.iloc[0, df.columns.get_loc("value")] = df.iloc[0, df.columns.get_loc("flow")]
+            df.iloc[1, df.columns.get_loc("flow")] = 0
+        # cs
+        df.loc[:, "cs"] = df.loc[:, "flow"].rolling(window=len(df.loc[:, "flow"]), min_periods=1).sum()
+        # g
+        df.loc[:, "g"] = df.loc[:, "value"] - df.loc[:, "cs"]
+        # cr
+        df.loc[:, "cr"] = (df.loc[:, "value"] - df.loc[:, "cs"]) / df.loc[:, "cs"]
+        # ttwr
+        df.loc[:, "ttwr"] = df.loc[:, "value"] / (df.loc[:, "value"].shift(1) + df.loc[:, "flow"])
+        df.loc[:, "ttwr"].fillna(1, inplace=True)
+        df.loc[:, "ttwr"] = df.loc[:, "ttwr"].cumprod()
+        df.loc[:, "ttwr"] = df.loc[:, "ttwr"] - 1
+        # return
+        return df
+
+    def calc_depot(self):
+        df = pd.DataFrame(columns=["value", "current_sum", "date"], dtype=np.float64)
+        # alternatives
+        alternatives = list()
+        for alternative in self.depot.alternatives.all():
+            movie = alternative.get_movie(self.depot)
+            alternative_df = movie.get_df()
+            alternative_df = alternative_df.loc[:, ["v", "d", "f"]]
+            alternative_df.rename(columns={"v": alternative.name + "__v", "d": "date", "f": alternative.name + "__f"},
+                                  inplace=True)
+            alternatives.append(alternative.name)
+            df = pd.concat([df, alternative_df], ignore_index=True, sort=False)
+        # all together
+        df.loc[:, "date"] = df.loc[:, "date"].dt.normalize()
+        df.set_index("date", inplace=True)
+        df.sort_index(inplace=True)
+        df.ffill(inplace=True)
+        df = df[~df.index.duplicated(keep="last")]
+        # sum it up
+        df.loc[:, "v"] = df.loc[:, [name + "__v" for name in alternatives]].sum(axis=1, skipna=True)
+        df.loc[:, "f"] = df[:, [name + "__f" for name in alternatives]].sum(axis=1, skipna=True)
+        # add flows into the value row
+        Movie.na_to_na_sum(df, "flow")
+        df = df.loc[pd.notna(df.loc[:, "value"])]
+        if not df.empty:
+            df = pd.concat([df, df.iloc[0:1]])
+            df.sort_index(inplace=True)
+            df.iloc[0, df.columns.get_loc("value")] = df.iloc[0, df.columns.get_loc("flow")]
+            df.iloc[1, df.columns.get_loc("flow")] = 0
+        # cs
+        df.loc[:, "cs"] = df.loc[:, "flow"].rolling(window=len(df.loc[:, "flow"]), min_periods=1).sum()
+        # g
+        df.loc[:, "g"] = df.loc[:, "value"] - df.loc[:, "cs"]
+        # cr
+        df.loc[:, "cr"] = (df.loc[:, "value"] - df.loc[:, "cs"]) / df.loc[:, "cs"]
+        # ttwr
+        df.loc[:, "ttwr"] = df.loc[:, "value"] / (df.loc[:, "value"].shift(1) + df.loc[:, "flow"])
+        df.loc[:, "ttwr"].fillna(1, inplace=True)
+        df.loc[:, "ttwr"] = df.loc[:, "ttwr"].cumprod()
+        df.loc[:, "ttwr"] = df.loc[:, "ttwr"] - 1
+        # return
+        return df
 
 
 class Picture(models.Model):
     movie = models.ForeignKey(Movie, related_name="pictures", on_delete=models.CASCADE)
     d = models.DateTimeField()
 
-    p = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=3)
     v = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=3)
+    f = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=3)
     g = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=3)
     cr = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=3)
     ttwr = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=3)
-    ca = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=8)
     cs = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=3)
 
 
@@ -227,6 +349,5 @@ post_save.connect(Movie.init_update, sender=Value)
 post_delete.connect(Movie.init_update, sender=Value)
 post_save.connect(Movie.init_update, sender=Flow)
 post_delete.connect(Movie.init_update, sender=Flow)
-post_save.connect(Movie.init_movies, sender=Account)
 post_save.connect(Movie.init_movies, sender=Alternative)
 post_save.connect(Movie.init_movies, sender=Depot)
