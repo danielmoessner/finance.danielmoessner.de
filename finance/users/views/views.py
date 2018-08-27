@@ -11,6 +11,8 @@ from django.urls import reverse_lazy
 from django.conf import settings
 
 from finance.core.views import CustomInvalidFormMixin
+from finance.alternative.models import init_alternative as alternative_init_alternative
+from finance.alternative.models import Depot as AlternativeDepot
 from finance.banking.models import init_banking as banking_init_banking
 from finance.banking.models import Depot as BankingDepot
 from finance.crypto.models import init_crypto as crypto_init_crypto
@@ -48,6 +50,8 @@ class SignInView(View):
                 url = reverse_lazy("banking:index")
             elif front_page == "CRYPTO":
                 url = reverse_lazy("crypto:index", args=[request.user.slug])
+            elif front_page == "ALTERNATIVE":
+                url = reverse_lazy("alternative:index", args=[request.user.slug])
             else:
                 url = reverse_lazy("users:settings")
             return HttpResponseRedirect(url)
@@ -90,6 +94,8 @@ class SettingsView(generic.TemplateView):
         # crypto
         context["crypto_depots"] = context["user"].crypto_depots.all()
         context["edit_user_crypto_form"] = UpdateCryptoStandardUserForm(instance=self.request.user)
+        # alternative
+        context["alternative_depots"] = context["user"].alternative_depots.all()
         return context
 
 
@@ -109,15 +115,30 @@ def init_crypto(request):
     return HttpResponseRedirect(reverse_lazy("users:settings"))
 
 
+def init_alternative(request):
+    user = request.user
+    alternative_init_alternative(user)
+    user.alternative_is_active = True
+    user.save()
+    return HttpResponseRedirect(reverse_lazy("users:settings"))
+
+
 def set_banking_depot_active(request, slug, pk):
     depot_pk = int(pk)
     depot = BankingDepot.objects.get(pk=depot_pk)
     request.user.set_banking_depot_active(depot)
-    return HttpResponseRedirect(reverse_lazy("users:settings", args=[request.user.slug, ]))
+    return HttpResponseRedirect(reverse_lazy("users:settings", args=[request.user.slug]))
 
 
 def set_crypto_depot_active(request, slug, pk):
     depot_pk = int(pk)
     depot = CryptoDepot.objects.get(pk=depot_pk)
     request.user.set_crypto_depot_active(depot)
-    return HttpResponseRedirect(reverse_lazy("users:settings", args=[request.user.slug, ]))
+    return HttpResponseRedirect(reverse_lazy("users:settings", args=[request.user.slug]))
+
+
+def set_alternative_depot_active(request, slug, pk):
+    depot_pk = int(pk)
+    depot = AlternativeDepot.objects.get(pk=depot_pk)
+    request.user.set_alternative_depot_active(depot)
+    return HttpResponseRedirect(reverse_lazy("users:settings", args=[request.user.slug]))

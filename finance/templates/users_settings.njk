@@ -22,6 +22,8 @@
 	{%- set deleteBankingDepotButton=bg.modalButton("Delete Depot", "#deleteBankingDepot") -%}
 	{%- set addCryptoDepotButton=bg.modalButton("Add Depot", "#addCryptoDepot") -%}
 	{%- set deleteCryptoDepotButton=bg.modalButton("Delete Depot", "#deleteCryptoDepot") -%}
+	{%- set addAlternativeDepotButton=bg.modalButton("Add Depot", "#addAlternativeDepot") -%}
+	{%- set deleteAlternativeDepotButton=bg.modalButton("Delete Depot", "#deleteAlternativeDepot") -%}
 
 
 	<div class="vs-1"></div>
@@ -36,6 +38,9 @@
         	{% endif %}
             {% if user.crypto_is_active %}
         		<button class="console--button {{ cog.isActive(console, 'crypto') }}" type="button" data-target="#crypto">Crypto</button>
+        	{% endif %}
+        	{% if user.alternative_is_active %}
+        		<button class="console--button {{ cog.isActive(console, 'alternative') }}" type="button" data-target="#alternative">Alternative</button>
         	{% endif %}
         </div>
     </div>
@@ -57,11 +62,15 @@
 					<h3 class="column--heading">Banking</h3>
 					<div class="column--spacer"></div>
 					<h3 class="column--heading">Crypto</h3>
+					<div class="column--spacer"></div>
+					<h3 class="column--heading">Alternative</h3>
 				</div>
 				<div class="column--right">
 					{{ bg.hrefButton("Init", url("users:init_banking")) }}
 					<div class="column--spacer"></div>
 					{{ bg.hrefButton("Init", url("users:init_crypto")) }}
+					<div class="column--spacer"></div>
+					{{ bg.hrefButton("Init", url("users:init_alternative")) }}
 				</form>
 				</div>
 			</div>
@@ -132,6 +141,29 @@
 	    </div>
 	</div>
 
+
+	<div class="wrapper console--target {{ cog.isHidden(console, 'alternative') }}" id="alternative">
+	    {{ hg.smallLmHeading("Depots", buttons=[addAlternativeDepotButton, deleteAlternativeDepotButton]) }}
+		<div class="scrollbar-box">
+			<table class="table">
+	            {{ tg.head(["Depot", "Action"]) }}
+	            <tbody class="table--body">
+	                {% for depot in alternative_depots %}
+	                    {% set tablebuttons %}
+	                        <div class="table--buttons">
+	                            {{ fg.setActiveButtonForm(depot, url("alternative:set_depot", args=[depot.pk]), csrf_token) }}
+	                            <div class="hs-1"></div>
+	                            {{ bg.modalButton("Edit", "#editAlternativeDepot"+depot.pk|string) }}
+	                        </div>
+	                        {{ mg.djangoModal("Edit Depot", "editAlternativeDepot"+depot.pk|string, url("alternative:edit_depot", args=[depot.pk])) }}
+	                    {% endset %}  
+	                    {{ tg.row([depot.name, tablebuttons]) }}
+	                {% endfor %}
+	            </tbody>
+	        </table>
+        </div>
+	</div>
+
  
 {% endblock %}
 
@@ -142,4 +174,6 @@
     {{ mg.djangoModal("Delete Depot", "deleteCryptoDepot", url("crypto:delete_depot")) }}
     {{ mg.djangoModal("Add Depot", "addBankingDepot", url("banking:add_depot")) }}
     {{ mg.djangoModal("Delete Depot", "deleteBankingDepot", url("banking:delete_depot")) }}
+    {{ mg.djangoModal("Add Depot", "addAlternativeDepot", url("alternative:add_depot")) }}
+    {{ mg.djangoModal("Delete Depot", "deleteAlternativeDepot", url("alternative:delete_depot")) }}
 {% endblock %}

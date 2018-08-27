@@ -13,7 +13,7 @@ import numpy as np
 import time
 
 
-def init_alternative():
+def init_alternative(user):
     pass
 
 
@@ -173,7 +173,7 @@ class Movie(models.Model):
     def init_movies(sender, instance, **kwargs):
         if sender is Alternative:
             depot = instance.depot
-            Movie.objects.get_or_create(depot=depot, alternative=None)
+            Movie.objects.get_or_create(depot=depot, alternative=instance)
         elif sender is Depot:
             depot = instance
             Movie.objects.get_or_create(depot=depot, alternative=None)
@@ -193,7 +193,7 @@ class Movie(models.Model):
         elif not self.alternative:
             df = self.calc_depot()
         else:
-            raise Exception("Depot and account or asset must be defined in a movie.")
+            raise Exception("Depot or alternative must be defined in a movie.")
 
         old_df = self.get_df()
         old_df.rename(columns={"d": "date", "v": "value", "cs": "current_sum", "g": "gain", "cr": "current_return",

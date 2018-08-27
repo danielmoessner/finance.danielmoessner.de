@@ -25,6 +25,7 @@ urlpatterns = [
     url(r'^user/', include('finance.users.urls')),
     url(r'^banking/', include('finance.banking.urls')),
     url(r'^crypto/', include('finance.crypto.urls')),
+    url(r'^alternative/', include('finance.alternative.urls')),
 ]
 
 

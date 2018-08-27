@@ -22,6 +22,12 @@ class Timespan(models.Model):
             name="Default Timespan", start_date=None, end_date=None)
         return pts
 
+    def get_start_date(self):
+        return timezone.localtime(self.start_date).strftime("%d.%m.%Y %H:%M") if self.start_date else None
+
+    def get_end_date(self):
+        return timezone.localtime(self.end_date).strftime("%d.%m.%Y %H:%M") if self.end_date else None
+
 
 class Depot(models.Model):
     name = models.CharField(max_length=200)

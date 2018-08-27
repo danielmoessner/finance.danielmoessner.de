@@ -23,6 +23,11 @@
                 <a class="navigation--link {% if activePage=='crypto' %}navigation--link--is-active{% endif %}" href="{{ url('crypto:index') }}">Crypto</a>
             </li>
             {% endif %}
+             
+            <li class="navigation--item">
+                <a class="navigation--link {% if activePage=='alternative' %}navigation--link--is-active{% endif %}" href="{{ url('alternative:index') }}">Alternative</a>
+            </li>
+
             <div class="vs-2"></div>
             <li class="navigation--item">
                 <p class="navigation--heading">User</p>

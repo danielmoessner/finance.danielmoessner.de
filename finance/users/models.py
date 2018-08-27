@@ -32,6 +32,8 @@ class StandardUser(AbstractUser):
     rounded_numbers = models.BooleanField(default=True)
     # banking
     banking_is_active = models.BooleanField(default=False)
+    # alternative
+    alternative_is_active = models.BooleanField(default=False)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if not self.slug:

@@ -134,10 +134,10 @@ class ChangeForm(forms.ModelForm):
 class TimespanForm(forms.ModelForm):
     start_date = forms.DateTimeField(widget=forms.DateTimeInput(
         attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
-        input_formats=["%Y-%m-%dT%H:%M"], label="Date")
+        input_formats=["%Y-%m-%dT%H:%M"], label="Start Date (not required)", required=False)
     end_date = forms.DateTimeField(widget=forms.DateTimeInput(
         attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
-        input_formats=["%Y-%m-%dT%H:%M"], label="Date")
+        input_formats=["%Y-%m-%dT%H:%M"], label="End Date (not required)", required=False)
 
     class Meta:
         model = Timespan

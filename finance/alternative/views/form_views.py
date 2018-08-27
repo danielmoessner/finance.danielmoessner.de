@@ -28,7 +28,7 @@ class CustomGetFormMixin(FormMixin):
     def get_form(self, form_class=None):
         if form_class is None:
             form_class = self.get_form_class()
-        depot = self.request.user.banking_depots.get(is_active=True)
+        depot = self.request.user.alternative_depots.get(is_active=True)
         return form_class(depot, **self.get_form_kwargs())
 
 
@@ -94,8 +94,8 @@ class DeleteAlternativeView(CustomGetFormMixin, CustomAjaxFormMixin, generic.For
     form_class = AlternativeSelectForm
 
     def form_valid(self, form):
-        category = form.cleaned_data["category"]
-        category.delete()
+        alternative = form.cleaned_data["alternative"]
+        alternative.delete()
         return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
 
 
@@ -170,7 +170,7 @@ class SetActiveTimespanView(CustomGetFormMixin, generic.UpdateView):
     model = Timespan
     form_class = TimespanActiveForm
     template_name = "modules/form_snippet.njk"
-    success_url = reverse_lazy("banking:index")
+    success_url = reverse_lazy("alternative:index")
 
 
 class DeleteTimespanView(CustomGetFormMixin, CustomAjaxDeleteMixin, generic.DeleteView):

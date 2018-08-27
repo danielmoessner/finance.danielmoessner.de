@@ -32,7 +32,7 @@ class DepotSelectForm(forms.Form):
 
     def __init__(self, user, *args, **kwargs):
         super(DepotSelectForm, self).__init__(*args, **kwargs)
-        self.fields["depot"].queryset = user.banking_depots.all()
+        self.fields["depot"].queryset = user.alternative_depots.all()
 
 
 class DepotActiveForm(forms.ModelForm):
@@ -42,7 +42,7 @@ class DepotActiveForm(forms.ModelForm):
 
     def __init__(self, user, *args, **kwargs):
         super(DepotActiveForm, self).__init__(*args, **kwargs)
-        user.banking_depots.update(is_active=False)
+        user.alternative_depots.update(is_active=False)
 
 
 # alternative
@@ -119,10 +119,10 @@ class FlowForm(forms.ModelForm):
 class TimespanForm(forms.ModelForm):
     start_date = forms.DateTimeField(widget=forms.DateTimeInput(
         attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
-        input_formats=["%Y-%m-%dT%H:%M"], label="Date")
+        input_formats=["%Y-%m-%dT%H:%M"], label="Start Date (not required)", required=False)
     end_date = forms.DateTimeField(widget=forms.DateTimeInput(
         attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
-        input_formats=["%Y-%m-%dT%H:%M"], label="Date")
+        input_formats=["%Y-%m-%dT%H:%M"], label="End Date (not required)", required=False)
 
     class Meta:
         model = Timespan

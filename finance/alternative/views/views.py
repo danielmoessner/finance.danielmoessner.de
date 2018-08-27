@@ -40,13 +40,13 @@ def messenger(request, depot):
 
 # views
 class IndexView(generic.TemplateView):
-    template_name = "banking_index.njk"
+    template_name = "alternative_index.njk"
 
     def get_context_data(self, **kwargs):
         # general
         context = super(IndexView, self).get_context_data(**kwargs)
         context["user"] = self.request.user
-        context["depot"] = context["user"].banking_depots.get(is_active=True)
+        context["depot"] = context["user"].alternative_depots.get(is_active=True)
         context["alternatives"] = context["depot"].alternatives.order_by("name")
         context["timespans"] = context["depot"].timespans.all()
         context["timespan"] = context["depot"].timespans.filter(is_active=True).first()
@@ -61,13 +61,13 @@ class IndexView(generic.TemplateView):
 
 
 class AlternativeView(generic.TemplateView):
-    template_name = "banking_account.njk"
+    template_name = "alternative_alternative.njk"
 
     def get_context_data(self, **kwargs):
         # general
         context = super(AlternativeView, self).get_context_data(**kwargs)
         context["user"] = self.request.user
-        context["depot"] = context["user"].banking_depots.get(is_active=True)
+        context["depot"] = context["user"].alternative_depots.get(is_active=True)
         context["alternatives"] = context["depot"].alternatives.order_by("name").select_related("depot")
         context["timespans"] = context["depot"].timespans.all()
         context["timespan"] = context["depot"].timespans.filter(is_active=True).first()
