@@ -8,6 +8,7 @@
 
 
 {% block head %}
+	{# <script type="text/javascript" src="{{ static('js/line_bar_chart.js') }}" api-data="{{ url('banking:api_data_alternative', args=[alternative.slug]) }}"></script> #}
 {% endblock %}
 
 
@@ -57,18 +58,18 @@
 		{{ hg.smallLmHeading("Stats", buttons=[]) }}
 		<div class="vs-1"></div>
 		<div class="items-box">
-			{# {{ cg.statsCard("Total", movie.get_values(user, ["b",])["b"], ext=user.currency) }} #}
+			{{ cg.statsCard("Total", "", ext=user.currency) }}
 		</div>
 		{% if timespan.start_date %}
 			<div class="vs-3"></div>
 			{{ hg.smallLmHeading(timespan.name) }}
 			<div class="vs-1"></div>
 			<div class="items-box">
-				{# {% with data=movie.get_values(user, ["b",], timespan) %}
+				{% with data=movie.get_values(user, ["b",], timespan) %}
 					{%- set heading=data.start_date+"-"+data.end_date -%}
-					{%- set value="Change: "+data.b|string -%}
-					{{ cg.statsCard(heading, value) }}
-				{% endwith %} #}
+					{%- set value="" -%}
+                    {{ cg.statsCard(heading, value) }}
+				{% endwith %}
 			</div>
 		{% endif %}
 	</div>

@@ -72,7 +72,7 @@ class AlternativeView(generic.TemplateView):
         context["timespans"] = context["depot"].timespans.all()
         context["timespan"] = context["depot"].timespans.filter(is_active=True).first()
         # specific
-        context["alternative"] = context["depot"].alternatives.get(slug=kwargs["slug"])
+        context["alternative"] = context["depot"].alternatives.select_related("depot").get(slug=kwargs["slug"])
         context["movie"] = context["alternative"].get_movie()
         values = context["alternative"].values.order_by("-date", "-pk")
         context["values"], success = create_paginator(self.request.GET.get("values-page"), values, 10)

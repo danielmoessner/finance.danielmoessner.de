@@ -38,8 +38,8 @@ class Alternative(models.Model):
         return "{}".format(self.name)
 
     # getters
-    def get_movie(self, depot):
-        return self.movies.get(depot=depot, alternative=self)
+    def get_movie(self):
+        return self.movies.get(depot=self.depot, alternative=self)
 
 
 class Value(models.Model):
