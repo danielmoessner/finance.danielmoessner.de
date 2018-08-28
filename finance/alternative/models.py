@@ -26,6 +26,26 @@ class Depot(CoreDepot):
     def get_movie(self):
         return self.movies.get(depot=self, alternative=None)
 
+    # movies
+    def reset_movies(self, delete=False):
+        if delete:
+            self.movies.all().delete()
+
+        for alternative in self.alternatives.all():
+            Movie.objects.get_or_create(depot=self, alternative=alternative)
+        Movie.objects.get_or_create(depot=self, alternative=None)
+
+    def update_movies(self, force_update=False):
+        if force_update:
+            self.movies.update(update_needed=True)
+
+        for movie in Movie.objects.filter(depot=self, alternative=self.alternatives.all()):
+            if movie.update_needed:
+                movie.update()
+        for movie in Movie.objects.filter(depot=self, alternative=None):
+            if movie.update_needed:
+                movie.update()
+
 
 class Alternative(models.Model):
     name = models.CharField(max_length=200)

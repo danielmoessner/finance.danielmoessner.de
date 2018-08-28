@@ -22,9 +22,9 @@ urlpatterns = [
 
     # FUNCTIONS
     # update-movies/
-    # url(r"^update-movies", login_required(views.update_movies), name="update_movies"),
+    url(r"^update-movies", login_required(views.update_movies), name="update_movies"),
     # # reset-movies/
-    # url(r"^reset-movies", login_required(views.reset_movies), name="reset_movies"),
+    url(r"^reset-movies", login_required(views.reset_movies), name="reset_movies"),
 
     # depot
     url(r"^add-depot/$",

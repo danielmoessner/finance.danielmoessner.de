@@ -35,8 +35,8 @@
 	{%- set addAlternativeButton=bg.modalButton("Add Alternative", "#addAlternative") -%}
 	{%- set deleteAlternativeButton=bg.modalButton("Delete Alternative", "#deleteAlternative") -%}
 	{%- set addTimespanButton=bg.modalButton("Add Timespan", "#addTimespan") -%}
-	{# {%- set updateButton=bg.hrefButton("Update", url("alternative:update_movies")) -%} #}
-	{# {%- set resetButton=bg.hrefButton("Reset", url("alternative:reset_movies")) -%} #}
+	{%- set updateButton=bg.hrefButton("Update", url("alternative:update_movies")) -%}
+	{%- set resetButton=bg.hrefButton("Reset", url("alternative:reset_movies")) -%}
 
 
 	<div class="vs-1"></div>
@@ -55,7 +55,7 @@
 
 
 	<div class="wrapper console--target {{ cog.isHidden(console, 'console-main') }}" id="stats">
-		{{ hg.smallLmHeading("Stats", buttons=[]) }}
+		{{ hg.smallLmHeading("Stats", buttons=[updateButton, resetButton]) }}
 		<div class="vs-1"></div>
 		<div class="items-box">
 			{{ cg.statsCard("Total", "", ext=user.currency) }}

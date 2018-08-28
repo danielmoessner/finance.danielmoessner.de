@@ -84,3 +84,16 @@ class AlternativeView(generic.TemplateView):
         messenger(self.request, context["depot"])
         # return
         return context
+
+
+# functions
+def update_movies(request):
+    depot = request.user.alternative_depots.get(is_active=True)
+    depot.update_movies()
+    return HttpResponseRedirect(reverse_lazy("alternative:index"))
+
+
+def reset_movies(request):
+    depot = request.user.alternative_depots.get(is_active=True)
+    depot.reset_movies(delete=True)
+    return HttpResponseRedirect(reverse_lazy("alternative:index"))
