@@ -8,7 +8,7 @@
 
 
 {% block head %}
-	{# <script type="text/javascript" src="{{ static('js/line_bar_chart.js') }}" api-data="{{ url('banking:api_data_alternative', args=[alternative.slug]) }}"></script> #}
+	{# <script type="text/javascript" src="{{ static('js/line_bar_chart.js') }}" api-data="{{ url('alternative:api_data_alternative', args=[alternative.slug]) }}"></script> #}
 {% endblock %}
 
 
@@ -31,7 +31,7 @@
 	   
        
     {%- set addFlowButton=bg.modalButton("Inflow / Outflow", "#addFlow") -%}
-    {%- set addValueButton=bg.modalButton("Add Value", "#addBValue") -%}
+    {%- set addValueButton=bg.modalButton("Add Value", "#addValue") -%}
 
 
     <div class="vs-1"></div>
@@ -83,10 +83,10 @@
                                 <div class="hs-1"></div>
                                 {{ bg.modalButton("Delete", "#deleteFlow"+flow.pk|string) }}
                             </div>  
-                            {{ mg.djangoModal("Edit Flow", "editFlow"+flow.pk|string, url("banking:edit_flow", args=[alternative.slug, flow.pk])) }}
-                            {{ mg.djangoModal("Delete Flow", "deleteFlow"+flow.pk|string, url("banking:delete_flow", args=[alternative.slug, flow.pk])) }}
+                            {{ mg.djangoModal("Edit Flow", "editFlow"+flow.pk|string, url("alternative:edit_flow", args=[alternative.slug, flow.pk])) }}
+                            {{ mg.djangoModal("Delete Flow", "deleteFlow"+flow.pk|string, url("alternative:delete_flow", args=[alternative.slug, flow.pk])) }}
                         {% endset %} 
-                        {{ tg.row([flow.get_date(user), flow.flow, tablebuttons|safe]) }}
+                        {{ tg.row([flow.get_date(), flow.flow, tablebuttons|safe]) }}
                     {% endfor %}
                 </tbody>
             </table>
@@ -110,10 +110,10 @@
                                 <div class="hs-1"></div>
                                 {{ bg.modalButton("Delete", "#deleteValue"+value.pk|string) }}
                             </div>  
-                            {{ mg.djangoModal("Edit Value", "editValue"+value.pk|string, url("banking:edit_value", args=[alternative.slug, value.pk])) }}
-                            {{ mg.djangoModal("Delete Value", "deleteValue"+value.pk|string, url("banking:delete_value", args=[alternative.slug, value.pk])) }}
+                            {{ mg.djangoModal("Edit Value", "editValue"+value.pk|string, url("alternative:edit_value", args=[alternative.slug, value.pk])) }}
+                            {{ mg.djangoModal("Delete Value", "deleteValue"+value.pk|string, url("alternative:delete_value", args=[alternative.slug, value.pk])) }}
                         {% endset %} 
-                        {{ tg.row([value.get_date(user), value.value, tablebuttons|safe]) }}
+                        {{ tg.row([value.get_date(), value.value, tablebuttons|safe]) }}
                     {% endfor %}
                 </tbody>
             </table>

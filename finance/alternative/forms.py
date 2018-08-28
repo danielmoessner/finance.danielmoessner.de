@@ -94,6 +94,20 @@ class ValueForm(forms.ModelForm):
         self.fields["alternative"].queryset = depot.alternatives.all()
         self.fields["date"].initial = timezone.now()
 
+    def clean(self):
+        if "alternative" in self.cleaned_data and not Flow.objects.filter(alternative=self.cleaned_data["alternative"],
+                                                                          date__lte=self.cleaned_data["date"]).exists():
+            raise forms.ValidationError("The date of this value must be later than the date of the first flow. If a "
+                                        "value came before a flow the return would be infinite.")
+
+    def clean_alternative(self):
+        data = self.cleaned_data["alternative"]
+        if Value.objects.filter(alternative=data, value=0):
+            raise forms.ValidationError("The value of this alternative is 0. Add a new alternative instead of keeping "
+                                        "to use this one, because time-weighted-return wouldn't work with this one "
+                                        "anymore.")
+        return data
+
 
 # change
 class FlowForm(forms.ModelForm):
@@ -113,6 +127,14 @@ class FlowForm(forms.ModelForm):
         super(FlowForm, self).__init__(*args, **kwargs)
         self.fields["alternative"].queryset = depot.alternatives.all()
         self.fields["date"].initial = timezone.now()
+
+    def clean_alternative(self):
+        data = self.cleaned_data["alternative"]
+        if Value.objects.filter(alternative=data, value=0):
+            raise forms.ValidationError("The value of this alternative is 0. Add a new alternative instead of keeping "
+                                        "to use this one, because time-weighted-return wouldn't work with this one "
+                                        "anymore.")
+        return data
 
 
 # timespan

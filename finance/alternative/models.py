@@ -1,5 +1,6 @@
 from django.db.models.signals import post_save, post_delete
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.validators import MinValueValidator
 from django.db.models import Q
 from django.utils import timezone
 from django.db import models
@@ -45,7 +46,7 @@ class Alternative(models.Model):
 class Value(models.Model):
     alternative = models.ForeignKey(Alternative, related_name="values", on_delete=models.PROTECT)
     date = models.DateTimeField()
-    value = models.DecimalField(decimal_places=2, max_digits=15, default=0)
+    value = models.DecimalField(decimal_places=2, max_digits=15, default=0, validators=[MinValueValidator(0)])
 
     class Meta:
         unique_together = ("alternative", "date")
@@ -270,11 +271,6 @@ class Movie(models.Model):
         # add flows into the value row
         Movie.na_to_na_sum(df, "flow")
         df = df.loc[pd.notna(df.loc[:, "value"])]
-        if not df.empty:
-            df = pd.concat([df, df.iloc[0:1]])
-            df.sort_index(inplace=True)
-            df.iloc[0, df.columns.get_loc("value")] = df.iloc[0, df.columns.get_loc("flow")]
-            df.iloc[1, df.columns.get_loc("flow")] = 0
         # cs
         df.loc[:, "cs"] = df.loc[:, "flow"].rolling(window=len(df.loc[:, "flow"]), min_periods=1).sum()
         # g
@@ -282,8 +278,9 @@ class Movie(models.Model):
         # cr
         df.loc[:, "cr"] = (df.loc[:, "value"] - df.loc[:, "cs"]) / df.loc[:, "cs"]
         # ttwr
-        df.loc[:, "ttwr"] = df.loc[:, "value"] / (df.loc[:, "value"].shift(1) + df.loc[:, "flow"])
-        df.loc[:, "ttwr"].fillna(1, inplace=True)
+        df.loc[:, "ttwr"] = (df.loc[:, "value"] - df.loc[:, "flow"]) / df.loc[:, "value"].shift(1).fillna(0)
+        df.iloc[0, df.columns.get_loc("ttwr")] = df.iloc[0, df.columns.get_loc("value")] / df.iloc[
+            0, df.columns.get_loc("flow")]
         df.loc[:, "ttwr"] = df.loc[:, "ttwr"].cumprod()
         df.loc[:, "ttwr"] = df.loc[:, "ttwr"] - 1
         # return
@@ -313,11 +310,6 @@ class Movie(models.Model):
         # add flows into the value row
         Movie.na_to_na_sum(df, "flow")
         df = df.loc[pd.notna(df.loc[:, "value"])]
-        if not df.empty:
-            df = pd.concat([df, df.iloc[0:1]])
-            df.sort_index(inplace=True)
-            df.iloc[0, df.columns.get_loc("value")] = df.iloc[0, df.columns.get_loc("flow")]
-            df.iloc[1, df.columns.get_loc("flow")] = 0
         # cs
         df.loc[:, "cs"] = df.loc[:, "flow"].rolling(window=len(df.loc[:, "flow"]), min_periods=1).sum()
         # g
@@ -325,8 +317,9 @@ class Movie(models.Model):
         # cr
         df.loc[:, "cr"] = (df.loc[:, "value"] - df.loc[:, "cs"]) / df.loc[:, "cs"]
         # ttwr
-        df.loc[:, "ttwr"] = df.loc[:, "value"] / (df.loc[:, "value"].shift(1) + df.loc[:, "flow"])
-        df.loc[:, "ttwr"].fillna(1, inplace=True)
+        df.loc[:, "ttwr"] = (df.loc[:, "value"] - df.loc[:, "flow"]) / df.loc[:, "value"].shift(1).fillna(0)
+        df.iloc[0, df.columns.get_loc("ttwr")] = df.iloc[0, df.columns.get_loc("value")] / df.iloc[
+            0, df.columns.get_loc("flow")]
         df.loc[:, "ttwr"] = df.loc[:, "ttwr"].cumprod()
         df.loc[:, "ttwr"] = df.loc[:, "ttwr"] - 1
         # return

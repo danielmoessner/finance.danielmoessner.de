@@ -27,6 +27,7 @@
 	}
 	&--errors{
 		@extend .invalid-feedback;
+		white-space: normal;
 		display: block;
 		font-size: 1rem;
 	}
