@@ -64,7 +64,7 @@ class Alternative(models.Model):
 
 
 class Value(models.Model):
-    alternative = models.ForeignKey(Alternative, related_name="values", on_delete=models.PROTECT)
+    alternative = models.ForeignKey(Alternative, related_name="values", on_delete=models.CASCADE)
     date = models.DateTimeField()
     value = models.DecimalField(decimal_places=2, max_digits=15, default=0, validators=[MinValueValidator(0)])
 
@@ -80,7 +80,7 @@ class Value(models.Model):
 
 
 class Flow(models.Model):
-    alternative = models.ForeignKey(Alternative, related_name="flows", on_delete=models.PROTECT)
+    alternative = models.ForeignKey(Alternative, related_name="flows", on_delete=models.CASCADE)
     date = models.DateTimeField()
     flow = models.DecimalField(decimal_places=2, max_digits=15, default=0)
 
@@ -128,10 +128,10 @@ class Movie(models.Model):
         else:
             pictures = self.pictures
         pictures = pictures.order_by("d")
-        pictures = pictures.values("d", "p", "v", "g", "cr", "ttwr", "ca", "cs")
+        pictures = pictures.values("d", "v", "g", "cr", "ttwr", "cs", "f")
         df = pd.DataFrame(list(pictures), dtype=np.float64)
         if df.empty:
-            df = pd.DataFrame(columns=["d", "p", "v", "g", "cr", "ttwr", "ca", "cs"])
+            df = pd.DataFrame(columns=["d", "v", "g", "cr", "ttwr", "cs", "f"])
         return df
 
     def get_data(self, timespan=None):
@@ -143,12 +143,11 @@ class Movie(models.Model):
         pictures = pictures.order_by("d")
         data = dict()
         data["d"] = (pictures.values_list("d", flat=True))
-        data["p"] = (pictures.values_list("p", flat=True))
         data["v"] = (pictures.values_list("v", flat=True))
+        data["f"] = (pictures.values_list("f", flat=True))
         data["g"] = (pictures.values_list("g", flat=True))
         data["cr"] = (pictures.values_list("cr", flat=True))
         data["ttwr"] = (pictures.values_list("ttwr", flat=True))
-        data["ca"] = (pictures.values_list("ca", flat=True))
         data["cs"] = (pictures.values_list("cs", flat=True))
         return data
 
@@ -217,13 +216,8 @@ class Movie(models.Model):
             raise Exception("Depot or alternative must be defined in a movie.")
 
         old_df = self.get_df()
-        old_df.rename(columns={"d": "date", "v": "value", "cs": "current_sum", "g": "gain", "cr": "current_return",
-                               "ttwr": "true_time_weighted_return", "p": "price", "ca": "current_amount"}, inplace=True)
-        old_df.set_index("date", inplace=True)
-        if self.alternative:
-            old_df = old_df[["value", "current_sum", "gain", "current_return", "true_time_weighted_return"]]
-        elif not self.alternative:
-            old_df = old_df[["value", "current_sum", "gain", "current_return", "true_time_weighted_return"]]
+        old_df.set_index("d", inplace=True)
+        old_df = old_df.loc[:, ["v", "cs", "g", "cr", "ttwr"]]
 
         if old_df.equals(df[:len(old_df)]):
             df = df[len(old_df):]
@@ -236,12 +230,12 @@ class Movie(models.Model):
                 picture = Picture(
                     movie=self,
                     d=index,
-                    v=row["value"],
-                    cs=row["current_sum"],
-                    g=row["gain"],
-                    cr=row["current_return"],
-                    p=row["price"],
-                    ca=row["current_amount"]
+                    v=row["v"],
+                    f=row["f"],
+                    cs=row["cs"],
+                    g=row["g"],
+                    cr=row["cr"],
+                    ttwr=row["ttwr"]
                 )
                 pictures.append(picture)
         elif not self.alternative:
@@ -249,11 +243,12 @@ class Movie(models.Model):
                 picture = Picture(
                     movie=self,
                     d=index,
-                    v=row["value"],
-                    cs=row["current_sum"],
-                    g=row["gain"],
-                    cr=row["current_return"],
-                    ttwr=row["true_time_weighted_return"]
+                    v=row["v"],
+                    f=row["f"],
+                    cs=row["cs"],
+                    g=row["g"],
+                    cr=row["cr"],
+                    ttwr=row["ttwr"]
                 )
                 pictures.append(picture)
         Picture.objects.bulk_create(pictures)
@@ -264,6 +259,7 @@ class Movie(models.Model):
     @staticmethod
     def na_to_na_sum(df, column_name):
         column = df.columns.get_loc(column_name)
+        df.loc[:, "helper"] = df.loc[:, column_name]
         for i in range(0, len(df)):
             if pd.isna(df.iloc[i, column]):
                 notna_sum = 0
@@ -275,6 +271,7 @@ class Movie(models.Model):
                 df.loc[df.index[i], "helper"] = notna_sum
         df.iloc[:, column] = df.loc[:, "helper"]
         df.drop(["helper"], axis=1, inplace=True)
+        df = df.loc[pd.notna(df.loc[:, "value"])]
 
     def calc_alternative(self):
         # values
@@ -290,7 +287,6 @@ class Movie(models.Model):
         df.sort_index(inplace=True)
         # add flows into the value row
         Movie.na_to_na_sum(df, "flow")
-        df = df.loc[pd.notna(df.loc[:, "value"])]
         # cs
         df.loc[:, "cs"] = df.loc[:, "flow"].rolling(window=len(df.loc[:, "flow"]), min_periods=1).sum()
         # g
@@ -304,19 +300,20 @@ class Movie(models.Model):
         df.loc[:, "ttwr"] = df.loc[:, "ttwr"].cumprod()
         df.loc[:, "ttwr"] = df.loc[:, "ttwr"] - 1
         # return
+        df.rename(columns={"date": "d", "value": "v", "flow": "f"}, inplace=True)
         return df
 
     def calc_depot(self):
         df = pd.DataFrame(columns=["value", "current_sum", "date"], dtype=np.float64)
         # alternatives
         alternatives = list()
-        for alternative in self.depot.alternatives.all():
-            movie = alternative.get_movie(self.depot)
+        for alternative in self.depot.alternatives.all().select_related("depot"):
+            movie = alternative.get_movie()
             alternative_df = movie.get_df()
             alternative_df = alternative_df.loc[:, ["v", "d", "f"]]
-            alternative_df.rename(columns={"v": alternative.name + "__v", "d": "date", "f": alternative.name + "__f"},
+            alternative_df.rename(columns={"v": alternative.slug + "__v", "d": "date", "f": alternative.slug + "__f"},
                                   inplace=True)
-            alternatives.append(alternative.name)
+            alternatives.append(alternative.slug)
             df = pd.concat([df, alternative_df], ignore_index=True, sort=False)
         # all together
         df.loc[:, "date"] = df.loc[:, "date"].dt.normalize()
@@ -325,11 +322,10 @@ class Movie(models.Model):
         df.ffill(inplace=True)
         df = df[~df.index.duplicated(keep="last")]
         # sum it up
-        df.loc[:, "v"] = df.loc[:, [name + "__v" for name in alternatives]].sum(axis=1, skipna=True)
-        df.loc[:, "f"] = df[:, [name + "__f" for name in alternatives]].sum(axis=1, skipna=True)
+        df.loc[:, "value"] = df.loc[:, [slug + "__v" for slug in alternatives]].sum(axis=1, skipna=True)
+        df.loc[:, "flow"] = df.loc[:, [slug + "__f" for slug in alternatives]].sum(axis=1, skipna=True)
         # add flows into the value row
         Movie.na_to_na_sum(df, "flow")
-        df = df.loc[pd.notna(df.loc[:, "value"])]
         # cs
         df.loc[:, "cs"] = df.loc[:, "flow"].rolling(window=len(df.loc[:, "flow"]), min_periods=1).sum()
         # g
@@ -337,12 +333,14 @@ class Movie(models.Model):
         # cr
         df.loc[:, "cr"] = (df.loc[:, "value"] - df.loc[:, "cs"]) / df.loc[:, "cs"]
         # ttwr
+        # print(df.loc[:, ["value", "flow", "cs", "g", "cr"]])
         df.loc[:, "ttwr"] = (df.loc[:, "value"] - df.loc[:, "flow"]) / df.loc[:, "value"].shift(1).fillna(0)
         df.iloc[0, df.columns.get_loc("ttwr")] = df.iloc[0, df.columns.get_loc("value")] / df.iloc[
             0, df.columns.get_loc("flow")]
         df.loc[:, "ttwr"] = df.loc[:, "ttwr"].cumprod()
         df.loc[:, "ttwr"] = df.loc[:, "ttwr"] - 1
         # return
+        df.rename(columns={"date": "d", "value": "v", "flow": "f"}, inplace=True)
         return df
 
 

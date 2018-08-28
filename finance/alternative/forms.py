@@ -96,7 +96,7 @@ class ValueForm(forms.ModelForm):
 
     def clean(self):
         if "alternative" in self.cleaned_data and not Flow.objects.filter(alternative=self.cleaned_data["alternative"],
-                                                                          date__lte=self.cleaned_data["date"]).exists():
+                                                                          date__lt=self.cleaned_data["date"]).exists():
             raise forms.ValidationError("The date of this value must be later than the date of the first flow. If a "
                                         "value came before a flow the return would be infinite.")
 
