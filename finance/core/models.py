@@ -5,7 +5,6 @@ from django.db import models
 class Timespan(models.Model):
     name = models.CharField(max_length=200)
     start_date = models.DateTimeField(blank=True, null=True)
-    period = models.DurationField(blank=True, null=True)  # remove later
     end_date = models.DateTimeField(blank=True, null=True)
     is_active = models.BooleanField(default=False)
 
@@ -23,10 +22,10 @@ class Timespan(models.Model):
         return pts
 
     def get_start_date(self):
-        return timezone.localtime(self.start_date).strftime("%d.%m.%Y %H:%M") if self.start_date else None
+        return timezone.localtime(self.start_date).strftime("%d.%m.%Y %H:%M%p") if self.start_date else None
 
     def get_end_date(self):
-        return timezone.localtime(self.end_date).strftime("%d.%m.%Y %H:%M") if self.end_date else None
+        return timezone.localtime(self.end_date).strftime("%d.%m.%Y %H:%M%p") if self.end_date else None
 
 
 class Depot(models.Model):
