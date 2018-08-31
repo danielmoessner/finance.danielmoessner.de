@@ -315,8 +315,8 @@ class Movie(models.Model):
 
     def calc_depot(self):
         """
-        The DEPOT has some properties. For example, it has a cr or a g. These properties apply before the flow
-        applies. Therefore you make a gain of 10 whatever and afterwards there is a flow in or out of this alternative.
+        The Depot has some properties. For example, it has a cr or a g. These properties apply before the flow
+        applies. Therefore you make a gain of 10 whatever and afterwards there is a flow in or out of this depot.
         """
         df = pd.DataFrame(columns=["v", "f"], dtype=np.float64)
         # alternatives
@@ -327,11 +327,10 @@ class Movie(models.Model):
             alternative_df.rename(columns={"v": alternative.slug + "__v", "f": alternative.slug + "__f"}, inplace=True)
             alternatives.append(alternative.slug)
             df = pd.concat([df, alternative_df], axis=1, sort=False)
-        # all together
+        # df
         if df.empty:
             return df
         df.sort_index(inplace=True)
-        # sum it up
         df.loc[:, "v"] = df.loc[:, [slug + "__v" for slug in alternatives]].sum(axis=1, skipna=True)
         df.loc[:, "f"] = df.loc[:, [slug + "__f" for slug in alternatives]].sum(axis=1, skipna=True)
         # cs
@@ -347,7 +346,6 @@ class Movie(models.Model):
         df.loc[:, "twr"] = df.loc[:, "twr"].fillna(1)
         df.loc[:, "twr"] = df.loc[:, "twr"].cumprod()
         df.loc[:, "twr"] = df.loc[:, "twr"] - 1
-        print_df(df)
         # return
         df = df.loc[:, ["v", "f", "cs", "g", "cr", "twr"]]
         df.loc[:, ["v", "f", "cs", "g"]] = df.loc[:, ["v", "f", "cs", "g"]].applymap(lambda x: round(x, 2))
