@@ -59,7 +59,6 @@ class IndexView(generic.TemplateView):
         context["accounts_movies"] = zip(context["accounts"], account_movies)
         # assets
         context["assets"] = context["depot"].assets.order_by("symbol")
-        context["public_assets"] = context["assets"].exclude(symbol=None)
         context["asset_symbol_choices"] = Asset.SYMBOL_CHOICES
         asset_movies = context["depot"].movies.filter(asset__in=context["assets"], account=None)\
             .order_by("asset__symbol")

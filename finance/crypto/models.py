@@ -75,10 +75,10 @@ class Depot(CoreDepot):
             self.movies.all().delete()
 
         for account in self.accounts.all():
-            for asset in self.assets.exclude(symbol=self.user.currency):
+            for asset in self.assets.all():
                 Movie.objects.get_or_create(depot=self, account=account, asset=asset)
             Movie.objects.get_or_create(depot=self, account=account, asset=None)
-        for asset in self.assets.exclude(symbol=self.user.currency):
+        for asset in self.assets.all():
             Movie.objects.get_or_create(depot=self, account=None, asset=asset)
         Movie.objects.get_or_create(depot=self, account=None, asset=None)
 
