@@ -51,18 +51,14 @@
         {{ hg.smallLmHeading("Stats") }}
         <div class="vs-1"></div>
         <div class="items-box">
-            {{ cg.statsCard("Total", movie.get_values(user, ["b",])["b"], ext=user.currency) }}
+            {{ cg.statsCard("Total", movie.get_values(user, ["b"])["b"], ext=user.currency) }}
         </div>
         {% if timespan.start_date %}
             <div class="vs-3"></div>
-            {{ hg.smallLmHeading(timespan.name) }}
+            {{ hg.smallLmHeading(timespan.name, right=timespan.get_start_date() + " - " + timespan.get_end_date()) }}
             <div class="vs-1"></div>
             <div class="items-box">
-                {% with data=movie.get_values(user, ["b",], timespan) %}
-                    {%- set heading=data.start_date+"-"+data.end_date -%}
-                    {%- set value="Change: "+data.b|string -%}
-                    {{ cg.statsCard(heading, value) }}
-                {% endwith %}
+                {{ cg.statsCard("Change", movie.get_values(user, ["b"], timespan)["b"]) }}
             </div>
         {% endif %}
     </div>
@@ -84,7 +80,7 @@
                             {{ mg.djangoModal("Edit Change", "editChange"+change.pk|string, url("banking:edit_change", args=[account.slug, change.pk])) }}
                             {{ mg.djangoModal("Delete Change", "deleteChange"+change.pk|string, url("banking:delete_change", args=[account.slug, change.pk])) }}
                         {% endset %} 
-                        {{ tg.row([change.get_date(user), change.category, change.get_description(), change.change, change.get_balance(movie), tablebuttons | safe]) }}
+                        {{ tg.row([change.get_date(user), change.category, change.get_description(), change.change, change.get_balance(movie), tablebuttons|safe]) }}
                     {% endfor %}
                 </tbody>
             </table>

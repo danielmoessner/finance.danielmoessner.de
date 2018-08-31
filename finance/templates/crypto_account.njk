@@ -54,18 +54,16 @@
         {{ hg.smallLmHeading("Stats") }}
         <div class="vs-1"></div>
         <div class="items-box">
-        	{%- set accountData = movie.get_values(user, ["v", ]) -%}
-            {{ cg.statsCard("Value", accountData.v, ext=user.currency) }}
+        	{%- set data=movie.get_values(user, ["v"]) -%}
+            {{ cg.statsCard("Value", data.v) }}
         </div>
 		{% if timespan.start_date %}
 			<div class="vs-3"></div>
-			{{ hg.smallLmHeading(timespan.name) }}
+			{{ hg.smallLmHeading(timespan.name, right=timespan.get_start_date() + " - " + timespan.get_end_date()) }}
 			<div class="vs-1"></div>
 			<div class="items-box">
 				{% with data=movie.get_values(user, ["v"], timespan) %}
-					{%- set heading=data.start_date+"-"+data.end_date -%}
-					{%- set value="Value Change: "+data.v|string -%}
-					{{ cg.statsCard(heading, value) }}
+					{{ cg.statsCard("Value Change", data.v) }}
 				{% endwith %}
 			</div>
 		{% endif %}

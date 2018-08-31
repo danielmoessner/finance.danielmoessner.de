@@ -172,7 +172,7 @@ def reset_movies(request, *args, **kwargs):
 
 
 # api
-def json_data(pi, g=True, p=True, v=True, cr=True, ttwr=True, cs=True):
+def json_data(pi, g=True, p=True, v=True, cr=True, twr=True, cs=True):
     labels = pi["d"]
 
     datasets = list()
@@ -200,12 +200,12 @@ def json_data(pi, g=True, p=True, v=True, cr=True, ttwr=True, cs=True):
         data_cr["data"] = pi["cr"]
         data_cr["yAxisID"] = "yield"
         datasets.append(data_cr)
-    if ttwr:
-        data_ttwr = dict()
-        data_ttwr["label"] = "True time weighted return"
-        data_ttwr["data"] = pi["ttwr"]
-        data_ttwr["yAxisID"] = "yield"
-        datasets.append(data_ttwr)
+    if twr:
+        data_twr = dict()
+        data_twr["label"] = "True time weighted return"
+        data_twr["data"] = pi["twr"]
+        data_twr["yAxisID"] = "yield"
+        datasets.append(data_twr)
     if cs:
         data_cs = dict()
         data_cs["label"] = "Invested Capital"
@@ -317,4 +317,4 @@ class AssetData(APIView):
         asset = Asset.objects.get(slug=slug)
         timespan = depot.timespans.get(is_active=True)
         pi = asset.get_movie(depot).get_data(timespan)
-        return json_data(pi, ttwr=False)
+        return json_data(pi, twr=False)

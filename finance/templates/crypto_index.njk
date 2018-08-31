@@ -64,25 +64,24 @@
         {{ hg.smallLmHeading("Stats", buttons=[updateButton, resetButton]) }}
         <div class="vs-1"></div>
         <div class="items-box">
-            {%- set depotData = movie.get_values(user, ["cs", "g", "v", "cr", "ttwr"]) -%}
-            {{ cg.statsCard("Invested Capital", depotData.cs, ext=user.currency) }}
-            {{ cg.statsCard("Profit", depotData.g, ext=user.currency) }}
-            {{ cg.statsCard("Value", depotData.v, ext=user.currency) }}
-            {{ cg.statsCard("Current Return", depotData.cr, ext="%") }}
-            {{ cg.statsCard("True time weighted return", depotData.ttwr, ext="%")}}
+            {%- set data=movie.get_values(user, ["cs", "g", "v", "cr", "twr"]) -%}
+            {{ cg.statsCard("Invested Capital", data.cs) }}
+            {{ cg.statsCard("Profit", data.g) }}
+            {{ cg.statsCard("Value", data.v) }}
+            {{ cg.statsCard("Current Return", data.cr) }}
+            {{ cg.statsCard("Time Weighted Return", data.twr)}}
         </div>
         {% if timespan.start_date %}
             <div class="vs-3"></div>
-            {{ hg.smallLmHeading(timespan.name) }}
+            {{ hg.smallLmHeading(timespan.name, right=timespan.get_start_date() + " - " + timespan.get_end_date()) }}
             <div class="vs-1"></div>
             <div class="items-box">
-                {% with data=movie.get_values(user, ["g", "cr", ], timespan) %}
-                    {%- set heading=data.start_date+"-"+data.end_date -%}
-                    {% set value %}
-                        Profit: {{ data.g }} <br>
-                        Current Return: {{ data.cr }}
-                    {% endset %}
-                    {{ cg.statsCard(heading, value) }}
+                {% with data=movie.get_values(user, ["cs", "g", "v", "cr", "twr"], timespan) %}
+                    {{ cg.statsCard("Invested Capital", data.cs) }}
+                    {{ cg.statsCard("Profit", data.g) }}
+                    {{ cg.statsCard("Value", data.v) }}
+                    {{ cg.statsCard("Current Return", data.cr) }}
+                    {{ cg.statsCard("Time Weighted Return", data.twr)}}
                 {% endwith %}
             </div>
         {% endif %}
@@ -103,7 +102,7 @@
                         {% set name %}
                             <a href="{{ url('crypto:account', args=[ account.slug, ]) }}" class="link-bold">{{ account.name }}</a>
                         {% endset %} 
-                        {%- set values=movie.get_values(user, ["v",]) -%}
+                        {%- set values=movie.get_values(user, ["v"]) -%}
                         {{ tg.row([name|safe, values.v, tablebuttons|safe]) }}
                     {% endfor %}
                 </tbody>

@@ -277,10 +277,10 @@ class Movie(models.Model):
         else:
             pictures = self.pictures
         pictures = pictures.order_by("d")
-        pictures = pictures.values("d", "p", "v", "g", "cr", "ttwr", "ca", "cs")
+        pictures = pictures.values("d", "p", "v", "g", "cr", "twr", "ca", "cs")
         df = pd.DataFrame(list(pictures), dtype=np.float64)
         if df.empty:
-            df = pd.DataFrame(columns=["d", "p", "v", "g", "cr", "ttwr", "ca", "cs"])
+            df = pd.DataFrame(columns=["d", "p", "v", "g", "cr", "twr", "ca", "cs"])
         return df
 
     def get_data(self, timespan=None):
@@ -296,7 +296,7 @@ class Movie(models.Model):
         data["v"] = (pictures.values_list("v", flat=True))
         data["g"] = (pictures.values_list("g", flat=True))
         data["cr"] = (pictures.values_list("cr", flat=True))
-        data["ttwr"] = (pictures.values_list("ttwr", flat=True))
+        data["twr"] = (pictures.values_list("twr", flat=True))
         data["ca"] = (pictures.values_list("ca", flat=True))
         data["cs"] = (pictures.values_list("cs", flat=True))
         return data
@@ -330,11 +330,24 @@ class Movie(models.Model):
             elif end_picture:
                 data[key] = getattr(end_picture, key)
             else:
-                data[key] = 0
+                data[key] = "x"
+
             if user.rounded_numbers:
-                data[key] = round(data[key], 2)
-                if data[key] == 0.00:
-                    data[key] = "x"
+                if data[key] == "x" or data[key] is None:
+                    pass
+                elif key in ["cr", "twr", "ca"]:
+                    data[key] = round(data[key], 4)
+                else:
+                    data[key] = round(data[key], 2)
+
+            if data[key] == "x" or data[key] is None:
+                pass
+            elif key in ["ca"]:
+                pass
+            elif key in ["cr", "twr"]:
+                data[key] = "{} %".format(round(data[key] * 100, 2))
+            else:
+                data[key] = "{} {}".format(data[key], user.get_currency_display())
 
         return data
 
@@ -389,38 +402,32 @@ class Movie(models.Model):
         else:
             raise Exception("Depot, account or asset must be defined in a movie.")
 
-        t2 = time.time()
         old_df = self.get_df()
-        old_df.rename(columns={"d": "date", "v": "value", "cs": "current_sum", "g": "gain",
-                               "cr": "current_return", "ttwr": "true_time_weighted_return",
-                               "p": "price", "ca": "current_amount"}, inplace=True)
-        old_df.set_index("date", inplace=True)
-        if self.account and self.asset:
-            old_df = old_df[["value", "price", "current_amount"]]
-        elif not self.account and self.asset:
-            old_df = old_df[["value", "current_sum", "gain", "current_return", "price",
-                             "current_amount"]]
-        elif self.account and not self.asset:
-            old_df = old_df[["value"]]
-        elif not self.account and not self.asset:
-            old_df = old_df[["value", "current_sum", "gain", "current_return",
-                             "true_time_weighted_return"]]
+        old_df.set_index("d", inplace=True)
 
-        if old_df.equals(df[:len(old_df)]):
-            df = df[len(old_df):]
+        if self.account and self.asset:
+            old_df = old_df.loc[:, ["v", "p", "ca"]]
+        elif not self.account and self.asset:
+            old_df = old_df.loc[:, ["v", "cs", "g", "cr", "p", "ca"]]
+        elif self.account and not self.asset:
+            old_df = old_df.loc[:, ["v"]]
+        elif not self.account and not self.asset:
+            old_df = old_df.loc[:, ["v", "cs", "g", "cr", "twr"]]
+
+        if old_df.equals(df.iloc[:len(old_df)]):
+            df = df.iloc[len(old_df):]
         else:
             self.pictures.all().delete()
 
-        t3 = time.time()
         pictures = list()
         if self.account and self.asset:
             for index, row in df.iterrows():
                 picture = Picture(
                     movie=self,
                     d=index,
-                    v=row["value"],
-                    p=row["price"],
-                    ca=row["current_amount"]
+                    v=row["v"],
+                    p=row["p"],
+                    ca=row["ca"]
                 )
                 pictures.append(picture)
         elif not self.account and self.asset:
@@ -428,12 +435,12 @@ class Movie(models.Model):
                 picture = Picture(
                     movie=self,
                     d=index,
-                    v=row["value"],
-                    cs=row["current_sum"],
-                    g=row["gain"],
-                    cr=row["current_return"],
-                    p=row["price"],
-                    ca=row["current_amount"]
+                    v=row["v"],
+                    cs=row["cs"],
+                    g=row["g"],
+                    cr=row["cr"],
+                    p=row["p"],
+                    ca=row["ca"]
                 )
                 pictures.append(picture)
         elif self.account and not self.asset:
@@ -441,7 +448,7 @@ class Movie(models.Model):
                 picture = Picture(
                     movie=self,
                     d=index,
-                    v=row["value"],
+                    v=row["v"],
                 )
                 pictures.append(picture)
         elif not self.account and not self.asset:
@@ -449,19 +456,15 @@ class Movie(models.Model):
                 picture = Picture(
                     movie=self,
                     d=index, 
-                    v=row["value"], 
-                    cs=row["current_sum"], 
-                    g=row["gain"], 
-                    cr=row["current_return"],
-                    ttwr=row["true_time_weighted_return"]
+                    v=row["v"],
+                    cs=row["cs"],
+                    g=row["g"],
+                    cr=row["cr"],
+                    ttwr=row["twr"]
                 )
                 pictures.append(picture)
         Picture.objects.bulk_create(pictures)
 
-        t4 = time.time()
-        text = "{} is up to date. --Calc Time: {}% --Other Time: {}%".format(
-            self, round((t2 - t1) / (t4 - t1), 2), round((t4 - t2) / (t4 - t1), 2), "%")
-        print(text)
         self.update_needed = False
         self.save()
 
@@ -521,30 +524,25 @@ class Movie(models.Model):
         buy_trades_values = buy_trades.values("date", "buy_amount")
         buy_trades_df = pd.DataFrame(list(buy_trades_values), dtype=np.float64)
         buy_trades_df["type"] = "BUY"
-        buy_trades_df["buy_sum"] = [trade.sell_asset.get_worth(trade.date, trade.sell_amount) for
-                                    trade in buy_trades]
-        buy_trades_df["fee_sum_buy"] = [trade.fees_asset.get_worth(trade.date, trade.fees)
-                                        for trade in buy_trades]
+        buy_trades_df["buy_sum"] = [trade.sell_asset.get_worth(trade.date, trade.sell_amount) for trade in buy_trades]
+        buy_trades_df["fee_sum_buy"] = [trade.fees_asset.get_worth(trade.date, trade.fees) for trade in buy_trades]
         if buy_trades_df.empty:
-            buy_trades_df = pd.DataFrame(columns=["date", "buy_amount", "type", "buy_sum",
-                                                  "fee_sum_buy"])
+            buy_trades_df = pd.DataFrame(columns=["date", "buy_amount", "type", "buy_sum", "fee_sum_buy"])
         buy_trades_df.set_index("date", inplace=True)
 
         # sell_trades
         sell_trades = Trade.objects.filter(sell_asset=self.asset, account__in=self.depot.accounts.all()).select_related(
             "buy_asset")
-        sell_trades_values = sell_trades.values("date", "sell_amount", "fees", "fees_asset",
-                                                "sell_asset")
+        sell_trades_values = sell_trades.values("date", "sell_amount", "fees", "fees_asset","sell_asset")
         sell_trades_df = pd.DataFrame(list(sell_trades_values), dtype=np.float64)
         if sell_trades_df.empty:
-            sell_trades_df = pd.DataFrame(columns=["date", "sell_amount", "fees", "fees_asset",
-                                                   "sell_asset", "type", "sell_sum"])
+            sell_trades_df = pd.DataFrame(columns=["date", "sell_amount", "fees", "fees_asset", "sell_asset", "type",
+                                                   "sell_sum"])
         sell_trades_df.rename(columns={"fees": "fee_amount_sell"}, inplace=True)
         sell_trades_df["type"] = "SELL"
-        sell_trades_df["sell_sum"] = [trade.buy_asset.get_worth(trade.date, trade.buy_amount)
-                                      for trade in sell_trades]
-        sell_trades_df.loc[sell_trades_df.loc[:, "fees_asset"] !=
-                           sell_trades_df.loc[:, "sell_asset"], "fee_amount_sell"] = 0
+        sell_trades_df["sell_sum"] = [trade.buy_asset.get_worth(trade.date, trade.buy_amount) for trade in sell_trades]
+        sell_trades_df.loc[
+            sell_trades_df.loc[:, "fees_asset"] != sell_trades_df.loc[:, "sell_asset"], "fee_amount_sell"] = 0
         sell_trades_df.set_index("date", inplace=True)
 
         # transactions
@@ -567,9 +565,8 @@ class Movie(models.Model):
         Movie.ffadd(tratra_df, "sell_sum")
         Movie.ffadd(tratra_df, "fee_amount")
         Movie.ffadd(tratra_df, "fee_sum_buy")
-        tratra_df = tratra_df[tratra_df.type != "TRANSACTION"]
-        tratra_df["current_amount"] = tratra_df["buy_amount"] - tratra_df["sell_amount"] - \
-            tratra_df["fee_amount"]
+        tratra_df = tratra_df.loc[tratra_df.type != "TRANSACTION"]
+        tratra_df["current_amount"] = tratra_df["buy_amount"] - tratra_df["sell_amount"] - tratra_df["fee_amount"]
         tratra_df["current_sum"] = Movie.calc_fifo(tratra_df["type"], tratra_df["buy_amount"],
                                                    tratra_df["buy_sum"], tratra_df["fee_sum_buy"],
                                                    tratra_df["current_amount"])
@@ -591,14 +588,16 @@ class Movie(models.Model):
         # calc
         df["value"] = df["current_amount"] * df["price"]
         df["gain"] = df["value"] - df["current_sum"]
-        df["current_return"] = (df["value"] / df["current_sum"] - 1) * 100
+        df["current_return"] = (df["value"] / df["current_sum"] - 1)
 
         # return
-        df = df[["value", "current_sum", "gain", "current_return", "price", "current_amount"]]
         df.replace([np.nan, np.inf, -np.inf], 0, inplace=True)  # sqlite3 can not save nan or inf
-        df[["value", "current_sum", "gain", "current_return", "price"]] = df.drop(
-            columns=["current_amount", ]).applymap(lambda x: x.__round__(3))
-        df["current_amount"] = df["current_amount"].map(lambda x: x.__round__(8))
+        df.rename(columns={"value": "v", "current_sum": "cs", "gain": "g", "price": "p", "current_amount": "ca",
+                           "current_return": "cr"})
+        df = df.loc[:, ["v", "cs", "g", "cr", "p", "ca"]]
+        df.loc[:, ["v", "g", "p"]] = df.loc[:, ["v", "g", "p"]].applymap(lambda x: round(x, 2))
+        df.loc[:, "cr"] = df.loc[:, "cr"].map(lambda x: round(x, 4))
+        df.loc[:, "ca"] = df.loc[:, "ca"].map(lambda x: round(x, 8))
         return df
 
     def calc_asset_account(self):
@@ -673,11 +672,11 @@ class Movie(models.Model):
         df["value"] = df["current_amount"] * df["price"]
 
         # return
-        df = df[["value", "price", "current_amount"]]
-        df.fillna(0, inplace=True)  # sqlite3 can not save nan or inf
-        df[["value", "price"]] = df.drop(columns=["current_amount", ]).applymap(
-            lambda x: x.__round__(3))
-        df[["current_amount"]] = df[["current_amount"]].applymap(lambda x: x.__round__(8))
+        df.replace([np.nan, np.inf, -np.inf], 0, inplace=True)  # sqlite3 can not save nan or inf
+        df.rename(columns={"value": "v", "price": "p", "current_amount": "ca"})
+        df = df.loc[:, ["v", "p", "ca"]]
+        df.loc[:, ["v", "p"]] = df.loc[:, ["v", "p"]].applymap(lambda x: round(x, 2))
+        df.loc[:, "ca"] = df.loc[:, "ca"].map(lambda x: round(x, 8))
         return df
 
     def calc_account(self):
@@ -705,8 +704,10 @@ class Movie(models.Model):
         df["value"] = df[asset_dfs_values].sum(axis=1, skipna=True)
 
         # return
-        df = df[["value"]]
-        df[["value"]] = df[["value"]].applymap(lambda x: x.__round__(3))
+        df.replace([np.nan, np.inf, -np.inf], 0, inplace=True)  # sqlite3 can not save nan or inf
+        df.rename(columns={"value": "v"})
+        df = df.loc[:, "v"]
+        df.loc[:, "v"] = df.loc[:, "v"].map(lambda x: round(x, 2))
         return df
 
     def calc_depot(self):
@@ -737,20 +738,22 @@ class Movie(models.Model):
         df["value"] = df[asset_dfs_values].sum(axis=1, skipna=True)
         df["current_sum"] = df[asset_dfs_current_sums].sum(axis=1, skipna=True)
         df["gain"] = df["value"] - df["current_sum"]
-        df["current_return"] = ((df["value"] / df["current_sum"]) - 1) * 100
+        df["current_return"] = ((df["value"] / df["current_sum"]) - 1)
         # ttwr shit
         df["true_time_weighted_return"] = df["value"] / (df["value"].shift(1) + (
                 df["current_sum"] - df["current_sum"].shift(1)))
         df["true_time_weighted_return"].replace([np.nan, ], 1, inplace=True)
         Movie.ffmultiply(df, "true_time_weighted_return")
-        df["true_time_weighted_return"] = (df["true_time_weighted_return"] - 1) * 100
+        df["true_time_weighted_return"] = (df["true_time_weighted_return"] - 1)
         # end ttwr shit
 
         # return
-        df = df[["value", "current_sum", "gain", "current_return", "true_time_weighted_return"]]
         df.replace([np.nan, np.inf, -np.inf], 0, inplace=True)  # sqlite3 can not save nan or inf
-        df[["value", "current_sum", "gain", "current_return", "true_time_weighted_return"]] = \
-            df.applymap(lambda x: x.__round__(3))
+        df.rename(columns={"value": "v", "current_sum": "cs", "gain": "g", "true_time_weighted_return": "twr",
+                           "current_return": "cr"})
+        df = df.loc[:, ["v", "cs", "g", "twr", "cr"]]
+        df.loc[:, ["v", "g", "cs"]] = df.loc[:, ["v", "g", "p"]].applymap(lambda x: round(x, 2))
+        df.loc[:, ["cr", "twr"]] = df.loc[:, "cr"].applymap(lambda x: round(x, 4))
         return df
 
 
@@ -758,13 +761,13 @@ class Picture(models.Model):
     movie = models.ForeignKey(Movie, related_name="pictures", on_delete=models.CASCADE)
     d = models.DateTimeField()
 
-    p = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=3)
-    v = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=3)
-    g = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=3)
-    cr = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=3)
-    ttwr = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=3)
+    p = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=2)
+    v = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=2)
+    g = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=2)
+    cs = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=2)
+    cr = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=4)
+    twr = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=4)
     ca = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=8)
-    cs = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=3)
 
 
 post_save.connect(Movie.init_update, sender=Price)

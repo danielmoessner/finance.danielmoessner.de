@@ -54,24 +54,23 @@
         {{ hg.smallLmHeading("Stats") }}
         <div class="vs-1"></div>
         <div class="items-box">
-        	{%- set assetData = movie.get_values(user, ["cs", "g", "v", "cr"]) -%}
-            {{ cg.statsCard("Invested Capital", assetData.cs, ext=user.currency) }}
-            {{ cg.statsCard("Profit", assetData.g, ext=user.currency) }}
-            {{ cg.statsCard("Value", assetData.v, ext=user.currency) }}
-            {{ cg.statsCard("Current Return", assetData.cr, ext="%") }}
+        	{% with data=movie.get_values(user, ["cs", "g", "v", "cr"]) %}
+	            {{ cg.statsCard("Invested Capital", data.cs) }}
+	            {{ cg.statsCard("Profit", data.g) }}
+	            {{ cg.statsCard("Value", data.v) }}
+	            {{ cg.statsCard("Current Return", data.cr) }}
+        	{% endwith %}
         </div>
 		{% if timespan.start_date %}
 			<div class="vs-3"></div>
-			{{ hg.smallLmHeading(timespan.name) }}
+			{{ hg.smallLmHeading(timespan.name, right=timespan.get_start_date() + " - " + timespan.get_end_date()) }}
 			<div class="vs-1"></div>
 			<div class="items-box">
-				{% with data=movie.get_values(user, ["g", "cr", ], timespan) %}
-					{%- set heading=data.start_date+"-"+data.end_date -%}
-					{% set value %}
-	                    Profit: {{ data.g }} <br>
-	                    Current Return: {{ data.cr }}
-	                {% endset %}
-					{{ cg.statsCard(heading, value) }}
+				{% with data=movie.get_values(user, ["g", "cr", "v", "cs"], timespan) %}
+					{{ cg.statsCard("Invested Capital", data.cs) }}
+		            {{ cg.statsCard("Profit", data.g) }}
+		            {{ cg.statsCard("Value", data.v) }}
+		            {{ cg.statsCard("Current Return", data.cr) }}
 				{% endwith %}
 			</div>
 		{% endif %}

@@ -192,7 +192,7 @@ class Movie(models.Model):
             else:
                 data[key] = "x"
 
-            if data[key] == "x":
+            if data[key] == "x" or data[key] is None:
                 pass
             elif key in ["cr", "twr"]:
                 data[key] = "{} %".format(round(data[key] * 100, 2))

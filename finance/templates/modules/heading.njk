@@ -6,7 +6,7 @@
 </div>
 {% endmacro %}
 
-{% macro smallLmHeading(heading, buttons=[]) %}
+{% macro smallLmHeading(heading, buttons=[], right=None) %}
 <div class="small-lm-heading">
 	<div class="small-lm-heading--row">
 	    <h2 class="small-lm-heading--heading">{{ heading }}</h2>
@@ -16,6 +16,9 @@
 	    	{% endif %}
 			{{ button|safe }}
 	    {% endfor %}
+	    {% if right %}
+	    	<span class="small-lm-heading--right">{{ right }}</span>
+	    {% endif %}
     </div>
     <hr class="small-lm-heading--hr">
 </div>

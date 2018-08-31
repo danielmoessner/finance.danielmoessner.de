@@ -250,7 +250,13 @@ class Movie(models.Model):
             elif end_picture:
                 data[key] = getattr(end_picture, key)
             else:
-                data[key] = 0
+                data[key] = "x"
+
+            if data[key] == "x" or data[key] is None:
+                pass
+            else:
+                data[key] = "{} {}".format(round(data[key], 2), user.get_currency_display())
+
         return data
 
     # update
