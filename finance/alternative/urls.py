@@ -9,16 +9,12 @@ app_name = "alternative"
 
 urlpatterns = [
     # API DATA
-    # url(r"^api-data/index/$", login_required(views.IndexData.as_view()),
-    #     name="api_data_index"),
-    # url(r"^api-data/categories/$", login_required(views.CategoriesData.as_view()),
-    #     name="api_data_categories"),
-    # url(r"^api-data/categories-month/$", login_required(views.CategoriesMonthData.as_view()),
-    #     name="api_data_categories_month"),
-    # url(r"^api-data/account/(?P<slug>[0-9a-zA-Z-#]*)/$", login_required(views.AccountData.as_view()),
-    #     name="api_data_account"),
-    # url(r"^api-data/category/(?P<slug>[0-9a-zA-Z-#]*)/$", login_required(views.CategoryData.as_view()),
-    #     name="api_data_category"),
+    url(r"^api-data/everything/$", login_required(views.EverythingData.as_view()),
+        name="everything_api_data"),
+    url(r"^api-data/cake/$", login_required(views.CakeData.as_view()),
+        name="cake_api_data"),
+    url(r"^api-data/alternative/(?P<slug>[0-9a-zA-Z-#]*)/$", login_required(views.AlternativeData.as_view()),
+        name="alternative_api_data"),
 
     # FUNCTIONS
     # update-movies/

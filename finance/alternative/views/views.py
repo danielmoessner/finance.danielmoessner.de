@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
 from django.views import generic
 from django.http import HttpResponseRedirect
@@ -97,3 +98,109 @@ def reset_movies(request):
     depot = request.user.alternative_depots.get(is_active=True)
     depot.reset_movies(delete=True)
     return HttpResponseRedirect(reverse_lazy("alternative:index"))
+
+
+# API DATA
+def json_data(pi, g=True, v=True, cr=True, twr=True, cs=True):
+    labels = pi["d"]
+
+    datasets = list()
+    if g:
+        data_profit = dict()
+        data_profit["label"] = "Profit"
+        data_profit["data"] = pi["g"]
+        data_profit["yAxisID"] = "value"
+        datasets.append(data_profit)
+    if v:
+        data_value = dict()
+        data_value["label"] = "Value"
+        data_value["data"] = pi["v"]
+        data_value["yAxisID"] = "value"
+        datasets.append(data_value)
+    if cr:
+        data_cr = dict()
+        data_cr["label"] = "Current return"
+        data_cr["data"] = map(lambda x: x*100, pi["cr"])
+        data_cr["yAxisID"] = "yield"
+        datasets.append(data_cr)
+    if twr:
+        data_ttwr = dict()
+        data_ttwr["label"] = "Time weighted return"
+        data_ttwr["data"] = map(lambda x: x*100, pi["twr"])
+        data_ttwr["yAxisID"] = "yield"
+        datasets.append(data_ttwr)
+    if cs:
+        data_cs = dict()
+        data_cs["label"] = "Invested Capital"
+        data_cs["data"] = pi["cs"]
+        data_cs["yAxisID"] = "value"
+        datasets.append(data_cs)
+    data = dict()
+    data["labels"] = labels
+    data["datasets"] = datasets
+    return Response(data)
+
+
+class EverythingData(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, format=None):
+        user = request.user
+        try:
+            depot = user.alternative_depots.get(is_active=True)
+        except ObjectDoesNotExist:
+            depot = user.alternative_depots.first()
+        timespan = depot.timespans.get(is_active=True)
+        pi = depot.get_movie().get_data(timespan)
+        return json_data(pi)
+
+
+class CakeData(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, format=None):
+        user = request.user
+        try:
+            depot = user.alternative_depots.get(is_active=True)
+        except ObjectDoesNotExist:
+            depot = user.alternative_depots.first()
+        alternatives = depot.alternatives.all()
+        movies = depot.movies.filter(alternative__in=alternatives).select_related("alternative")
+        datasets = list()
+        labels = list()
+        data = list()
+        for movie in movies:
+            picture = movie.pictures.latest("d")
+            value = picture.v
+            if value and round(value, 2) != 0.00:
+                labels.append(str(movie.alternative))
+                data.append(value)
+        data_and_labels = list(sorted(zip(data, labels)))
+        labels = [l for d, l in data_and_labels]
+        data = [abs(d) for d, l in data_and_labels]
+        datasets_data = dict()
+        datasets_data["data"] = data
+        datasets.append(datasets_data)
+
+        data = dict()
+        data["datasets"] = datasets
+        data["labels"] = labels
+        return Response(data)
+
+
+class AlternativeData(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, slug, format=None):
+        user = request.user
+        try:
+            depot = user.alternative_depots.get(is_active=True)
+        except ObjectDoesNotExist:
+            depot = user.alternative_depots.first()
+        alternative = Alternative.objects.select_related("depot").get(slug=slug)
+        timespan = depot.timespans.get(is_active=True)
+        pi = alternative.get_movie().get_data(timespan)
+        return json_data(pi)

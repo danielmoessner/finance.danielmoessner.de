@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
 from django.views import generic
 from django.http import HttpResponseRedirect
@@ -157,7 +158,7 @@ class AssetView(generic.TemplateView):
         return context
 
 
-# FUNCTIONS
+# functions
 def update_movies(request, *args, **kwargs):
     depot_pk = request.user.crypto_depots.get(is_active=True).pk
     update_movies_task(depot_pk)
@@ -170,7 +171,7 @@ def reset_movies(request, *args, **kwargs):
     return HttpResponseRedirect(reverse_lazy("crypto:index"))
 
 
-# API DATA
+# api
 def json_data(pi, g=True, p=True, v=True, cr=True, ttwr=True, cs=True):
     labels = pi["d"]
 
@@ -282,8 +283,12 @@ class AssetsData(APIView):
         labels = list()
         data = list()
         for movie in movies:
-            value = movie.get_values(user, ["v"])["v"]
-            if value != "x" and round(value, 2) != 0.00:
+            try:
+                picture = movie.pictures.latest("d")
+            except ObjectDoesNotExist:
+                continue
+            value = picture.v
+            if value and round(value, 2) != 0.00:
                 labels.append(str(movie.asset))
                 data.append(value)
         data_and_labels = list(sorted(zip(data, labels)))

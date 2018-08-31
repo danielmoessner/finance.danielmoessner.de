@@ -8,13 +8,13 @@
 
 
 {% block head %}
-	{# <script type="text/javascript" src="{{ static('js/line_bar_chart.js') }}" api-data="{{ url('alternative:api_data_alternative', args=[alternative.slug]) }}"></script> #}
+	<script src="{{ static('js/line_chart_2_axes.js') }}" api-data="{{ url('alternative:alternative_api_data', args=[alternative.slug]) }}"></script>
 {% endblock %}
 
 
 {% block chart %}
 	<div class="vs-3"></div>
-   	<canvas class="chart--canvas" id="line_bar_chart"></canvas>
+   	<canvas class="" id="line_chart"></canvas>
 	<div class="vs-3"></div>
     <hr class="hr"> 
 {% endblock %}
@@ -58,11 +58,11 @@
             {{ cg.statsCard("Profit", alternativeData.g) }}
             {{ cg.statsCard("Value", alternativeData.v) }}
             {{ cg.statsCard("Current Return", alternativeData.cr) }}
-            {{ cg.statsCard("Time weighted return", alternativeData.twr)}}
+            {{ cg.statsCard("Time Weighted Return", alternativeData.twr)}}
         </div>
         {% if timespan.start_date %}
             <div class="vs-3"></div>
-            {{ hg.smallLmHeading(timespan.name, buttons=[timespan.get_start_date() + " - " + timespan.get_end_date()]) }}
+            {{ hg.smallLmHeading(timespan.name, right=timespan.get_start_date() + " - " + timespan.get_end_date()) }}
             <div class="vs-1"></div>
             <div class="items-box">
                 {% with data=movie.get_values(user, ["cs", "g", "v", "cr", "twr"], timespan) %}
@@ -70,7 +70,7 @@
                     {{ cg.statsCard("Profit", data.g) }}
                     {{ cg.statsCard("Value", data.v) }}
                     {{ cg.statsCard("Current Return", data.cr) }}
-                    {{ cg.statsCard("Time weighted return", data.twr)}}
+                    {{ cg.statsCard("Time Weighted Return", data.twr)}}
                 {% endwith %}
             </div>
         {% endif %}
