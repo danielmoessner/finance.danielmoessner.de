@@ -8,7 +8,9 @@ from django.db import models
 from finance.users.models import StandardUser
 from finance.core.models import Timespan as CoreTimespan
 from finance.core.models import Depot as CoreDepot
+from finance.core.utils import print_df
 
+from decimal import Decimal
 import pandas as pd
 import numpy as np
 import time
@@ -39,7 +41,7 @@ class Depot(CoreDepot):
         if force_update:
             self.movies.update(update_needed=True)
 
-        for movie in Movie.objects.filter(depot=self, alternative=self.alternatives.all()):
+        for movie in Movie.objects.filter(depot=self, alternative__in=self.alternatives.all()):
             if movie.update_needed:
                 movie.update()
         for movie in Movie.objects.filter(depot=self, alternative=None):
@@ -65,8 +67,8 @@ class Alternative(models.Model):
 
 class Value(models.Model):
     alternative = models.ForeignKey(Alternative, related_name="values", on_delete=models.CASCADE)
-    date = models.DateTimeField()
-    value = models.DecimalField(decimal_places=2, max_digits=15, default=0, validators=[MinValueValidator(0)])
+    date = models.DateField()
+    value = models.DecimalField(decimal_places=2, max_digits=15, validators=[MinValueValidator(0)])
 
     class Meta:
         unique_together = ("alternative", "date")
@@ -76,13 +78,14 @@ class Value(models.Model):
 
     # getters
     def get_date(self):
-        return timezone.localtime(self.date).strftime("%d.%m.%Y")
+        return self.date.strftime("%d.%m.%Y")
 
 
 class Flow(models.Model):
     alternative = models.ForeignKey(Alternative, related_name="flows", on_delete=models.CASCADE)
-    date = models.DateTimeField()
-    flow = models.DecimalField(decimal_places=2, max_digits=15, default=0)
+    date = models.DateField()
+    value = models.DecimalField(decimal_places=2, max_digits=15)
+    flow = models.DecimalField(decimal_places=2, max_digits=15, validators=[MinValueValidator(0.01)])
 
     class Meta:
         unique_together = ("alternative", "date")
@@ -92,7 +95,7 @@ class Flow(models.Model):
 
     # getters
     def get_date(self):
-        return timezone.localtime(self.date).strftime("%d.%m.%Y")
+        return self.date.strftime("%d.%m.%Y")
 
 
 class Timespan(CoreTimespan):
@@ -121,6 +124,12 @@ class Movie(models.Model):
         return text
 
     # getters
+    @staticmethod
+    def get_percentage(value):
+        if type(value) is float or type(value) is Decimal:
+            return str(value * 100) + " %"
+        return value
+
     def get_df(self, timespan=None):
         if timespan and timespan.start_date and timespan.end_date:
             pictures = self.pictures.filter(d__gte=timespan.start_date,
@@ -180,11 +189,14 @@ class Movie(models.Model):
             elif end_picture:
                 data[key] = getattr(end_picture, key)
             else:
-                data[key] = 0
-            if user.rounded_numbers:
-                data[key] = round(data[key], 2)
-                if data[key] == 0.00:
-                    data[key] = "x"
+                data[key] = "x"
+
+            if data[key] == "x":
+                pass
+            elif key in ["cr", "twr"]:
+                data[key] = "{} %".format(round(data[key] * 100, 2))
+            else:
+                data[key] = "{} {}".format(round(data[key], 2), user.get_currency_display())
 
         return data
 
@@ -217,40 +229,25 @@ class Movie(models.Model):
 
         old_df = self.get_df()
         old_df.set_index("d", inplace=True)
-        old_df = old_df.loc[:, ["v", "cs", "g", "cr", "ttwr"]]
 
-        if old_df.equals(df[:len(old_df)]):
-            df = df[len(old_df):]
+        if old_df.equals(df.iloc[:len(old_df)]):
+            df = df.iloc[len(old_df):]
         else:
             self.pictures.all().delete()
 
         pictures = list()
-        if self.alternative:
-            for index, row in df.iterrows():
-                picture = Picture(
-                    movie=self,
-                    d=index,
-                    v=row["v"],
-                    f=row["f"],
-                    cs=row["cs"],
-                    g=row["g"],
-                    cr=row["cr"],
-                    ttwr=row["ttwr"]
-                )
-                pictures.append(picture)
-        elif not self.alternative:
-            for index, row in df.iterrows():
-                picture = Picture(
-                    movie=self,
-                    d=index,
-                    v=row["v"],
-                    f=row["f"],
-                    cs=row["cs"],
-                    g=row["g"],
-                    cr=row["cr"],
-                    ttwr=row["ttwr"]
-                )
-                pictures.append(picture)
+        for index, row in df.iterrows():
+            picture = Picture(
+                movie=self,
+                d=index,
+                v=row["v"],
+                f=row["f"],
+                cs=row["cs"],
+                g=row["g"],
+                cr=row["cr"],
+                ttwr=row["twr"]
+            )
+            pictures.append(picture)
         Picture.objects.bulk_create(pictures)
 
         self.update_needed = False
@@ -271,40 +268,45 @@ class Movie(models.Model):
                 df.loc[df.index[i], "helper"] = notna_sum
         df.iloc[:, column] = df.loc[:, "helper"]
         df.drop(["helper"], axis=1, inplace=True)
-        df = df.loc[pd.notna(df.loc[:, "value"])]
 
     def calc_alternative(self):
         # values
         values = Value.objects.filter(alternative=self.alternative)
         values = values.values("date", "value")
-        values_df = pd.DataFrame(list(values), dtype=np.float64).set_index("date")
+        values_df = pd.DataFrame(list(values), columns=["date", "value"], dtype=np.float64)
         # flows
         flows = Flow.objects.filter(alternative=self.alternative)
-        flows = flows.values("date", "flow")
-        flows_df = pd.DataFrame(list(flows), dtype=np.float64).set_index("date")
+        flows = flows.values("date", "flow", "value")
+        flows_df = pd.DataFrame(list(flows), columns=["date", "flow", "value"], dtype=np.float64)
         # df
         df = pd.concat([values_df, flows_df], sort=False)
+        if df.empty:
+            return df
+        df.set_index("date", inplace=True)
         df.sort_index(inplace=True)
-        # add flows into the value row
-        Movie.na_to_na_sum(df, "flow")
-        # cs
+        date_series = pd.date_range(start=df.index[0], end=timezone.now().date())
+        df = df.reindex(date_series)
+        df.loc[:, "flow"] = df.loc[:, "flow"].fillna(0)
+        df.loc[:, "value"] = df.loc[:, "value"].ffill()
+        # cs this is not correct at all
         df.loc[:, "cs"] = df.loc[:, "flow"].rolling(window=len(df.loc[:, "flow"]), min_periods=1).sum()
         # g
         df.loc[:, "g"] = df.loc[:, "value"] - df.loc[:, "cs"]
         # cr
         df.loc[:, "cr"] = (df.loc[:, "value"] - df.loc[:, "cs"]) / df.loc[:, "cs"]
         # ttwr
-        df.loc[:, "ttwr"] = (df.loc[:, "value"] - df.loc[:, "flow"]) / df.loc[:, "value"].shift(1).fillna(0)
-        df.iloc[0, df.columns.get_loc("ttwr")] = df.iloc[0, df.columns.get_loc("value")] / df.iloc[
-            0, df.columns.get_loc("flow")]
-        df.loc[:, "ttwr"] = df.loc[:, "ttwr"].cumprod()
-        df.loc[:, "ttwr"] = df.loc[:, "ttwr"] - 1
+        df.loc[:, "twr"] = df.loc[:, "value"] / (df.loc[:, "value"].shift(1) + df.loc[:, "flow"].shift(1))
+        df.loc[:, "twr"] = df.loc[:, "twr"].fillna(1)
+        df.loc[:, "twr"] = df.loc[:, "twr"].cumprod()
+        df.loc[:, "twr"] = df.loc[:, "twr"] - 1
         # return
         df.rename(columns={"date": "d", "value": "v", "flow": "f"}, inplace=True)
+        df.loc[:, ["v", "f", "cs", "g"]] = df.loc[:, ["v", "f", "cs", "g"]].applymap(lambda x: round(x, 2))
+        df.loc[:, ["cr", "twr"]] = df.loc[:, ["cr", "twr"]].applymap(lambda x: round(x, 4))
         return df
 
     def calc_depot(self):
-        df = pd.DataFrame(columns=["value", "current_sum", "date"], dtype=np.float64)
+        df = pd.DataFrame(columns=["value", "flow", "date"], dtype=np.float64)
         # alternatives
         alternatives = list()
         for alternative in self.depot.alternatives.all().select_related("depot"):
@@ -316,16 +318,13 @@ class Movie(models.Model):
             alternatives.append(alternative.slug)
             df = pd.concat([df, alternative_df], ignore_index=True, sort=False)
         # all together
-        df.loc[:, "date"] = df.loc[:, "date"].dt.normalize()
+        if df.empty:
+            return df
         df.set_index("date", inplace=True)
         df.sort_index(inplace=True)
-        df.ffill(inplace=True)
-        df = df[~df.index.duplicated(keep="last")]
         # sum it up
         df.loc[:, "value"] = df.loc[:, [slug + "__v" for slug in alternatives]].sum(axis=1, skipna=True)
         df.loc[:, "flow"] = df.loc[:, [slug + "__f" for slug in alternatives]].sum(axis=1, skipna=True)
-        # add flows into the value row
-        Movie.na_to_na_sum(df, "flow")
         # cs
         df.loc[:, "cs"] = df.loc[:, "flow"].rolling(window=len(df.loc[:, "flow"]), min_periods=1).sum()
         # g
@@ -333,14 +332,15 @@ class Movie(models.Model):
         # cr
         df.loc[:, "cr"] = (df.loc[:, "value"] - df.loc[:, "cs"]) / df.loc[:, "cs"]
         # ttwr
-        # print(df.loc[:, ["value", "flow", "cs", "g", "cr"]])
-        df.loc[:, "ttwr"] = (df.loc[:, "value"] - df.loc[:, "flow"]) / df.loc[:, "value"].shift(1).fillna(0)
-        df.iloc[0, df.columns.get_loc("ttwr")] = df.iloc[0, df.columns.get_loc("value")] / df.iloc[
-            0, df.columns.get_loc("flow")]
-        df.loc[:, "ttwr"] = df.loc[:, "ttwr"].cumprod()
-        df.loc[:, "ttwr"] = df.loc[:, "ttwr"] - 1
+        df.loc[:, "twr"] = df.loc[:, "value"] / (df.loc[:, "value"].shift(1) + df.loc[:, "flow"].shift(1))
+        df.loc[:, "twr"] = df.loc[:, "twr"].fillna(1)
+        df.loc[:, "twr"] = df.loc[:, "twr"].cumprod()
+        df.loc[:, "twr"] = df.loc[:, "twr"] - 1
         # return
         df.rename(columns={"date": "d", "value": "v", "flow": "f"}, inplace=True)
+        df = df.loc[:, ["v", "f", "cs", "g", "cr", "twr"]]
+        df.loc[:, ["v", "f", "cs", "g"]] = df.loc[:, ["v", "f", "cs", "g"]].applymap(lambda x: round(x, 2))
+        df.loc[:, ["cr", "twr"]] = df.loc[:, ["cr", "twr"]].applymap(lambda x: round(x, 4))
         return df
 
 
@@ -348,12 +348,15 @@ class Picture(models.Model):
     movie = models.ForeignKey(Movie, related_name="pictures", on_delete=models.CASCADE)
     d = models.DateTimeField()
 
-    v = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=3)
-    f = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=3)
-    g = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=3)
-    cr = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=3)
-    ttwr = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=3)
-    cs = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=3)
+    v = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=2)
+    f = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=2)
+    g = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=2)
+    cr = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=4)
+    twr = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=4)
+    cs = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=2)
+
+    def __str__(self):
+        return "{} {} {} {}".format(self.movie, self.d, self.v, self.f)
 
 
 post_save.connect(Movie.init_update, sender=Value)

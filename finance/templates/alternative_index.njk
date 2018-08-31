@@ -58,18 +58,25 @@
 		{{ hg.smallLmHeading("Stats", buttons=[updateButton, resetButton]) }}
 		<div class="vs-1"></div>
 		<div class="items-box">
-			{{ cg.statsCard("Total", "", ext=user.currency) }}
+			{%- set depotData = movie.get_values(user, ["cs", "g", "v", "cr", "twr"]) -%}
+            {{ cg.statsCard("Invested Capital", depotData.cs) }}
+            {{ cg.statsCard("Profit", depotData.g) }}
+            {{ cg.statsCard("Value", depotData.v) }}
+            {{ cg.statsCard("Current Return", depotData.cr) }}
+            {{ cg.statsCard("Time weighted return", depotData.twr)}}
 		</div>
 		{% if timespan.start_date %}
 			<div class="vs-3"></div>
-			{{ hg.smallLmHeading(timespan.name) }}
+			{{ hg.smallLmHeading(timespan.name, buttons=[timespan.get_start_date() + " - " + timespan.get_end_date()]) }}
 			<div class="vs-1"></div>
 			<div class="items-box">
-				{% with data=movie.get_values(user, ["b",], timespan) %}
-					{%- set heading=data.start_date+"-"+data.end_date -%}
-					{%- set value="" -%}
-                    {{ cg.statsCard(heading, value) }}
-				{% endwith %}
+				{% with data=movie.get_values(user, ["cs", "g", "v", "cr", "twr"], timespan) %}
+                    {{ cg.statsCard("Invested Capital", data.cs) }}
+		            {{ cg.statsCard("Profit", data.g) }}
+		            {{ cg.statsCard("Value", data.v) }}
+		            {{ cg.statsCard("Current Return", data.cr) }}
+		            {{ cg.statsCard("Time weighted return", data.twr)}}
+                {% endwith %}
 			</div>
 		{% endif %}
 	</div>
@@ -79,7 +86,7 @@
 		{{ hg.smallLmHeading("Alternatives", buttons=[addAlternativeButton, deleteAlternativeButton]) }}
 		<div class="scrollbar-box">
 			<table class="table">
-				{{ tg.head(["Alternative", "Balance", "Action"]) }}
+				{{ tg.head(["Alternative", "Value", "Profit", "Yield", "TWR", "Action"]) }}
 				<tbody class="table--body">
 					{% for alternative, movie in alternatives_movies %}
 						{% set tablebuttons %}
@@ -97,8 +104,8 @@
 						{% set name %}
 							<a href="{{ url('alternative:alternative', args=[alternative.slug]) }}" class="link-bold">{{ alternative.name }}</a> 
 						{% endset %}
-						{%- set values=movie.get_values(user, []) -%}
-						{{ tg.row([name|safe, "todo", tablebuttons|safe]) }}
+						{%- set values=movie.get_values(user, ["v", "g", "cr", "twr"]) -%}
+						{{ tg.row([name|safe, values.v, values.g, values.cr, values.twr, tablebuttons|safe]) }}
 					{% endfor %}
 				</tbody>
 			</table>

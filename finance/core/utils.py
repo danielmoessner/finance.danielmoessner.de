@@ -9,7 +9,9 @@ def print_df(df):
     if settings.DEBUG:
         import tabulate
         table = tabulate.tabulate(df, headers="keys")
+        print()
         print(table)
+        print()
 
 
 def create_slug(instance, on=None, slug=None):

@@ -8,6 +8,8 @@ from finance.alternative.models import Depot
 from finance.alternative.models import Flow
 from finance.core.utils import create_slug
 
+from datetime import timedelta
+
 
 # depot
 class DepotForm(forms.ModelForm):
@@ -77,9 +79,8 @@ class AlternativeSelectForm(forms.Form):
 
 # value
 class ValueForm(forms.ModelForm):
-    date = forms.DateTimeField(widget=forms.DateTimeInput(attrs={"type": "datetime-local"},
-                                                          format="%Y-%m-%dT%H:%M"),
-                               input_formats=["%Y-%m-%dT%H:%M"], label="Date")
+    date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+                           input_formats=["%Y-%m-%d"])
 
     class Meta:
         model = Value
@@ -95,46 +96,103 @@ class ValueForm(forms.ModelForm):
         self.fields["date"].initial = timezone.now()
 
     def clean(self):
-        if "alternative" in self.cleaned_data and not Flow.objects.filter(alternative=self.cleaned_data["alternative"],
-                                                                          date__lt=self.cleaned_data["date"]).exists():
-            raise forms.ValidationError("The date of this value must be later than the date of the first flow. If a "
-                                        "value came before a flow the return would be infinite.")
+        # general
+        alternative = self.cleaned_data["alternative"]
+        if not Flow.objects.filter(alternative=alternative).exists():
+            err = "Add a flow before you add a value."
+            raise forms.ValidationError(err)
+        elif not Value.objects.filter(alternative=alternative).exists():
+            flow = Flow.objects.earliest("date")
+            date = flow.date + timedelta(days=1)
+            Value.objects.create(alternative=flow.alternative, date=date, value=flow.flow)
+            Flow.objects.filter(alternative=flow.alternative, date=date).delete()
 
-    def clean_alternative(self):
-        data = self.cleaned_data["alternative"]
-        if Value.objects.filter(alternative=data, value=0):
-            raise forms.ValidationError("The value of this alternative is 0. Add a new alternative instead of keeping "
-                                        "to use this one, because time-weighted-return wouldn't work with this one "
-                                        "anymore.")
-        return data
+        # alternative
+        if Value.objects.filter(alternative=alternative, value__lte=0).exists():
+            err = "You can't add more flows or values to this alternative, because its value is 0."
+            raise forms.ValidationError(err)
+
+        # date
+        date = self.cleaned_data["date"]
+        if date <= Value.objects.filter(alternative=alternative).earliest("date").date:
+            err = "The date must be greater than the date of the first value."
+            raise forms.ValidationError(err)
+
+        # unique constraint
+        if Value.objects.filter(alternative=alternative, date=date).exists() or \
+                Flow.objects.filter(alternative=alternative, date=date).exists():
+            err = "A value or a flow with this date already exists."
+            raise forms.ValidationError(err)
 
 
 # change
 class FlowForm(forms.ModelForm):
-    date = forms.DateTimeField(widget=forms.DateTimeInput(attrs={"type": "datetime-local"},
-                                                          format="%Y-%m-%dT%H:%M"),
-                               input_formats=["%Y-%m-%dT%H:%M"], label="Date")
+    date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+                           input_formats=["%Y-%m-%d"])
 
     class Meta:
         model = Flow
         fields = (
             "alternative",
             "date",
+            "value",
             "flow",
         )
+        help_texts = {
+            "value": "The value of this alternative before the flow."
+        }
 
     def __init__(self, depot, *args, **kwargs):
         super(FlowForm, self).__init__(*args, **kwargs)
         self.fields["alternative"].queryset = depot.alternatives.all()
-        self.fields["date"].initial = timezone.now()
+        self.fields["date"].initial = timezone.now().date
 
-    def clean_alternative(self):
-        data = self.cleaned_data["alternative"]
-        if Value.objects.filter(alternative=data, value=0):
-            raise forms.ValidationError("The value of this alternative is 0. Add a new alternative instead of keeping "
-                                        "to use this one, because time-weighted-return wouldn't work with this one "
-                                        "anymore.")
-        return data
+    def clean(self):
+        # general
+        alternative = self.cleaned_data["alternative"]
+        if Flow.objects.filter(alternative=alternative).exists() and \
+                not Value.objects.filter(alternative=alternative).exists():
+            flow = Flow.objects.earliest("date")
+            date = flow.date + timedelta(days=1)
+            Value.objects.create(alternative=flow.alternative, date=date, value=flow.flow)
+            Flow.objects.filter(alternative=flow.alternative, date=date).delete()
+
+        # alternative
+        if Value.objects.filter(alternative=alternative, value__lte=0).exists():
+            err = "You can't add more flows or values to this alternative, because its value is 0."
+            raise forms.ValidationError(err)
+
+        # date
+        date = self.cleaned_data["date"]
+        if Value.objects.filter(alternative=alternative).exists() and \
+                date <= Value.objects.filter(alternative=alternative).earliest("date").date:
+            err = "The date must be greater than the date of the first value."
+            raise forms.ValidationError(err)
+
+        # value
+        value = self.cleaned_data["value"]
+        if Value.objects.filter(alternative=alternative).exists() or \
+                Flow.objects.filter(alternative=alternative).exists():
+            if value <= 0:
+                err = "The value must be greater than 0."
+                raise forms.ValidationError(err)
+        else:
+            if value != 0:
+                err = "The value must be 0."
+                raise forms.ValidationError(err)
+
+        # unique constraint
+        if Value.objects.filter(alternative=alternative, date=date).exists() or \
+                Flow.objects.filter(alternative=alternative, date=date).exists():
+            err = "A value or a flow with this date already exists."
+            raise forms.ValidationError(err)
+
+    def save(self, commit=True):
+        flow = super(FlowForm, self).save(commit=commit)
+        if commit and flow.pk and Flow.objects.filter(alternative=flow.alternative).count() == 1:
+            date = flow.date + timedelta(days=1)
+            Value.objects.create(alternative=flow.alternative, date=date, value=flow.flow)
+        return flow
 
 
 # timespan

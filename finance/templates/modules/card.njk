@@ -2,7 +2,13 @@
 	<div class="card">
 		<h2 class="card--heading">{{ heading }}</h2>
 		<div class="card--body">
-			{{ value }} {% if ext %}{{ ext }}{% endif %}
+			{% if ext=="%" and value!="x" %}
+				{{ value*100 }} {{ ext }}
+			{% elif ext %}
+			 	{{ value }} {{ ext }}
+			{% else %}
+				{{ value }}
+			{% endif %}
 		</div>
 	</div>
 {% endmacro %}

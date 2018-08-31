@@ -53,17 +53,24 @@
         {{ hg.smallLmHeading("Stats") }}
         <div class="vs-1"></div>
         <div class="items-box">
-            {{ cg.statsCard("Total", "", ext=user.currency) }}
+            {%- set alternativeData = movie.get_values(user, ["cs", "g", "v", "cr", "twr"]) -%}
+            {{ cg.statsCard("Invested Capital", alternativeData.cs) }}
+            {{ cg.statsCard("Profit", alternativeData.g) }}
+            {{ cg.statsCard("Value", alternativeData.v) }}
+            {{ cg.statsCard("Current Return", alternativeData.cr) }}
+            {{ cg.statsCard("Time weighted return", alternativeData.twr)}}
         </div>
         {% if timespan.start_date %}
             <div class="vs-3"></div>
-            {{ hg.smallLmHeading(timespan.name) }}
+            {{ hg.smallLmHeading(timespan.name, buttons=[timespan.get_start_date() + " - " + timespan.get_end_date()]) }}
             <div class="vs-1"></div>
             <div class="items-box">
-                {% with data=movie.get_values(user, ["b",], timespan) %}
-                    {%- set heading=data.start_date+"-"+data.end_date -%}
-                    {%- set value="" -%}
-                    {{ cg.statsCard(heading, value) }}
+                {% with data=movie.get_values(user, ["cs", "g", "v", "cr", "twr"], timespan) %}
+                    {{ cg.statsCard("Invested Capital", data.cs) }}
+                    {{ cg.statsCard("Profit", data.g) }}
+                    {{ cg.statsCard("Value", data.v) }}
+                    {{ cg.statsCard("Current Return", data.cr) }}
+                    {{ cg.statsCard("Time weighted return", data.twr)}}
                 {% endwith %}
             </div>
         {% endif %}
@@ -74,7 +81,7 @@
         {{ hg.smallLmHeading("Flows", buttons=[addFlowButton]) }}
 		<div class="scrollbar-box">
             <table class="table">
-                {{ tg.head(["Date", "Flow", "Action"]) }}
+                {{ tg.head(["Date", "Value", "Flow", "Action"]) }}
                 <tbody class="table--body">
                     {% for flow in flows %}
                         {% set tablebuttons %}
@@ -86,7 +93,7 @@
                             {{ mg.djangoModal("Edit Flow", "editFlow"+flow.pk|string, url("alternative:edit_flow", args=[alternative.slug, flow.pk])) }}
                             {{ mg.djangoModal("Delete Flow", "deleteFlow"+flow.pk|string, url("alternative:delete_flow", args=[alternative.slug, flow.pk])) }}
                         {% endset %} 
-                        {{ tg.row([flow.get_date(), flow.flow, tablebuttons|safe]) }}
+                        {{ tg.row([flow.get_date(), flow.value, flow.flow, tablebuttons|safe]) }}
                     {% endfor %}
                 </tbody>
             </table>
