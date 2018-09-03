@@ -8,6 +8,7 @@ from finance.users.models import StandardUser
 from finance.core.models import Timespan as CoreTimespan
 from finance.core.models import Account as CoreAccount
 from finance.core.models import Depot as CoreDepot
+from finance.core.utils import print_df
 
 import pandas as pd
 import numpy as np
@@ -277,10 +278,10 @@ class Movie(models.Model):
         else:
             pictures = self.pictures
         pictures = pictures.order_by("d")
-        pictures = pictures.values("d", "p", "v", "g", "cr", "twr", "ca", "cs")
+        pictures = pictures.values("d", "p", "v", "g", "cr", "twr", "ca", "cs", "f")
         df = pd.DataFrame(list(pictures), dtype=np.float64)
         if df.empty:
-            df = pd.DataFrame(columns=["d", "p", "v", "g", "cr", "twr", "ca", "cs"])
+            df = pd.DataFrame(columns=["d", "p", "v", "g", "cr", "twr", "ca", "cs", "f"])
         return df
 
     def get_data(self, timespan=None):
@@ -440,7 +441,8 @@ class Movie(models.Model):
                     g=row["g"],
                     cr=row["cr"],
                     p=row["p"],
-                    ca=row["ca"]
+                    ca=row["ca"],
+                    f=row["f"]
                 )
                 pictures.append(picture)
         elif self.account and not self.asset:
@@ -455,12 +457,12 @@ class Movie(models.Model):
             for index, row in df.iterrows():
                 picture = Picture(
                     movie=self,
-                    d=index, 
+                    d=index,
                     v=row["v"],
                     cs=row["cs"],
                     g=row["g"],
                     cr=row["cr"],
-                    ttwr=row["twr"]
+                    twr=row["twr"]
                 )
                 pictures.append(picture)
         Picture.objects.bulk_create(pictures)
@@ -483,38 +485,42 @@ class Movie(models.Model):
 
     @staticmethod
     def calc_fifo(type_column, ba_column, bs_column, fee_sum_column, ca_column):
-        current_sum_row = [0] * len(ba_column)
+        current_sum_row = list()
         for i in range(len(ba_column)):
             current_amount = ca_column.iloc[i]
-            if np.around(current_amount, 8) < 0:
-                raise Exception("There was more asset sold than available.")
+            assert np.around(current_amount, 8) >= 0  # if fails more asset sold than available
             current_sum = 0
             for k in reversed(range(0, i + 1)):
                 if type_column.iloc[k] == "BUY":
-                    if k > 0:
-                        if np.around(current_amount, 8) > \
-                                np.around(ba_column.iloc[k] - ba_column.iloc[k - 1], 8):
-                            current_sum += (bs_column.iloc[k] - bs_column.iloc[k - 1]) + \
-                                           (fee_sum_column.iloc[k] - fee_sum_column.iloc[k - 1])
-                            current_amount -= ba_column.iloc[k] - ba_column.iloc[k - 1]
-                        elif np.around(current_amount, 8) <= \
-                                np.around(ba_column.iloc[k] - ba_column.iloc[k - 1], 8):
-                            current_sum += ((bs_column.iloc[k] - bs_column.iloc[k - 1]) + (
-                                    fee_sum_column.iloc[k] - fee_sum_column.iloc[k - 1])) * (
-                                    current_amount / (ba_column.iloc[k] - ba_column.iloc[k - 1]))
-                            current_amount -= current_amount
-                            break
-                    else:
-                        if np.around(current_amount, 8) <= np.around(ba_column.iloc[k], 8):
-                            current_sum += (bs_column.iloc[k] + fee_sum_column.iloc[k]) * \
-                                           (current_amount / ba_column.iloc[k])
-                            current_amount -= current_amount
-                            break
-                        else:
-                            raise Exception("Something is wrong here.")
+                    if np.around(current_amount, 8) > np.around(ba_column.iloc[k], 8):
+                        assert k != 0  # if fails something is wrong here
+                        current_sum += bs_column.iloc[k] + fee_sum_column.iloc[k]
+                        current_amount -= ba_column.iloc[k]
+                    elif np.around(current_amount, 8) <= np.around(ba_column.iloc[k], 8):
+                        current_sum += (bs_column.iloc[k] + fee_sum_column.iloc[k]) * \
+                                       (current_amount / ba_column.iloc[k])
+                        current_amount -= current_amount
+                        break
             assert np.around(current_amount, 8) == 0  # if fails something wrong in the formula
-            current_sum_row[i] = np.around(current_sum, 8)
+            current_sum_row.append(np.around(current_sum, 8))
         return current_sum_row
+
+    @staticmethod
+    def calc_invested_capital(value, flow):
+        """
+        The asset has a flow and after that occurs a value is determined. The cs is after the flow occurs.
+        """
+        assert len(value) == len(flow)
+        cs = list()
+        cs.append(flow[0])
+        for i in range(1, len(value)):
+            if flow[i] < 0:
+                cs.append(cs[-1] * (1 + flow[i] / value[i - 1]))
+            elif flow[i] > 0:
+                cs.append(cs[-1] + flow[i])
+            else:
+                cs.append(cs[-1])
+        return cs
 
     # calc
     def calc_asset_depot(self):
@@ -522,80 +528,104 @@ class Movie(models.Model):
         buy_trades = Trade.objects.filter(buy_asset=self.asset, account__in=self.depot.accounts.all()).select_related(
             "sell_asset", "fees_asset")
         buy_trades_values = buy_trades.values("date", "buy_amount")
-        buy_trades_df = pd.DataFrame(list(buy_trades_values), dtype=np.float64)
-        buy_trades_df["type"] = "BUY"
-        buy_trades_df["buy_sum"] = [trade.sell_asset.get_worth(trade.date, trade.sell_amount) for trade in buy_trades]
-        buy_trades_df["fee_sum_buy"] = [trade.fees_asset.get_worth(trade.date, trade.fees) for trade in buy_trades]
-        if buy_trades_df.empty:
-            buy_trades_df = pd.DataFrame(columns=["date", "buy_amount", "type", "buy_sum", "fee_sum_buy"])
-        buy_trades_df.set_index("date", inplace=True)
+        b_df = pd.DataFrame(list(buy_trades_values), dtype=np.float64)
+        if not b_df.empty:
+            b_df.rename(columns={"buy_amount": "ba"}, inplace=True)
+            b_df.loc[:, "type"] = "BUY"
+            b_df.loc[:, "bs"] = [trade.sell_asset.get_worth(trade.date, trade.sell_amount) for trade in buy_trades]
+            b_df.loc[:, "bfs"] = [trade.fees_asset.get_worth(trade.date, trade.fees) for trade in buy_trades]
+            b_df = b_df.loc[:, ["date", "type", "ba", "bs", "bfs"]]
+        else:
+            b_df = pd.DataFrame(columns=["date", "type", "ba", "bs", "bfs"])
+        b_df.set_index("date", inplace=True)
 
         # sell_trades
         sell_trades = Trade.objects.filter(sell_asset=self.asset, account__in=self.depot.accounts.all()).select_related(
             "buy_asset")
-        sell_trades_values = sell_trades.values("date", "sell_amount", "fees", "fees_asset","sell_asset")
-        sell_trades_df = pd.DataFrame(list(sell_trades_values), dtype=np.float64)
-        if sell_trades_df.empty:
-            sell_trades_df = pd.DataFrame(columns=["date", "sell_amount", "fees", "fees_asset", "sell_asset", "type",
-                                                   "sell_sum"])
-        sell_trades_df.rename(columns={"fees": "fee_amount_sell"}, inplace=True)
-        sell_trades_df["type"] = "SELL"
-        sell_trades_df["sell_sum"] = [trade.buy_asset.get_worth(trade.date, trade.buy_amount) for trade in sell_trades]
-        sell_trades_df.loc[
-            sell_trades_df.loc[:, "fees_asset"] != sell_trades_df.loc[:, "sell_asset"], "fee_amount_sell"] = 0
-        sell_trades_df.set_index("date", inplace=True)
+        sell_trades_values = sell_trades.values("date", "sell_amount", "fees", "fees_asset", "sell_asset")
+        s_df = pd.DataFrame(list(sell_trades_values), dtype=np.float64)
+        if not s_df.empty:
+            s_df.rename(columns={"fees": "sfa", "sell_amount": "sa"}, inplace=True)
+            s_df["type"] = "SELL"
+            s_df.loc[:, "ss"] = [trade.buy_asset.get_worth(trade.date, trade.buy_amount) for trade in sell_trades]
+            s_df.loc[s_df.loc[:, "fees_asset"] != s_df.loc[:, "sell_asset"], "sfa"] = 0
+            s_df = s_df.loc[:, ["date", "type", "sa", "sfa", "ss"]]
+        else:
+            s_df = pd.DataFrame(columns=["date", "type", "sa", "sfa", "ss"])
+        s_df.set_index("date", inplace=True)
 
         # transactions
         transactions = Transaction.objects.filter(asset=self.asset, from_account__in=self.depot.accounts.all())
         transactions = transactions.values("date", "fees")
-        transactions_df = pd.DataFrame(list(transactions), dtype=np.float64)
-        transactions_df["type"] = "TRANSACTION"
-        if transactions_df.empty:
-            transactions_df = pd.DataFrame(columns=["date", "fees", "type"])
-        transactions_df.set_index("date", inplace=True)
+        t_df = pd.DataFrame(list(transactions), dtype=np.float64)
+        if not t_df.empty:
+            t_df.rename(columns={"fees": "tfa"}, inplace=True)
+            t_df["type"] = "TRANSACTION"
+            t_df = t_df.loc[:, ["date", "type", "tfa"]]
+        else:
+            t_df = pd.DataFrame(columns=["date", "type", "tfa"])
+        t_df.set_index("date", inplace=True)
 
-        # buy_trades, sell_trades and transactions
-        tratra_df = pd.concat([buy_trades_df, sell_trades_df, transactions_df], sort=False)
-        tratra_df.sort_index(inplace=True)
-        tratra_df.fillna(0, inplace=True)
-        tratra_df["fee_amount"] = tratra_df["fee_amount_sell"] + tratra_df["fees"]
-        Movie.ffadd(tratra_df, "buy_amount")
-        Movie.ffadd(tratra_df, "buy_sum")
-        Movie.ffadd(tratra_df, "sell_amount")
-        Movie.ffadd(tratra_df, "sell_sum")
-        Movie.ffadd(tratra_df, "fee_amount")
-        Movie.ffadd(tratra_df, "fee_sum_buy")
-        tratra_df = tratra_df.loc[tratra_df.type != "TRANSACTION"]
-        tratra_df["current_amount"] = tratra_df["buy_amount"] - tratra_df["sell_amount"] - tratra_df["fee_amount"]
-        tratra_df["current_sum"] = Movie.calc_fifo(tratra_df["type"], tratra_df["buy_amount"],
-                                                   tratra_df["buy_sum"], tratra_df["fee_sum_buy"],
-                                                   tratra_df["current_amount"])
+        # buy_trades, sell_trades, transactions
+        bst_df = pd.concat([b_df, s_df, t_df], sort=False)
+        if not bst_df.empty:
+            bst_df.sort_index(inplace=True)
+            bst_df.fillna(0, inplace=True)
+            bst_df.loc[:, "cf"] = bst_df.loc[:, "bs"] + bst_df.loc[:, "bfs"] - bst_df.loc[:, "ss"]
+            bst_df.loc[:, "ca"] = bst_df.loc[:, "ba"].rolling(window=len(bst_df), min_periods=1).sum() - \
+                bst_df.loc[:, "sa"].rolling(window=len(bst_df), min_periods=1).sum() - \
+                (bst_df.loc[:, "sfa"] + bst_df.loc[:, "tfa"]).rolling(window=len(bst_df), min_periods=1).sum()
+            # this works too, but I decided to use the calc_invested_capital for now
+            # bst_df.loc[:, "cs"] = Movie.calc_fifo(bst_df.loc[:, "type"], bst_df.loc[:, "ba"], bst_df.loc[:, "bs"],
+            #                                       bst_df.loc[:, "bfs"], bst_df.loc[:, "ca"])
+            bst_df.index = bst_df.index.to_series().dt.normalize()
+            bst_df = bst_df.groupby(by=bst_df.index, sort=False).agg({"ba": "sum", "bs": "sum", "bfs": "sum",
+                                                                      "sa": "sum", "sfa": "sum", "ss": "sum",
+                                                                      "tfa": "sum", "cf": "sum", "ca": "last"})
+            date_series = pd.date_range(start=bst_df.index[0], end=timezone.now().date())
+            bst_df = bst_df.reindex(date_series)
+            bst_df.loc[:, ["ca"]] = bst_df.loc[:, ["ca"]].ffill()
+            bst_df.fillna(0, inplace=True)
+        else:
+            bst_df = pd.DataFrame(columns=["date", "ba", "bs", "bfs", "sa", "sfa", "ss", "tfa", "cf", "ca", "cs"])
+            bst_df.set_index("date", inplace=True)
 
         # prices
         prices = Price.objects.filter(asset=self.asset)
         prices = prices.values("date", "price")
-        price_df = pd.DataFrame(list(prices), dtype=np.float64)
-        if price_df.empty:
-            price_df = pd.DataFrame(columns=["date", "price"])
-        price_df.set_index("date", inplace=True)
+        p_df = pd.DataFrame(list(prices), dtype=np.float64)
+        if not p_df.empty:
+            p_df.rename(columns={"price": "cp"}, inplace=True)
+            if p_df.empty:
+                p_df = pd.DataFrame(columns=["date", "cp"])
+            p_df.set_index("date", inplace=True)
+            p_df.sort_index(inplace=True)
+            p_df.index = p_df.index.to_series().dt.normalize()
+            p_df = p_df.groupby(by=p_df.index, sort=False).last()
+            date_series = pd.date_range(start=p_df.index[0], end=timezone.now().date())
+            p_df = p_df.reindex(date_series)
+            p_df.ffill(inplace=True)
+        else:
+            p_df = pd.DataFrame(columns=["date", "cp"])
+            p_df.set_index("date", inplace=True)
 
-        # all together
-        df = pd.concat([price_df, tratra_df], sort=False)
-        df.drop(columns=["type", ], inplace=True)
-        df.sort_index(inplace=True)
-        df.ffill(inplace=True)
-
-        # calc
-        df["value"] = df["current_amount"] * df["price"]
-        df["gain"] = df["value"] - df["current_sum"]
-        df["current_return"] = (df["value"] / df["current_sum"] - 1)
+        # buy_trades, sell_trades, transactions, prices
+        df = pd.concat([p_df, bst_df], axis=1, sort=True)
+        if not df.empty:
+            df.fillna(0, inplace=True)
+            df["cv"] = df["ca"] * df["cp"]
+            df.loc[:, "cs"] = Movie.calc_invested_capital(df.loc[:, "cv"].tolist(), df.loc[:, "cf"].tolist())
+            df["cg"] = df["cv"] - df["cs"]
+            df["cr"] = df["cv"] / df["cs"] - 1
+        else:
+            df = pd.DataFrame(columns=["date", "cv", "cs", "cg", "cr", "p", "ca", "cf"])
+            df.set_index("date", inplace=True)
 
         # return
-        df.replace([np.nan, np.inf, -np.inf], 0, inplace=True)  # sqlite3 can not save nan or inf
-        df.rename(columns={"value": "v", "current_sum": "cs", "gain": "g", "price": "p", "current_amount": "ca",
-                           "current_return": "cr"})
-        df = df.loc[:, ["v", "cs", "g", "cr", "p", "ca"]]
-        df.loc[:, ["v", "g", "p"]] = df.loc[:, ["v", "g", "p"]].applymap(lambda x: round(x, 2))
+        df.replace([np.nan, np.inf, -np.inf], 0, inplace=True)
+        df.rename(columns={"cv": "v", "cg": "g", "cp": "p", "cf": "f"}, inplace=True)
+        df = df.loc[:, ["v", "cs", "g", "cr", "p", "ca", "f"]]
+        df.loc[:, ["v", "g", "p", "f"]] = df.loc[:, ["v", "g", "p", "f"]].applymap(lambda x: round(x, 2))
         df.loc[:, "cr"] = df.loc[:, "cr"].map(lambda x: round(x, 4))
         df.loc[:, "ca"] = df.loc[:, "ca"].map(lambda x: round(x, 8))
         return df
@@ -608,26 +638,26 @@ class Movie(models.Model):
         if buy_trades_df.empty:
             buy_trades_df = pd.DataFrame(columns=["date", "buy_amount"])
         buy_trades_df.set_index("date", inplace=True)
-        
+
         # sell_trades
         sell_trades = Trade.objects.filter(sell_asset=self.asset, account=self.account)
-        sell_trades_values = sell_trades.values("date", "sell_amount", "fees_asset", "sell_asset",
-                                                "fees")
+        sell_trades_values = sell_trades.values("date", "sell_amount", "fees_asset", "sell_asset", "fees")
         sell_trades_df = pd.DataFrame(list(sell_trades_values), dtype=np.float64)
-        if sell_trades_df.empty:
-            sell_trades_df = pd.DataFrame(columns=["date", "sell_amount", "fees_asset",
-                                                   "sell_asset", "fees"])
-        sell_trades_df.rename(columns={"fees": "fee_amount_sell"}, inplace=True)
-        sell_trades_df.loc[sell_trades_df.loc[:, "fees_asset"] !=
-                           sell_trades_df.loc[:, "sell_asset"], "fee_amount_sell"] = 0
+        if not sell_trades_df.empty:
+            sell_trades_df.rename(columns={"fees": "fee_amount_sell"}, inplace=True)
+            sell_trades_df.loc[sell_trades_df.loc[:, "fees_asset"] !=
+                               sell_trades_df.loc[:, "sell_asset"], "fee_amount_sell"] = 0
+        else:
+            sell_trades_df = pd.DataFrame(columns=["date", "sell_amount", "fees_asset", "sell_asset", "fee_amount_sell"])
         sell_trades_df.set_index("date", inplace=True)
         
         # to_transactions
         to_transactions = Transaction.objects.filter(asset=self.asset, to_account=self.account)
         to_transactions = to_transactions.values("date", "amount")
         to_transactions_df = pd.DataFrame(list(to_transactions), dtype=np.float64)
-        to_transactions_df.rename(columns={"amount": "to_amount"}, inplace=True)
-        if to_transactions_df.empty:
+        if not to_transactions_df.empty:
+            to_transactions_df.rename(columns={"amount": "to_amount"}, inplace=True)
+        else:
             to_transactions_df = pd.DataFrame(columns=["date", "to_amount"])
         to_transactions_df.set_index("date", inplace=True)
 
@@ -635,25 +665,31 @@ class Movie(models.Model):
         from_transactions = Transaction.objects.filter(asset=self.asset, from_account=self.account)
         from_transactions = from_transactions.values("date", "fees", "amount")
         from_transactions_df = pd.DataFrame(list(from_transactions), dtype=np.float64)
-        from_transactions_df.rename(columns={"amount": "from_amount"}, inplace=True)
-        if from_transactions_df.empty:
+        if not from_transactions_df.empty:
+            from_transactions_df.rename(columns={"amount": "from_amount"}, inplace=True)
+        else:
             from_transactions_df = pd.DataFrame(columns=["date", "fees", "from_amount"])
         from_transactions_df.set_index("date", inplace=True)
         
         # buy_trades, sell_trades, to_transactions and from_transactions
         tratra_df = pd.concat([buy_trades_df, sell_trades_df, from_transactions_df,
                                to_transactions_df], sort=False)
-        tratra_df.sort_index(inplace=True)
-        tratra_df.fillna(0, inplace=True)
-        tratra_df["fee_amount"] = tratra_df["fee_amount_sell"] + tratra_df["fees"]
-        Movie.ffadd(tratra_df, "to_amount")
-        Movie.ffadd(tratra_df, "from_amount")
-        Movie.ffadd(tratra_df, "buy_amount")
-        Movie.ffadd(tratra_df, "sell_amount")
-        Movie.ffadd(tratra_df, "fee_amount")
-        tratra_df["current_amount"] = \
-            tratra_df["buy_amount"] + tratra_df["to_amount"] - \
-            tratra_df["sell_amount"] - tratra_df["fee_amount"] - tratra_df["from_amount"]
+        if not tratra_df.empty:
+            tratra_df.sort_index(inplace=True)
+            tratra_df.fillna(0, inplace=True)
+            tratra_df["fee_amount"] = tratra_df["fee_amount_sell"] + tratra_df["fees"]
+            Movie.ffadd(tratra_df, "to_amount")
+            Movie.ffadd(tratra_df, "from_amount")
+            Movie.ffadd(tratra_df, "buy_amount")
+            Movie.ffadd(tratra_df, "sell_amount")
+            Movie.ffadd(tratra_df, "fee_amount")
+            tratra_df["current_amount"] = \
+                tratra_df["buy_amount"] + tratra_df["to_amount"] - \
+                tratra_df["sell_amount"] - tratra_df["fee_amount"] - tratra_df["from_amount"]
+        else:
+            tratra_df = pd.DataFrame(columns=["date", "fee_amount", "to_amount", "from_amount", "buy_amount",
+                                              "sell_amount", "current_amount"])
+            tratra_df.set_index("date", inplace=True)
 
         # prices
         prices = Price.objects.filter(asset=self.asset)
@@ -665,15 +701,17 @@ class Movie(models.Model):
 
         # all together
         df = pd.concat([tratra_df, price_df], sort=False)
-        df.sort_index(inplace=True)
-        df.ffill(inplace=True)
-
-        # calc
-        df["value"] = df["current_amount"] * df["price"]
+        if not df.empty:
+            df.sort_index(inplace=True)
+            df.ffill(inplace=True)
+            df["value"] = df["current_amount"] * df["price"]
+        else:
+            df = pd.DataFrame(columns=["value", "price", "current_amount", "date"])
+            df.set_index("date", inplace=True)
 
         # return
         df.replace([np.nan, np.inf, -np.inf], 0, inplace=True)  # sqlite3 can not save nan or inf
-        df.rename(columns={"value": "v", "price": "p", "current_amount": "ca"})
+        df.rename(columns={"value": "v", "price": "p", "current_amount": "ca"}, inplace=True)
         df = df.loc[:, ["v", "p", "ca"]]
         df.loc[:, ["v", "p"]] = df.loc[:, ["v", "p"]].applymap(lambda x: round(x, 2))
         df.loc[:, "ca"] = df.loc[:, "ca"].map(lambda x: round(x, 8))
@@ -694,66 +732,64 @@ class Movie(models.Model):
             df = pd.concat([df, asset_df], join="outer", ignore_index=True, sort=False)
 
         # all together
-        df["date"] = df["date"].dt.normalize()
-        df.set_index("date", inplace=True)
-        df.sort_index(inplace=True)
-        df.ffill(inplace=True)
-        df = df[~df.index.duplicated(keep="last")]
-
-        # calc
-        df["value"] = df[asset_dfs_values].sum(axis=1, skipna=True)
+        if not df.empty:
+            df["date"] = df["date"].dt.normalize()
+            df.set_index("date", inplace=True)
+            df.sort_index(inplace=True)
+            df.ffill(inplace=True)
+            df = df[~df.index.duplicated(keep="last")]
+            df["value"] = df[asset_dfs_values].sum(axis=1, skipna=True)
+        else:
+            df = pd.DataFrame(columns=["date", "value"])
+            df.set_index("date", inplace=True)
 
         # return
-        df.replace([np.nan, np.inf, -np.inf], 0, inplace=True)  # sqlite3 can not save nan or inf
-        df.rename(columns={"value": "v"})
-        df = df.loc[:, "v"]
+        df.replace([np.nan, np.inf, -np.inf], 0, inplace=True)
+        df.rename(columns={"value": "v"}, inplace=True)
+        df = df.loc[:, ["v"]]
         df.loc[:, "v"] = df.loc[:, "v"].map(lambda x: round(x, 2))
         return df
 
     def calc_depot(self):
-        df = pd.DataFrame(columns=["value", "current_sum", "date"], dtype=np.float64)
+        df = pd.DataFrame(columns=["v", "cs", "date"], dtype=np.float64)
+        df.set_index("date", inplace=True)
 
         # assets
-        asset_dfs_values = list()
-        asset_dfs_current_sums = list()
+        assets = list()
         for asset in self.depot.assets.exclude(symbol="EUR"):
             movie = asset.get_movie(self.depot)
             asset_df = movie.get_df()
-            asset_df = asset_df[["v", "d", "cs"]]
-            asset_name = asset.get_symbol_display() if asset.symbol else asset.private_name
-            asset_df.rename(columns={"v": asset_name + "__value", "d": "date",
-                                     "cs": asset_name + "__current_sum"}, inplace=True)
-            asset_dfs_values.append(asset_name + "__value")
-            asset_dfs_current_sums.append(asset_name + "__current_sum")
-            df = pd.concat([df, asset_df], join="outer", ignore_index=False, sort=False)
+            asset_df.set_index("d", inplace=True)
+            asset_df = asset_df.loc[:, ["v", "cs", "f"]]
+            asset_df.rename(columns={"v": asset.symbol + "__v", "cs": asset.symbol + "__cs", "f": asset.symbol + "__f"},
+                            inplace=True)
+            assets.append(asset.symbol)
+            df = pd.concat([df, asset_df], axis=1, sort=True)
 
         # all together
-        df["date"] = df["date"].dt.normalize()
-        df.set_index("date", inplace=True)
-        df.sort_index(inplace=True)
-        df.ffill(inplace=True)
-        df = df[~df.index.duplicated(keep="last")]
-
-        # calc
-        df["value"] = df[asset_dfs_values].sum(axis=1, skipna=True)
-        df["current_sum"] = df[asset_dfs_current_sums].sum(axis=1, skipna=True)
-        df["gain"] = df["value"] - df["current_sum"]
-        df["current_return"] = ((df["value"] / df["current_sum"]) - 1)
-        # ttwr shit
-        df["true_time_weighted_return"] = df["value"] / (df["value"].shift(1) + (
-                df["current_sum"] - df["current_sum"].shift(1)))
-        df["true_time_weighted_return"].replace([np.nan, ], 1, inplace=True)
-        Movie.ffmultiply(df, "true_time_weighted_return")
-        df["true_time_weighted_return"] = (df["true_time_weighted_return"] - 1)
-        # end ttwr shit
+        if not df.empty:
+            df.fillna(0, inplace=True)
+            df.loc[:, "v"] = df.loc[:, [symbol + "__v" for symbol in assets]].sum(axis=1, skipna=True)
+            df.loc[:, "cs"] = df.loc[:, [symbol + "__cs" for symbol in assets]].sum(axis=1, skipna=True)
+            df.loc[:, "f"] = df.loc[:, [symbol + "__f" for symbol in assets]].sum(axis=1, skipna=True)
+            df = df.loc[:, ["v", "cs", "f"]]
+            df.loc[:, "g"] = df.loc[:, "v"] - df.loc[:, "cs"]
+            df.loc[:, "cr"] = df.loc[:, "v"] / df.loc[:, "cs"] - 1
+            df.loc[:, "twr"] = (df.loc[:, "v"] - df.loc[:, "f"]) / df.loc[:, "v"].shift(1)
+            df.loc[np.isinf(df.loc[:, "twr"]), "twr"] = (df["v"] / df.loc[:, "f"]).loc[np.isinf(df.loc[:, "twr"])]
+            print_df(df)
+            df.loc[:, "twr"] = df.loc[:, "twr"].fillna(1)
+            df.loc[:, "twr"] = df.loc[:, "twr"].cumprod()
+            df.loc[:, "twr"] = df.loc[:, "twr"] - 1
+        else:
+            df = pd.DataFrame(columns=["v", "cs", "g", "twr", "cr", "date"])
+            df.set_index("date", inplace=True)
 
         # return
         df.replace([np.nan, np.inf, -np.inf], 0, inplace=True)  # sqlite3 can not save nan or inf
-        df.rename(columns={"value": "v", "current_sum": "cs", "gain": "g", "true_time_weighted_return": "twr",
-                           "current_return": "cr"})
         df = df.loc[:, ["v", "cs", "g", "twr", "cr"]]
-        df.loc[:, ["v", "g", "cs"]] = df.loc[:, ["v", "g", "p"]].applymap(lambda x: round(x, 2))
-        df.loc[:, ["cr", "twr"]] = df.loc[:, "cr"].applymap(lambda x: round(x, 4))
+        df.loc[:, ["v", "g", "cs"]] = df.loc[:, ["v", "g", "cs"]].applymap(lambda x: round(x, 2))
+        df.loc[:, ["cr", "twr"]] = df.loc[:, ["cr", "twr"]].applymap(lambda x: round(x, 4))
         return df
 
 
@@ -764,6 +800,7 @@ class Picture(models.Model):
     p = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=2)
     v = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=2)
     g = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=2)
+    f = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=2)
     cs = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=2)
     cr = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=4)
     twr = models.DecimalField(blank=True, null=True, max_digits=18, decimal_places=4)

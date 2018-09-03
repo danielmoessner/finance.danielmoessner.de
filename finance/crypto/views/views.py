@@ -1,11 +1,13 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
 from django.views import generic
+from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 
 from finance.crypto.models import Depot
 from finance.crypto.models import Asset
+from finance.crypto.models import Movie
 from finance.crypto.tasks import update_movies_task
 from finance.core.utils import create_paginator
 
@@ -159,8 +161,12 @@ class AssetView(generic.TemplateView):
 
 # functions
 def update_movies(request, *args, **kwargs):
-    depot_pk = request.user.crypto_depots.get(is_active=True).pk
-    update_movies_task(depot_pk)
+    if settings.DEBUG:
+        depot = request.user.crypto_depots.get(is_active=True)
+        depot.update_movies()
+    else:
+        depot_pk = request.user.crypto_depots.get(is_active=True).pk
+        update_movies_task(depot_pk)
     return HttpResponseRedirect(reverse_lazy("crypto:index"))
 
 
