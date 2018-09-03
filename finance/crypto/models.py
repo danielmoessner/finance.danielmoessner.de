@@ -777,7 +777,6 @@ class Movie(models.Model):
             df.loc[:, "cr"] = df.loc[:, "v"] / df.loc[:, "cs"] - 1
             df.loc[:, "twr"] = (df.loc[:, "v"] - df.loc[:, "f"]) / df.loc[:, "v"].shift(1)
             df.loc[np.isinf(df.loc[:, "twr"]), "twr"] = (df["v"] / df.loc[:, "f"]).loc[np.isinf(df.loc[:, "twr"])]
-            print_df(df)
             df.loc[:, "twr"] = df.loc[:, "twr"].fillna(1)
             df.loc[:, "twr"] = df.loc[:, "twr"].cumprod()
             df.loc[:, "twr"] = df.loc[:, "twr"] - 1
