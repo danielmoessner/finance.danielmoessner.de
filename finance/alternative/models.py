@@ -84,7 +84,7 @@ class Value(models.Model):
 class Flow(models.Model):
     alternative = models.ForeignKey(Alternative, related_name="flows", on_delete=models.CASCADE)
     date = models.DateField()
-    value = models.DecimalField(decimal_places=2, max_digits=15, validators=[MinValueValidator(0.01)])
+    value = models.DecimalField(decimal_places=2, max_digits=15, validators=[MinValueValidator(0)])
     flow = models.DecimalField(decimal_places=2, max_digits=15)
 
     class Meta:
