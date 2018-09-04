@@ -11,14 +11,14 @@ app_name = "crypto"
 urlpatterns = [
     # API DATA
     # api-data/index/
-    url(r"^api-data/index/$", login_required(views.IndexData.as_view()), name="api_data_index"),
+    url(r"^api/index/$", login_required(views.IndexData.as_view()), name="api_data_index"),
     # api-data/account/bittrex/
-    url(r"^api-data/account/(?P<slug>[0-9a-zA-Z-#]*)/$", login_required(
+    url(r"^api/account/(?P<slug>[0-9a-zA-Z-#]*)/$", login_required(
         views.AccountData.as_view()), name="api_data_account"),
     # api-data/assets/
-    url(r"^api-data/assets/$", login_required(views.AssetsData.as_view()), name="api_data_assets"),
+    url(r"^api/assets/$", login_required(views.AssetsData.as_view()), name="api_data_assets"),
     # api-data/asset/bitcoin/
-    url(r"^api-data/asset/(?P<slug>[0-9a-zA-Z-#]*)/$", login_required(views.AssetData.as_view()),
+    url(r"^api/asset/(?P<slug>[0-9a-zA-Z-#]*)/$", login_required(views.AssetData.as_view()),
         name="api_data_asset"),
 
     # FUNCTIONS

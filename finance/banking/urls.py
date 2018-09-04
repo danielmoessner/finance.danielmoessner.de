@@ -11,7 +11,7 @@ app_name = "banking"
 urlpatterns = [
     # API DATA
     # api-data/index/
-    url(r"^api//index/$", login_required(views.IndexData.as_view()),
+    url(r"^api/index/$", login_required(views.IndexData.as_view()),
         name="api_data_index"),
     url(r"^api/categories/$", login_required(views.CategoriesData.as_view()),
         name="api_data_categories"),
