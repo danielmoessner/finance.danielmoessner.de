@@ -258,6 +258,7 @@ class Movie(models.Model):
         """
         The alternative has a value and after that occurs a flow. The cs is before the flow occurs.
         """
+        print(len(value))
         assert len(value) == len(flow)
         cs = list()
         cs.append(0)
@@ -280,20 +281,28 @@ class Movie(models.Model):
         values = Value.objects.filter(alternative=self.alternative)
         values = values.values("date", "value")
         values_df = pd.DataFrame(list(values), columns=["date", "value"], dtype=np.float64)
+        if not values_df.empty:
+            values_df.rename(columns={"value": "v"}, inplace=True)
+        else:
+            values_df = pd.DataFrame(columns=["date", "v"]).set_index("date")
         # flows
         flows = Flow.objects.filter(alternative=self.alternative)
         flows = flows.values("date", "flow", "value")
         flows_df = pd.DataFrame(list(flows), columns=["date", "flow", "value"], dtype=np.float64)
+        if not flows_df.empty:
+            flows_df.rename(columns={"value": "v", "flow": "f"}, inplace=True)
+        else:
+            flows_df = pd.DataFrame(columns=["date", "v", "f"]).set_index("date")
         # df
         df = pd.concat([values_df, flows_df], sort=False)
         if df.empty:
             return df
         df.set_index("date", inplace=True)
         df.sort_index(inplace=True)
-        date_series = pd.date_range(start=df.index[0], end=timezone.now().date())
+        date_series = pd.date_range(start=df.index[0], end=max(df.index[-1], timezone.now().date()))
         df = df.reindex(date_series)
-        df.loc[:, "f"] = df.loc[:, "flow"].fillna(0)
-        df.loc[:, "v"] = df.loc[:, "value"].ffill()
+        df.loc[:, "f"] = df.loc[:, "f"].fillna(0)
+        df.loc[:, "v"] = df.loc[:, "v"].ffill()
         # cs
         df.loc[:, "cs"] = Movie.calc_fifo(df.loc[:, "v"].tolist(), df.loc[:, "f"].tolist())
         # g
