@@ -258,7 +258,6 @@ class Movie(models.Model):
         """
         The alternative has a value and after that occurs a flow. The cs is before the flow occurs.
         """
-        print(len(value))
         assert len(value) == len(flow)
         cs = list()
         cs.append(0)
@@ -335,11 +334,11 @@ class Movie(models.Model):
             alternative_df = alternative_df.loc[:, ["v", "f"]]
             alternative_df.rename(columns={"v": alternative.slug + "__v", "f": alternative.slug + "__f"}, inplace=True)
             alternatives.append(alternative.slug)
-            df = pd.concat([df, alternative_df], axis=1, sort=False)
+            df = pd.concat([df, alternative_df], axis=1, sort=True)
         # df
         if df.empty:
             return df
-        df.sort_index(inplace=True)
+        df.loc[:, [slug + "__v" for slug in alternatives]] = df.loc[:, [slug + "__v" for slug in alternatives]].ffill()
         df.loc[:, "v"] = df.loc[:, [slug + "__v" for slug in alternatives]].sum(axis=1, skipna=True)
         df.loc[:, "f"] = df.loc[:, [slug + "__f" for slug in alternatives]].sum(axis=1, skipna=True)
         # cs
