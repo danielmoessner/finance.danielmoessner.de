@@ -151,7 +151,10 @@ class EverythingData(APIView):
             depot = user.alternative_depots.get(is_active=True)
         except ObjectDoesNotExist:
             depot = user.alternative_depots.first()
-        timespan = depot.timespans.get(is_active=True)
+        try:
+            timespan = depot.timespans.get(is_active=True)
+        except ObjectDoesNotExist:
+            timespan = None
         pi = depot.get_movie().get_data(timespan)
         return json_data(pi)
 
@@ -172,7 +175,10 @@ class CakeData(APIView):
         labels = list()
         data = list()
         for movie in movies:
-            picture = movie.pictures.latest("d")
+            try:
+                picture = movie.pictures.latest("d")
+            except ObjectDoesNotExist:
+                continue
             value = picture.v
             if value and round(value, 2) != 0.00:
                 labels.append(str(movie.alternative))
@@ -201,6 +207,9 @@ class AlternativeData(APIView):
         except ObjectDoesNotExist:
             depot = user.alternative_depots.first()
         alternative = Alternative.objects.select_related("depot").get(slug=slug)
-        timespan = depot.timespans.get(is_active=True)
+        try:
+            timespan = depot.timespans.get(is_active=True)
+        except ObjectDoesNotExist:
+            timespan = None
         pi = alternative.get_movie().get_data(timespan)
         return json_data(pi)
