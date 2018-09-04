@@ -202,13 +202,13 @@ def json_data(pi, g=True, p=True, v=True, cr=True, twr=True, cs=True):
     if cr:
         data_cr = dict()
         data_cr["label"] = "Current return"
-        data_cr["data"] = pi["cr"]
+        data_cr["data"] = map(lambda x: x*100, pi["cr"])
         data_cr["yAxisID"] = "yield"
         datasets.append(data_cr)
     if twr:
         data_twr = dict()
         data_twr["label"] = "True time weighted return"
-        data_twr["data"] = pi["twr"]
+        data_twr["data"] = map(lambda x: x*100, pi["twr"])
         data_twr["yAxisID"] = "yield"
         datasets.append(data_twr)
     if cs:
