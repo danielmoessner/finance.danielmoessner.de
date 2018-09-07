@@ -50,3 +50,8 @@ class StandardUser(AbstractUser):
         self.crypto_depots.update(is_active=False)
         depot.is_active = True
         depot.save()
+
+    def set_alternative_depot_active(self, depot):
+        self.alternative_depots.update(is_active=False)
+        depot.is_active = True
+        depot.save()

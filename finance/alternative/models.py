@@ -17,7 +17,60 @@ import time
 
 
 def init_alternative(user):
-    pass
+    from finance.alternative.forms import ValueForm
+    from finance.alternative.forms import FlowForm
+    from finance.core.utils import create_slug
+    from django.utils import timezone
+    from datetime import timedelta
+    import random
+    depot = Depot.objects.create(name="Test Depot", user=user)
+    user.set_alternative_depot_active(depot)
+    # account
+    alternative1 = Alternative(depot=depot, name="Old-Timer")
+    alternative1.slug = create_slug(alternative1)
+    alternative1.save()
+    alternative2 = Alternative(depot=depot, name="Black-Watch")
+    alternative2.slug = create_slug(alternative1)
+    alternative2.save()
+    alternative3 = Alternative(depot=depot, name="Tube Amplifier")
+    alternative3.slug = create_slug(alternative1)
+    alternative3.save()
+    # flows
+    date = (timezone.now() - timedelta(days=30))
+    flow = FlowForm(depot, {"alternative": alternative1.pk, "date": date.strftime("%Y-%m-%d"), "value": 0, "flow": 10000})
+    flow.save()
+    date = (timezone.now() - timedelta(days=40))
+    flow = FlowForm(depot, {"alternative": alternative2.pk, "date": date.strftime("%Y-%m-%d"), "value": 0, "flow": 3000})
+    flow.save()
+    date = (timezone.now() - timedelta(days=60))
+    flow = FlowForm(depot, {"alternative": alternative3.pk, "date": date.strftime("%Y-%m-%d"), "value": 0, "flow": 1500})
+    flow.save()
+    date = (timezone.now() - timedelta(days=20))
+    flow = FlowForm(depot, {"alternative": alternative3.pk, "date": date.strftime("%Y-%m-%d"), "value": 1600, "flow": 400})
+    flow.save()
+    # values
+    date = (timezone.now() - timedelta(days=25))
+    value = ValueForm(depot, {"alternative": alternative1.pk, "date": date.strftime("%Y-%m-%d"), "value": 9990})
+    value.save()
+    date = (timezone.now() - timedelta(days=25))
+    value = ValueForm(depot, {"alternative": alternative2.pk, "date": date.strftime("%Y-%m-%d"), "value": 3000})
+    value.save()
+    date = (timezone.now() - timedelta(days=25))
+    value = ValueForm(depot, {"alternative": alternative3.pk, "date": date.strftime("%Y-%m-%d"), "value": 2300})
+    value.save()
+    date = (timezone.now() - timedelta(days=5))
+    value = ValueForm(depot, {"alternative": alternative1.pk, "date": date.strftime("%Y-%m-%d"), "value": 10050})
+    value.save()
+    date = (timezone.now() - timedelta(days=5))
+    value = ValueForm(depot, {"alternative": alternative2.pk, "date": date.strftime("%Y-%m-%d"), "value": 3000})
+    value.save()
+    date = (timezone.now() - timedelta(days=5))
+    value = ValueForm(depot, {"alternative": alternative3.pk, "date": date.strftime("%Y-%m-%d"), "value": 2300})
+    value.save()
+    # timespan
+    Timespan.objects.create(depot=depot, name="Default Timespan", start_date=None, end_date=None, is_active=True)
+    # movies
+    depot.reset_movies()
 
 
 class Depot(CoreDepot):
