@@ -1,13 +1,21 @@
 {% extends "static/base.njk" %}
 
 
+{% set html="m" %}
+
+
+{% block special %}
+	<!-- font -->
+	<link href="https://fonts.googleapis.com/css?family=Rubik" rel="stylesheet">
+{% endblock %}
+
+
 {% block body %}
-    <body id="m">
-        <main id="m-main"> 
+    <body class="m">
+        <main class="m--main"> 
             {% block main %}
-            
+            	
             {% endblock %}
         </main>
     </body>
-    </html>
 {% endblock body %}

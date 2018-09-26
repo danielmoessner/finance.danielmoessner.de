@@ -8,6 +8,7 @@
 
 
 {% block head %}
+	{{ super() }}
 	<script src="{{ static('js/line_chart.js') }}" api-data="{{ url('banking:api_data_index') }}"></script>
 	<script src="{{ static('js/stacked_bar_chart.js') }}" api-data="{{ url('banking:api_data_categories_month') }}"></script>
 {% endblock %}

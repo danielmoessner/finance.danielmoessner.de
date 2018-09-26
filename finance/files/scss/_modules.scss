@@ -15,6 +15,17 @@
 @import "modules/form-child";
 @import "modules/sign-up-in";
 @import "modules/messages";
-@import "modules/django-form";
+@import "modules/form";
 @import "modules/navigation";
- 
+@import "modules/menu";
+@import "modules/footer";
+@import "modules/header";
+@import "modules/section";
+@import "modules/postpone";
+@import "modules/paragraph";
+@import "modules/store";
+@import "modules/item";
+
+// extern
+@import "../node_modules/owl.carousel/dist/assets/owl.carousel.min.css";
+@import "../node_modules/owl.carousel/dist/assets/owl.theme.default.min.css";

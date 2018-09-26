@@ -74,3 +74,51 @@
 		@extend .font-weight-bold;
 	}
 }
+
+
+.h-navigation{
+	@extend .navbar;
+	// @extend .fixed-top;
+	@extend .navbar-expand-sm;
+	@extend .navbar-light;
+	@extend .container;
+	&--brand{
+		@extend .navbar-brand;
+		color: $primary-color!important;
+		font-family: "Permanent Marker";
+	}
+	&--toggler{
+		margin-left: auto;
+		@extend .navbar-toggler;
+		&--icon{
+			@extend .navbar-toggler-icon;
+		}
+	}
+	&--collapse{
+		@extend .navbar-collapse;
+	}
+	&--nav{
+		@extend .navbar-nav;
+		margin-left: auto;
+	}
+	&--button{
+		@extend .btn;
+		@extend .btn-sm;
+		@extend .btn-outline-success;
+	}
+	&--item{
+		@extend .nav-item;
+		display: flex;
+		align-items: center;
+		padding-left: 1rem;
+	}
+	&--link{
+		@extend .nav-link;
+		color: $primary-color!important;
+		padding-left: 0!important;
+		padding-right: 0!important;
+	}
+	&--link:hover{
+		color: black!important;
+	}
+}

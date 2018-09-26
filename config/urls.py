@@ -21,11 +21,11 @@ from django.conf import settings
 
 
 urlpatterns = [
-    url(r'^$', RedirectView.as_view(url='/user/signin/')),
     url(r'^user/', include('finance.users.urls')),
     url(r'^banking/', include('finance.banking.urls')),
     url(r'^crypto/', include('finance.crypto.urls')),
     url(r'^alternative/', include('finance.alternative.urls')),
+    url(r'^', include('finance.core.urls')),
 ]
 
 

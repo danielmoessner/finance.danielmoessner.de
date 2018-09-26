@@ -30,6 +30,7 @@ var gulp = require("gulp"),
 	  		"./node_modules/chart.js/dist/Chart.bundle.min.js",
 	  		"./node_modules/popper.js/dist/umd/popper.min.js",
 	  		"./node_modules/bootstrap/dist/js/bootstrap.min.js",
+	  		"./node_modules/owl.carousel/dist/owl.carousel.min.js",
 	  		"./javascript/**.js"
   		])
 	    .pipe(concat("main.js"))

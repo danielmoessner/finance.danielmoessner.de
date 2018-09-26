@@ -29,4 +29,54 @@ jQuery(function(){
 	// 		}
 	// 	}
 	// });
+
+	// header navigation fade in
+	$(window).scroll(function() {
+		if ($(window).scrollTop() > 50.53){
+			if (!$(".header").hasClass("fixed-top")) {
+				$(".header").css("display", "none");
+				$(".header").addClass("fixed-top");
+				$("main").css("margin-top", 50.53)
+				$(".header").slideDown();
+			}			
+		} else if ($(window).scrollTop() == 0){
+			$(".header").removeClass("fixed-top");
+			$("main").css("margin-top", 0)
+		};   	
+	});
+
+	// start the owl carousel plugin
+	$(document).ready(function(){
+	  	$(".owl-carousel").owlCarousel({
+	  		loop: true,
+	  		autoplay: true,
+	  		margin: 20,
+	  		responsiveClass:true,
+	  		dots: false,
+		    responsive:{
+		        0:{
+		            items:1
+		        },
+		        400:{
+		            items:2
+		        },
+		        1000:{
+		            items:3	        
+		        }
+		    }
+	  	});
+	});
+
+	// smooth scrolling by clicking on page links
+	document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+	    anchor.addEventListener('click', function (e) {
+	        e.preventDefault();
+
+	        document.querySelector(this.getAttribute('href')).scrollIntoView({
+	            behavior: 'smooth'
+	        });
+	    });
+	});
+
+
 });

@@ -1,16 +1,25 @@
 {% extends "static/base.njk" %}
 
 
+{% set html="lm" %}
+
+
 {% import "modules/heading.njk" as hg %}
 {% import "modules/messages.njk" as messages %}
 
 
+{% block special %}
+    <!-- font -->
+    <link href="https://fonts.googleapis.com/css?family=Rubik" rel="stylesheet">
+{% endblock %}
+
+
 {% block body %}
-    <body id="lm">
-        <aside id="lm-left">
+    <body class="lm">
+        <aside class="lm--left">
             {% include "layout/left.njk" %}
         </aside>
-        <main id="lm-main">
+        <main class="lm--main">
             {{ hg.bigLmHeading(headingCategory, headingHeading) }}
             <div class="wrapper">
                 {% block chart %}

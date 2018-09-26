@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html class="{{ html }}--html">
 <head>
     <!-- title -->
     <title>{{ title }} | Tortuga Finance</title>
@@ -11,8 +11,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- description -->
     <meta name="description" content="{{ description }}">
-    <!-- font -->
-    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic" rel="stylesheet">
+    <!-- special -->
+    {% block special %}
+
+    {% endblock special %}
     <!-- stylesheet -->
     <link rel="stylesheet" type="text/css" href="{{ static('css/main.css') }}">
     <!-- script -->

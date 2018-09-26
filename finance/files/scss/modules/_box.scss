@@ -22,3 +22,17 @@
 .scrollbar-box{
 	overflow-x: auto;
 }
+
+.row-box{
+	display: flex;
+	flex-direction: row;
+}
+
+.column-box{
+	display: flex;
+	flex-direction: column;
+}
+
+.container-box{
+	@extend .container;
+}

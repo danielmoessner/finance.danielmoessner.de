@@ -58,6 +58,22 @@ class CustomDeleteView(generic.View):
         raise NotImplementedError()
 
 
+class IndexView(generic.TemplateView):
+    template_name = "core_index.njk"
+
+
+class DataProtectionView(generic.TemplateView):
+    template_name = "core_dataprotection.njk"
+
+
+class ImprintView(generic.TemplateView):
+    template_name = "core_imprint.njk"
+
+
+class TermsOfUseView(generic.TemplateView):
+    template_name = "core_termsofuse.njk"
+
+
 # error views
 def error_400_view(request, exception=None):
     return render(request, "error_templates/400.html")
