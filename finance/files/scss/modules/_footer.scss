@@ -1,0 +1,33 @@
+.footer{
+	&--background{
+		background-image: linear-gradient(to right, $yellow-color, $dark-yellow-color);
+		opacity: .9;
+	}
+	width: 100%;
+	display: block;
+	position: relative;
+	&--navigation{
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+	}	
+	&--row{
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		background-color: #14161b;
+	}
+	
+}
+.footer::after {
+	content: "";
+	background: url("../../static/img/footer-background.jpg");
+	background-size: cover;
+	opacity: 0.5;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	position: absolute;
+	z-index: -1;   
+}

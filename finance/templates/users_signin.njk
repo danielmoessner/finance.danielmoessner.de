@@ -20,7 +20,7 @@
 			{% endwith %}
 			{{ fg.formGenerator(sign_in_form, url('users:signin'), csrf_token) }}
 		</div>
-		<a type="button" href="{{ url('users:signup') }}" class="sign-up-in--switch-button" role="button">Sign up as a new user.</a>
+		<a href="{{ url('users:signup') }}" class="sign-up-in--switch-button" role="button">Sign up as a new user.</a>
 	</div>
 
 

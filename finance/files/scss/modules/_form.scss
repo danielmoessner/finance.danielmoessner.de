@@ -1,0 +1,60 @@
+.django-form{
+	p{
+		@extend .form-child;
+		label{
+			// @extend .form-child--label;
+		} 
+		input{
+			@extend .form-child--input;
+		}
+		select{
+			@extend .form-child--select;
+		}
+		textarea{
+			@extend .form-child--textarea;
+		}
+		.helptext{
+			@extend .form-child--helptext;
+		}
+	}
+	&--submit-button{
+		@extend .submit-button;
+	}
+	&--cancel-button{
+		@extend .cancel-button; 
+	}
+}
+
+.inline-form{
+	@extend .form-child;
+	&--line{
+		display: flex;
+		flex-direction: row;
+	}
+	&--label{
+		// @extend .form-child--label;
+	} 
+	&--input{
+		width: auto!important;
+		flex-grow: 3;
+		@extend .form-child--input;
+	}
+	&--select{
+		@extend .form-child--select;
+	}
+	&--textarea{
+		@extend .form-child--textarea;
+	}
+	&--helptext{
+		@extend .form-child--helptext;
+	}
+	&--submit-button{
+		width: auto!important;
+		flex-grow: 1;
+		margin-left: 10px;
+		@extend .submit-button;
+	}
+	&--cancel-button{
+		@extend .cancel-button; 
+	}
+}

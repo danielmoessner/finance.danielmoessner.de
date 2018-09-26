@@ -9,7 +9,6 @@
 @import "modules/hr";
 @import "modules/timespans";
 @import "modules/console";
-@import "modules/login";
 @import "modules/column";
 @import "modules/spacer";
 @import "modules/form-child";
@@ -29,3 +28,4 @@
 // extern
 @import "../node_modules/owl.carousel/dist/assets/owl.carousel.min.css";
 @import "../node_modules/owl.carousel/dist/assets/owl.theme.default.min.css";
+@import "../node_modules/cookieconsent/build/cookieconsent.min.css"

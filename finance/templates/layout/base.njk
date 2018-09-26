@@ -1,0 +1,28 @@
+<!doctype html>
+<html class="{{ html }}--html">
+<head>
+    <!-- title -->
+    <title>{{ title }} | Tortuga Finance</title>
+    <!-- icon -->
+    <link rel="icon" href="{{ static('img/icon.png') }}">
+    <!-- charset -->
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <!-- resizing -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- description -->
+    <meta name="description" content="{{ description }}">
+    <!-- stylesheet -->
+    <link rel="stylesheet" type="text/css" href="{{ static('css/main.css') }}">
+    <!-- special -->
+    {% block special %}
+
+    {% endblock special %}
+    <!-- other -->
+    {% block head %}
+
+    {% endblock head %}
+</head>
+{% block body %}
+
+{% endblock body %}
+</html>
