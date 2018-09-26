@@ -4,9 +4,10 @@
 		color: $font-color;
 	}
 	&-bold{
-
+		@extend .link;
 	}
 	&-bold:hover{
+		color: $font-color; 
 		font-weight: bold;
 		text-decoration: none;
 	}

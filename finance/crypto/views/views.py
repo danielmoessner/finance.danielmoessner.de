@@ -255,8 +255,11 @@ class AccountData(APIView):
         labels = list()
         data = list()
         for movie in movies:
-            value = movie.get_values(user, ["v"])["v"]
-            if value != "x" and round(value, 2) != 0.00:
+            try:
+                value = movie.pictures.latest("d").v
+            except ObjectDoesNotExist:
+                continue
+            if round(value, 2) != 0.00:
                 labels.append(str(movie.asset))
                 data.append(value)
         data_and_labels = list(sorted(zip(data, labels)))
