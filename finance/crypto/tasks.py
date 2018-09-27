@@ -79,7 +79,7 @@ def update_prices():
         try:
             date = datetime.strptime(file[:-5], "%Y%m%d")
         except ValueError:
-            break
+            continue
         date_start = pytz.utc.localize(
             datetime.combine(date, time(hour=0, minute=0))) - timedelta(hours=6)
         date_end = pytz.utc.localize(

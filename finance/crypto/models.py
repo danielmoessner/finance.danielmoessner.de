@@ -373,7 +373,7 @@ class Movie(models.Model):
     def init_update(sender, instance, **kwargs):
         if sender is Price:
             q1 = Q(asset=instance.asset)
-            q2 = Q(depot_in=instance.asset.depots.all(), asset=None, account=None)
+            q2 = Q(depot__in=instance.asset.depots.all(), asset=None, account=None)
             movies = Movie.objects.filter(q1 | q2)
             movies.update(update_needed=True)
         elif sender is Transaction:
