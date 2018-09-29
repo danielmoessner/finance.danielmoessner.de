@@ -37,6 +37,11 @@ jQuery(function(){
         };      
     });
 
+    // header disappear after nav button clicked
+    $(".h-navigation--link").on("click", function() {
+        $(".h-navigation--collapse").removeClass("show");
+    }); 
+
     // start the owl carousel plugin
     $(document).ready(function(){
         $(".owl-carousel").owlCarousel({

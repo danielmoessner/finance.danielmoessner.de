@@ -17,8 +17,7 @@
 		color: $primary-color;
 	}
 	&--icon{
-		@extend .ml-2;
-		@extend .mr-2;
+		@extend .mr-3;
 	}
 	&--icon-image{
 		width: 32px;

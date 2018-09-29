@@ -79,7 +79,7 @@
 .h-navigation{
 	@extend .navbar;
 	// @extend .fixed-top;
-	@extend .navbar-expand-sm;
+	@extend .navbar-expand-md;
 	@extend .navbar-light;
 	@extend .container;
 	&--brand{
