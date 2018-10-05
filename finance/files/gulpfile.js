@@ -1,9 +1,7 @@
 var gulp = require("gulp"),
-	util = require("gulp-util"),
 	sass = require("gulp-sass"),
 	autoprefixer = require("gulp-autoprefixer"),
 	cleanCSS = require("gulp-clean-css"),
-	log = util.log,
 	concat = require("gulp-concat"),
 	minify = require("gulp-minify");
 
