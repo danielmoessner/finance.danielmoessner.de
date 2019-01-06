@@ -13,19 +13,21 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.views.generic import RedirectView
 from django.conf.urls.static import static
-from django.conf.urls import url, include
+from django.shortcuts import redirect
+from django.conf.urls import include
 from django.contrib import admin
 from django.conf import settings
+from django.urls import path
 
 
 urlpatterns = [
-    url(r'^user/', include('finance.users.urls')),
-    url(r'^banking/', include('finance.banking.urls')),
-    url(r'^crypto/', include('finance.crypto.urls')),
-    url(r'^alternative/', include('finance.alternative.urls')),
-    url(r'^', include('finance.core.urls')),
+    path('', lambda request: redirect('core/', permanent=False)),
+    path('user/', include('finance.users.urls')),
+    path('banking/', include('finance.banking.urls')),
+    path('crypto/', include('finance.crypto.urls')),
+    path('alternative/', include('finance.alternative.urls')),
+    path('core/', include('finance.core.urls')),
 ]
 
 
@@ -38,6 +40,6 @@ handler500 = "finance.core.views.error_500_view"
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += [url(r'^admin/', admin.site.urls), ]
+    urlpatterns += [path('admin/', admin.site.urls), ]
     import debug_toolbar
-    urlpatterns += [url(r'__debug__/', include(debug_toolbar.urls)), ]
+    urlpatterns += [path('__debug__/', include(debug_toolbar.urls)), ]

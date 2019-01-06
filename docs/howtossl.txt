@@ -1,12 +1,21 @@
+# sources
 https://www.digitalocean.com/community/tutorials/how-to-secure-apache-with-let-s-encrypt-on-ubuntu-16-04
+https://www.onepagezen.com/letsencrypt-auto-renew-certbot-apache/
 
-# PUTTY
+# install
 add-apt-repository ppa:certbot/certbot
 apt-get update
 apt-get install python-certbot-apache
 certbot --apache -d www.tortuga-finance.com
--- https://www.ssllabs.com/ssltest/analyze.html?d=www.tortuga-finance.com&latest
+
+# test
+https://www.ssllabs.com/ssltest/analyze.html?d=[URL]&latest
 certbot renew --dry-run  -- test if everything works fine
+
+# autorenew should be done by certbot usually
+crontab -e
+43 6 * * * certbot renew --post-hook "systemctl restart apache2"
+
 
 # EXAMPLE CONF FILE
 WSGIDaemonProcess financeprocess python-path=/home/finance_project/finance python-home=/home/finance_project/financeenv

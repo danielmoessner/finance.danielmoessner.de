@@ -108,9 +108,9 @@
 		{{ hg.smallLmHeading("Categories", buttons=[addCategoryButton, deleteCategoryButton]) }}
 		<div class="scrollbar-box">
 			<table class="table">
-				{{ tg.head(["Category", "Description", "Action"]) }}
+				{{ tg.head(["Category", "Change", "Action"]) }}
 				<tbody class="table--body">
-					{% for category in categories %}
+					{% for category, movie in categories_movies %}
 						{% set tablebuttons %}
 							{{ bg.modalButton("Edit", "#editCategory"+category.slug) }}  
 							{{ mg.djangoModal("Edit Category", "editCategory"+category.slug, url("banking:edit_category", args=[category.slug])) }}
@@ -118,7 +118,8 @@
 						{% set name %}
 							<a href="{{ url('banking:category', args=[category.slug]) }}" class="link-bold">{{ category.name }}</a>
 						{% endset %}
-						{{ tg.row([name|safe, category.description, tablebuttons|safe]) }}
+						{%- set values=movie.get_values(user, ["b"], timespan) -%}
+						{{ tg.row([name|safe, values["b"], tablebuttons|safe]) }}
 					{% endfor %}
 				</tbody>
 			</table>

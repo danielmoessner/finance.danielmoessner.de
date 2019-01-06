@@ -1,18 +1,12 @@
 var gulp = require("gulp"),
-	sass = require("gulp-sass"),
 	autoprefixer = require("gulp-autoprefixer"),
 	cleanCSS = require("gulp-clean-css"),
 	concat = require("gulp-concat"),
+	shell = require("gulp-shell"),
 	minify = require("gulp-minify");
 
 
-	gulp.task("sass", function(){
-		return gulp.src("./scss/**/*.scss")
-		.pipe(sass())
-		.pipe(autoprefixer("last 3 version"))
-		.pipe(cleanCSS())
-		.pipe(gulp.dest("./app/css"));
-	});
+	gulp.task("sass", shell.task("sassc -t compressed scss/main.scss app/css/main.css"));
 
 
 	gulp.task("watch-sass", function(){

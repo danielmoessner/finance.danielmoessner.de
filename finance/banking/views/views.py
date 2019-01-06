@@ -56,6 +56,8 @@ class IndexView(generic.TemplateView):
         context["movie"] = context["depot"].movies.get(account=None, category=None)
         context["accounts_movies"] = zip(context["accounts"], context["depot"].movies.filter(
             account__in=context["accounts"], category=None).order_by("account__name"))
+        context["categories_movies"] = zip(context["categories"], context["depot"].movies.filter(
+            account=None, category__in=context["categories"]).order_by("category__name"))
         # messages
         messenger(self.request, context["depot"])
         # return

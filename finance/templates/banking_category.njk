@@ -45,10 +45,11 @@
     
     
     <div class="wrapper console--target {{ cog.isHidden(console, 'console-main') }}" id="stats">
-        {{ hg.smallLmHeading("Stats") }}
+        {{ hg.smallLmHeading("Info") }}
         <div class="vs-1"></div>
         <div class="items-box">
-            {{ cg.statsCard("Total", movie.get_values(user, ["b"])["b"]) }}
+            {{ cg.statsCard("Total Change", movie.get_values(user, ["b"])["b"]) }}
+            {{ cg.statsCard("Description", category.description) }}
         </div>
         {% if timespan.start_date %}
             <div class="vs-3"></div>

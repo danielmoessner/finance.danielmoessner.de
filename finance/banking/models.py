@@ -174,12 +174,9 @@ class Timespan(CoreTimespan):
 
 class Movie(models.Model):
     update_needed = models.BooleanField(default=True)
-    depot = models.ForeignKey(Depot, blank=True, null=True, on_delete=models.CASCADE,
-                              related_name="movies")
-    account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.CASCADE,
-                                related_name="movies")
-    category = models.ForeignKey(Category, blank=True, null=True, related_name="movies",
-                                 on_delete=models.CASCADE)
+    depot = models.ForeignKey(Depot, blank=True, null=True, on_delete=models.CASCADE, related_name="movies")
+    account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.CASCADE, related_name="movies")
+    category = models.ForeignKey(Category, blank=True, null=True, related_name="movies", on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ("depot", "account", "category")

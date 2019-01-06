@@ -5,7 +5,9 @@ from django.utils.html import strip_tags
 from django.shortcuts import render
 from django.contrib import messages
 from django.views import generic
+from django.http import HttpResponseRedirect
 from django.http import HttpResponse
+from django.urls import reverse_lazy
 
 import json
 
@@ -60,6 +62,12 @@ class CustomDeleteView(generic.View):
 
 class IndexView(generic.TemplateView):
     template_name = "core_index.njk"
+
+    def get(self, request, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            return HttpResponseRedirect(reverse_lazy("users:signin"))
+        context = self.get_context_data(**kwargs)
+        return self.render_to_response(context)
 
 
 class DataProtectionView(generic.TemplateView):
