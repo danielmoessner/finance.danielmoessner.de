@@ -2,6 +2,8 @@ from django.views.generic.edit import FormMixin
 from django.template.loader import render_to_string
 from finance.core.forms import DeleteForm
 from django.utils.html import strip_tags
+from django.shortcuts import get_object_or_404
+from django.shortcuts import redirect
 from django.shortcuts import render
 from django.contrib import messages
 from django.views import generic
@@ -10,6 +12,8 @@ from django.http import HttpResponse
 from django.urls import reverse_lazy
 
 import json
+
+from finance.core.models import Page
 
 
 # mixins
@@ -63,11 +67,45 @@ class CustomDeleteView(generic.View):
 class IndexView(generic.TemplateView):
     template_name = "core_index.njk"
 
+    def get_context_data(self, **kwargs):
+        context = super(IndexView, self).get_context_data(**kwargs)
+        context["pages"] = Page.objects.order_by("-ordering")
+        return context
+
+
+class OldIndexView(generic.TemplateView):
+    template_name = "core_index_old.njk"
+
+    def get_context_data(self, **kwargs):
+        context = super(OldIndexView, self).get_context_data(**kwargs)
+        context["pages"] = Page.objects.order_by("-ordering")
+        return context
+
+
+class RedirectView(generic.RedirectView):
     def get(self, request, *args, **kwargs):
-        if self.request.user.is_authenticated:
-            return HttpResponseRedirect(reverse_lazy("users:signin"))
-        context = self.get_context_data(**kwargs)
-        return self.render_to_response(context)
+        if request.user.is_authenticated:
+            front_page = request.user.front_page
+            if front_page == "BANKING":
+                return redirect("banking:index", permanent=False)
+            elif front_page == "CRYPTO":
+                return redirect("crypto:index", permanent=False)
+            elif front_page == "ALTERNATIVE":
+                return redirect("alternative:index", permanent=False)
+            else:
+                return redirect("users:settings", permanent=False)
+        else:
+            return redirect('users:signin', permanent=False)
+
+
+class PageView(generic.TemplateView):
+    template_name = "core_page.njk"
+
+    def get_context_data(self, **kwargs):
+        context = super(PageView, self).get_context_data(**kwargs)
+        context["pages"] = Page.objects.order_by("-ordering")
+        context["page"] = get_object_or_404(Page, slug=self.kwargs['slug'])
+        return context
 
 
 class DataProtectionView(generic.TemplateView):

@@ -1,6 +1,8 @@
 from django.utils import timezone
 from django.db import models
 
+from finance.core.utils import create_slug
+
 
 class Timespan(models.Model):
     name = models.CharField(max_length=200)
@@ -48,3 +50,23 @@ class Account(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Page(models.Model):
+    name = models.CharField(max_length=80, unique=True)
+    slug = models.SlugField(unique=True, editable=False)
+    content = models.TextField()
+    activate_html = models.BooleanField(default=False)
+    ordering = models.PositiveSmallIntegerField(default=0)
+
+    def __str__(self):
+        return "{}".format(self.name)
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.slug = create_slug(self)
+        super(Page, self).save(*args, **kwargs)
+
+    def clean(self):
+        if self.name:
+            self.name = self.name.strip()

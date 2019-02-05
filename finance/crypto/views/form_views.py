@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import generic
 from django.urls import reverse_lazy
 
@@ -43,19 +44,19 @@ class CustomGetFormUserMixin(object):
 
 
 # depot
-class AddDepotView(CustomGetFormUserMixin, CustomAjaxFormMixin, generic.CreateView):
+class AddDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxFormMixin, generic.CreateView):
     form_class = DepotForm
     model = Depot
     template_name = "modules/form_snippet.njk"
 
 
-class EditDepotView(CustomGetFormUserMixin, CustomAjaxFormMixin, generic.UpdateView):
+class EditDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxFormMixin, generic.UpdateView):
     model = Depot
     form_class = DepotForm
     template_name = "modules/form_snippet.njk"
 
 
-class DeleteDepotView(CustomGetFormUserMixin, CustomAjaxFormMixin, generic.FormView):
+class DeleteDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxFormMixin, generic.FormView):
     model = Depot
     template_name = "modules/form_snippet.njk"
     form_class = DepotSelectForm
@@ -70,7 +71,7 @@ class DeleteDepotView(CustomGetFormUserMixin, CustomAjaxFormMixin, generic.FormV
         return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
 
 
-class SetActiveDepotView(CustomGetFormUserMixin, generic.UpdateView):
+class SetActiveDepotView(LoginRequiredMixin, CustomGetFormUserMixin, generic.UpdateView):
     model = Depot
     form_class = DepotActiveForm
     template_name = "modules/form_snippet.njk"
@@ -78,19 +79,19 @@ class SetActiveDepotView(CustomGetFormUserMixin, generic.UpdateView):
 
 
 # account
-class AddAccountView(CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
+class AddAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
     form_class = AccountForm
     model = Account
     template_name = "modules/form_snippet.njk"
 
 
-class EditAccountView(CustomGetFormMixin, CustomAjaxFormMixin, generic.UpdateView):
+class EditAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.UpdateView):
     model = Account
     form_class = AccountForm
     template_name = "modules/form_snippet.njk"
 
 
-class DeleteAccountView(CustomGetFormMixin, CustomAjaxFormMixin, generic.FormView):
+class DeleteAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.FormView):
     model = Account
     template_name = "modules/form_snippet.njk"
     form_class = AccountSelectForm
@@ -102,7 +103,7 @@ class DeleteAccountView(CustomGetFormMixin, CustomAjaxFormMixin, generic.FormVie
 
 
 # asset
-class AddAssetView(CustomGetFormMixin, CustomAjaxFormMixin, generic.FormView):
+class AddAssetView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.FormView):
     model = Asset
     template_name = "modules/form_snippet.njk"
     form_class = AssetSelectForm
@@ -115,7 +116,7 @@ class AddAssetView(CustomGetFormMixin, CustomAjaxFormMixin, generic.FormView):
         return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
 
 
-class RemoveAssetView(CustomGetFormMixin, CustomAjaxFormMixin, generic.FormView):
+class RemoveAssetView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.FormView):
     model = Asset
     template_name = "modules/form_snippet.njk"
     form_class = AssetSelectForm
@@ -130,13 +131,13 @@ class RemoveAssetView(CustomGetFormMixin, CustomAjaxFormMixin, generic.FormView)
 
 
 # trade
-class AddTradeView(CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
+class AddTradeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
     model = Trade
     form_class = TradeForm
     template_name = "modules/form_snippet.njk"
 
 
-class AddTradeAccountView(CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
+class AddTradeAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
     model = Trade
     form_class = TradeForm
     template_name = "modules/form_snippet.njk"
@@ -148,50 +149,50 @@ class AddTradeAccountView(CustomGetFormMixin, CustomAjaxFormMixin, generic.Creat
         return kwargs
 
 
-class EditTradeView(CustomGetFormMixin, CustomAjaxFormMixin, generic.UpdateView):
+class EditTradeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.UpdateView):
     model = Trade
     form_class = TradeForm
     template_name = "modules/form_snippet.njk"
 
 
-class DeleteTradeView(CustomAjaxDeleteMixin, generic.DeleteView):
+class DeleteTradeView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
     model = Trade
     template_name = "modules/delete_snippet.njk"
 
 
 # transaction
-class AddTransactionView(CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
+class AddTransactionView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
     model = Transaction
     form_class = TransactionForm
     template_name = "modules/form_snippet.njk"
 
 
-class EditTransactionView(CustomGetFormMixin, CustomAjaxFormMixin, generic.UpdateView):
+class EditTransactionView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.UpdateView):
     model = Transaction
     form_class = TransactionForm
     template_name = "modules/form_snippet.njk"
 
 
-class DeleteTransactionView(CustomAjaxDeleteMixin, generic.DeleteView):
+class DeleteTransactionView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
     model = Transaction
     template_name = "modules/delete_snippet.njk"
 
 
 # timespan
-class AddTimespanView(CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
+class AddTimespanView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
     form_class = TimespanForm
     model = Timespan
     template_name = "modules/form_snippet.njk"
 
 
-class SetActiveTimespanView(CustomGetFormMixin, generic.UpdateView):
+class SetActiveTimespanView(LoginRequiredMixin, CustomGetFormMixin, generic.UpdateView):
     model = Timespan
     form_class = TimespanActiveForm
     template_name = "modules/form_snippet.njk"
     success_url = reverse_lazy("crypto:index")
 
 
-class DeleteTimespanView(CustomGetFormMixin, CustomAjaxDeleteMixin, generic.DeleteView):
+class DeleteTimespanView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxDeleteMixin, generic.DeleteView):
     model = Timespan
     template_name = "modules/delete_snippet.njk"
     form_class = TimespanForm

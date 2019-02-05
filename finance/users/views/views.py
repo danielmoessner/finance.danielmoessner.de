@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.forms import PasswordChangeForm
 from django.views.generic import View
 from django.contrib.auth import logout as logout_user
@@ -29,7 +30,12 @@ class SignUpView(CustomInvalidFormMixin, generic.CreateView):
     form_class = CreateStandardUserForm
     model = StandardUser
     template_name = "users_signup.njk"
-    success_url = reverse_lazy(settings.LOGIN_URL)
+
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('core:redirect', permanent=False)
+        else:
+            return super(SignUpView, self).get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(SignUpView, self).get_context_data()
@@ -39,22 +45,13 @@ class SignUpView(CustomInvalidFormMixin, generic.CreateView):
     def form_valid(self, form):
         user = form.save()
         login_user(self.request, user)
-        return HttpResponseRedirect(self.success_url)
+        return redirect('core:redirect', permanent=False)
 
 
 class SignInView(View):
     def get(self, request):
         if request.user.is_authenticated:
-            front_page = request.user.front_page
-            if front_page == "BANKING":
-                url = reverse_lazy("banking:index")
-            elif front_page == "CRYPTO":
-                url = reverse_lazy("crypto:index", args=[request.user.slug])
-            elif front_page == "ALTERNATIVE":
-                url = reverse_lazy("alternative:index", args=[request.user.slug])
-            else:
-                url = reverse_lazy("users:settings")
-            return HttpResponseRedirect(url)
+            return redirect('core:redirect', permanent=False)
         else:
             context = {"sign_in_form": SignInUserForm()}
             return render(request, "users_signin.njk", context=context)
@@ -69,16 +66,16 @@ class SignInView(View):
                 login_user(request, user)
             else:
                 messages.error(request, "This combination of username and password doesn't exist.")
-        return HttpResponseRedirect(reverse_lazy(settings.LOGIN_URL))
+        return redirect('core:redirect', permanent=False)
 
 
-class LogoutView(View):
+class LogoutView(LoginRequiredMixin, View):
     def get(self, request):
         logout_user(request)
-        return redirect(settings.LOGIN_URL)
+        return redirect('core:redirect')
 
 
-class SettingsView(generic.TemplateView):
+class SettingsView(LoginRequiredMixin, generic.TemplateView):
     template_name = "users_settings.njk"
 
     def get_context_data(self, **kwargs):

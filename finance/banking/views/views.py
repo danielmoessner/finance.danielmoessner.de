@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.views import generic
 from django.http import HttpResponseRedirect
@@ -40,7 +41,7 @@ def messenger(request, depot):
 
 
 # views
-class IndexView(generic.TemplateView):
+class IndexView(LoginRequiredMixin, generic.TemplateView):
     template_name = "banking_index.njk"
 
     def get_context_data(self, **kwargs):
@@ -64,7 +65,7 @@ class IndexView(generic.TemplateView):
         return context
 
 
-class AccountView(generic.TemplateView):
+class AccountView(LoginRequiredMixin, generic.TemplateView):
     template_name = "banking_account.njk"
 
     def get_context_data(self, **kwargs):
@@ -88,7 +89,7 @@ class AccountView(generic.TemplateView):
         return context
 
 
-class CategoryView(generic.TemplateView):
+class CategoryView(LoginRequiredMixin, generic.TemplateView):
     template_name = "banking_category.njk"
 
     def get_context_data(self, **kwargs):

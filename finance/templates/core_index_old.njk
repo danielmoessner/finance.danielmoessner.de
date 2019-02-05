@@ -1,0 +1,283 @@
+{% extends "layout/hmf.njk" %}
+
+
+{% set title="Control Your Money" %}
+
+
+{% block main %} 
+
+
+<section class="second-section">
+	<div class="center-heading">
+		<div class="center-heading--box">
+			<img class="center-heading--image" src="{{ static('img/icon.png') }}">
+			<h1 class="center-heading--frontheading">Tortuga Finance</h1>
+		</div>
+		<p class="center-heading--heading">
+			Take Control Over Your Money
+		</p>
+		<div class="center-heading--buttons">
+			<a class="center-heading--button-one" href="{{ url('users:signup') }}">Sign Up</a>
+			<a class="center-heading--button-two" href="{{ url('users:signin') }}">Login</a>
+		</div>
+	</div>
+</section>
+
+<section class="third-section">
+	<div class="postpone">
+		<div class="postpone--top">
+			<img class="postpone--image" src="{{ static('img/example-banking-index-1.png') }}">
+		</div>
+		<div class="postpone--bottom"></div>
+	</div>
+</section>
+
+<section class="fourth-section" id="about">
+	<div class="container-box">
+		<div class="column-heading">
+			<h2 class="column-heading--heading">About</h2>
+			<p class="column-heading--subtext">
+				Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.
+			</p>
+		</div>
+		<div class="column">
+			<div class="column--left">
+				<div class="paragraph">
+					<h3 class="paragraph--heading">Get Your Cash In Order</h3>
+					<p class="paragraph--text">
+						We want everybody to be rich. Banish the chaos of your finances and start becoming wealthy. Plan your current expenses. Let money work for you. Know what you spend your money on. Know exactly how much money you have. Save and invest for the long term. It's not about the money you earn it's about the money you don't lose. Take control over your money and start living the life of your dreams. 
+					</p>
+					<a class="paragraph--button" href="#apps">Learn More</a>
+				</div>
+			</div>
+			<div class="column--right-image paragraph">
+				<img class="paragraph--image" src="{{ static('img/wave.min.jpg') }}">
+			</div>
+		</div>
+		
+	</div>
+</section>
+
+<section class="fifth-section" id="features">
+	<div class="postpone">
+		<div class="postpone--top">
+			<div class="postpone--content">
+				<div class="store">
+					<div class="store--item item">
+						<div class="item--box">	
+							<img class="item--icon" src="{{ static('img/favorite.svg') }}">
+						</div>
+						<div class="item--box">
+							<h3 class="item--heading">Unique Design</h3>
+							<p class="item--text">
+								We want you to achieve everything with the least amount of clicks possible and keeping everything well arranged.
+							</p>	
+						</div>
+					</div>
+					<div class="store--item item">
+						<div class="item--box">
+							<img class="item--icon" src="{{ static('img/bell.svg') }}">
+						</div>
+						<div class="item--box">
+							<h3 class="item--heading">Simplicity</h3>
+							<p class="item--text">
+								We think that simple is always better than complex. Therefore, we try to keep everything as simple as possible.
+							</p>	
+						</div>
+					</div>
+					<div class="store--item item">
+						<div class="item--box">
+							<img class="item--icon" src="{{ static('img/cloud.svg') }}">
+						</div>
+						<div class="item--box">
+							<h3 class="item--heading">Easily Accessible</h3>
+							<p class="item--text">
+								You can always access our service no matter where you are. Everything is saved to the Cloud.
+							</p>	
+						</div>
+					</div>
+					<div class="store--item item">
+						<div class="item--box">
+							<img class="item--icon" src="{{ static('img/lightning.svg') }}">
+						</div>
+						<div class="item--box">
+							<h3 class="item--heading">Cross Browser Compatible</h3>
+							<p class="item--text">
+								We use standard techniques and keep everything responsive. Therefore, you can access our page with any phone or computer.
+							</p>	
+						</div>
+					</div>
+					<div class="store--item item">
+						<div class="item--box">
+							<img class="item--icon" src="{{ static('img/shield.svg') }}">
+						</div>
+						<div class="item--box">
+							<h3 class="item--heading">Security</h3>
+							<p class="item--text">
+								We use the Django web framework, that's the same framework Instagram uses. It makes sure that everything safe.
+							</p>	
+						</div>
+					</div>
+					<div class="store--item item">
+						<div class="item--box">
+							<img class="item--icon" src="{{ static('img/file.svg') }}">
+						</div>
+						<div class="item--box">
+							<h3 class="item--heading">Open Source</h3>
+							<p class="item--text">
+								The code that runs everything is publicly available at Github. We are aiming towards being as transparent as possible. 
+							</p>	
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="postpone--bottom">
+
+		</div>
+	</div>
+</section>
+
+
+<section class="sixth-section" id="news">
+	<div class="container-box">
+		<div class="column-heading">
+			<h2 class="column-heading--heading">Latest News</h2>
+			<p class="column-heading--subtext">
+				Here you can see the latest achievements and updates until the blog is up and running.
+			</p>
+		</div>
+		<p>Next Milestone - Get the blog up and running.</p>
+		<p>Next Milestone - Improvements on the Alternative App.</p>
+		<p>27. September 2018 - The first verstion of the index page was released.</p>
+		<p>23. September 2018 - The beta version is up and running.</p>
+	</div>
+</section>
+
+
+<section class="seventh-section" id="screenshots">
+	<div class="container-box">
+		<div class="column-heading">
+			<h2 class="column-heading--heading">Screenshots</h2>
+			<p class="column-heading--subtext">
+				Take a look around. We've got screenshots of the banking, the crypto, the alternative, and the settings app.
+			</p>
+		</div>
+		<div class="owl-carousel">
+			<img src="{{ static('img/example-banking-index-1.png') }}">
+			<img src="{{ static('img/example-banking-index-2.png') }}">
+			<img src="{{ static('img/example-banking-account.png') }}">
+			<img src="{{ static('img/example-banking-category.png') }}">
+			<img src="{{ static('img/example-crypto-index-1.png') }}">
+			<img src="{{ static('img/example-crypto-index-2.png') }}">
+			<img src="{{ static('img/example-crypto-index-3.png') }}">
+			<img src="{{ static('img/example-crypto-account.png') }}">
+			<img src="{{ static('img/example-crypto-asset.png') }}">
+			<img src="{{ static('img/example-alternative-index-1.png') }}">
+			<img src="{{ static('img/example-alternative-index-2.png') }}">
+			<img src="{{ static('img/example-settings-index.png') }}">
+		</div>
+	</div>
+</section>
+
+
+<section class="eigth-section" id="blog">
+	<div class="container-box">
+		<div class="column-heading">
+			<h2 class="column-heading--heading">Blog</h2>
+			<p class="column-heading--subtext">
+				The Blog is in development. If it's finished you will be able to report bugs. You will also be able to file improvement proposals which can be upvoted and downvoted.
+			</p>
+		</div>
+	</div>
+</section>
+
+
+<section class="ninth-section" id="apps">
+	<div class="container-box">
+		<div class="column-heading">
+			<h2 class="column-heading--heading">Apps</h2>
+			<p class="column-heading--subtext">
+				This app actually consists of four apps. Each of these apps has its special purpose.
+			</p>
+		</div>
+		<div class="store">
+			<div class="store--item sliding-card">
+				<img class="sliding-card--left-image" src="{{ static('img/example-banking-index-1.png') }}">
+				<div class="sliding-card--right-details">
+					<div class="item">
+						<div class="item--box">
+							<h3 class="item--heading">Banking</h3>
+							<p class="item--text">
+								This app is used to show for what you spend your money. It shows how much you spend each month and for what exactly you spend it. You can add all your accounts and create your own income and spending categories.
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="store--item sliding-card">
+				<img class="sliding-card--right-image" src="{{ static('img/example-crypto-index-2.png') }}">
+				<div class="sliding-card--left-details">
+					<div class="item">
+						<div class="item--box">
+							<h3 class="item--heading">Crypto</h3>
+							<p class="item--text">
+								This app is used to calculate the return of your cryptocurrency portfolio. It supports the 50 biggest cryptocurrencies and some more. You just tell the app when you bought your coins and if you moved them to another wallet. Afterward, you can see your profit your return and your total portfolio value.
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="store">
+			<div class="store--item sliding-card">
+				<img class="sliding-card--left-image" src="{{ static('img/example-alternative-index-2.png') }}">
+				<div class="sliding-card--right-details">
+					<div class="item">
+						<div class="item--box">
+							<h3 class="item--heading">Alternative</h3>
+							<p class="item--text">
+								This app is used for alternative investments like classic cars or antique tube amplifiers. The only thing you have to do here is to tell the app the name of the investment, how much money you put into it, how much money you get out of it, and the value of it. Afterward, it calculates your returns, your profits, and the value of the whole portfolio.
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="store--item sliding-card">
+				<img class="sliding-card--right-image" src="{{ static('img/example-settings-index.png') }}">
+				<div class="sliding-card--left-details">
+					<div class="item">
+						<div class="item--box">
+							<h3 class="item--heading">Settings</h3>
+							<p class="item--text">
+								Our most important goal is to keep things simple. The settings app is the perfect example of this. It combines the settings of all the active apps and keeps them free of unnecessary forms.
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+
+<section class="tenth-section" id="ready">
+	<div class="container-box">
+		<div class="column-heading">
+			<h2 class="column-heading--heading">Get Started</h2>
+			<p class="column-heading--subtext">
+				Sign up and start the first step in getting the life you ever wanted.
+			</p>
+		</div>
+		<form class="inline-form">
+			<label class="inline-form--label">Your E-Mail:</label>
+			<div class="inline-form--line">
+				<input class="inline-form--input" type="email" name="email">
+				<input type="submit" class="inline-form--submit-button" value="Submit">
+			</div>
+		</form>
+	</div>
+</section>
+
+
+{% endblock %}

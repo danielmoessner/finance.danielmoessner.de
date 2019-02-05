@@ -19,13 +19,13 @@
 {% block body %}
     <body class="hmf">
         <header class="hmf--header">
-            {{ hg.header() }}
+            {% include "snippets/header.njk" %}
         </header>
         <main class="hmf--main">
             {% block main %}{% endblock %}
         </main>
         <footer class="hmf--footer">
-            {{ fg.footer() }}
+            {% include "snippets/footer.njk" %}
         </footer>
     </body>
 {% endblock %}

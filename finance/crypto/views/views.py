@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
 from django.views import generic
@@ -40,7 +41,7 @@ def messenger(request, depot):
 
 
 # VIEWS
-class IndexView(generic.TemplateView):
+class IndexView(LoginRequiredMixin, generic.TemplateView):
     template_name = "crypto_index.njk"
 
     def get_context_data(self, **kwargs):
@@ -78,7 +79,7 @@ class IndexView(generic.TemplateView):
         return context
 
 
-class AccountView(generic.TemplateView):
+class AccountView(LoginRequiredMixin, generic.TemplateView):
     template_name = "crypto_account.njk"
 
     def get_context_data(self, **kwargs):
@@ -121,7 +122,7 @@ class AccountView(generic.TemplateView):
         return context
 
 
-class AssetView(generic.TemplateView):
+class AssetView(LoginRequiredMixin, generic.TemplateView):
     template_name = "crypto_asset.njk"
 
     def get_context_data(self, **kwargs):
