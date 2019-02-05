@@ -42,9 +42,9 @@
 	<div class="footer--row">
 		<div class="row-menu">
 			<span class="row-menu--brand">MasterCash</span>
-			<a class="row-menu--link" href="{{ url('core:imprint') }}">Imprint</a>
-			<a class="row-menu--link" href="{{ url('core:data_protection') }}">Data Protection</a>
-			<a class="row-menu--link" href="{{ url('core:terms_of_use') }}">Terms Of Use</a>
+			{% for page in pages %}
+				<a class="row-menu--link" href="{{ url('core:page', args=[page.slug]) }}">{{ page.name }}</a>
+			{% endfor %}
 		</div>
 	</div>
 </div>
