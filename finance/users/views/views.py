@@ -35,7 +35,7 @@ class SignUpView(CustomInvalidFormMixin, generic.CreateView):
         if request.user.is_authenticated:
             return redirect('core:redirect', permanent=False)
         else:
-            return super(SignUpView, self).get(*args, **kwargs)
+            return super(SignUpView, self).get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(SignUpView, self).get_context_data()
