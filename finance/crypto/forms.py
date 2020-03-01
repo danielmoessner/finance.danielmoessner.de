@@ -129,9 +129,9 @@ class TradeForm(forms.ModelForm):
     def __init__(self, depot, *args, **kwargs):
         super(TradeForm, self).__init__(*args, **kwargs)
         self.fields["account"].queryset = depot.accounts.order_by("name")
-        self.fields["buy_asset"].queryset = depot.assets.order_by("symbol", "private_symbol")
-        self.fields["sell_asset"].queryset = depot.assets.order_by("symbol", "private_symbol")
-        self.fields["fees_asset"].queryset = depot.assets.order_by("symbol", "private_symbol")
+        self.fields["buy_asset"].queryset = depot.assets.order_by("symbol")
+        self.fields["sell_asset"].queryset = depot.assets.order_by("symbol")
+        self.fields["fees_asset"].queryset = depot.assets.order_by("symbol")
         self.fields["date"].initial = datetime.now()
 
     def clean(self):
@@ -181,7 +181,7 @@ class TransactionForm(forms.ModelForm):
 
     def __init__(self, depot, *args, **kwargs):
         super(TransactionForm, self).__init__(*args, **kwargs)
-        self.fields["asset"].queryset = depot.assets.order_by("symbol", "private_symbol")
+        self.fields["asset"].queryset = depot.assets.order_by("symbol")
         self.fields["from_account"].queryset = depot.accounts.order_by("name")
         self.fields["to_account"].queryset = depot.accounts.order_by("name")
         self.fields["date"].initial = datetime.now()
