@@ -14,6 +14,11 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
     'handlers': {
+        'debug': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/debug.log'),
+        },
         'info': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
@@ -35,7 +40,7 @@ LOGGING = {
             'filename': os.path.join(BASE_DIR, 'logs/critical.log'),
         },
         'mail_admins': {
-            'level': 'ERROR',
+            'level': 'INFO',
             'class': 'django.utils.log.AdminEmailHandler',
             'include_html': True,
         },
@@ -47,14 +52,14 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'handlers': ['info', 'warning', 'error', 'critical', 'mail_admins'],
+            'handlers': ['debug', 'info', 'warning', 'error', 'critical', 'mail_admins'],
             'level': 'INFO',
-            'propagate': False,
+            'propagate': True,
         },
         'background_tasks': {
             'handlers': ['task'],
             'level': 'INFO',
-            'propagate': False,
+            'propagate': True,
         }
     },
 }

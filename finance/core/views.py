@@ -12,6 +12,7 @@ from django.http import HttpResponse
 from django.urls import reverse_lazy
 
 import json
+import re
 
 from finance.core.models import Page
 
@@ -118,6 +119,15 @@ class ImprintView(generic.TemplateView):
 
 class TermsOfUseView(generic.TemplateView):
     template_name = "core_termsofuse.njk"
+
+
+class StaticRedirectView(RedirectView):
+    def get(self, request, *args, **kwargs):
+        current_url = request.get_full_path()
+        splitted_url = re.split(r'(js|images|css|icons)', current_url)
+        url = ''.join(splitted_url[1:])
+        static_url = '/static/' + url
+        return HttpResponseRedirect(static_url)
 
 
 # error views

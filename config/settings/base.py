@@ -158,3 +158,12 @@ STATIC_ROOT = os.path.join(APPS_DIR, 'static')
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(APPS_DIR, 'media')
+
+
+# E-Mail
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.strato.de'
+EMAIL_HOST_USER = 'projekte@tortuga-webdesign.de'
+EMAIL_HOST_PASSWORD = get_secret('EMAIL_PWD')
+EMAIL_PORT = 587

@@ -1,5 +1,4 @@
-from django.urls import path
-
+from django.urls import path, re_path
 from finance.core import views
 
 
@@ -14,7 +13,8 @@ urlpatterns = [
     path('', views.IndexView.as_view(), name='index'),
     path('old-index/', views.OldIndexView.as_view(), name='old_index'),
     path('redirect/', views.RedirectView.as_view(), name='redirect'),
-    path('page/<slug>/', views.PageView.as_view(), name='page')
+    path('page/<slug>/', views.PageView.as_view(), name='page'),
+    re_path(r'^(?!static).*(js|images|css|icons).*$', views.StaticRedirectView.as_view(), name='static_redirect')
 ]
 
 
