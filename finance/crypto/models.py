@@ -8,11 +8,11 @@ from finance.users.models import StandardUser
 from finance.core.models import Timespan as CoreTimespan
 from finance.core.models import Account as CoreAccount
 from finance.core.models import Depot as CoreDepot
-from finance.core.utils import print_df
 
 import pandas as pd
 import numpy as np
 import time
+import pytz
 
 
 def init_crypto(user):
@@ -88,7 +88,9 @@ class Depot(CoreDepot):
             self.movies.update(update_needed=True)
 
         accounts = self.accounts.all()
+
         assets = self.assets.exclude(symbol=self.user.currency)
+
         for movie in Movie.objects.filter(depot=self, account__in=accounts, asset__in=assets):
             if movie.update_needed:
                 movie.update()
@@ -582,7 +584,7 @@ class Movie(models.Model):
             bst_df = bst_df.groupby(by=bst_df.index, sort=False).agg({"ba": "sum", "bs": "sum", "bfs": "sum",
                                                                       "sa": "sum", "sfa": "sum", "ss": "sum",
                                                                       "tfa": "sum", "cf": "sum", "ca": "last"})
-            date_series = pd.date_range(start=bst_df.index[0], end=timezone.now().date())
+            date_series = pd.date_range(start=bst_df.index[0].date(), end=timezone.now().date())
             bst_df = bst_df.reindex(date_series)
             bst_df.loc[:, ["ca"]] = bst_df.loc[:, ["ca"]].ffill()
             bst_df.fillna(0, inplace=True)
@@ -602,7 +604,7 @@ class Movie(models.Model):
             p_df.sort_index(inplace=True)
             p_df.index = p_df.index.to_series().dt.normalize()
             p_df = p_df.groupby(by=p_df.index, sort=False).last()
-            date_series = pd.date_range(start=p_df.index[0], end=timezone.now().date())
+            date_series = pd.date_range(start=p_df.index[0].date(), end=timezone.now().date())
             p_df = p_df.reindex(date_series)
             p_df.ffill(inplace=True)
         else:
@@ -686,7 +688,7 @@ class Movie(models.Model):
                 bsttft_df["fta"].rolling(window=len(bsttft_df), min_periods=1).sum()
             bsttft_df.index = bsttft_df.index.to_series().dt.normalize()
             bsttft_df = bsttft_df.groupby(by=bsttft_df.index, sort=False).agg({"ca": "last"})
-            date_series = pd.date_range(start=bsttft_df.index[0], end=timezone.now().date())
+            date_series = pd.date_range(start=bsttft_df.index[0].date(), end=timezone.now().date())
             bsttft_df = bsttft_df.reindex(date_series)
             bsttft_df.loc[:, ["ca"]] = bsttft_df.loc[:, ["ca"]].ffill()
             bsttft_df = bsttft_df.loc[:, ["ca"]]
@@ -704,7 +706,7 @@ class Movie(models.Model):
             p_df.sort_index(inplace=True)
             p_df.index = p_df.index.to_series().dt.normalize()
             p_df = p_df.groupby(by=p_df.index, sort=False).last()
-            date_series = pd.date_range(start=p_df.index[0], end=timezone.now().date())
+            date_series = pd.date_range(start=p_df.index[0].date(), end=timezone.now().date())
             p_df = p_df.reindex(date_series)
             p_df.ffill(inplace=True)
         else:
