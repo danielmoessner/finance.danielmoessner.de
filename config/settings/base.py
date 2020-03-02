@@ -18,12 +18,12 @@ from django.core.exceptions import ImproperlyConfigured
 # Paths
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-APPS_DIR = os.path.join(BASE_DIR, "finance")
+APPS_DIR = os.path.join(BASE_DIR, 'finance')
 
 
 # Secret settings
 
-with open(os.path.join(os.path.dirname(BASE_DIR), "financesecrets.json")) as f:
+with open(os.path.join(os.path.dirname(BASE_DIR), 'financesecrets.json')) as f:
     secrets_json = json.loads(f.read())
 
 
@@ -31,11 +31,11 @@ def get_secret(setting, secrets=secrets_json):
     try:
         return secrets[setting]
     except KeyError:
-        error_msg = "Set the {} environment variable.".format(setting)
+        error_msg = 'Set the {} environment variable.'.format(setting)
         raise ImproperlyConfigured(error_msg)
 
 
-SECRET_KEY = get_secret("SECRET_KEY")
+SECRET_KEY = get_secret('SECRET_KEY')
 
 
 # Application definition
@@ -109,9 +109,9 @@ DATABASES = {
 
 # User
 
-LOGIN_URL = "users:signin"
+LOGIN_URL = 'users:signin'
 
-AUTH_USER_MODEL = "users.StandardUser"
+AUTH_USER_MODEL = 'users.StandardUser'
 
 
 # Password validation
@@ -167,3 +167,11 @@ EMAIL_HOST = 'smtp.strato.de'
 EMAIL_HOST_USER = 'projekte@tortuga-webdesign.de'
 EMAIL_HOST_PASSWORD = get_secret('EMAIL_PWD')
 EMAIL_PORT = 587
+
+
+# Rest Framework
+
+REST_FRAMEWORK = {
+    'DATETIME_FORMAT': '%Y-%m-%dT%H:%M',
+    'DATETIME_INPUT_FORMATS': ['%Y-%m-%dT%H:%M']
+}

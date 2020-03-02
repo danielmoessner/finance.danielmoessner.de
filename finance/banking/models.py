@@ -67,6 +67,10 @@ class Depot(CoreDepot):
                              on_delete=models.CASCADE)
 
     # getters
+    @staticmethod
+    def get_objects_by_user(user):
+        return Depot.objects.filter(user=user)
+
     def get_movie(self):
         return self.movies.get(account=None, category=None)
 
@@ -107,6 +111,14 @@ class Account(CoreAccount):
     depot = models.ForeignKey(Depot, on_delete=models.CASCADE, related_name="accounts")
 
     # getters
+    @staticmethod
+    def get_objects_by_user(user):
+        return Account.objects.filter(depot__in=Depot.objects.filter(user=user))
+
+    @staticmethod
+    def get_objects_by_depot(depot):
+        return Account.objects.filter(depot=depot)
+
     def get_movie(self):
         return self.movies.get(depot=self.depot, category=None)
 
@@ -125,6 +137,14 @@ class Category(models.Model):
         return self.name
 
     # getters
+    @staticmethod
+    def get_objects_by_user(user):
+        return Category.objects.filter(depot__in=Depot.objects.filter(user=user))
+
+    @staticmethod
+    def get_objects_by_depot(depot):
+        return Category.objects.filter(depot=depot)
+
     def get_movie(self):
         return self.movies.get(depot=self.depot, account=None)
 
@@ -150,6 +170,10 @@ class Change(models.Model):
         return account + " " + date + " " + change + " " + str(self.pk)
 
     # getters
+    @staticmethod
+    def get_objects(user):
+        return Change.objects.filter(account__in=Account.get_objects_by_user(user))
+
     def get_date(self, user):
         # user in args because of sql query optimization
         return self.date.strftime(user.date_format)

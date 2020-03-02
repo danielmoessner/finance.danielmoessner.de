@@ -1,13 +1,26 @@
-from django.urls import path
+from rest_framework import routers
+from django.urls import path, include
 
-from finance.banking.views import views
 from finance.banking.views import form_views
+from finance.banking.views import views
+from finance.banking.views import api
 
 
 app_name = "banking"
 
 
+router = routers.DefaultRouter()
+router.register(r'categories', api.CategoryViewSet)
+router.register(r'accounts', api.AccountViewSet)
+router.register(r'changes', api.ChangeViewSet)
+router.register(r'depots', api.DepotViewSet)
+
+
 urlpatterns = [
+    # API
+    path('api/', include(router.urls)),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+
     # API DATA
     path("api/index/", views.IndexData.as_view(), name="api_data_index"),
     path("api/categories/", views.CategoriesData.as_view(), name="api_data_categories"),
