@@ -13,55 +13,6 @@ import numpy as np
 import time
 
 
-def init_banking(user):
-    from finance.core.utils import create_slug
-    from django.utils import timezone
-    from datetime import timedelta
-    import random
-    depot = Depot.objects.create(name="Test Depot", user=user)
-    user.set_banking_depot_active(depot)
-    # account
-    account1 = Account(depot=depot, name="Bank #1")
-    account1.slug = create_slug(account1)
-    account1.save()
-    account2 = Account.objects.create(depot=depot, name="Bank #2")
-    account2.slug = create_slug(account1)
-    account2.save()
-    # category
-    category1 = Category.objects.create(depot=depot, name="Category #1",
-                                        description="This category is for test purposes only.")
-    category1.slug = create_slug(category1)
-    category1.save()
-    category2 = Category.objects.create(depot=depot, name="Category #2",
-                                        description="This category is for test purposes only.")
-    category2.slug = create_slug(category2)
-    category2.save()
-    category3 = Category.objects.create(depot=depot, name="Category #3",
-                                        description="This category is for test purposes only.")
-    category3.slug = create_slug(category3)
-    category3.save()
-    # changes
-    changes = list()
-    for i in range(0, 20):
-        random_number = random.randint(1, 2)
-        account = account1 if random_number == 1 else account2
-        random_number = random.randint(1, 3)
-        category = category1 if random_number == 1 else category2 if random_number == 2 \
-            else category3
-        random_number = random.randint(-400, 600)
-        change = random_number
-        random_number = random.randint(1, 90)
-        date = timezone.now() - timedelta(days=random_number)
-        description = "Change #{}".format(i)
-        changes.append(Change(account=account, category=category, change=change, date=date,
-                              description=description))
-    Change.objects.bulk_create(changes)
-    # timespan
-    Timespan.objects.create(depot=depot, name="Default Timespan", start_date=None, end_date=None, is_active=True)
-    # movies
-    depot.reset_movies()
-
-
 class Depot(CoreDepot):
     user = models.ForeignKey(StandardUser, editable=False, related_name="banking_depots",
                              on_delete=models.CASCADE)

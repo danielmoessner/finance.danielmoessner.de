@@ -14,7 +14,6 @@ from django.conf import settings
 from finance.core.views import CustomInvalidFormMixin
 from finance.alternative.models import init_alternative as alternative_init_alternative
 from finance.alternative.models import Depot as AlternativeDepot
-from finance.banking.models import init_banking as banking_init_banking
 from finance.banking.models import Depot as BankingDepot
 from finance.crypto.models import init_crypto as crypto_init_crypto
 from finance.crypto.models import Depot as CryptoDepot
@@ -98,7 +97,7 @@ class SettingsView(LoginRequiredMixin, generic.TemplateView):
 
 def init_banking(request):
     user = request.user
-    banking_init_banking(user)
+    request.user.create_random_banking_data()
     user.banking_is_active = True
     user.save()
     return HttpResponseRedirect(reverse_lazy("users:settings"))
