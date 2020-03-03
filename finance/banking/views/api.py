@@ -31,6 +31,14 @@ class AccountViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Account.get_objects_by_user(self.request.user)
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.changes.exists():
+            return Response(data={'message': "You can't delete an account that contains changes"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class CategoryViewSet(viewsets.ModelViewSet):
     """
@@ -42,6 +50,14 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Category.get_objects_by_user(self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.changes.exists():
+            return Response(data={'message': "You can't delete a category that contains changes"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ChangeViewSet(viewsets.ModelViewSet):

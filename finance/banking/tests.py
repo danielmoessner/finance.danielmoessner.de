@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.test import Client
 
 from finance.users.models import StandardUser as User
-from finance.banking.models import Depot
+from finance.banking.models import Depot, Category, Account
 
 
 class ViewsTestCase(TestCase):
@@ -196,3 +196,17 @@ class APITestCase(TestCase):
         }
         response = self.client.post('/banking/api/changes/', data, format='json')
         assert response.status_code == 400
+
+    def test_delete_not_working_on_account_and_categories_that_contain_changes(self):
+        response = self.client.delete('/banking/api/categories/1/')
+        assert response.status_code == 400
+        repsonse = self.client.delete('/banking/api/accounts/1')
+        assert response.status_code == 400
+
+    def test_delete_working_on_account_and_categories_without_changes(self):
+        Category.objects.get(pk=1).changes.all().delete()
+        response = response = self.client.delete('/banking/api/categories/1/')
+        assert response.status_code == 204
+        Account.objects.get(pk=1).changes.all().delete()
+        repsonse = self.client.delete('/banking/api/accounts/1')
+        assert response.status_code == 204
