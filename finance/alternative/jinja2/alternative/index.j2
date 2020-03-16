@@ -104,7 +104,7 @@
 							{{ mg.djangoModal("Add Value", "addValue"+alternative.slug, url("alternative:add_value", args=[alternative.slug])) }}
 						{% endset %}
 						{% set name %}
-							<a href="{{ url('alternative:alternative', args=[alternative.slug]) }}" class="link-bold">{{ alternative.name }}</a> 
+							<a href="{{ url('alternative:alternative', args=[alternative.pk]) }}" class="link-bold">{{ alternative.name }}</a>
 						{% endset %}
 						{%- set values=movie.get_values(user, ["v", "g", "cr", "twr"]) -%}
 						{{ tg.row([name|safe, values.v, values.g, values.cr, values.twr, tablebuttons|safe]) }}

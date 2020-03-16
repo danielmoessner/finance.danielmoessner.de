@@ -16,7 +16,7 @@ class DepotForm(forms.ModelForm):
     class Meta:
         model = Depot
         fields = (
-            "name",
+            'name',
         )
 
     def __init__(self, user, *args, **kwargs):
@@ -29,18 +29,18 @@ class DepotSelectForm(forms.Form):
 
     class Meta:
         fields = (
-            "depot",
+            'depot',
         )
 
     def __init__(self, user, *args, **kwargs):
         super(DepotSelectForm, self).__init__(*args, **kwargs)
-        self.fields["depot"].queryset = user.alternative_depots.all()
+        self.fields['depot'].queryset = user.alternative_depots.all()
 
 
 class DepotActiveForm(forms.ModelForm):
     class Meta:
         model = Depot
-        fields = ("is_active",)
+        fields = ('is_active',)
 
     def __init__(self, user, *args, **kwargs):
         super(DepotActiveForm, self).__init__(*args, **kwargs)
@@ -52,7 +52,7 @@ class AlternativeForm(forms.ModelForm):
     class Meta:
         model = Alternative
         fields = (
-            "name",
+            'name',
         )
 
     def __init__(self, depot, *args, **kwargs):
@@ -69,128 +69,103 @@ class AlternativeSelectForm(forms.Form):
 
     class Meta:
         fields = (
-            "alternative",
+            'alternative',
         )
 
     def __init__(self, depot, *args, **kwargs):
         super(AlternativeSelectForm, self).__init__(*args, **kwargs)
-        self.fields["alternative"].queryset = depot.alternatives.all()
+        self.fields['alternative'].queryset = depot.alternatives.all()
 
 
 # value
 class ValueForm(forms.ModelForm):
-    date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
-                           input_formats=["%Y-%m-%d"])
+    date = forms.DateTimeField(widget=forms.DateTimeInput(
+        attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+        input_formats=['%Y-%m-%dT%H:%M'], label='Date')
 
     class Meta:
         model = Value
         fields = (
-            "alternative",
-            "date",
-            "value",
+            'alternative',
+            'date',
+            'value',
         )
 
     def __init__(self, depot, *args, **kwargs):
         super(ValueForm, self).__init__(*args, **kwargs)
-        self.fields["alternative"].queryset = depot.alternatives.all()
-        self.fields["date"].initial = timezone.now()
+        self.fields['alternative'].queryset = depot.alternatives.all()
+        self.fields['date'].initial = timezone.now()
 
     def clean(self):
-        # general
-        alternative = self.cleaned_data["alternative"]
-        if not Flow.objects.filter(alternative=alternative).exists():
-            err = "Add a flow before you add a value."
-            raise forms.ValidationError(err)
-        elif not Value.objects.filter(alternative=alternative).exists():
-            flow = Flow.objects.earliest("date")
-            date = flow.date + timedelta(days=1)
-            Value.objects.create(alternative=flow.alternative, date=date, value=flow.flow)
-            Flow.objects.filter(alternative=flow.alternative, date=date).delete()
+        # get the cleaned data
+        alternative = self.cleaned_data['alternative']
 
-        # alternative
+        # a value before a flow occurs makes no sense
+        if not Flow.objects.filter(alternative=alternative).exists():
+            err = 'Add a flow before you add a value.'
+            raise forms.ValidationError(err)
+
+        # don't allow adding values if the value is 0
         if Value.objects.filter(alternative=alternative, value__lte=0).exists():
             err = "You can't add more flows or values to this alternative, because its value is 0."
             raise forms.ValidationError(err)
 
         # date
-        date = self.cleaned_data["date"]
-        if date <= Value.objects.filter(alternative=alternative).earliest("date").date:
-            err = "The date must be greater than the date of the first value."
-            raise forms.ValidationError(err)
-
-        # unique constraint
-        if Value.objects.filter(alternative=alternative, date=date).exists() or \
-                Flow.objects.filter(alternative=alternative, date=date).exists():
-            err = "A value or a flow with this date already exists."
+        date = self.cleaned_data['date']
+        if date <= Value.objects.filter(alternative=alternative).earliest('date').date:
+            err = 'The date must be greater than the date of the first value.'
             raise forms.ValidationError(err)
 
 
-# change
+# flow
 class FlowForm(forms.ModelForm):
-    date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
-                           input_formats=["%Y-%m-%d"])
+    date = forms.DateTimeField(widget=forms.DateTimeInput(
+        attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+        input_formats=['%Y-%m-%dT%H:%M'], label='Date')
+    value = forms.DecimalField(decimal_places=2, max_digits=15)
 
     class Meta:
         model = Flow
         fields = (
-            "alternative",
-            "date",
-            "value",
-            "flow",
+            'alternative',
+            'date',
+            'flow',
+            'value',
         )
         help_texts = {
-            "value": "The value of this alternative before the flow."
+            'value': 'The value of this alternative after the flow.'
         }
 
     def __init__(self, depot, *args, **kwargs):
         super(FlowForm, self).__init__(*args, **kwargs)
-        self.fields["alternative"].queryset = depot.alternatives.all()
-        self.fields["date"].initial = timezone.now().date
+        self.fields['alternative'].queryset = depot.alternatives.all()
+        self.fields['date'].initial = timezone.now().date
+        self.fields['value'].widget.attrs['min'] = 0
 
     def clean(self):
-        # general
-        alternative = self.cleaned_data["alternative"]
-        if Flow.objects.filter(alternative=alternative).exists() and \
-                not Value.objects.filter(alternative=alternative).exists():
-            flow = Flow.objects.earliest("date")
-            date = flow.date + timedelta(days=1)
-            Value.objects.create(alternative=flow.alternative, date=date, value=flow.flow)
-            Flow.objects.filter(alternative=flow.alternative, date=date).delete()
+        # get the cleaned data
+        alternative = self.cleaned_data['alternative']
+        date = self.cleaned_data['date']
 
-        # alternative
-        if Value.objects.filter(alternative=alternative, value__lte=0).exists():
-            err = "You can't add more flows or values to this alternative, because its value is 0."
-            raise forms.ValidationError(err)
-
-        # date
-        date = self.cleaned_data["date"]
-        if Value.objects.filter(alternative=alternative).exists() and \
-                date <= Value.objects.filter(alternative=alternative).earliest("date").date:
-            err = "The date must be greater than the date of the first value."
-            raise forms.ValidationError(err)
-
-        # value
-        value = self.cleaned_data["value"]
-        if Value.objects.filter(alternative=alternative).exists() or \
-                Flow.objects.filter(alternative=alternative).exists():
-            if value <= 0:
-                err = "The value must be greater than 0."
-                raise forms.ValidationError(err)
-        else:
-            if value != 0:
-                err = "The value must be 0."
-                raise forms.ValidationError(err)
-
-        # unique constraint
-        if Value.objects.filter(alternative=alternative, date=date).exists() or \
+        # don't allow another flow at the same time
+        critical_date = date - timedelta(seconds=1)
+        if Flow.objects.filter(alternative=alternative, date=critical_date).exists() or \
                 Flow.objects.filter(alternative=alternative, date=date).exists():
-            err = "A value or a flow with this date already exists."
+            err = "There already exists a Flow with that date and value."
             raise forms.ValidationError(err)
+
+        # don't allow adding flows or values to alternatives that have no value
+        if Value.objects.filter(alternative=alternative, value__lte=0).exists():
+            err = "You can't add more flows to this alternative, because its value is 0."
+            raise forms.ValidationError(err)
+
+        # return
+        return self.cleaned_data
 
     def save(self, commit=True):
         flow = super(FlowForm, self).save(commit=commit)
-        if commit and flow.pk and Flow.objects.filter(alternative=flow.alternative).count() == 1:
-            date = flow.date + timedelta(days=1)
+        if commit and flow.pk:
+            date = flow.date + timedelta(seconds=1)
             Value.objects.create(alternative=flow.alternative, date=date, value=flow.flow)
         return flow
 
@@ -198,18 +173,18 @@ class FlowForm(forms.ModelForm):
 # timespan
 class TimespanForm(forms.ModelForm):
     start_date = forms.DateTimeField(widget=forms.DateTimeInput(
-        attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
-        input_formats=["%Y-%m-%dT%H:%M"], label="Start Date (not required)", required=False)
+        attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+        input_formats=['%Y-%m-%dT%H:%M'], label='Start Date (not required)', required=False)
     end_date = forms.DateTimeField(widget=forms.DateTimeInput(
-        attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
-        input_formats=["%Y-%m-%dT%H:%M"], label="End Date (not required)", required=False)
+        attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+        input_formats=['%Y-%m-%dT%H:%M'], label='End Date (not required)', required=False)
 
     class Meta:
         model = Timespan
         fields = (
-            "name",
-            "start_date",
-            "end_date"
+            'name',
+            'start_date',
+            'end_date'
         )
 
     def __init__(self, depot, *args, **kwargs):
@@ -220,7 +195,7 @@ class TimespanForm(forms.ModelForm):
 class TimespanActiveForm(forms.ModelForm):
     class Meta:
         model = Timespan
-        fields = ("is_active",)
+        fields = ('is_active',)
 
     def __init__(self, depot, *args, **kwargs):
         super(TimespanActiveForm, self).__init__(*args, **kwargs)

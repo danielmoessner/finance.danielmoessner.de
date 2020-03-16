@@ -12,6 +12,7 @@ def _get_merged_flow_and_value_df(flow_df, value_df):
     df = flow_df.merge(value_df, how='outer')
     df.sort_values(axis='rows', by=['date'], inplace=True)
     # test that in the last row is a value
+    print(df)
     assert not np.isnan(df.iloc[-1, df.columns.get_loc('value')])
     # test that there are is always a value after a flow
     for i in range(0, df.shape[0]):

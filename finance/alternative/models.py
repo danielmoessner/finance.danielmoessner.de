@@ -4,16 +4,16 @@ from django.core.validators import MinValueValidator
 from django.db.models import Q
 from django.utils import timezone
 from django.db import models
+# from django.utils import get
 
 from finance.users.models import StandardUser
 from finance.core.models import Timespan as CoreTimespan
 from finance.core.models import Depot as CoreDepot
-from finance.core.utils import print_df
+import finance.core.return_calculation as rc
 
 from decimal import Decimal
 import pandas as pd
 import numpy as np
-import time
 
 
 def init_alternative(user):
@@ -37,35 +37,39 @@ def init_alternative(user):
     alternative3.save()
     # flows
     date = (timezone.now() - timedelta(days=30))
-    flow = FlowForm(depot, {"alternative": alternative1.pk, "date": date.strftime("%Y-%m-%d"), "value": 0, "flow": 10000})
+    flow = FlowForm(depot, {"alternative": alternative1.pk, "date": date.strftime("%Y-%m-%dT%H:%M"), "value": 0,
+                            "flow": 10000})
     flow.save()
     date = (timezone.now() - timedelta(days=40))
-    flow = FlowForm(depot, {"alternative": alternative2.pk, "date": date.strftime("%Y-%m-%d"), "value": 0, "flow": 3000})
+    flow = FlowForm(depot,
+                    {"alternative": alternative2.pk, "date": date.strftime("%Y-%m-%dT%H:%M"), "value": 0, "flow": 3000})
     flow.save()
     date = (timezone.now() - timedelta(days=60))
-    flow = FlowForm(depot, {"alternative": alternative3.pk, "date": date.strftime("%Y-%m-%d"), "value": 0, "flow": 1500})
+    flow = FlowForm(depot,
+                    {"alternative": alternative3.pk, "date": date.strftime("%Y-%m-%dT%H:%M"), "value": 0, "flow": 1500})
     flow.save()
     date = (timezone.now() - timedelta(days=20))
-    flow = FlowForm(depot, {"alternative": alternative3.pk, "date": date.strftime("%Y-%m-%d"), "value": 1600, "flow": 400})
+    flow = FlowForm(depot, {"alternative": alternative3.pk, "date": date.strftime("%Y-%m-%dT%H:%M"), "value": 1600,
+                            "flow": 400})
     flow.save()
     # values
     date = (timezone.now() - timedelta(days=25))
-    value = ValueForm(depot, {"alternative": alternative1.pk, "date": date.strftime("%Y-%m-%d"), "value": 9990})
+    value = ValueForm(depot, {"alternative": alternative1.pk, "date": date.strftime("%Y-%m-%dT%H:%M"), "value": 9990})
     value.save()
     date = (timezone.now() - timedelta(days=25))
-    value = ValueForm(depot, {"alternative": alternative2.pk, "date": date.strftime("%Y-%m-%d"), "value": 3000})
+    value = ValueForm(depot, {"alternative": alternative2.pk, "date": date.strftime("%Y-%m-%dT%H:%M"), "value": 3000})
     value.save()
     date = (timezone.now() - timedelta(days=25))
-    value = ValueForm(depot, {"alternative": alternative3.pk, "date": date.strftime("%Y-%m-%d"), "value": 2300})
+    value = ValueForm(depot, {"alternative": alternative3.pk, "date": date.strftime("%Y-%m-%dT%H:%M"), "value": 2300})
     value.save()
     date = (timezone.now() - timedelta(days=5))
-    value = ValueForm(depot, {"alternative": alternative1.pk, "date": date.strftime("%Y-%m-%d"), "value": 10050})
+    value = ValueForm(depot, {"alternative": alternative1.pk, "date": date.strftime("%Y-%m-%dT%H:%M"), "value": 10050})
     value.save()
     date = (timezone.now() - timedelta(days=5))
-    value = ValueForm(depot, {"alternative": alternative2.pk, "date": date.strftime("%Y-%m-%d"), "value": 3000})
+    value = ValueForm(depot, {"alternative": alternative2.pk, "date": date.strftime("%Y-%m-%dT%H:%M"), "value": 3000})
     value.save()
     date = (timezone.now() - timedelta(days=5))
-    value = ValueForm(depot, {"alternative": alternative3.pk, "date": date.strftime("%Y-%m-%d"), "value": 2300})
+    value = ValueForm(depot, {"alternative": alternative3.pk, "date": date.strftime("%Y-%m-%dT%H:%M"), "value": 2300})
     value.save()
     # timespan
     Timespan.objects.create(depot=depot, name="Default Timespan", start_date=None, end_date=None, is_active=True)
@@ -114,13 +118,40 @@ class Alternative(models.Model):
         return "{}".format(self.name)
 
     # getters
+    def get_value_df(self):
+        df = pd.DataFrame(list(self.values.all().values('date', 'value')))
+        df.loc[:, 'value'] = pd.to_numeric(df.loc[:, 'value'])
+        return df
+
+    def get_flow_df(self):
+        df = pd.DataFrame(list(self.flows.all().values('date', 'flow')))
+        df.loc[:, 'flow'] = pd.to_numeric(df.loc[:, 'flow'])
+        return df
+
+    def get_flows_and_values(self):
+        flows = list(self.flows.all().values('date', 'flow', 'pk'))
+        values = list(self.values.all().values('date', 'value', 'pk'))
+        flows_and_values = flows + values
+        flows_and_values_sorted = sorted(flows_and_values, key=lambda k: k['date'])
+        return flows_and_values_sorted
+
     def get_movie(self):
         return self.movies.get(depot=self.depot, alternative=self)
+
+    def get_stats(self):
+        stats, created = Stats.objects.get_or_create(alternative=self, depot=self.depot)
+        if stats.update_needed:
+            stats.update()
+        return [
+            ['Time Weighted Return', round(stats.time_weighted_return, 2)],
+            ['Current Return', round(stats.current_return, 2)],
+            ['Internal Rate of Return', round(stats.internal_rate_of_return, 2)]
+        ]
 
 
 class Value(models.Model):
     alternative = models.ForeignKey(Alternative, related_name="values", on_delete=models.CASCADE)
-    date = models.DateField()
+    date = models.DateTimeField()
     value = models.DecimalField(decimal_places=2, max_digits=15, validators=[MinValueValidator(0)])
 
     class Meta:
@@ -136,8 +167,7 @@ class Value(models.Model):
 
 class Flow(models.Model):
     alternative = models.ForeignKey(Alternative, related_name="flows", on_delete=models.CASCADE)
-    date = models.DateField()
-    value = models.DecimalField(decimal_places=2, max_digits=15, validators=[MinValueValidator(0)])
+    date = models.DateTimeField()
     flow = models.DecimalField(decimal_places=2, max_digits=15)
 
     class Meta:
@@ -161,6 +191,39 @@ class Timespan(CoreTimespan):
 
     def get_end_date(self):
         return timezone.localtime(self.end_date).strftime("%d.%m.%Y %H:%M") if self.end_date else None
+
+
+class Stats(models.Model):
+    update_needed = models.BooleanField(default=True)
+    depot = models.ForeignKey(Depot, blank=True, null=True, related_name="stats", on_delete=models.CASCADE)
+    alternative = models.ForeignKey(Alternative, blank=True, null=True, related_name="stats", on_delete=models.CASCADE)
+    time_weighted_return = models.DecimalField(blank=True, null=True, max_digits=8, decimal_places=2)
+    internal_rate_of_return = models.DecimalField(blank=True, null=True, max_digits=8, decimal_places=2)
+    current_return = models.DecimalField(blank=True, null=True, max_digits=8, decimal_places=2)
+
+    class Meta:
+        unique_together = ('depot', 'alternative')
+
+    def update(self):
+        if self.alternative and self.depot:
+            self.flow_df = self.alternative.get_flow_df()
+            self.value_df = self.alternative.get_value_df()
+        self.calc_time_weighted_return()
+        self.calc_internal_rate_of_return()
+        self.calc_current_return()
+        self.save()
+
+    def calc_time_weighted_return(self):
+        time_weighted_return_df = rc.get_time_weighted_return_df(self.flow_df, self.value_df)
+        self.time_weighted_return = rc.get_time_weighted_return(time_weighted_return_df)
+
+    def calc_internal_rate_of_return(self):
+        internal_rate_of_return_df = rc.get_internal_rate_of_return_df(self.flow_df, self.value_df)
+        self.internal_rate_of_return = rc.get_internal_rate_of_return(internal_rate_of_return_df)
+
+    def calc_current_return(self):
+        current_return_df = rc.get_current_return_df(self.flow_df, self.value_df)
+        self.current_return = rc.get_current_return(current_return_df)
 
 
 class Movie(models.Model):

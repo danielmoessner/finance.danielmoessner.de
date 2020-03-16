@@ -14,21 +14,15 @@
                 <!-- <li class="navigation--item">
                     <a class="navigation--link {% if activePage=='index' %}navigation--link--is-active{% endif %}" href="index.html">Overview</a>
                 </li> -->
-                {% if user.banking_is_active %}
                 <li class="navigation--item">
                     <a class="navigation--link {% if activePage=='banking' %}navigation--link--is-active{% endif %}" href="{{ url('banking:index') }}">Banking</a>
                 </li>
-                {% endif %}
-                {% if user.crypto_is_active %}
                 <li class="navigation--item">
                     <a class="navigation--link {% if activePage=='crypto' %}navigation--link--is-active{% endif %}" href="{{ url('crypto:index') }}">Crypto</a>
                 </li>
-                {% endif %}
-                {% if user.alternative_is_active %}
                 <li class="navigation--item">
                     <a class="navigation--link {% if activePage=='alternative' %}navigation--link--is-active{% endif %}" href="{{ url('alternative:index') }}">Alternative</a>
                 </li>
-                {% endif %}
                 <div class="vs-2"></div>
                 <li class="navigation--item">
                     <p class="navigation--heading">User</p>

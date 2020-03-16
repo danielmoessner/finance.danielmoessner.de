@@ -21,10 +21,10 @@
 
 
 {% macro head(headings) %}
-	<thead class="table--head">
+	<thead class="">
 		<tr>
 			{% for heading in headings %}
-				<th class="table--head--data">{{ heading }}</th>
+				<th class="">{{ heading }}</th>
 			{% endfor %}                           
 		</tr>
 	</thead>
@@ -34,7 +34,7 @@
 {% macro row(content) %}
 	<tr>
 		{% for data in content %}
-			<td class="table--body--data">{{ data }}</td>
+			<td class="">{{ data or '' }}</td>
 		{% endfor %}
 	</tr> 
 {% endmacro %}

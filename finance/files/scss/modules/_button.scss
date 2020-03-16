@@ -22,8 +22,19 @@
 	@extend .btn;
 	@extend .btn-info;
 	@extend .btn-sm;
-	cursor: pointer;
 }
+.modal-button:not(:last-of-type) {
+	@extend .mr-1;
+}
+
+.link-button{
+	@extend .btn;
+	@extend .btn-secondary;
+}
+.modal-button:not(:last-of-type) {
+	@extend .mr-1;
+}
+
 
 .href-button{
 	@extend .btn;

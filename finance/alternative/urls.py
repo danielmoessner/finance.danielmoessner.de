@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.conf.urls import url
+from django.urls import path
 from finance.alternative.views import views
 from finance.alternative.views import form_views
 
@@ -87,7 +88,6 @@ urlpatterns = [
         name="set_timespan"),
 
     # PAGES
-    url(r"^$", login_required(views.IndexView.as_view()), name="index"),
-    url(r"^alternative/(?P<slug>[0-9a-zA-Z-#]*)/$", login_required(views.AlternativeView.as_view()),
-        name="alternative"),
+    path('', login_required(views.IndexView.as_view()), name="index"),
+    path('alternative/<int:pk>/', login_required(views.AlternativeView.as_view()), name="alternative"),
 ]
