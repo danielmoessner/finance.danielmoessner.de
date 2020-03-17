@@ -11,9 +11,9 @@ def _get_merged_flow_and_value_df(flow_df, value_df):
     # merge the dfs and sort for date
     df = flow_df.merge(value_df, how='outer')
     df.sort_values(axis='rows', by=['date'], inplace=True)
-    # test that in the last row is a value
-    print(df)
-    assert not np.isnan(df.iloc[-1, df.columns.get_loc('value')])
+    # stop calculations if there is no value in the last row
+    if np.isnan(df.iloc[-1, df.columns.get_loc('value')]):
+        return None
     # test that there are is always a value after a flow
     for i in range(0, df.shape[0]):
         if not np.isnan(df.iloc[i, df.columns.get_loc('flow')]):
@@ -25,6 +25,9 @@ def _get_merged_flow_and_value_df(flow_df, value_df):
 def _get_value_with_flow_df(flow_df, value_df):
     # get the right df
     df = _get_merged_flow_and_value_df(flow_df, value_df)
+    # stop calculations if something went wrong beforehand
+    if df is None:
+        return None
     # shift the flows up to the values
     df.loc[:, 'flow'] = df.loc[:, 'flow'].shift(1)
     # drop the old flow rows
@@ -43,6 +46,9 @@ def _get_value_with_flow_df(flow_df, value_df):
 def get_time_weighted_return_df(flow_df, value_df):
     # get the right df
     df = _get_value_with_flow_df(flow_df, value_df)
+    # stop calculations if something went wrong beforehand
+    if df is None:
+        return None
     # calculate twr for each sub period
     df.loc[:, 'twr'] = (df.loc[:, 'value'] - df.loc[:, 'flow']) / df.loc[:, 'value'].shift(1)
     # fill the first row twr value as it is nan
@@ -52,6 +58,9 @@ def get_time_weighted_return_df(flow_df, value_df):
 
 
 def get_time_weighted_return(df):
+    # return nan if something went wrong beforehand
+    if df is None:
+        return np.nan
     # test that all necessary columns are available
     assert 'twr' in df.columns
     # return nan if there are nan values in the twr column
@@ -69,6 +78,9 @@ def get_time_weighted_return(df):
 def get_internal_rate_of_return_df(flow_df, value_df):
     # get the right df
     df = _get_merged_flow_and_value_df(flow_df, value_df)
+    # stop calculations if something went wrong beforehand
+    if df is None:
+        return None
     # move the first value to the flow column if there is no flow
     if np.isnan(df.iloc[0, df.columns.get_loc('flow')]):
         df.iloc[0, df.columns.get_loc('flow')] = df.iloc[0, df.columns.get_loc('value')]
@@ -90,7 +102,7 @@ def get_internal_rate_of_return_df(flow_df, value_df):
     return df
 
 
-def custom_xnpv(rate, df):
+def _custom_xnpv(rate, df):
     # test that all necessary columns are available
     assert 'flow' in df.columns and 'days' in df.columns
     # calculation
@@ -101,21 +113,24 @@ def custom_xnpv(rate, df):
     return xnpv
 
 
-def get_daily_internal_rate_of_return(df, guess=0.000210874):
+def _get_daily_internal_rate_of_return(df, guess=0.000210874):
     # test that all necessary columns are available
     assert 'flow' in df.columns and 'days' in df.columns
     # return nan if the last flow is 0 because that means that there is no money invested anymore
     if df.iloc[-1, df.columns.get_loc('flow')] == 0:
         return np.nan
     # calculate the internal rate of return
-    internal_rate_of_return = newton(lambda rate: custom_xnpv(rate, df), guess)
+    internal_rate_of_return = newton(lambda rate: _custom_xnpv(rate, df), guess)
     # return the rate
     return internal_rate_of_return
 
 
 def get_internal_rate_of_return(df):
+    # stop calculations if something went wrong beforehand
+    if df is None:
+        return np.nan
     # get the daily rate
-    internal_rate_of_return = get_daily_internal_rate_of_return(df)
+    internal_rate_of_return = _get_daily_internal_rate_of_return(df)
     # turn the daily rate into the rate of the period
     internal_rate_of_return = (1 + internal_rate_of_return) ** (df.iloc[-1, df.columns.get_loc('days')])
     # return the rate
@@ -128,6 +143,9 @@ def get_internal_rate_of_return(df):
 def get_current_return_df(flow_df, value_df):
     # get the right df
     df = _get_value_with_flow_df(flow_df, value_df)
+    # stop calculations if something went wrong beforehand
+    if df is None:
+        return None
     # copy the first value to the flow column if there is no flow
     if df.iloc[0, df.columns.get_loc('flow')] == 0:
         df.iloc[0, df.columns.get_loc('flow')] = df.iloc[0, df.columns.get_loc('value')]
@@ -152,6 +170,9 @@ def get_current_return_df(flow_df, value_df):
 
 
 def get_current_return(df):
+    # return nan if something went wrong before
+    if df is None:
+        return np.nan
     # test that all necessary columns are available
     assert 'current_return' in df.columns
     # current return of a period is always the last value
