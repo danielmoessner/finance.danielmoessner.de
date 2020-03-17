@@ -18,10 +18,12 @@
 		}
 	}
 	&--submit-button{
-		@extend .submit-button;
+		@extend .btn;
+		@extend .btn-dark;
 	}
 	&--cancel-button{
-		@extend .cancel-button; 
+		@extend .btn;
+		@extend .btn-light;
 	}
 }
 
@@ -52,9 +54,11 @@
 		width: auto!important;
 		flex-grow: 1;
 		margin-left: 10px;
-		@extend .submit-button;
+		@extend .btn;
+		@extend .btn-dark;
 	}
 	&--cancel-button{
-		@extend .cancel-button; 
+		@extend .btn;
+		@extend .btn-light;
 	}
 }

@@ -7,6 +7,7 @@ from finance.alternative.models import Value
 from finance.alternative.models import Depot
 from finance.alternative.models import Flow
 from finance.core.utils import create_slug
+import finance.alternative.utils as utils
 
 from datetime import timedelta
 
@@ -99,22 +100,31 @@ class ValueForm(forms.ModelForm):
     def clean(self):
         # get the cleaned data
         alternative = self.cleaned_data['alternative']
+        date = self.cleaned_data['date']
 
         # a value before a flow occurs makes no sense
-        if not Flow.objects.filter(alternative=alternative).exists():
-            err = 'Add a flow before you add a value.'
-            raise forms.ValidationError(err)
+        if not Flow.objects.filter(alternative=alternative, date__lt=date).exists():
+            message = 'There needs to be at least one flow before a value.'
+            raise forms.ValidationError(message)
 
         # don't allow adding values if the value is 0
         if Value.objects.filter(alternative=alternative, value__lte=0).exists():
-            err = "You can't add more flows or values to this alternative, because its value is 0."
+            err = "You can't add more values to this alternative, because its value is 0."
             raise forms.ValidationError(err)
 
-        # date
-        date = self.cleaned_data['date']
-        if date <= Value.objects.filter(alternative=alternative).earliest('date').date:
-            err = 'The date must be greater than the date of the first value.'
-            raise forms.ValidationError(err)
+        # check that if the previous value or flow is a flow that the date is close to the flow
+        flow_qs = Flow.objects.filter(alternative=alternative)
+        value_qs = Value.objects.filter(alternative=alternative).exclude(pk=self.instance.pk)
+        previous_value_or_flow = utils.get_closest_value_or_flow(flow_qs, value_qs, date, direction='previous')
+        if (
+                previous_value_or_flow and type(previous_value_or_flow) == Flow and
+                abs(previous_value_or_flow.date - date) > timedelta(days=2)
+        ):
+            message = "Right before this value is a flow. The date of the value needs to be closer than 2 days."
+            raise forms.ValidationError(message)
+
+        # return the cleaned data
+        return self.cleaned_data
 
 
 # flow
@@ -122,7 +132,6 @@ class FlowForm(forms.ModelForm):
     date = forms.DateTimeField(widget=forms.DateTimeInput(
         attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
         input_formats=['%Y-%m-%dT%H:%M'], label='Date')
-    value = forms.DecimalField(decimal_places=2, max_digits=15)
 
     class Meta:
         model = Flow
@@ -130,44 +139,38 @@ class FlowForm(forms.ModelForm):
             'alternative',
             'date',
             'flow',
-            'value',
         )
-        help_texts = {
-            'value': 'The value of this alternative after the flow.'
-        }
 
     def __init__(self, depot, *args, **kwargs):
         super(FlowForm, self).__init__(*args, **kwargs)
         self.fields['alternative'].queryset = depot.alternatives.all()
         self.fields['date'].initial = timezone.now().date
-        self.fields['value'].widget.attrs['min'] = 0
 
     def clean(self):
-        # get the cleaned data
-        alternative = self.cleaned_data['alternative']
         date = self.cleaned_data['date']
+        alternative = self.cleaned_data['alternative']
 
-        # don't allow another flow at the same time
-        critical_date = date - timedelta(seconds=1)
-        if Flow.objects.filter(alternative=alternative, date=critical_date).exists() or \
-                Flow.objects.filter(alternative=alternative, date=date).exists():
-            err = "There already exists a Flow with that date and value."
-            raise forms.ValidationError(err)
-
-        # don't allow adding flows or values to alternatives that have no value
+        # don't allow adding flows if the value is 0
         if Value.objects.filter(alternative=alternative, value__lte=0).exists():
             err = "You can't add more flows to this alternative, because its value is 0."
             raise forms.ValidationError(err)
 
-        # return
-        return self.cleaned_data
+        # check that there is no other flow already
+        flow_qs = Flow.objects.filter(alternative=alternative).exclude(pk=self.instance.pk)
+        value_qs = Value.objects.filter(alternative=alternative)
+        # check that there is no flow right before this flow
+        previous_value_or_flow = utils.get_closest_value_or_flow(flow_qs, value_qs, date, direction='previous')
+        if previous_value_or_flow and type(previous_value_or_flow) == Flow:
+            message = "A flow can not be followed by a flow. There is a flow right before this flow."
+            raise forms.ValidationError(message)
+        # check that there is no flow right after this flow
+        next_value_or_flow = utils.get_closest_value_or_flow(flow_qs, value_qs, date, direction='previous')
+        if next_value_or_flow and type(next_value_or_flow) == Flow:
+            message = "A flow can not be followed by a flow. There is a flow right after this flow."
+            raise forms.ValidationError(message)
 
-    def save(self, commit=True):
-        flow = super(FlowForm, self).save(commit=commit)
-        if commit and flow.pk:
-            date = flow.date + timedelta(seconds=1)
-            Value.objects.create(alternative=flow.alternative, date=date, value=flow.flow)
-        return flow
+        # return the cleaned data
+        return self.cleaned_data
 
 
 # timespan

@@ -36,7 +36,8 @@
 		@extend .w-100; 
 	}
 	&--switch-button{
-		@extend .href-button;
+		@extend .btn;
+		@extend .btn-secondary;
 		@extend .w-100;
 		@extend .mt-4; 
 	}

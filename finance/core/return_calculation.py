@@ -22,7 +22,7 @@ def _get_merged_flow_and_value_df(flow_df, value_df):
     return df
 
 
-def _get_value_with_flow_df(flow_df, value_df):
+def get_value_with_flow_df(flow_df, value_df):
     # get the right df
     df = _get_merged_flow_and_value_df(flow_df, value_df)
     # stop calculations if something went wrong beforehand
@@ -45,7 +45,7 @@ def _get_value_with_flow_df(flow_df, value_df):
 #############
 def get_time_weighted_return_df(flow_df, value_df):
     # get the right df
-    df = _get_value_with_flow_df(flow_df, value_df)
+    df = get_value_with_flow_df(flow_df, value_df)
     # stop calculations if something went wrong beforehand
     if df is None:
         return None
@@ -133,6 +133,8 @@ def get_internal_rate_of_return(df):
     internal_rate_of_return = _get_daily_internal_rate_of_return(df)
     # turn the daily rate into the rate of the period
     internal_rate_of_return = (1 + internal_rate_of_return) ** (df.iloc[-1, df.columns.get_loc('days')])
+    # adjust to represent a percentage value
+    internal_rate_of_return -= 1
     # return the rate
     return internal_rate_of_return
 
@@ -142,7 +144,7 @@ def get_internal_rate_of_return(df):
 #############
 def get_current_return_df(flow_df, value_df):
     # get the right df
-    df = _get_value_with_flow_df(flow_df, value_df)
+    df = get_value_with_flow_df(flow_df, value_df)
     # stop calculations if something went wrong beforehand
     if df is None:
         return None
@@ -177,5 +179,7 @@ def get_current_return(df):
     assert 'current_return' in df.columns
     # current return of a period is always the last value
     current_return = df.iloc[-1, df.columns.get_loc('current_return')]
+    # adjust to represent a percentage value
+    current_return -= 1
     # return the current return
     return current_return

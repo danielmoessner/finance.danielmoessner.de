@@ -9,14 +9,6 @@ app_name = "alternative"
 
 
 urlpatterns = [
-    # API DATA
-    url(r"^api-data/everything/$", login_required(views.EverythingData.as_view()),
-        name="everything_api_data"),
-    url(r"^api-data/cake/$", login_required(views.CakeData.as_view()),
-        name="cake_api_data"),
-    url(r"^api-data/alternative/(?P<slug>[0-9a-zA-Z-#]*)/$", login_required(views.AlternativeData.as_view()),
-        name="alternative_api_data"),
-
     # FUNCTIONS
     # update-movies/
     url(r"^update-movies", login_required(views.update_movies), name="update_movies"),

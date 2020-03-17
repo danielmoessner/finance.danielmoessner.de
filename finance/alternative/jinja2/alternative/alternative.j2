@@ -7,81 +7,119 @@
 
 {% block main %}
 
-{% import "modules/table.njk" as tg %}
-{% import "modules/button.njk" as bg %}
-{% import "modules/card.njk" as cg %}
-{% import "modules/modal.njk" as mg %}
-{% import "modules/console.njk" as cog %}
-{% import "modules/modal.njk" as mg %}
+    {% import "modules/table.njk" as tg %}
+    {% import "modules/button.njk" as bg %}
+    {% import "modules/card.njk" as cg %}
+    {% import "modules/modal.njk" as mg %}
+    {% import "modules/console.njk" as cog %}
+    {% import "modules/modal.njk" as mg %}
 
-<div class="d-flex justify-content-center mt-2 mb-5">
-    <div class="btn-group" role="group" aria-label="Console">
-        <a class="link-button {% if tab=='stats' %}active{% endif %}" type="button" href="{{ request.path }}?tab=stats">Stats</a>
-        <a class="link-button {% if tab=='data' %}active{% endif %}" type="button" href="{{ request.path }}?tab=data">Data</a>
-    </div>
-</div>
-
-{% if tab == 'stats' %}
-    <div class="wrapper console--target" id="stats">
-        <div class="row">
-            {% for data in stats %}
-                <div class="col-3">
-                    <div class="card text-white bg-dark">
-                        <div class="card-body">
-                            <div class="card-title h5">{{ data[0] }}</div>
-                            <p class="card-text">{{ data[1] }}</p>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
+    <div class="d-flex justify-content-center mt-2 mb-5">
+        <div class="btn-group" role="group" aria-label="Console">
+            {% if tab=='stats' %}{% set classes='active' %}{% else %}{% set classes='' %}{% endif %}
+            {{ bg.hrefButton("Stats", request.path + '?tab=stats', classes=classes) }}
+            {% if tab=='data' %}{% set classes='active' %}{% else %}{% set classes='' %}{% endif %}
+            {{ bg.hrefButton("Data", request.path + '?tab=data', classes=classes) }}
+            {% if tab=='calculated' %}{% set classes='active' %}{% else %}{% set classes='' %}{% endif %}
+            {{ bg.hrefButton("Calculated", request.path + '?tab=calculated', classes=classes) }}
         </div>
     </div>
-{% endif %}
 
-{% if tab == 'data' %}
-<div class="wrapper console--target">
-    <div class="scrollbar-box">
-        <table class="table rounded table-dark">
-            <thead>
-            <tr>
-                <th class="border-0" scope="col">Date</th>
-                <th class="border-0" scope="col">Flow</th>
-                <th class="border-0" scope="col">Value</th>
-                <th class="border-0" scope="col">Action</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for data in flows_and_values %}
-            {% set tablebuttons %}
-            <div class="d-flex">
-                {% if data.flow %}
-                    {{ bg.modalButton("Edit", "#editFlow"+data.pk|string) }}
-                    {{ bg.modalButton("Delete", "#deleteFlow"+data.pk|string) }}
-                    {{ mg.djangoModal("Edit Flow", "editFlow"+data.pk|string, url("alternative:edit_flow", args=[object.slug, data.pk])) }}
-                    {{ mg.djangoModal("Delete Flow", "deleteFlow"+data.pk|string, url("alternative:delete_flow", args=[object.slug, data.pk])) }}
-                {% elif data.value %}
-                    {{ bg.modalButton("Edit", "#editValue"+data.pk|string) }}
-                    {{ bg.modalButton("Delete", "#deleteValue"+data.pk|string) }}
-                    {{ mg.djangoModal("Edit Value", "editValue"+data.pk|string, url("alternative:edit_value", args=[object.slug, data.pk])) }}
-                    {{ mg.djangoModal("Delete Value", "deleteValue"+data.pk|string, url("alternative:delete_value", args=[object.slug, data.pk])) }}
-                {% endif %}
+    {% if tab == 'stats' %}
+        <div class="wrapper console--target" id="stats">
+            <div class="row">
+                {% for data in stats %}
+                    <div class="col-3">
+                        <div class="card text-white bg-dark">
+                            <div class="card-body">
+                                <div class="card-title h5">{{ data[0] }}</div>
+                                <p class="card-text">{{ data[1] }}</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
-            {% endset %}
-            {{ tg.row([data.date.strftime('%d.%m.%Y %H:%M'), data.flow, data.value, tablebuttons]) }}
-            {% endfor %}
-            {% set tablebuttons %}
-            <div class="d-flex">
-                {{ bg.modalButton("Add FLow", "#addFlow") }}
-                {{ bg.modalButton("Add Value", "#addValue") }}
-                {{ mg.djangoModal("Add Flow", "addFlow", url("alternative:add_flow", args=[object.slug])) }}
-                {{ mg.djangoModal("Add Value", "addValue", url("alternative:add_value", args=[object.slug])) }}
+        </div>
+    {% endif %}
+
+    {% if tab == 'data' %}
+        <div class="wrapper console--target">
+            <div class="scrollbar-box">
+                <table class="table rounded table-dark">
+                    <thead>
+                    <tr>
+                        <th class="border-0" scope="col">Date</th>
+                        <th class="border-0" scope="col">Flow</th>
+                        <th class="border-0" scope="col">Value</th>
+                        <th class="border-0" scope="col">Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for data in flows_and_values %}
+                        <tr>
+                            <td>{{ data.date.strftime('%d.%m.%Y %H:%M') }}</td>
+                            <td>{{ data.flow or "" }}</td>
+                            <td>{{ data.value or "" }}</td>
+                            <td>
+                                <div class="d-flex">
+                                    {% if data.flow %}
+                                        {{ bg.modalButton("Edit", "#editFlow"+data.pk|string) }}
+                                        {{ bg.modalButton("Delete", "#deleteFlow"+data.pk|string) }}
+                                        {{ mg.djangoModal("Edit Flow", "editFlow"+data.pk|string, url("alternative:edit_flow", args=[object.slug, data.pk])) }}
+                                        {{ mg.djangoModal("Delete Flow", "deleteFlow"+data.pk|string, url("alternative:delete_flow", args=[object.slug, data.pk])) }}
+                                    {% elif data.value %}
+                                        {{ bg.modalButton("Edit", "#editValue"+data.pk|string) }}
+                                        {{ bg.modalButton("Delete", "#deleteValue"+data.pk|string) }}
+                                        {{ mg.djangoModal("Edit Value", "editValue"+data.pk|string, url("alternative:edit_value", args=[object.slug, data.pk])) }}
+                                        {{ mg.djangoModal("Delete Value", "deleteValue"+data.pk|string, url("alternative:delete_value", args=[object.slug, data.pk])) }}
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    <tr>
+                        <td colspan="5">
+                            <div class="d-flex">
+                                {{ mg.djangoModal("Add Flow", "addFlow", url("alternative:add_flow", args=[object.slug])) }}
+                                {{ bg.modalButton("Add FLow", "#addFlow") }}
+                                {{ mg.djangoModal("Add Value", "addValue", url("alternative:add_value", args=[object.slug])) }}
+                                {{ bg.modalButton("Add Value", "#addValue") }}
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
-            {% endset %}
-            {{ tg.row([tablebuttons, "", "", ""]) }}
-            </tbody>
-        </table>
-    </div>
-</div>
-{% endif %}
+        </div>
+    {% endif %}
+
+    {% if tab == 'calculated' %}
+        <div class="wrapper console--target">
+            <div class="scrollbar-box">
+                <table class="table rounded table-dark">
+                    <thead>
+                    <tr>
+                        <th class="border-0" scope="col">Date</th>
+                        <th class="border-0" scope="col">Flow</th>
+                        <th class="border-0" scope="col">Invested Capital</th>
+                        <th class="border-0" scope="col">Value</th>
+                        <th class="border-0" scope="col">Profit</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for data in pictures %}
+                        <tr>
+                            <th scope="row">{{ data.date.strftime('%d.%m.%Y %H:%M') }}</th>
+                            <td>{{ data.flow }}</td>
+                            <td>{{ data.invested_capital }}</td>
+                            <td>{{ data.value }}</td>
+                            <td>{{ data.profit }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
 
 {% endblock %}

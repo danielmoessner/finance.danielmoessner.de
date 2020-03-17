@@ -5,13 +5,10 @@ from django.utils.text import slugify
 from django.conf import settings
 
 
-def print_df(df):
-    if settings.DEBUG:
-        import tabulate
-        table = tabulate.tabulate(df, headers="keys")
-        print()
-        print(table)
-        print()
+def round_value_if_exists(value, places=2):
+    if value is not None:
+        return round(value, places)
+    return None
 
 
 def create_slug(instance, on=None, slug=None):

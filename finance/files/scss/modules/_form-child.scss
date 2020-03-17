@@ -18,7 +18,8 @@
 		@extend .input-group;
 	}
 	&--submit-button{
-		@extend .submit-button;
+		@extend .btn;
+		@extend .btn-dark;
 		padding-bottom: .5rem;
 	}
 	&--helptext{
