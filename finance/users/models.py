@@ -111,3 +111,57 @@ class StandardUser(AbstractUser):
         Timespan.objects.create(depot=depot, name="Default Timespan", start_date=None, end_date=None, is_active=True)
         # movies
         depot.reset_movies()
+
+    def create_random_alternative_data(self):
+        from finance.alternative.models import Depot, Alternative, Value, Flow
+        from finance.alternative.forms import ValueForm, FlowForm
+        from finance.core.utils import create_slug
+        from django.utils import timezone
+        from datetime import timedelta
+        depot = Depot.objects.create(name="Test Depot", user=self)
+        self.set_alternative_depot_active(depot)
+
+        # helper create alternative
+        def create_alternative(name):
+            alternative = Alternative(depot=depot, name=name)
+            alternative.slug = create_slug(alternative)
+            alternative.save()
+            return alternative
+
+        # helper create flow
+        def create_flow(alternative, days_before_now, flow_flow):
+            date = (timezone.now().replace(hour=00, minute=00) - timedelta(days=days_before_now, hours=13))
+            flow = FlowForm(depot, {"alternative": alternative.pk, "date": date, "flow": flow_flow})
+            flow.save()
+            return flow
+
+        # helper create value
+        def create_value(alternative, days_before_now, value_value):
+            date = (timezone.now().replace(hour=00, minute=00) - timedelta(days=days_before_now, hours=12))
+            value = ValueForm(depot, {"alternative": alternative.pk, "date": date, "value": value_value})
+            value.save()
+            return value
+
+        # alternatives
+        alternative1 = create_alternative("Old-Timer")
+        alternative2 = create_alternative('Black-Watch')
+        alternative3 = create_alternative('Tube Amplifier')
+
+        # 1
+        create_flow(alternative1, 50, 100)
+        create_value(alternative1, 50, 100)
+        create_value(alternative1, 30, 110)
+        create_flow(alternative1, 20, 50)
+        create_value(alternative1, 20, 160)
+        create_value(alternative1, 0, 160)
+        # 2
+        create_flow(alternative2, 40, 100)
+        create_value(alternative2, 40, 100)
+        create_value(alternative2, 0, 200)
+        # 3
+        create_flow(alternative3, 30, 100)
+        create_value(alternative3, 30, 100)
+        create_value(alternative3, 20, 50)
+        create_flow(alternative3, 10, 10)
+        create_value(alternative3, 10, 60)
+        create_value(alternative3, 0, 60)

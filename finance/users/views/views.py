@@ -9,10 +9,8 @@ from django.contrib import messages
 from django.views import generic
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-from django.conf import settings
 
 from finance.core.views import CustomInvalidFormMixin
-from finance.alternative.models import init_alternative as alternative_init_alternative
 from finance.alternative.models import Depot as AlternativeDepot
 from finance.banking.models import Depot as BankingDepot
 from finance.crypto.models import init_crypto as crypto_init_crypto
@@ -113,7 +111,7 @@ def init_crypto(request):
 
 def init_alternative(request):
     user = request.user
-    alternative_init_alternative(user)
+    # alternative_init_alternative(user)
     user.alternative_is_active = True
     user.save()
     return HttpResponseRedirect(reverse_lazy("users:settings"))

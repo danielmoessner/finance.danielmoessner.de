@@ -165,17 +165,17 @@ class ReturnCalculationTestCase(TestCase):
     def test_time_weighted_return_working(self):
         time_weighted_return_df = rc.get_time_weighted_return_df(self.flow_df, self.value_df)
         time_weighted_return = rc.get_time_weighted_return(time_weighted_return_df)
-        assert time_weighted_return == 1.1770833333333335
+        self.assertAlmostEqual(time_weighted_return, 1.1770833333333335)
 
     def test_internal_rate_of_return_working(self):
         internal_rate_of_return_df = rc.get_internal_rate_of_return_df(self.flow_df, self.value_df)
         internal_rate_of_return = rc.get_internal_rate_of_return(internal_rate_of_return_df)
-        assert internal_rate_of_return == 1.463778985920282
+        self.assertAlmostEqual(internal_rate_of_return, 1.463778985920282)
 
     def test_current_return_working(self):
         current_return_df = rc.get_current_return_df(self.flow_df, self.value_df)
         current_return = rc.get_current_return(current_return_df)
-        assert current_return == 1.111111111111111
+        self.assertAlmostEqual(current_return, 1.111111111111111)
 
     def test_time_weighted_return_failing_with_no_values(self):
         time_weighted_return_df = rc.get_time_weighted_return_df(self.flow_df, self.empty_value_df)
