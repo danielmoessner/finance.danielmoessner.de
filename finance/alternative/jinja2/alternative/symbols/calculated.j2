@@ -1,0 +1,24 @@
+{% if tab == 'calculated' %}
+    <table class="table table-responsive-md rounded table-dark">
+        <thead>
+        <tr>
+            <th class="border-0" scope="col">Date</th>
+            <th class="border-0" scope="col">Flow</th>
+            <th class="border-0" scope="col">Invested Capital</th>
+            <th class="border-0" scope="col">Value</th>
+            <th class="border-0" scope="col">Profit</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for data in pictures %}
+            <tr>
+                <th scope="row">{{ data.date.strftime('%d.%m.%Y %H:%M') }}</th>
+                <td>{{ data.flow }}</td>
+                <td>{{ data.invested_capital }}</td>
+                <td>{{ data.value }}</td>
+                <td>{{ data.profit }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}

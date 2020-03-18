@@ -74,6 +74,10 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'environment': 'config.jinja2.environment',
+            'context_processors': [
+                'django.template.context_processors.request',
+            ]
+
         },
     },
     {

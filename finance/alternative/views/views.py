@@ -22,19 +22,17 @@ class IndexView(PermissionRequiredMixin, TabContextMixin, generic.DetailView):
     model = Depot
     permission_denied_message = 'You have no permission to see this depot.'
 
-    def get_object(self, queryset=None):
-        obj = self.request.user.alternative_depots.filter(is_active=True).first()
-        return obj
-
     def has_permission(self):
         return self.get_object().user == self.request.user
 
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
         # general
-        context['alternatives'] = self.object.alternatives.order_by('name')
+        context['alternatives'] = self.object.alternatives.select_related('latest_picture').order_by('name')
         # specific
         context['movie'] = self.object.get_movie()
+        context['stats'] = context['movie'].get_stats()
+        context['pictures'] = context['movie'].get_pictures()
         # return
         return context
 
@@ -54,19 +52,13 @@ class AlternativeView(PermissionRequiredMixin, TabContextMixin, generic.DetailVi
         context['alternatives'] = context['depot'].alternatives.order_by('name').select_related('depot')
         context['flows_and_values'] = self.object.get_flows_and_values()
         context['movie'] = self.object.get_movie()
-        context['stats'] = self.object.get_stats()
-        context['pictures'] = self.object.get_pictures()
+        context['stats'] = context['movie'].get_stats()
+        context['pictures'] = context['movie'].get_pictures()
         # return
         return context
 
 
 # functions
-def update_movies(request):
-    depot = request.user.alternative_depots.get(is_active=True)
-    depot.update_movies()
-    return HttpResponseRedirect(reverse_lazy('alternative:index'))
-
-
 def reset_movies(request):
     depot = request.user.alternative_depots.get(is_active=True)
     depot.reset_movies(delete=True)

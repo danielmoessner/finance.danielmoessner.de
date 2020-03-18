@@ -1,8 +1,13 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils.html import strip_tags
 from django.utils.text import slugify
+from datetime import timedelta
 
-from django.conf import settings
+
+def change_time_of_date_column_in_df(df, hours):
+    assert 0 <= hours <= 24
+    df.loc[:, 'date'] = df.loc[:, 'date'].dt.normalize() + timedelta(hours=hours)
+    return df
 
 
 def round_value_if_exists(value, places=2):

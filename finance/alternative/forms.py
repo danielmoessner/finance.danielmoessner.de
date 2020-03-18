@@ -118,9 +118,9 @@ class ValueForm(forms.ModelForm):
         previous_value_or_flow = utils.get_closest_value_or_flow(flow_qs, value_qs, date, direction='previous')
         if (
                 previous_value_or_flow and type(previous_value_or_flow) == Flow and
-                abs(previous_value_or_flow.date - date) > timedelta(days=2)
+                previous_value_or_flow.date.day != date.day
         ):
-            message = "Right before this value is a flow. The date of the value needs to be closer than 2 days."
+            message = "Right before this value is a flow. The date of this value needs to be on the same day."
             raise forms.ValidationError(message)
 
         # return the cleaned data
@@ -167,6 +167,16 @@ class FlowForm(forms.ModelForm):
         next_value_or_flow = utils.get_closest_value_or_flow(flow_qs, value_qs, date, direction='previous')
         if next_value_or_flow and type(next_value_or_flow) == Flow:
             message = "A flow can not be followed by a flow. There is a flow right after this flow."
+            raise forms.ValidationError(message)
+
+        # check that if a next value exists the date of the value is close to the date of the flow
+        next_values = Value.objects.filter(alternative=alternative, date__gt=date).exclude(
+            pk=self.instance.pk).order_by('date')
+        if (
+                next_values.exists() and next_values.first().date.day != date.day
+        ):
+            message = "The day from the date of the next value needs to be the same as the day from the date of this " \
+                      "flow."
             raise forms.ValidationError(message)
 
         # return the cleaned data

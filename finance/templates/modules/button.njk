@@ -2,10 +2,14 @@
 	<a class="btn btn-sm btn-info {{ classes }}" type="button" data-toggle="modal" data-target="{{ target }}">{{ text }}</a>
 {% endmacro %}
 
-{% macro hrefButton(text, url, classes="") %}
-	<a class="btn btn-sm btn-secondary {{ classes }}" type="button" href="{{ url }}">{{ text }}</a>
+{% macro hrefButton(text, url, classes="", active=False) %}
+	<a class="btn btn-sm btn-secondary {{ classes }} {{ 'active' if active else '' }}" type="button" href="{{ url }}">{{ text }}</a>
 {% endmacro %}
 
 {% macro submitButton(text, classes="") %}
   	<button type="submit" class="btn btn-sm btn-dark {{ classes }}" role="button">{{ text }}</button>
+{% endmacro %}
+
+{% macro navigationButton(text, url, classes="", active=False) %}
+    <a class="btn w-100 text-left {% if active %}btn-secondary active{% else %}btn-link text-white text-decoration-none{% endif %} {{ classes }}" href="{{ url }}">{{ text }}</a>
 {% endmacro %}

@@ -10,8 +10,6 @@ app_name = "alternative"
 
 urlpatterns = [
     # FUNCTIONS
-    # update-movies/
-    url(r"^update-movies", login_required(views.update_movies), name="update_movies"),
     # # reset-movies/
     url(r"^reset-movies", login_required(views.reset_movies), name="reset_movies"),
 
@@ -80,6 +78,6 @@ urlpatterns = [
         name="set_timespan"),
 
     # PAGES
-    path('', login_required(views.IndexView.as_view()), name="index"),
+    path('depot/<int:pk>/', login_required(views.IndexView.as_view()), name="index"),
     path('alternative/<int:pk>/', login_required(views.AlternativeView.as_view()), name="alternative"),
 ]

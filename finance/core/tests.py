@@ -216,15 +216,15 @@ class ReturnCalculationTestCase(TestCase):
         with self.assertRaisesMessage(AssertionError, ''):
             current_return_df = rc.get_current_return_df(self.value_df, self.flow_df)
 
-    def test_time_weighted_return_failing_with_unaware_datetimes(self):
+    def test_time_weighted_return_failing_with_unaware_and_aware_datetimes(self):
         with self.assertRaisesMessage(ValueError, ''):
             rc.get_time_weighted_return_df(self.flow_df, self.unaware_value_df)
 
-    def test_internal_rate_of_return_failing_with_unaware_datetimes(self):
+    def test_internal_rate_of_return_failing_with_unaware_and_aware_datetimes(self):
         with self.assertRaisesMessage(ValueError, ''):
             internal_rate_of_return_df = rc.get_internal_rate_of_return_df(self.flow_df, self.unaware_value_df)
 
-    def test_current_return_failing_with_unaware_datetimes(self):
+    def test_current_return_failing_with_unaware_and_aware_datetimes(self):
         with self.assertRaisesMessage(ValueError, ''):
             current_return_df = rc.get_current_return_df(self.flow_df, self.unaware_value_df)
 
