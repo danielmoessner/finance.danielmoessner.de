@@ -1,19 +1,11 @@
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.views.generic.base import ContextMixin
 from django.views import generic
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 
 from finance.alternative.models import Alternative
 from finance.alternative.models import Depot
-
-
-# mixins
-class TabContextMixin(ContextMixin):
-    def get_context_data(self, **kwargs):
-        context = super(TabContextMixin, self).get_context_data(**kwargs)
-        context['tab'] = self.request.GET.get('tab', 'stats')
-        return context
+from finance.core.views import TabContextMixin
 
 
 # views

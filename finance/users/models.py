@@ -44,6 +44,12 @@ class StandardUser(AbstractUser):
         super(StandardUser, self).save(force_insert, force_update, using, update_fields)
 
     # getters
+    def get_active_banking_depot_pk(self):
+        depots = self.banking_depots.filter(is_active=True)
+        if depots.count() <= 0:
+            return ''
+        return depots.first().pk
+
     def get_active_alternative_depot_pk(self):
         depots = self.alternative_depots.filter(is_active=True)
         if depots.count() <= 0:

@@ -18,7 +18,7 @@
                     <a class="navigation--link {% if activePage=='index' %}navigation--link--is-active{% endif %}" href="index.html">Overview</a>
                 </li> -->
                 <li class="navigation--item">
-                    {{ buttons.navigationButton("Banking", url("banking:index"), active=(activePage=="banking")) }}
+                    {{ buttons.navigationButton("Banking", url("banking:index", args=[request.user.get_active_banking_depot_pk()]), active=(activePage=="banking")) }}
                 </li>
                 <li class="navigation--item">
                     {{ buttons.navigationButton("Crypto", url('crypto:index'), active=(activePage=="crypto")) }}

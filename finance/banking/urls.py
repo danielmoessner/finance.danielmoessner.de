@@ -22,15 +22,14 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 
     # API DATA
-    path("api/index/", views.IndexData.as_view(), name="api_data_index"),
-    path("api/categories/", views.CategoriesData.as_view(), name="api_data_categories"),
-    path("api/categories-month/", views.CategoriesMonthData.as_view(), name="api_data_categories_month"),
-    path("api/account/<slug>/", views.AccountData.as_view(), name="api_data_account"),
-    path("api/category/<slug>/", views.CategoryData.as_view(), name="api_data_category"),
+    # path("api/index/", views.IndexData.as_view(), name="api_data_index"),
+    # path("api/categories/", views.CategoriesData.as_view(), name="api_data_categories"),
+    # path("api/categories-month/", views.CategoriesMonthData.as_view(), name="api_data_categories_month"),
+    # path("api/account/<slug>/", views.AccountData.as_view(), name="api_data_account"),
+    # path("api/category/<slug>/", views.CategoryData.as_view(), name="api_data_category"),
 
     # FUNCTIONS
-    path("update-movies", views.update_movies, name="update_movies"),
-    path("reset-movies", views.reset_movies, name="reset_movies"),
+    path("reset-balances", views.reset_balances, name="reset_balances"),
 
     # depot
     path("depot/add", form_views.AddDepotView.as_view(), name="add_depot"),
@@ -60,7 +59,7 @@ urlpatterns = [
     path("timespan/<pk>/set", form_views.SetActiveTimespanView.as_view(), name="set_timespan"),
 
     # PAGES
-    path("", views.IndexView.as_view(), name="index"),
+    path("depot/<int:pk>/", views.IndexView.as_view(), name="index"),
     path("account/<slug>/", views.AccountView.as_view(), name="account"),
     path("category/<slug>/", views.CategoryView.as_view(), name="category"),
 ]

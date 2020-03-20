@@ -8,6 +8,7 @@ from finance.users.models import StandardUser
 from finance.core.models import Timespan as CoreTimespan
 from finance.core.models import Depot as CoreDepot
 import finance.core.return_calculation as rc
+import finance.core.duplicated_code as dc
 import finance.core.utils as utils
 
 import pandas as pd
@@ -118,14 +119,7 @@ class Alternative(models.Model):
         return movie
 
     def get_latest_picture(self):
-        if self.latest_picture is not None:
-            return self.latest_picture
-        pictures = self.get_movie().pictures.order_by('date')
-        if pictures.count() <= 0:
-            return None
-        self.latest_picture = pictures.last()
-        self.save()
-        return self.latest_picture
+        return dc.get_latest_picture(self)
 
 
 class Value(models.Model):

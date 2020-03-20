@@ -1,5 +1,4 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib import messages
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.views import generic
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
@@ -8,122 +7,93 @@ from finance.banking.models import Category
 from finance.banking.models import Account
 from finance.banking.models import Depot
 from finance.banking.tasks import update_movies_task
-from finance.core.utils import create_paginator
+from finance.core.views import TabContextMixin
 
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from background_task.models import Task
 from rest_framework.views import APIView
 from datetime import timedelta
 from datetime import datetime
 import pandas as pd
-import json
-
-
-# messenger
-def messenger(request, depot):
-    if depot.movies.filter(update_needed=True).exists():
-        hit = False
-        tasks = Task.objects.filter(task_name="finance.banking.tasks.update_movies_task")
-        for task in tasks:
-            depot_pk = json.loads(task.task_params)[0][0]
-            if depot_pk == depot.pk:
-                text = "One update is scheduled. You will be notified as soon as it succeeded."
-                messages.info(request, text)
-                hit = True
-        if not hit:
-            text = "New data is available. Hit the update button so that I can update everything."
-            messages.info(request, text)
-    else:
-        text = "Everything is up to date."
-        messages.success(request, text)
 
 
 # views
-class IndexView(LoginRequiredMixin, generic.TemplateView):
-    template_name = "banking_index.njk"
+class IndexView(UserPassesTestMixin, TabContextMixin, generic.DetailView):
+    template_name = "banking/index.njk"
+    model = Depot
+    permission_denied_message = 'You have no permission to see this depot.'
+
+    def test_func(self):
+        return self.get_object().user == self.request.user
 
     def get_context_data(self, **kwargs):
         # general
         context = super(IndexView, self).get_context_data(**kwargs)
         context["user"] = self.request.user
-        context["depot"] = context["user"].banking_depots.get(is_active=True)
-        context["accounts"] = context["depot"].accounts.order_by("name")
-        context["categories"] = context["depot"].categories.order_by("name")
-        context["timespans"] = context["depot"].timespans.all()
-        context["timespan"] = context["depot"].timespans.filter(is_active=True).first()
+        context["accounts"] = self.object.accounts.order_by("name")
+        context["categories"] = self.object.categories.order_by("name")
+        context["timespans"] = self.object.timespans.all()
+        context["timespan"] = self.object.timespans.filter(is_active=True).first()
         # specific
-        context["movie"] = context["depot"].movies.get(account=None, category=None)
-        context["accounts_movies"] = zip(context["accounts"], context["depot"].movies.filter(
-            account__in=context["accounts"], category=None).order_by("account__name"))
-        context["categories_movies"] = zip(context["categories"], context["depot"].movies.filter(
-            account=None, category__in=context["categories"]).order_by("category__name"))
-        # messages
-        messenger(self.request, context["depot"])
+        context['stats'] = self.object.get_stats()
+        context['accounts'] = self.object.accounts.order_by('name')
+        context['categories'] = self.object.categories.order_by('name')
         # return
         return context
 
 
-class AccountView(LoginRequiredMixin, generic.TemplateView):
-    template_name = "banking_account.njk"
+class AccountView(UserPassesTestMixin, TabContextMixin, generic.DetailView):
+    template_name = "banking/account.njk"
+    model = Account
+
+    def test_func(self):
+        return self.get_object().depot.user == self.request.user
 
     def get_context_data(self, **kwargs):
         # general
         context = super(AccountView, self).get_context_data(**kwargs)
-        context["user"] = self.request.user
-        context["depot"] = context["user"].banking_depots.get(is_active=True)
+        context["depot"] = self.object.depot
         context["accounts"] = context["depot"].accounts.order_by("name")
         context["categories"] = context["depot"].categories.order_by("name")
         context["timespans"] = context["depot"].timespans.all()
         context["timespan"] = context["depot"].timespans.filter(is_active=True).first()
         # specific
-        context["account"] = context["depot"].accounts.get(slug=kwargs["slug"])
-        context["movie"] = context["depot"].movies.get(account=context["account"], category=None)
-        changes = context["account"].changes.order_by("-date", "-pk").select_related("category")
-        context["changes"], success = create_paginator(self.request.GET.get("changes-page"), changes, 10)
-        context["console"] = "changes" if success else "console-main"
-        # messages
-        messenger(self.request, context["depot"])
+        context["account"] = self.object
+        context["stats"] = self.object.get_stats()
+        context["changes"] = self.object.changes.order_by("-date", "-pk").select_related("category")
         # return
         return context
 
 
-class CategoryView(LoginRequiredMixin, generic.TemplateView):
-    template_name = "banking_category.njk"
+class CategoryView(UserPassesTestMixin, TabContextMixin, generic.DetailView):
+    template_name = "banking/category.njk"
+    model = Category
+
+    def test_func(self):
+        return self.get_object().depot.user == self.request.user
 
     def get_context_data(self, **kwargs):
         # general
         context = super(CategoryView, self).get_context_data(**kwargs)
-        context["user"] = self.request.user
-        context["depot"] = context["user"].banking_depots.get(is_active=True)
+        context["depot"] = self.object.depot
         context["accounts"] = context["depot"].accounts.order_by("name")
         context["categories"] = context["depot"].categories.order_by("name")
         context["timespans"] = context["depot"].timespans.all()
         context["timespan"] = context["depot"].timespans.filter(is_active=True).first()
         # specific
-        context["category"] = context["depot"].categories.get(slug=kwargs["slug"])
-        context["movie"] = context["depot"].movies.get(account=None, category=context["category"])
-        changes = context["category"].changes.order_by("-date", "-pk").select_related("account")
-        context["changes"], success = create_paginator(self.request.GET.get("changes-page"), changes, 10)
-        context["console"] = "changes" if success else "console-main"
-        # messages
-        messenger(self.request, context["depot"])
+        context["category"] = self.object
+        context['stats'] = self.object.get_stats()
+        context["changes"] = self.object.changes.order_by("-date", "-pk").select_related("account")
         # return
         return context
 
 
 # functions
-def update_movies(request):
-    depot_pk = request.user.banking_depots.get(is_active=True).pk
-    update_movies_task(depot_pk)
-    return HttpResponseRedirect(reverse_lazy("banking:index"))
-
-
-def reset_movies(request):
+def reset_balances(request):
     depot = request.user.banking_depots.get(is_active=True)
-    depot.reset_movies(delete=True)
-    return HttpResponseRedirect(reverse_lazy("banking:index"))
+    depot.set_balances_to_none()
+    return HttpResponseRedirect(reverse_lazy("banking:index", args=[depot.pk]))
 
 
 # API

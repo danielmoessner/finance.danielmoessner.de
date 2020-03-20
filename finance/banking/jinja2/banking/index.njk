@@ -1,0 +1,165 @@
+{% extends "layout/lm.njk" %}
+
+
+{% set activePage="banking" %}
+{% set headingCategory="Dashboard" %}
+{% set headingHeading="Banking" %}
+{% set title="Banking" %}
+
+
+{#{% block head %}#}
+{#    {{ super() }}#}
+{#    <script src="{{ static('js/line_chart.js') }}" api-data="{{ url('banking:api_data_index') }}"></script>#}
+{#    <script src="{{ static('js/stacked_bar_chart.js') }}"#}
+{#            api-data="{{ url('banking:api_data_categories_month') }}"></script>#}
+{#{% endblock %}#}
+
+
+{#{% block chart %}#}
+{#    <div class="vs-3"></div>#}
+{#    <canvas class="console--target console--is-hidden" id="line_chart"></canvas>#}
+{#    <canvas class="console--target" id="stacked_bar_chart"></canvas>#}
+{#    <div class="vs-3"></div>#}
+{#    <hr class="hr">#}
+{#{% endblock %}#}
+
+{% block main %}
+
+{% import "modules/table.njk" as tg %}
+{% import "modules/button.njk" as bg %}
+{% import "modules/card.njk" as cg %}
+{% import "modules/timespan.njk" as tsg %}
+{% import "modules/modal.njk" as mg %}
+{% import "modules/console.njk" as cog %}
+
+<div class="d-flex justify-content-center mt-2 mb-5">
+    <div class="btn-group" role="group" aria-label="Console">
+        {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
+        {{ bg.hrefButton("Accounts", request.path + '?tab=accounts', active=(tab=='accounts')) }}
+        {{ bg.hrefButton("Categories", request.path + '?tab=categories', active=(tab=='categories')) }}
+        {{ bg.hrefButton("Timespans", request.path + '?tab=timespans', active=(tab=='timespans')) }}
+    </div>
+</div>
+
+<div class="d-flex justify-content-end mb-3">
+    {{ bg.hrefButton("Reset Balances", url("banking:reset_balances")) }}
+</div>
+
+{% include 'symbols/stats.j2' %}
+
+{% if tab=='accounts' %}
+    <table class="table rounded table-responsive-md table-dark">
+        <thead>
+        <tr>
+            <th class="border-0" scope="col">Account</th>
+            <th class="border-0" scope="col">Balance</th>
+            <th class="border-0" scope="col">Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for account in accounts %}
+            <tr>
+                <td>{{ account.name }}</td>
+                <td>{{ account.get_stats()['Balance'] }}</td>
+                <td>
+                    <div class="d-flex">
+                        {{ mg.djangoModal("Deposit / Withdraw", "addChange"+account.slug, url("banking:add_change", args=[account.slug])) }}
+                        {{ bg.modalButton("Deposit / Withdraw", "#addChange"+account.slug) }}
+                        {{ mg.djangoModal("Edit Account", "editAccount"+account.slug, url("banking:edit_account", args=[account.slug])) }}
+                        {{ bg.modalButton("Edit", "#editAccount"+account.slug) }}
+                        {{ bg.hrefButton("Open", url("banking:account", args=[account.slug])) }}
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="3">
+                <div class="d-flex">
+                    {{ mg.djangoModal("Add Account", "addAccount", url("banking:add_account")) }}
+                    {{ bg.modalButton("Add Account", "#addAccount") }}
+                    {{ mg.djangoModal("Delete Account", "deleteAccount", url("banking:delete_account")) }}
+                    {{ bg.modalButton("Delete Account", "#deleteAccount") }}
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+{% endif %}
+
+{% if tab=='categories' %}
+    <table class="table rounded table-responsive-md table-dark">
+        <thead>
+        <tr>
+            <th class="border-0" scope="col">Category</th>
+            <th class="border-0" scope="col">Change</th>
+            <th class="border-0" scope="col">Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for category in categories %}
+            <tr>
+                <td>{{ category.name }}</td>
+                <td>{{ category.get_stats()['Change'] }}</td>
+                <td>
+                    <div class="d-flex">
+                        {{ bg.modalButton("Edit", "#editCategory"+category.slug) }}
+                        {{ mg.djangoModal("Edit Category", "editCategory"+category.slug, url("banking:edit_category", args=[category.slug])) }}
+                        {{ bg.hrefButton("Open", url("banking:category", args=[category.slug])) }}
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="3">
+                <div class="d-flex">
+                    {{ mg.djangoModal("Add Category", "addCategory", url("banking:add_category")) }}
+                    {{ bg.modalButton("Add Category", "#addCategory") }}
+                    {{ mg.djangoModal("Delete Category", "deleteCategory", url("banking:delete_category")) }}
+                    {{ bg.modalButton("Delete Category", "#deleteCategory") }}
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+{% endif %}
+
+{% if tab=='timespans' %}
+<table class="table table-responsive-md table-dark">
+    <thead>
+    <tr>
+        <th class="border-0" scope="col">Name</th>
+        <th class="border-0" scope="col">Start Date</th>
+        <th class="border-0" scope="col">End Date</th>
+        <th class="border-0" scope="col">Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for timespan in timespans %}
+    {% set tablebuttons %}
+    {% endset %}
+    <tr>
+        <td>{{ timespan.name }}</td>
+        <td>{{ timespan.get_start_date() }}</td>
+        <td>{{ timespan.get_end_date() }}</td>
+        <td>
+            <div class="d-flex">
+                Set Active
+                {{ mg.djangoModal("Delete", "deleteTimespan"+timespan.pk|string, url("banking:delete_timespan", args=[timespan.pk])) }}
+                {{ bg.modalButton("Delete", "#deleteTimespan"+timespan.pk|string) }}
+            </div>
+        </td>
+    </tr>
+    {% endfor %}
+    <tr>
+        <td colspan="4">
+            <div class="d-flex">
+                {{ mg.djangoModal("Add Timespan", "addTimespan", url("banking:add_timespan")) }}
+                {{ bg.modalButton("Add Timespan", "#addTimespan") }}
+            </div>
+        </td>
+    </tr>
+    </tbody>
+</table>
+{% endif %}
+
+{% endblock %}

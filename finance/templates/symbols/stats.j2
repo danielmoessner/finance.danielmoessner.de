@@ -1,0 +1,14 @@
+{% if tab == 'stats' %}
+    <div class="row">
+        {% for key, value in stats.items() %}
+            <div class="col-3">
+                <div class="card text-white bg-dark">
+                    <div class="card-body">
+                        <div class="card-title h5">{{ key }}</div>
+                        <p class="card-text">{{ value }}</p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}

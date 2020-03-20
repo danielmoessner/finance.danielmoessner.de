@@ -1,4 +1,4 @@
-from django.views.generic.edit import FormMixin
+from django.views.generic.base import ContextMixin
 from django.template.loader import render_to_string
 from finance.core.forms import DeleteForm
 from django.utils.html import strip_tags
@@ -9,7 +9,6 @@ from django.contrib import messages
 from django.views import generic
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
-from django.urls import reverse_lazy
 
 import json
 import re
@@ -18,6 +17,13 @@ from finance.core.models import Page
 
 
 # mixins
+class TabContextMixin(ContextMixin):
+    def get_context_data(self, **kwargs):
+        context = super(TabContextMixin, self).get_context_data(**kwargs)
+        context['tab'] = self.request.GET.get('tab', 'stats')
+        return context
+
+
 class CustomAjaxDeleteMixin(object):
     def delete(self, request, *args, **kwargs):
         object = self.get_object()

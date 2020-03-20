@@ -69,4 +69,4 @@ class ChangeViewSet(viewsets.ModelViewSet):
     queryset = Change.objects.none()
 
     def get_queryset(self):
-        return Change.get_objects(self.request.user)
+        return Change.get_objects_by_user(self.request.user)
