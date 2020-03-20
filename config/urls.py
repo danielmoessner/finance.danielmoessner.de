@@ -23,18 +23,18 @@ from django.urls import path
 
 urlpatterns = [
     path('', lambda request: redirect('core/', permanent=False)),
-    path('user/', include('finance.users.urls')),
-    path('banking/', include('finance.banking.urls')),
-    path('crypto/', include('finance.crypto.urls')),
-    path('alternative/', include('finance.alternative.urls')),
-    path('core/', include('finance.core.urls')),
+    path('user/', include('apps.users.urls')),
+    path('banking/', include('apps.banking.urls')),
+    path('crypto/', include('apps.crypto.urls')),
+    path('alternative/', include('apps.alternative.urls')),
+    path('core/', include('apps.core.urls')),
 ]
 
 
-handler400 = "finance.core.views.error_400_view"
-handler403 = "finance.core.views.error_403_view"
-handler404 = "finance.core.views.error_404_view"
-handler500 = "finance.core.views.error_500_view"
+handler400 = "apps.core.views.error_400_view"
+handler403 = "apps.core.views.error_403_view"
+handler404 = "apps.core.views.error_404_view"
+handler500 = "apps.core.views.error_500_view"
 
 
 if settings.DEBUG:

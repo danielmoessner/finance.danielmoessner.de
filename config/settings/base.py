@@ -16,12 +16,13 @@ from django.core.exceptions import ImproperlyConfigured
 
 # Paths
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-APPS_DIR = os.path.join(BASE_DIR, 'finance')
+PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+BASE_DIR = os.path.join(PROJECT_DIR, 'finance')
+
 
 # Secret settings
 
-with open(os.path.join(os.path.dirname(BASE_DIR), 'financesecrets.json')) as f:
+with open(os.path.join(PROJECT_DIR, 'secrets.json')) as f:
     secrets_json = json.loads(f.read())
 
 
@@ -46,11 +47,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'background_task',
-    'finance.core.apps.CoreConfig',
-    'finance.users.apps.UsersConfig',
-    'finance.banking.apps.BankingConfig',
-    'finance.crypto.apps.CryptoConfig',
-    'finance.alternative.apps.AlternativeConfig',
+    'apps.core.apps.CoreConfig',
+    'apps.users.apps.UsersConfig',
+    'apps.banking.apps.BankingConfig',
+    'apps.crypto.apps.CryptoConfig',
+    'apps.alternative.apps.AlternativeConfig',
 ]
 
 MIDDLEWARE = [
@@ -69,7 +70,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.jinja2.Jinja2',
         'DIRS': [
-            os.path.join(APPS_DIR, 'templates'),
+            os.path.join(BASE_DIR, 'templates'),
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -146,14 +147,14 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    os.path.join(APPS_DIR, 'files/app'),
+    os.path.join(BASE_DIR, 'static/app'),
 ]
 
-STATIC_ROOT = os.path.join(APPS_DIR, 'static')
+STATIC_ROOT = os.path.join(PROJECT_DIR, 'static')
 
 MEDIA_URL = '/media/'
 
-MEDIA_ROOT = os.path.join(APPS_DIR, 'media')
+MEDIA_ROOT = os.path.join(PROJECT_DIR, 'media')
 
 # E-Mail
 
