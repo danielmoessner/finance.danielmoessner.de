@@ -170,22 +170,10 @@ class Change(models.Model):
     # query optimization
     balance = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
 
-    # for checks on save
-    # __account = None
-    # __category = None
-    # __date = None
-    # __change = None
-
     def __init__(self, *args, **kwargs):
         super(Change, self).__init__(*args, **kwargs)
-        # self.__date = self.date
-        # self.__category = self.category
-        # self.__account = self.account
-        # self.__change = self.change
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        something_changed = False
-
         if self.pk:
             change = Change.objects.get(pk=self.pk)
 
@@ -193,13 +181,10 @@ class Change(models.Model):
                     change.account != self.account or change.category != self.category or
                     change.date != self.date or change.change != self.change
             ):
-                something_changed = True
                 change.set_balances_of_affected_objects_to_null()
 
         super().save(force_insert, force_update, using, update_fields)
-
-        if something_changed:
-            self.set_balances_of_affected_objects_to_null()
+        self.set_balances_of_affected_objects_to_null()
 
     # getters
     @staticmethod

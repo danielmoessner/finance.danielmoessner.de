@@ -1,10 +1,39 @@
 from rest_framework.test import APIClient
+from django.utils import timezone
 from django.urls import reverse_lazy
 from django.test import TestCase
 from django.test import Client
 
-from apps.users.models import StandardUser as User
 from apps.banking.models import Depot, Category, Account
+from apps.banking.forms import ChangeForm, AccountForm, DepotForm, CategoryForm
+from apps.users.models import StandardUser as User
+
+from datetime import timedelta
+
+
+def create_account(depot, name=None):
+    form = AccountForm(depot, {'name': name})
+    assert form.is_valid()
+    return form.save()
+
+
+def create_category(depot, name=None, description=''):
+    form = CategoryForm(depot, {'name': name, 'description': description})
+    assert form.is_valid()
+    return form.save()
+
+
+def create_depot(user, name=None):
+    form = DepotForm(user, {'name': name})
+    assert form.is_valid()
+    return form.save()
+
+
+def create_change(depot, account=None, category=None, date=None, change=10, description=''):
+    form = ChangeForm(depot, {'account': account,
+                              'category': category, 'date': date, 'change': change, 'description': description})
+    assert form.is_valid()
+    return form.save()
 
 
 class ViewsTestCase(TestCase):
@@ -36,6 +65,44 @@ class ViewsTestCase(TestCase):
         category = self.user.banking_depots.get(is_active=True).categories.first()
         response = self.client.get(reverse_lazy("banking:category", args=[category.slug]))
         self.assertEqual(response.status_code, 200)
+
+
+class BalanceUpdateTestCase(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="dummy")
+        self.user.set_password("test")
+        self.user.save()
+        self.depot_pk = create_depot(self.user, 'Depot').pk
+        self.account_pk = create_account(self.get_depot(), 'Account').pk
+        self.category_pk = create_category(self.get_depot(), 'Category').pk
+
+    def get_account(self):
+        return Account.objects.get(pk=self.account_pk)
+
+    def get_category(self):
+        return Category.objects.get(pk=self.category_pk)
+
+    def get_depot(self):
+        return Depot.objects.get(pk=self.depot_pk)
+
+    def test_balance_is_set_and_reset_properly_after_added_changes(self):
+        days_ago_20 = timezone.now() - timedelta(days=20)
+        change = create_change(self.get_depot(), account=self.get_account(), category=self.get_category(),
+                               date=days_ago_20)
+        # test that stats are being set properly
+        self.get_account().get_stats()
+        assert self.get_account().balance is not None
+        self.get_depot().get_stats()
+        assert self.get_depot().balance is not None
+        self.get_category().get_stats()
+        assert self.get_category().balance is not None
+        # test that balances are reset properly after a change is added
+        days_ago_10 = timezone.now() - timedelta(days=10)
+        change = create_change(self.get_depot(), account=self.get_account(), category=self.get_category(),
+                               date=days_ago_10)
+        assert self.get_account().balance is None
+        assert self.get_category().balance is None
+        assert self.get_depot().balance is None
 
 
 class APITestCase(TestCase):
