@@ -1,0 +1,26 @@
+<h2>Balance</h2>
+<canvas id="balanceChart" width="400" height="400"></canvas>
+<script>
+    let balanceChartContext = document.getElementById('balanceChart').getContext('2d');
+    fetch("{{ url('banking:api_depot_line_chart', args=[object.pk]) }}")
+        .then((response) => {
+            return response.json();
+        })
+        .then((data) => {
+            new Chart(balanceChartContext, {
+                type: 'line',
+                data: data,
+                options: {
+                    scales: {
+                        xAxes: [{
+                            type: 'time',
+                            distribution: 'linear',
+                            time: {
+                                parser: 'GGGG-WW',
+                            }
+                        }]
+                    }
+                }
+            });
+        });
+</script>

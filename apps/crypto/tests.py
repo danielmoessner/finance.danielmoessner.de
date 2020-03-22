@@ -1,4 +1,4 @@
-from django.core.urlresolvers import reverse
+from django.urls import reverse_lazy
 from django.test import TestCase
 from django.test import Client
 
@@ -22,7 +22,7 @@ class ViewsTestCase(TestCase):
         client = Client()
         client.login(username="Dummy", password="test")
         user = StandardUser.objects.get(username="Dummy")
-        response = client.get(reverse("crypto:index"))
+        response = client.get(reverse_lazy("crypto:index"))
         self.assertEqual(response.status_code, 200)
 
     def test_account_view(self):
@@ -30,7 +30,7 @@ class ViewsTestCase(TestCase):
         client.login(username="Dummy", password="test")
         user = StandardUser.objects.get(username="Dummy")
         account = user.crypto_depots.get(is_active=True).accounts.first()
-        response = client.get(reverse("crypto:account", args=[account.slug]))
+        response = client.get(reverse_lazy("crypto:account", args=[account.slug]))
         self.assertEqual(response.status_code, 200)
 
     def test_asset_view(self):
@@ -38,5 +38,5 @@ class ViewsTestCase(TestCase):
         client.login(username="Dummy", password="test")
         user = StandardUser.objects.get(username="Dummy")
         asset = user.crypto_depots.get(is_active=True).assets.first()
-        response = client.get(reverse("crypto:asset", args=[asset.slug]))
+        response = client.get(reverse_lazy("crypto:asset", args=[asset.slug]))
         self.assertEqual(response.status_code, 200)

@@ -1,17 +1,13 @@
-from django.db.models.signals import pre_delete, pre_save, post_save
-from django.core.exceptions import ObjectDoesNotExist
+from django.db import connection
 from django.db import models
 
 from apps.users.models import StandardUser
 from apps.core.models import Timespan as CoreTimespan
 from apps.core.models import Account as CoreAccount
 from apps.core.models import Depot as CoreDepot
+from apps.core.utils import turn_dict_of_dicts_into_list_of_dicts
 import apps.banking.duplicated_code as banking_duplicated_code
 import apps.core.duplicated_code as dc
-
-import pandas as pd
-import numpy as np
-import time
 
 
 class Depot(CoreDepot):
@@ -21,6 +17,46 @@ class Depot(CoreDepot):
     balance = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
 
     # getters
+    def get_date_name_value_chart_data(self, statement):
+        cursor = connection.cursor()
+        assert str(self.pk) in statement
+        cursor.execute(statement)
+        data = {}
+        for (date, name, value) in cursor.fetchall():
+            if date not in data:
+                data[date] = {}
+            data[date][name] = value
+        data = turn_dict_of_dicts_into_list_of_dicts(data, 'date')
+        return data
+
+    def get_income_and_expenditure_data(self):
+        statement = ("select "
+                     "strftime('%Y-%m', banking_change.date) as date, "
+                     "banking_category.name ,"
+                     "round(sum(banking_change.change)) as change "
+                     "from banking_change "
+                     "join banking_category on banking_category.id = banking_change.category_id "
+                     "where banking_category.depot_id = {} "
+                     "group by banking_category.name, strftime('%Y-%m', banking_change.date) "
+                     "order by date"
+                     ).format(self.pk)
+        data = self.get_date_name_value_chart_data(statement)
+        return data
+
+    def get_balance_data(self):
+        statement = ("select "
+                     "strftime('%Y-%W', banking_change.date) as date, "
+                     "banking_account.name as name, "
+                     "round(avg(banking_change.balance)) as balance "
+                     "from banking_change "
+                     "join banking_account on banking_account.id = banking_change.account_id "
+                     "where depot_id={} "
+                     "group by strftime('%Y-%W', banking_change.date), banking_account.name "
+                     "order by date"
+                     ).format(self.pk)
+        data = self.get_date_name_value_chart_data(statement)
+        return data
+
     def get_balance(self):
         if self.balance is None:
             changes = Change.objects.filter(account__in=self.accounts.all(), category__in=self.categories.all())
@@ -40,12 +76,6 @@ class Depot(CoreDepot):
         return {
             'Balance': balance
         }
-
-    def get_movie(self):
-        movie, created = Movie.objects.get_or_create(depot=self, account=None, category=None)
-        if movie.update_needed:
-            movie.update()
-        return movie
 
     # setters
     def set_balances_to_none(self):
@@ -76,12 +106,6 @@ class Account(CoreAccount):
             'Balance': balance
         }
 
-    def get_movie(self):
-        movie, created = Movie.objects.get_or_create(depot=self.depot, account=self, category=None)
-        if movie.update_needed:
-            movie.update()
-        return movie
-
     def get_latest_picture(self):
         return dc.get_latest_picture(self)
 
@@ -92,12 +116,6 @@ class Account(CoreAccount):
     @staticmethod
     def get_objects_by_depot(depot):
         return Account.objects.filter(depot=depot)
-
-    def get_cat_movie(self, category):
-        movie, created = Movie.objects.get_or_create(depot=self.depot, account=self, category=category)
-        if movie.update_needed:
-            movie.update()
-        return movie
 
 
 class Category(models.Model):
@@ -127,12 +145,6 @@ class Category(models.Model):
             'Change': balance
         }
 
-    def get_movie(self):
-        movie, created = Movie.objects.get_or_create(depot=self.depot, account=None, category=self)
-        if movie.update_needed:
-            movie.update()
-        return movie
-
     @staticmethod
     def get_objects_by_user(user):
         return Category.objects.filter(depot__in=Depot.objects.filter(user=user))
@@ -157,6 +169,7 @@ class Change(models.Model):
     change = models.DecimalField(decimal_places=2, max_digits=15)
     # query optimization
     balance = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+
     # for checks on save
     # __account = None
     # __category = None
@@ -229,205 +242,3 @@ class Change(models.Model):
 
 class Timespan(CoreTimespan):
     depot = models.ForeignKey(Depot, editable=False, related_name="timespans", on_delete=models.CASCADE)
-
-
-class Movie(models.Model):
-    update_needed = models.BooleanField(default=True)
-    depot = models.ForeignKey(Depot, blank=True, null=True, on_delete=models.CASCADE, related_name="movies")
-    account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.CASCADE, related_name="movies")
-    category = models.ForeignKey(Category, blank=True, null=True, related_name="movies", on_delete=models.CASCADE)
-
-    class Meta:
-        unique_together = ("depot", "account", "category")
-
-    def __init__(self, *args, **kwargs):
-        super(Movie, self).__init__(*args, **kwargs)
-        self.data = None
-        self.timespan_data = None
-
-    def __str__(self):
-        text = "{} {} {}".format(self.depot, self.account, self.category)
-        return text.replace("None ", "").replace(" None", "")
-
-    # getters
-    def get_df(self, timespan=None):
-        if timespan and timespan.start_date and timespan.end_date:
-            pictures = self.pictures.filter(d__gte=timespan.start_date,
-                                            d__lte=timespan.end_date).values("date", "c", "b")
-        else:
-            pictures = self.pictures.values("date", "c", "b")
-        pictures = pictures.order_by("date")
-        df = pd.DataFrame(list(pictures))
-        if df.empty:
-            df = pd.DataFrame(columns=["date", "c", "b"])
-        return df
-
-    def get_data(self, timespan=None):
-        if timespan and timespan.start_date and timespan.end_date:
-            pictures = self.pictures.filter(d__gte=timespan.start_date,
-                                            d__lte=timespan.end_date)
-        else:
-            pictures = Picture.objects.filter(movie=self)
-        pictures = pictures.order_by("d")
-        data = dict()
-        data["date"] = (pictures.values_list("ddate", flat=True))
-        data["b"] = (pictures.values_list("b", flat=True))
-        data["c"] = (pictures.values_list("c", flat=True))
-        return data
-
-    def get_values(self, user, keys, timespan=None):
-        # user in args for query optimization and ease
-        data = dict()
-        start_picture = None
-        end_picture = None
-        if timespan and timespan.start_date:
-            data["start_date"] = timespan.start_date.strftime(user.date_format)
-            try:
-                start_picture = self.pictures.filter(d__lt=timespan.start_date).order_by(
-                    "date", "pk").last()
-            except ObjectDoesNotExist:
-                pass
-        if timespan and timespan.end_date:
-            data["end_date"] = timespan.end_date.strftime(user.date_format)
-            try:
-                end_picture = self.pictures.filter(d__lte=timespan.end_date).order_by(
-                    "date", "pk").last()
-            except ObjectDoesNotExist:
-                pass
-        else:
-            try:
-                end_picture = self.pictures.order_by("date", "pk").last()
-            except ObjectDoesNotExist:
-                pass
-
-        for key in keys:
-            if start_picture and end_picture:
-                data[key] = getattr(end_picture, key) - getattr(start_picture, key)
-            elif end_picture:
-                data[key] = getattr(end_picture, key)
-            else:
-                data[key] = "x"
-
-            if data[key] == "x" or data[key] is None:
-                pass
-            else:
-                data[key] = "{} {}".format(round(data[key], 2), user.get_currency_display())
-
-        return data
-
-    # update
-    @staticmethod
-    def init_movies(sender, instance, **kwargs):
-        if sender is Account:
-            depot = instance.depot
-            for category in depot.categories.all():
-                Movie.objects.get_or_create(depot=depot, account=instance, category=category)
-            Movie.objects.get_or_create(depot=depot, account=instance, category=None)
-        elif sender is Category:
-            depot = instance.depot
-            Movie.objects.get_or_create(depot=depot, account=None, category=instance)
-        elif sender is Depot:
-            depot = instance
-            Movie.objects.get_or_create(depot=depot, account=None, category=None)
-
-    @staticmethod
-    def init_update(sender, instance, **kwargs):
-        if sender is Change:
-            depot = instance.account.depot
-            q1 = models.Q(depot=depot, account=None, category=None)
-            q2 = models.Q(depot=depot, account=instance.account, category=None)
-            q3 = models.Q(depot=depot, account=None, category=instance.category)
-            q4 = models.Q(depot=depot, account=instance.account, category=instance.category)
-            movies = Movie.objects.filter(q1 | q2 | q3 | q4)
-            date = instance.date
-            pictures = Picture.objects.filter(change=instance)
-            if instance.pk and pictures.exists():
-                date = min(instance.date, pictures.first().date)
-            Picture.objects.filter(movie__in=movies, d__gte=date).delete()
-            movies.update(update_needed=True)
-
-    def update(self):
-        t2 = time.time()
-        df = self.calc()
-
-        t3 = time.time()
-        pictures = list()
-        for index, row in df.iterrows():
-            picture = Picture(
-                movie=self,
-                d=index,
-                c=row["c"],
-                b=row["b"],
-                change=Change.objects.get(pk=row["change_id"]),
-            )
-            pictures.append(picture)
-        Picture.objects.bulk_create(pictures)
-
-        t4 = time.time()
-        text = "{} is up to date. --Calc Time: {}% --Save Time: {}%".format(
-            self, round((t3 - t2) / (t4 - t2), 2), round((t4 - t3) / (t4 - t2), 2), "%")
-
-        self.update_needed = False
-        self.save()
-
-    # calc helpers
-    @staticmethod
-    def fadd(df, column):
-        """
-        fadd: Sums up the column from the back to the front.
-        """
-        for i in range(1, len(df[column])):
-            df.loc[df.index[i], column] = df[column][i - 1] + df[column][i]
-
-    # calc
-    def calc(self):
-        df = pd.DataFrame()
-
-        try:
-            latest_picture = self.pictures.order_by("-date", "-pk")[0]  # change to latest django 1.20
-            q = models.Q(date__gte=latest_picture.d)
-        except IndexError:  # Picture.DoesNotExist: change back to that on django 1.20
-            latest_picture = None
-            q = models.Q()
-
-        if self.account and self.category:
-            changes = Change.objects.filter(
-                models.Q(account=self.account, category=self.category) & q
-            ).exclude(pk__in=self.pictures.values_list("change", flat=True)).order_by("date", "pk")
-        elif self.account:
-            changes = Change.objects.filter(
-                models.Q(account=self.account) & q
-            ).exclude(pk__in=self.pictures.values_list("change", flat=True)).order_by("date", "pk")
-        elif self.category:
-            changes = Change.objects.filter(
-                models.Q(category=self.category) & q
-            ).exclude(pk__in=self.pictures.values_list("change", flat=True)).order_by("date", "pk")
-        elif self.depot:
-            changes = Change.objects.filter(
-                models.Q(account__in=self.depot.accounts.all()) & q
-            ).exclude(pk__in=self.pictures.values_list("change", flat=True)).order_by("date", "pk")
-        else:
-            raise Exception("Why is no depot, account or category defined?")
-
-        df["date"] = [change.date for change in changes]
-        df["c"] = [change.change for change in changes]
-        df["b"] = [change.change for change in changes]
-        Movie.fadd(df, "b")
-        if latest_picture:
-            df["b"] += latest_picture.b
-        df["change_id"] = [change.pk for change in changes]
-        df.set_index("date", inplace=True)
-        for column in df.drop(["change_id"], 1):
-            df[column] = df[column].astype(np.float64)
-
-        return df
-
-
-class Picture(models.Model):
-    movie = models.ForeignKey(Movie, related_name="pictures", on_delete=models.CASCADE)
-    date = models.DateTimeField()
-    b = models.DecimalField(max_digits=15, decimal_places=2)
-    c = models.DecimalField(max_digits=15, decimal_places=2)
-    change = models.ForeignKey(Change, on_delete=models.CASCADE, blank=True, null=True,
-                               related_name="pictures")
-    prev = models.ForeignKey("self", on_delete=models.CASCADE, blank=True, null=True)

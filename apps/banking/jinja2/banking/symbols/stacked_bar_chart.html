@@ -1,0 +1,42 @@
+<h2>Income & Expenditure</h2>
+
+<div class="w-100 rounded bg-light mb-5" id="incomeAndExpenditureChart" style="height: 600px;"></div>
+
+<script>
+    am4core.ready(function () {
+
+        // use a theme
+        am4core.useTheme(am4themes_animated);
+
+        // create the chart and set default settings
+        const chart = am4core.create("incomeAndExpenditureChart", am4charts.XYChart);
+        chart.dateFormatter.dateFormat = "MMM YYYY";
+        chart.dateFormatter.inputDateFormat = "YYYY-MM";
+
+        // add data
+        chart.dataSource.url = "{{ url('banking:api_depot_income_and_expenditure_data', args=[object.pk]) }}";
+
+        // create axes
+        const dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+        const valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+
+        // create series
+        function createSeries(name) {
+            const series = chart.series.push(new am4charts.ColumnSeries());
+            series.name = name;
+            series.dataFields.valueY = name;
+            series.dataFields.dateX = "date";
+            series.stacked = true;
+            series.columns.template.tooltipText = "{dateX}\n{name}\n{valueY}";
+        }
+        {% for category in categories %}
+            createSeries("{{ category.name }}");
+        {% endfor %}
+
+        // legend
+        chart.legend = new am4charts.Legend();
+        chart.scrollbarX = new am4core.Scrollbar();
+
+    });
+</script>
+

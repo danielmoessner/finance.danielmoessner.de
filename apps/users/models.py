@@ -47,13 +47,13 @@ class StandardUser(AbstractUser):
     def get_active_banking_depot_pk(self):
         depots = self.banking_depots.filter(is_active=True)
         if depots.count() <= 0:
-            return ''
+            return 0
         return depots.first().pk
 
     def get_active_alternative_depot_pk(self):
         depots = self.alternative_depots.filter(is_active=True)
         if depots.count() <= 0:
-            return ''
+            return 0
         return depots.first().pk
 
     # setters
@@ -74,7 +74,7 @@ class StandardUser(AbstractUser):
 
     # create
     def create_random_banking_data(self):
-        from apps.banking.models import Account, Category, Depot, Change, Timespan, Movie, Picture
+        from apps.banking.models import Account, Category, Depot, Change, Timespan
         depot = Depot.objects.create(name="Random Depot", user=self)
         self.set_banking_depot_active(depot)
         # account
@@ -115,8 +115,6 @@ class StandardUser(AbstractUser):
         Change.objects.bulk_create(changes)
         # timespan
         Timespan.objects.create(depot=depot, name="Default Timespan", start_date=None, end_date=None, is_active=True)
-        # movies
-        depot.reset_movies()
 
     def create_random_alternative_data(self):
         from apps.alternative.models import Depot, Alternative, Value, Flow

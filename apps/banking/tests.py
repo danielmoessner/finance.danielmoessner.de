@@ -1,5 +1,5 @@
 from rest_framework.test import APIClient
-from django.shortcuts import reverse
+from django.urls import reverse_lazy
 from django.test import TestCase
 from django.test import Client
 
@@ -18,7 +18,7 @@ class ViewsTestCase(TestCase):
         self.client = Client()
         self.client.login(username="dummy", password="test")
         self.user = User.objects.get(username="dummy")
-        response = self.client.get(reverse("banking:index"))
+        response = self.client.get(reverse_lazy("banking:index", args=[1]))
         self.assertEqual(response.status_code, 200)
 
     def test_account_view(self):
@@ -26,7 +26,7 @@ class ViewsTestCase(TestCase):
         self.client.login(username="dummy", password="test")
         self.user = User.objects.get(username="dummy")
         account = self.user.banking_depots.get(is_active=True).accounts.first()
-        response = self.client.get(reverse("banking:account", args=[account.slug]))
+        response = self.client.get(reverse_lazy("banking:account", args=[account.slug]))
         self.assertEqual(response.status_code, 200)
 
     def test_category_view(self):
@@ -34,7 +34,7 @@ class ViewsTestCase(TestCase):
         self.client.login(username="dummy", password="test")
         self.user = User.objects.get(username="dummy")
         category = self.user.banking_depots.get(is_active=True).categories.first()
-        response = self.client.get(reverse("banking:category", args=[category.slug]))
+        response = self.client.get(reverse_lazy("banking:category", args=[category.slug]))
         self.assertEqual(response.status_code, 200)
 
 
@@ -44,14 +44,12 @@ class APITestCase(TestCase):
         self.user.set_password("test")
         self.user.save()
         self.user.create_random_banking_data()
-        self.user = self.user
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
 
     def test_api_access_not_allowed_if_not_logged_in(self):
         self.client.force_authenticate()
         urls = [
-            '/banking/api/',
             '/banking/api/categories/',
             '/banking/api/accounts/',
             '/banking/api/changes/',

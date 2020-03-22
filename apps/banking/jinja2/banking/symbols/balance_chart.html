@@ -1,0 +1,80 @@
+<h2>Balance</h2>
+
+<div class="w-100 rounded bg-light mb-5" id="balanceChart" style="height: 600px;"></div>
+
+<script>
+    am4core.ready(function () {
+
+        // use a theme
+        am4core.useTheme(am4themes_animated);
+        {#am4core.useTheme(am4themes_material);#}
+
+        // create the chart and set default settings
+        const chart = am4core.create("balanceChart", am4charts.XYChart);
+        chart.dateFormatter.inputDateFormat = 'yyyy-ww';
+        chart.dateFormatter.dateFormat = "Week: ww YYYY";
+
+
+        // add data
+        chart.dataSource.url = "{{ url('banking:api_depot_balance_data', args=[object.pk]) }}";
+
+        // create axes
+        const dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+        const valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+
+        // create series
+        function createSeries(name) {
+            const series = chart.series.push(new am4charts.LineSeries());
+            series.name = name;
+            series.dataFields.valueY = name;
+            series.dataFields.dateX = "date";
+            series.strokeWidth = 4;
+            const segment = series.segments.template;
+            segment.interactionsEnabled = true;
+            const dimmed = segment.states.create("dimmed");
+            dimmed.properties.stroke = am4core.color("#dadada");
+            segment.events.on("over", function (event) {
+                processOver(event.target.parent.parent.parent);
+            });
+            segment.events.on("out", function (event) {
+                processOut(event.target.parent.parent.parent);
+            });
+        }
+        {% for account in accounts %}
+            createSeries("{{ account.name }}");
+        {% endfor %}
+
+        // legend settings and dim other series on legend hover function
+        chart.legend = new am4charts.Legend();
+        chart.legend.itemContainers.template.events.on("over", function (event) {
+            processOver(event.target.dataItem.dataContext);
+        });
+        chart.legend.itemContainers.template.events.on("out", function (event) {
+            processOut(event.target.dataItem.dataContext);
+        });
+        function processOver(hoveredSeries) {
+            hoveredSeries.toFront();
+            chart.series.each(function (series) {
+                if (series !== hoveredSeries) {
+                    series.segments.each(function (segment) {
+                        segment.setState("dimmed");
+                    });
+                    series.bulletsContainer.setState("dimmed");
+                }
+            });
+        }
+        function processOut(hoveredSeries) {
+            chart.series.each(function (series) {
+                series.segments.each(function (segment) {
+                    segment.setState("default");
+                });
+                series.bulletsContainer.setState("default");
+            });
+        }
+
+        // more chart settings
+        chart.scrollbarX = new am4core.Scrollbar();
+
+    });
+</script>
+

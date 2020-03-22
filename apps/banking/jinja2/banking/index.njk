@@ -38,6 +38,7 @@
         {{ bg.hrefButton("Accounts", request.path + '?tab=accounts', active=(tab=='accounts')) }}
         {{ bg.hrefButton("Categories", request.path + '?tab=categories', active=(tab=='categories')) }}
         {{ bg.hrefButton("Timespans", request.path + '?tab=timespans', active=(tab=='timespans')) }}
+        {{ bg.hrefButton("Charts", request.path + '?tab=charts', active=(tab=='charts')) }}
     </div>
 </div>
 
@@ -160,6 +161,14 @@
     </tr>
     </tbody>
 </table>
+{% endif %}
+
+{% if tab=='charts' %}
+    <script src="https://www.amcharts.com/lib/4/core.js"></script>
+    <script src="https://www.amcharts.com/lib/4/charts.js"></script>
+    <script src="https://www.amcharts.com/lib/4/themes/animated.js"></script>
+    {% include 'banking/symbols/balance_chart.html' %}
+    {% include 'banking/symbols/stacked_bar_chart.html' %}
 {% endif %}
 
 {% endblock %}
