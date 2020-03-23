@@ -1,25 +1,9 @@
 {% extends "layout/lm.njk" %}
 
-
 {% set activePage="banking" %}
 {% set headingCategory="Account" %}
 {% set headingHeading=account.name %}
 {% set title="Account " + account.name + " | Banking" %}
-
-
-{#{% block head %}#}
-{#    <script type="text/javascript" src="{{ static('js/line_bar_chart.js') }}"#}
-{#            api-data="{{ url('banking:api_data_account', args=[account.slug]) }}"></script>#}
-{#{% endblock %}#}
-
-
-{#{% block chart %}#}
-{#    <div class="vs-3"></div>#}
-{#    <canvas class="chart--canvas" id="line_bar_chart"></canvas>#}
-{#    <div class="vs-3"></div>#}
-{#    <hr class="hr">#}
-{#{% endblock %}#}
-
 
 {% block main %}
 
@@ -77,6 +61,5 @@
                 </tbody>
             </table>
     {% endif %}
-
 
 {% endblock %}

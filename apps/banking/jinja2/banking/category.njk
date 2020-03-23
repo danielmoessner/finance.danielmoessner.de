@@ -1,28 +1,11 @@
 {% extends "layout/lm.njk" %}
 
-
 {% set activePage="banking" %}
 {% set headingCategory="Category" %}
 {% set headingHeading=category.name %}
 {% set title="Category " + category.name + " | Banking" %}
 
-
-{#{% block head %}#}
-{#    <script type="text/javascript" src="{{ static('js/bar_chart.js') }}"#}
-{#            api-data="{{ url('banking:api_data_category', args=[category.slug]) }}"></script>#}
-{#{% endblock %}#}
-
-
-{#{% block chart %}#}
-{#    <div class="vs-3"></div>#}
-{#    <canvas id="bar_chart"></canvas>#}
-{#    <div class="vs-3"></div>#}
-{#    <hr class="hr">#}
-{#{% endblock %}#}
-
-
 {% block main %}
-
 
     {% import "modules/table.njk" as tg %}
     {% import "modules/button.njk" as bg %}

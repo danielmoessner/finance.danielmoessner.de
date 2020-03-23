@@ -1,6 +1,6 @@
 {% import "modules/button.njk" as buttons %}
 
-{% macro left(activePage, request) %}
+{% macro left(request) %}
     <nav class="navigation">
         <a class="navigation--brand" href="#">
             <img src="{{ static('img/owl.png') }}" width="30" height="30" alt="Owl">
@@ -18,23 +18,21 @@
                     <a class="navigation--link {% if activePage=='index' %}navigation--link--is-active{% endif %}" href="index.html">Overview</a>
                 </li> -->
                 <li class="navigation--item">
-                    {{ buttons.navigationButton("Banking", url("banking:index", args=[request.user.get_active_banking_depot_pk()]), active=(activePage=="banking")) }}
+                    {{ buttons.navigationButton("Banking", url("banking:index", args=[request.user.get_active_banking_depot_pk()]), active=("banking" in request.path)) }}
                 </li>
                 <li class="navigation--item">
-                    {{ buttons.navigationButton("Crypto", url('crypto:index'), active=(activePage=="crypto")) }}
+                    {{ buttons.navigationButton("Crypto", url('crypto:index'), active=("crypto" in request.path)) }}
                 </li>
                 <li class="navigation--item">
-                    {{ buttons.navigationButton("Alternative", url('alternative:index', args=[request.user.get_active_alternative_depot_pk()]), active=(activePage=="alternative")) }}
+                    {{ buttons.navigationButton("Alternative", url('alternative:index', args=[request.user.get_active_alternative_depot_pk()]), active=("alternative" in request.path)) }}
                 </li>
-                <div class="vs-2"></div>
-                <li class="navigation--item">
+                <li class="navigation--item mt-3">
                     <p class="navigation--heading">User</p>
                 </li>
                 <li class="navigation--item">
-                    {{ buttons.navigationButton("Settings", url('users:settings'), active=(activePage=="settings")) }}
+                    {{ buttons.navigationButton("Settings", url('users:settings'), active=("user" in request.path)) }}
                 </li>
-                <div class="vs-2"></div>
-                <li class="navigation--item">
+                <li class="navigation--item mt-3">
                     <p class="navigation--heading">Finance</p>
                 </li>
                 <li class="navigation--item">

@@ -3,3 +3,10 @@ td {
     @extend .mr-1;
   }
 }
+
+.btn-group {
+  overflow-x: scroll;
+  @include media-breakpoint-up(md) {
+    overflow-x: auto;
+  }
+}

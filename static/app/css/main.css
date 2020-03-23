@@ -7394,6 +7394,15 @@ body {
   font-family: 'Rubik', sans-serif;
   font-size: 14px; }
 
+* {
+  -webkit-appearance: none !important; }
+
+.btn-group {
+  overflow-x: scroll; }
+  @media (min-width: 768px) {
+    .btn-group {
+      overflow-x: auto; } }
+
 .sign-up-in {
   max-width: 300px;
   margin-left: auto;

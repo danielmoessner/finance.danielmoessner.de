@@ -7,7 +7,6 @@ from django.core.exceptions import ImproperlyConfigured
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 BASE_DIR = os.path.join(PROJECT_DIR, 'finance')
 
-
 # Secret settings
 
 with open(os.path.join(PROJECT_DIR, 'secrets.json')) as f:
@@ -143,6 +142,8 @@ STATIC_ROOT = os.path.join(PROJECT_DIR, 'static')
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(PROJECT_DIR, 'media')
+
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 # E-Mail
 
