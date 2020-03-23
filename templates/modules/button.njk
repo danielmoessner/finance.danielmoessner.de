@@ -6,10 +6,14 @@
 	<a class="btn btn-sm btn-secondary {{ classes }} {{ 'active' if active else '' }}" type="button" href="{{ url }}">{{ text }}</a>
 {% endmacro %}
 
-{% macro submitButton(text, classes="") %}
-  	<button type="submit" class="btn btn-sm btn-dark {{ classes }}" role="button">{{ text }}</button>
+{% macro submitButton(text="Submit", classes="btn-sm") %}
+  	<button type="submit" class="btn btn-dark {{ classes }}" role="button">{{ text }}</button>
 {% endmacro %}
 
 {% macro navigationButton(text, url, classes="", active=False) %}
     <a class="btn w-100 text-left {% if active %}btn-secondary active{% else %}btn-link text-white text-decoration-none{% endif %} {{ classes }}" href="{{ url }}">{{ text }}</a>
+{% endmacro %}
+
+{% macro dismissButton(text="Cancel", classes="") %}
+    <button class="btn btn-light {{ classes }}" type="button" data-dismiss="modal">{{ text }}</button>
 {% endmacro %}

@@ -38,7 +38,7 @@
                     <p class="navigation--heading">Finance</p>
                 </li>
                 <li class="navigation--item">
-                    <a class="navigation--link" href="{{ url('users:logout') }}">Log Out</a>
+                    {{ buttons.navigationButton("Log Out", url('users:logout'), active=False) }}
                 </li>
             </ul>
         </div>

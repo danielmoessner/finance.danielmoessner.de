@@ -1,7 +1,6 @@
-@import "bootstrap/bootstrap";
-
-@import "mixins";
 @import "vars";
-@import "layout";
+
+@import "bootstrap/scss/bootstrap";
+
+@import "base";
 @import "modules";
-@import "state";

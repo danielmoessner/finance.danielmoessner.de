@@ -5,15 +5,15 @@
 			<div class="messages">
 				{% for message in messages %}
 					{% if message.level <= 10 %}
-						<p class="messages--debug">{{ message|safe }}</p>
+						<p class="py-1 px-2 rounded m-0 bg-info">{{ message|safe }}</p>
 					{% elif message.level <= 20 %}
-						<p class="messages--info">{{ message|safe }}</p>
+						<p class="py-1 px-2 rounded m-0 bg-info">{{ message|safe }}</p>
 					{% elif message.level <= 25 %}
-						<p class="messages--success">{{ message|safe }}</p>
+						<p class="py-1 px-2 rounded m-0 bg-success">{{ message|safe }}</p>
 					{% elif message.level <= 30 %}
-						<p class="messages--warning">{{ message|safe }}</p>
+						<p class="py-1 px-2 rounded m-0 bg-warning">{{ message|safe }}</p>
 					{% elif message.level >= 40 %}
-						<p class="messages--error">{{ message|safe }}</p>
+						<p class="py-1 px-2 rounded m-0 bg-error">{{ message|safe }}</p>
 					{% endif %}
 				{% endfor %}
 			</div>
@@ -28,15 +28,15 @@
 		{% if messages %}
 			{% for message in messages %}
 				{% if message.level <= 10 %}
-					<p class="messages--debug">{{ message|safe }}</p>
+					<p class="py-1 px-2 rounded m-0 bg-info">{{ message|safe }}</p>
 				{% elif message.level <= 20 %}
-					<p class="messages--info">{{ message|safe }}</p>
+					<p class="py-1 px-2 rounded m-0 bg-info">{{ message|safe }}</p>
 				{% elif message.level <= 25 %}
-					<p class="messages--success">{{ message|safe }}</p>
+					<p class="py-1 px-2 rounded m-0 bg-success">{{ message|safe }}</p>
 				{% elif message.level <= 30 %}
-					<p class="messages--warning">{{ message|safe }}</p>
+					<p class="py-1 px-2 rounded m-0 bg-warning">{{ message|safe }}</p>
 				{% elif message.level >= 40 %}
-					<p class="messages--error">{{ message|safe }}</p>
+					<p class="py-1 px-2 rounded m-0 bg-error">{{ message|safe }}</p>
 				{% endif %}
 			{% endfor %}
 		{% endif %}
@@ -47,15 +47,15 @@
 {% macro messages(msgs) %}
 	{% for message in msgs %}
 		{% if message.level <= 10 %}
-			<p class="messages--debug">{{ message|safe }}</p>
+			<p class="py-1 px-2 rounded m-0 bg-info">{{ message|safe }}</p>
 		{% elif message.level <= 20 %}
-			<p class="messages--info">{{ message|safe }}</p>
+			<p class="py-1 px-2 rounded m-0 bg-info">{{ message|safe }}</p>
 		{% elif message.level <= 25 %}
-			<p class="messages--success">{{ message|safe }}</p>
+			<p class="py-1 px-2 rounded m-0 bg-success">{{ message|safe }}</p>
 		{% elif message.level <= 30 %}
-			<p class="messages--warning">{{ message|safe }}</p>
+			<p class="py-1 px-2 rounded m-0 bg-warning">{{ message|safe }}</p>
 		{% elif message.level >= 40 %}
-			<p class="messages--error">{{ message|safe }}</p>
+			<p class="py-1 px-2 rounded m-0 bg-error">{{ message|safe }}</p>
 		{% endif %}
 	{% endfor %}
 {% endmacro %}

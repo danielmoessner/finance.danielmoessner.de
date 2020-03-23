@@ -1,64 +1,23 @@
 .django-form{
 	p{
-		@extend .form-child;
-		label{
-			// @extend .form-child--label;
-		} 
+		@extend .form-group;
 		input{
-			@extend .form-child--input;
+			@extend .form-control;
+			font-size: 16px;
 		}
 		select{
-			@extend .form-child--select;
+			@extend .form-control;
+			@extend .custom-select;
+			display: block;
+			font-size: 16px;
 		}
 		textarea{
-			@extend .form-child--textarea;
+			@extend .form-control;
+			font-size: 16px;
 		}
 		.helptext{
-			@extend .form-child--helptext;
+			@extend .form-text;
+			@extend .text-muted;
 		}
-	}
-	&--submit-button{
-		@extend .btn;
-		@extend .btn-dark;
-	}
-	&--cancel-button{
-		@extend .btn;
-		@extend .btn-light;
-	}
-}
-
-.inline-form{
-	@extend .form-child;
-	&--line{
-		display: flex;
-		flex-direction: row;
-	}
-	&--label{
-		// @extend .form-child--label;
-	} 
-	&--input{
-		width: auto!important;
-		flex-grow: 3;
-		@extend .form-child--input;
-	}
-	&--select{
-		@extend .form-child--select;
-	}
-	&--textarea{
-		@extend .form-child--textarea;
-	}
-	&--helptext{
-		@extend .form-child--helptext;
-	}
-	&--submit-button{
-		width: auto!important;
-		flex-grow: 1;
-		margin-left: 10px;
-		@extend .btn;
-		@extend .btn-dark;
-	}
-	&--cancel-button{
-		@extend .btn;
-		@extend .btn-light;
 	}
 }
