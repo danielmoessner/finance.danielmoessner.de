@@ -1,0 +1,13 @@
+/finance/files/node_modules/*/
+/finance/static/*/
+/db.sqlite3
+/.idea
+/logs/**
+node_modules/
+
+
+*.sqlite3
+*.gitignore
+*.pyc
+**/__pycache__
+**/migrations
