@@ -9,6 +9,8 @@ from django.contrib import messages
 from django.views import generic
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
+from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.forms import UserCreationForm
 
 from apps.core.views import CustomInvalidFormMixin
 from apps.alternative.models import Depot as AlternativeDepot
@@ -23,19 +25,36 @@ from apps.users.forms import CreateStandardUserForm
 from apps.users.models import StandardUser
 
 
-class SignUpView(CustomInvalidFormMixin, generic.CreateView):
+class RedirectView(generic.RedirectView):
+    def get_redirect_url(self, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            user = self.request.user
+            front_page = user.front_page
+            if front_page == "BANKING":
+                return reverse_lazy("banking:index", args=[user.get_active_banking_depot_pk()])
+            elif front_page == "CRYPTO":
+                return reverse_lazy("crypto:index")
+            elif front_page == "ALTERNATIVE":
+                return reverse_lazy("alternative:index", args=[user.get_active_alternative_depot_pk()])
+            else:
+                return reverse_lazy("users:settings")
+        else:
+            return reverse_lazy('users:signin')
+
+
+class SignUpViewOld(CustomInvalidFormMixin, generic.CreateView):
     form_class = CreateStandardUserForm
     model = StandardUser
     template_name = "users_signup.njk"
 
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            return redirect('core:redirect', permanent=False)
+            return redirect('users:signin', permanent=False)
         else:
-            return super(SignUpView, self).get(request, *args, **kwargs)
+            return super(SignUpViewOld, self).get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = super(SignUpView, self).get_context_data()
+        context = super(SignUpViewOld, self).get_context_data()
         context["sign_up_form"] = self.get_form()
         return context
 
@@ -45,31 +64,21 @@ class SignUpView(CustomInvalidFormMixin, generic.CreateView):
         return redirect('core:redirect', permanent=False)
 
 
-class SignInView(View):
-    def get(self, request):
-        if request.user.is_authenticated:
-            return redirect('core:redirect', permanent=False)
-        else:
-            context = {"sign_in_form": SignInUserForm()}
-            return render(request, "users_signin.njk", context=context)
-
-    def post(self, request):
-        form = SignInUserForm(request.POST)
-        if not request.user.is_authenticated and form.is_valid():
-            username = form.cleaned_data["username"]
-            password = form.cleaned_data["password"]
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login_user(request, user)
-            else:
-                messages.error(request, "This combination of username and password doesn't exist.")
-        return redirect('core:redirect', permanent=False)
+class SignUpView(generic.CreateView):
+    form_class = CreateStandardUserForm
+    success_url = reverse_lazy('users:redirect')
+    template_name = 'users/signup.j2'
 
 
-class LogoutView(LoginRequiredMixin, View):
-    def get(self, request):
+class SignInView(LoginView):
+    redirect_authenticated_user = True
+    template_name = 'users/login.j2'
+
+
+class SignOutView(LogoutView):
+    def get(self, request, *args, **kwargs):
         logout_user(request)
-        return redirect('core:redirect')
+        return redirect('users:redirect')
 
 
 class SettingsView(LoginRequiredMixin, generic.TemplateView):

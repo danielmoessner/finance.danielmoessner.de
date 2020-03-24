@@ -1,23 +1,66 @@
-.django-form{
-	p{
-		@extend .form-group;
-		input{
-			@extend .form-control;
-			font-size: 16px;
-		}
-		select{
-			@extend .form-control;
-			@extend .custom-select;
-			display: block;
-			font-size: 16px;
-		}
-		textarea{
-			@extend .form-control;
-			font-size: 16px;
-		}
-		.helptext{
-			@extend .form-text;
-			@extend .text-muted;
-		}
-	}
+.djangoform {
+  p {
+    @extend .form-group;
+
+    input {
+      @extend .form-control;
+      font-size: 16px;
+    }
+
+    select {
+      @extend .form-control;
+      @extend .custom-select;
+      display: block;
+      font-size: 16px;
+    }
+
+    textarea {
+      @extend .form-control;
+      font-size: 16px;
+    }
+
+    .helptext {
+      @extend .form-text;
+      @extend .text-muted;
+    }
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+      @extend .form-text;
+      @extend .text-muted;
+    }
+  }
+
+  .errorlist {
+    @extend .mb-2;
+
+    li {
+      @extend .text-danger;
+    }
+  }
+
+  &.djangoform-dark {
+    p {
+      .helptext {
+        @extend .text-white-50;
+      }
+    }
+
+    ul {
+      li {
+        @extend .text-white-50;
+      }
+    }
+
+    .errorlist {
+      li {
+        @extend .text-warning;
+      }
+    }
+  }
 }

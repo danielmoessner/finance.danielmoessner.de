@@ -89,24 +89,6 @@ class OldIndexView(generic.TemplateView):
         return context
 
 
-class RedirectView(generic.RedirectView):
-    def get(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            front_page = request.user.front_page
-            if front_page == "BANKING":
-                return HttpResponseRedirect(
-                    reverse_lazy("banking:index", args=[request.user.get_active_banking_depot_pk()]))
-            elif front_page == "CRYPTO":
-                return HttpResponseRedirect(reverse_lazy("crypto:index"))
-            elif front_page == "ALTERNATIVE":
-                return HttpResponseRedirect(
-                    reverse_lazy("alternative:index", args=[request.user.get_active_alternative_depot_pk()]))
-            else:
-                return HttpResponseRedirect(reverse_lazy("users:settings"))
-        else:
-            return HttpResponseRedirect(reverse_lazy('users:signin'))
-
-
 class PageView(generic.TemplateView):
     template_name = "core_page.njk"
 
@@ -129,7 +111,7 @@ class TermsOfUseView(generic.TemplateView):
     template_name = "core_termsofuse.njk"
 
 
-class StaticRedirectView(RedirectView):
+class StaticRedirectView(generic.View):
     def get(self, request, *args, **kwargs):
         current_url = request.get_full_path()
         splitted_url = re.split(r'(js|images|css|icons)', current_url)

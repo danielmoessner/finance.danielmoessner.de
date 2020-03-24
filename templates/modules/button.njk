@@ -2,8 +2,8 @@
 	<a class="btn btn-sm btn-info {{ classes }}" type="button" data-toggle="modal" data-target="{{ target }}">{{ text }}</a>
 {% endmacro %}
 
-{% macro hrefButton(text, url, classes="", active=False) %}
-	<a class="btn btn-sm btn-secondary {{ classes }} {{ 'active' if active else '' }}" type="button" href="{{ url }}">{{ text }}</a>
+{% macro hrefButton(text, url, classes="btn-sm", active=False) %}
+	<a class="btn btn-secondary {{ classes }} {{ 'active' if active else '' }}" type="button" href="{{ url }}">{{ text }}</a>
 {% endmacro %}
 
 {% macro submitButton(text="Submit", classes="btn-sm") %}

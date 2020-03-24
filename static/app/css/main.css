@@ -1414,7 +1414,7 @@ pre {
   .table-responsive > .table-bordered {
     border: 0; }
 
-.form-control, .sign-up-in--input-group--input, .django-form p input, .django-form p select, .django-form p textarea {
+.form-control, .sign-up-in--input-group--input, .djangoform p input, .djangoform p select, .djangoform p textarea {
   display: block;
   width: 100%;
   height: calc(1.5em + 0.75rem + 2px);
@@ -1429,28 +1429,28 @@ pre {
   border-radius: 0.25rem;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; }
   @media (prefers-reduced-motion: reduce) {
-    .form-control, .sign-up-in--input-group--input, .django-form p input, .django-form p select, .django-form p textarea {
+    .form-control, .sign-up-in--input-group--input, .djangoform p input, .djangoform p select, .djangoform p textarea {
       transition: none; } }
-  .form-control::-ms-expand, .sign-up-in--input-group--input::-ms-expand, .django-form p input::-ms-expand, .django-form p select::-ms-expand, .django-form p textarea::-ms-expand {
+  .form-control::-ms-expand, .sign-up-in--input-group--input::-ms-expand, .djangoform p input::-ms-expand, .djangoform p select::-ms-expand, .djangoform p textarea::-ms-expand {
     background-color: transparent;
     border: 0; }
-  .form-control:-moz-focusring, .sign-up-in--input-group--input:-moz-focusring, .django-form p input:-moz-focusring, .django-form p select:-moz-focusring, .django-form p textarea:-moz-focusring {
+  .form-control:-moz-focusring, .sign-up-in--input-group--input:-moz-focusring, .djangoform p input:-moz-focusring, .djangoform p select:-moz-focusring, .djangoform p textarea:-moz-focusring {
     color: transparent;
     text-shadow: 0 0 0 #495057; }
-  .form-control:focus, .sign-up-in--input-group--input:focus, .django-form p input:focus, .django-form p select:focus, .django-form p textarea:focus {
+  .form-control:focus, .sign-up-in--input-group--input:focus, .djangoform p input:focus, .djangoform p select:focus, .djangoform p textarea:focus {
     color: #495057;
     background-color: #fff;
     border-color: #80bdff;
     outline: 0;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); }
-  .form-control::placeholder, .sign-up-in--input-group--input::placeholder, .django-form p input::placeholder, .django-form p select::placeholder, .django-form p textarea::placeholder {
+  .form-control::placeholder, .sign-up-in--input-group--input::placeholder, .djangoform p input::placeholder, .djangoform p select::placeholder, .djangoform p textarea::placeholder {
     color: #6c757d;
     opacity: 1; }
-  .form-control:disabled, .sign-up-in--input-group--input:disabled, .django-form p input:disabled, .django-form p select:disabled, .django-form p textarea:disabled, .form-control[readonly], .sign-up-in--input-group--input[readonly], .django-form p input[readonly], .django-form p select[readonly], .django-form p textarea[readonly] {
+  .form-control:disabled, .sign-up-in--input-group--input:disabled, .djangoform p input:disabled, .djangoform p select:disabled, .djangoform p textarea:disabled, .form-control[readonly], .sign-up-in--input-group--input[readonly], .djangoform p input[readonly], .djangoform p select[readonly], .djangoform p textarea[readonly] {
     background-color: #e9ecef;
     opacity: 1; }
 
-select.form-control:focus::-ms-value, select.sign-up-in--input-group--input:focus::-ms-value, .django-form p select:focus::-ms-value {
+select.form-control:focus::-ms-value, select.sign-up-in--input-group--input:focus::-ms-value, .djangoform p select:focus::-ms-value {
   color: #495057;
   background-color: #fff; }
 
@@ -1507,16 +1507,16 @@ select.form-control:focus::-ms-value, select.sign-up-in--input-group--input:focu
   line-height: 1.5;
   border-radius: 0.3rem; }
 
-select.form-control[size], select.sign-up-in--input-group--input[size], .django-form p select[size], select.form-control[multiple], select.sign-up-in--input-group--input[multiple], .django-form p select[multiple] {
+select.form-control[size], select.sign-up-in--input-group--input[size], .djangoform p select[size], select.form-control[multiple], select.sign-up-in--input-group--input[multiple], .djangoform p select[multiple] {
   height: auto; }
 
-textarea.form-control, textarea.sign-up-in--input-group--input, .django-form p textarea {
+textarea.form-control, textarea.sign-up-in--input-group--input, .djangoform p textarea {
   height: auto; }
 
-.form-group, .sign-up-in--input-group, .django-form p {
+.form-group, .sign-up-in--input-group, .djangoform p {
   margin-bottom: 1rem; }
 
-.form-text, .django-form p .helptext {
+.form-text, .djangoform p .helptext, .djangoform ul li {
   display: block;
   margin-top: 0.25rem; }
 
@@ -1584,26 +1584,26 @@ textarea.form-control, textarea.sign-up-in--input-group--input, .django-form p t
 .is-valid ~ .valid-tooltip {
   display: block; }
 
-.was-validated .form-control:valid, .was-validated .sign-up-in--input-group--input:valid, .was-validated .django-form p input:valid, .django-form p .was-validated input:valid, .was-validated .django-form p select:valid, .django-form p .was-validated select:valid, .was-validated .django-form p textarea:valid, .django-form p .was-validated textarea:valid, .form-control.is-valid, .is-valid.sign-up-in--input-group--input, .django-form p input.is-valid, .django-form p select.is-valid, .django-form p textarea.is-valid {
+.was-validated .form-control:valid, .was-validated .sign-up-in--input-group--input:valid, .was-validated .djangoform p input:valid, .djangoform p .was-validated input:valid, .was-validated .djangoform p select:valid, .djangoform p .was-validated select:valid, .was-validated .djangoform p textarea:valid, .djangoform p .was-validated textarea:valid, .form-control.is-valid, .is-valid.sign-up-in--input-group--input, .djangoform p input.is-valid, .djangoform p select.is-valid, .djangoform p textarea.is-valid {
   border-color: #28a745;
   padding-right: calc(1.5em + 0.75rem);
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-position: right calc(0.375em + 0.1875rem) center;
   background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem); }
-  .was-validated .form-control:valid:focus, .was-validated .sign-up-in--input-group--input:valid:focus, .was-validated .django-form p input:valid:focus, .django-form p .was-validated input:valid:focus, .was-validated .django-form p select:valid:focus, .django-form p .was-validated select:valid:focus, .was-validated .django-form p textarea:valid:focus, .django-form p .was-validated textarea:valid:focus, .form-control.is-valid:focus, .is-valid.sign-up-in--input-group--input:focus, .django-form p input.is-valid:focus, .django-form p select.is-valid:focus, .django-form p textarea.is-valid:focus {
+  .was-validated .form-control:valid:focus, .was-validated .sign-up-in--input-group--input:valid:focus, .was-validated .djangoform p input:valid:focus, .djangoform p .was-validated input:valid:focus, .was-validated .djangoform p select:valid:focus, .djangoform p .was-validated select:valid:focus, .was-validated .djangoform p textarea:valid:focus, .djangoform p .was-validated textarea:valid:focus, .form-control.is-valid:focus, .is-valid.sign-up-in--input-group--input:focus, .djangoform p input.is-valid:focus, .djangoform p select.is-valid:focus, .djangoform p textarea.is-valid:focus {
     border-color: #28a745;
     box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25); }
 
-.was-validated textarea.form-control:valid, .was-validated textarea.sign-up-in--input-group--input:valid, .was-validated .django-form p textarea:valid, .django-form p .was-validated textarea:valid, textarea.form-control.is-valid, textarea.is-valid.sign-up-in--input-group--input, .django-form p textarea.is-valid {
+.was-validated textarea.form-control:valid, .was-validated textarea.sign-up-in--input-group--input:valid, .was-validated .djangoform p textarea:valid, .djangoform p .was-validated textarea:valid, textarea.form-control.is-valid, textarea.is-valid.sign-up-in--input-group--input, .djangoform p textarea.is-valid {
   padding-right: calc(1.5em + 0.75rem);
   background-position: top calc(0.375em + 0.1875rem) right calc(0.375em + 0.1875rem); }
 
-.was-validated .custom-select:valid, .was-validated .django-form p select:valid, .django-form p .was-validated select:valid, .custom-select.is-valid, .django-form p select.is-valid {
+.was-validated .custom-select:valid, .was-validated .djangoform p select:valid, .djangoform p .was-validated select:valid, .custom-select.is-valid, .djangoform p select.is-valid {
   border-color: #28a745;
   padding-right: calc(0.75em + 2.3125rem);
   background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='4' height='5' viewBox='0 0 4 5'%3e%3cpath fill='%23343a40' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e") no-repeat right 0.75rem center/8px 10px, url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e") #fff no-repeat center right 1.75rem/calc(0.75em + 0.375rem) calc(0.75em + 0.375rem); }
-  .was-validated .custom-select:valid:focus, .was-validated .django-form p select:valid:focus, .django-form p .was-validated select:valid:focus, .custom-select.is-valid:focus, .django-form p select.is-valid:focus {
+  .was-validated .custom-select:valid:focus, .was-validated .djangoform p select:valid:focus, .djangoform p .was-validated select:valid:focus, .custom-select.is-valid:focus, .djangoform p select.is-valid:focus {
     border-color: #28a745;
     box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25); }
 
@@ -1664,26 +1664,26 @@ textarea.form-control, textarea.sign-up-in--input-group--input, .django-form p t
 .is-invalid ~ .invalid-tooltip {
   display: block; }
 
-.was-validated .form-control:invalid, .was-validated .sign-up-in--input-group--input:invalid, .was-validated .django-form p input:invalid, .django-form p .was-validated input:invalid, .was-validated .django-form p select:invalid, .django-form p .was-validated select:invalid, .was-validated .django-form p textarea:invalid, .django-form p .was-validated textarea:invalid, .form-control.is-invalid, .is-invalid.sign-up-in--input-group--input, .django-form p input.is-invalid, .django-form p select.is-invalid, .django-form p textarea.is-invalid {
+.was-validated .form-control:invalid, .was-validated .sign-up-in--input-group--input:invalid, .was-validated .djangoform p input:invalid, .djangoform p .was-validated input:invalid, .was-validated .djangoform p select:invalid, .djangoform p .was-validated select:invalid, .was-validated .djangoform p textarea:invalid, .djangoform p .was-validated textarea:invalid, .form-control.is-invalid, .is-invalid.sign-up-in--input-group--input, .djangoform p input.is-invalid, .djangoform p select.is-invalid, .djangoform p textarea.is-invalid {
   border-color: #dc3545;
   padding-right: calc(1.5em + 0.75rem);
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23dc3545' viewBox='0 0 12 12'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-position: right calc(0.375em + 0.1875rem) center;
   background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem); }
-  .was-validated .form-control:invalid:focus, .was-validated .sign-up-in--input-group--input:invalid:focus, .was-validated .django-form p input:invalid:focus, .django-form p .was-validated input:invalid:focus, .was-validated .django-form p select:invalid:focus, .django-form p .was-validated select:invalid:focus, .was-validated .django-form p textarea:invalid:focus, .django-form p .was-validated textarea:invalid:focus, .form-control.is-invalid:focus, .is-invalid.sign-up-in--input-group--input:focus, .django-form p input.is-invalid:focus, .django-form p select.is-invalid:focus, .django-form p textarea.is-invalid:focus {
+  .was-validated .form-control:invalid:focus, .was-validated .sign-up-in--input-group--input:invalid:focus, .was-validated .djangoform p input:invalid:focus, .djangoform p .was-validated input:invalid:focus, .was-validated .djangoform p select:invalid:focus, .djangoform p .was-validated select:invalid:focus, .was-validated .djangoform p textarea:invalid:focus, .djangoform p .was-validated textarea:invalid:focus, .form-control.is-invalid:focus, .is-invalid.sign-up-in--input-group--input:focus, .djangoform p input.is-invalid:focus, .djangoform p select.is-invalid:focus, .djangoform p textarea.is-invalid:focus {
     border-color: #dc3545;
     box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25); }
 
-.was-validated textarea.form-control:invalid, .was-validated textarea.sign-up-in--input-group--input:invalid, .was-validated .django-form p textarea:invalid, .django-form p .was-validated textarea:invalid, textarea.form-control.is-invalid, textarea.is-invalid.sign-up-in--input-group--input, .django-form p textarea.is-invalid {
+.was-validated textarea.form-control:invalid, .was-validated textarea.sign-up-in--input-group--input:invalid, .was-validated .djangoform p textarea:invalid, .djangoform p .was-validated textarea:invalid, textarea.form-control.is-invalid, textarea.is-invalid.sign-up-in--input-group--input, .djangoform p textarea.is-invalid {
   padding-right: calc(1.5em + 0.75rem);
   background-position: top calc(0.375em + 0.1875rem) right calc(0.375em + 0.1875rem); }
 
-.was-validated .custom-select:invalid, .was-validated .django-form p select:invalid, .django-form p .was-validated select:invalid, .custom-select.is-invalid, .django-form p select.is-invalid {
+.was-validated .custom-select:invalid, .was-validated .djangoform p select:invalid, .djangoform p .was-validated select:invalid, .custom-select.is-invalid, .djangoform p select.is-invalid {
   border-color: #dc3545;
   padding-right: calc(0.75em + 2.3125rem);
   background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='4' height='5' viewBox='0 0 4 5'%3e%3cpath fill='%23343a40' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e") no-repeat right 0.75rem center/8px 10px, url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23dc3545' viewBox='0 0 12 12'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e") #fff no-repeat center right 1.75rem/calc(0.75em + 0.375rem) calc(0.75em + 0.375rem); }
-  .was-validated .custom-select:invalid:focus, .was-validated .django-form p select:invalid:focus, .django-form p .was-validated select:invalid:focus, .custom-select.is-invalid:focus, .django-form p select.is-invalid:focus {
+  .was-validated .custom-select:invalid:focus, .was-validated .djangoform p select:invalid:focus, .djangoform p .was-validated select:invalid:focus, .custom-select.is-invalid:focus, .djangoform p select.is-invalid:focus {
     border-color: #dc3545;
     box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25); }
 
@@ -1729,13 +1729,13 @@ textarea.form-control, textarea.sign-up-in--input-group--input, .django-form p t
       align-items: center;
       justify-content: center;
       margin-bottom: 0; }
-    .form-inline .form-group, .form-inline .sign-up-in--input-group, .form-inline .django-form p, .django-form .form-inline p {
+    .form-inline .form-group, .form-inline .sign-up-in--input-group, .form-inline .djangoform p, .djangoform .form-inline p {
       display: flex;
       flex: 0 0 auto;
       flex-flow: row wrap;
       align-items: center;
       margin-bottom: 0; }
-    .form-inline .form-control, .form-inline .sign-up-in--input-group--input, .form-inline .django-form p input, .django-form p .form-inline input, .form-inline .django-form p select, .django-form p .form-inline select, .form-inline .django-form p textarea, .django-form p .form-inline textarea {
+    .form-inline .form-control, .form-inline .sign-up-in--input-group--input, .form-inline .djangoform p input, .djangoform p .form-inline input, .form-inline .djangoform p select, .djangoform p .form-inline select, .form-inline .djangoform p textarea, .djangoform p .form-inline textarea {
       display: inline-block;
       width: auto;
       vertical-align: middle; }
@@ -1743,8 +1743,8 @@ textarea.form-control, textarea.sign-up-in--input-group--input, .django-form p t
       display: inline-block; }
     .form-inline .input-group,
     .form-inline .custom-select,
-    .form-inline .django-form p select,
-    .django-form p .form-inline select {
+    .form-inline .djangoform p select,
+    .djangoform p .form-inline select {
       width: auto; }
     .form-inline .form-check {
       display: flex;
@@ -2605,79 +2605,79 @@ input[type="button"].btn-block {
   flex-wrap: wrap;
   align-items: stretch;
   width: 100%; }
-  .input-group > .form-control, .input-group > .sign-up-in--input-group--input, .django-form p .input-group > input, .django-form p .input-group > select, .django-form p .input-group > textarea,
+  .input-group > .form-control, .input-group > .sign-up-in--input-group--input, .djangoform p .input-group > input, .djangoform p .input-group > select, .djangoform p .input-group > textarea,
   .input-group > .form-control-plaintext,
   .input-group > .custom-select,
-  .django-form p .input-group > select,
+  .djangoform p .input-group > select,
   .input-group > .custom-file {
     position: relative;
     flex: 1 1 0%;
     min-width: 0;
     margin-bottom: 0; }
-    .input-group > .form-control + .form-control, .input-group > .sign-up-in--input-group--input + .form-control, .django-form p .input-group > input + .form-control, .django-form p .input-group > select + .form-control, .django-form p .input-group > textarea + .form-control, .input-group > .form-control + .sign-up-in--input-group--input, .input-group > .sign-up-in--input-group--input + .sign-up-in--input-group--input, .django-form p .input-group > input + .sign-up-in--input-group--input, .django-form p .input-group > select + .sign-up-in--input-group--input, .django-form p .input-group > textarea + .sign-up-in--input-group--input, .django-form p .input-group > .form-control + input, .django-form p .input-group > .sign-up-in--input-group--input + input, .django-form p .input-group > input + input, .django-form p .input-group > select + input, .django-form p .input-group > textarea + input, .django-form p .input-group > .form-control + select, .django-form p .input-group > .sign-up-in--input-group--input + select, .django-form p .input-group > input + select, .django-form p .input-group > select + select, .django-form p .input-group > textarea + select, .django-form p .input-group > .form-control + textarea, .django-form p .input-group > .sign-up-in--input-group--input + textarea, .django-form p .input-group > input + textarea, .django-form p .input-group > select + textarea, .django-form p .input-group > textarea + textarea,
+    .input-group > .form-control + .form-control, .input-group > .sign-up-in--input-group--input + .form-control, .djangoform p .input-group > input + .form-control, .djangoform p .input-group > select + .form-control, .djangoform p .input-group > textarea + .form-control, .input-group > .form-control + .sign-up-in--input-group--input, .input-group > .sign-up-in--input-group--input + .sign-up-in--input-group--input, .djangoform p .input-group > input + .sign-up-in--input-group--input, .djangoform p .input-group > select + .sign-up-in--input-group--input, .djangoform p .input-group > textarea + .sign-up-in--input-group--input, .djangoform p .input-group > .form-control + input, .djangoform p .input-group > .sign-up-in--input-group--input + input, .djangoform p .input-group > input + input, .djangoform p .input-group > select + input, .djangoform p .input-group > textarea + input, .djangoform p .input-group > .form-control + select, .djangoform p .input-group > .sign-up-in--input-group--input + select, .djangoform p .input-group > input + select, .djangoform p .input-group > select + select, .djangoform p .input-group > textarea + select, .djangoform p .input-group > .form-control + textarea, .djangoform p .input-group > .sign-up-in--input-group--input + textarea, .djangoform p .input-group > input + textarea, .djangoform p .input-group > select + textarea, .djangoform p .input-group > textarea + textarea,
     .input-group > .form-control + .custom-select,
     .input-group > .sign-up-in--input-group--input + .custom-select,
-    .django-form p .input-group > input + .custom-select,
-    .django-form p .input-group > select + .custom-select,
-    .django-form p .input-group > textarea + .custom-select,
-    .django-form p .input-group > .form-control + select,
-    .django-form p .input-group > .sign-up-in--input-group--input + select,
-    .django-form p .input-group > input + select,
-    .django-form p .input-group > select + select,
-    .django-form p .input-group > textarea + select,
+    .djangoform p .input-group > input + .custom-select,
+    .djangoform p .input-group > select + .custom-select,
+    .djangoform p .input-group > textarea + .custom-select,
+    .djangoform p .input-group > .form-control + select,
+    .djangoform p .input-group > .sign-up-in--input-group--input + select,
+    .djangoform p .input-group > input + select,
+    .djangoform p .input-group > select + select,
+    .djangoform p .input-group > textarea + select,
     .input-group > .form-control + .custom-file,
     .input-group > .sign-up-in--input-group--input + .custom-file,
-    .django-form p .input-group > input + .custom-file,
-    .django-form p .input-group > select + .custom-file,
-    .django-form p .input-group > textarea + .custom-file,
+    .djangoform p .input-group > input + .custom-file,
+    .djangoform p .input-group > select + .custom-file,
+    .djangoform p .input-group > textarea + .custom-file,
     .input-group > .form-control-plaintext + .form-control,
     .input-group > .form-control-plaintext + .sign-up-in--input-group--input,
-    .django-form p .input-group > .form-control-plaintext + input,
-    .django-form p .input-group > .form-control-plaintext + select,
-    .django-form p .input-group > .form-control-plaintext + textarea,
+    .djangoform p .input-group > .form-control-plaintext + input,
+    .djangoform p .input-group > .form-control-plaintext + select,
+    .djangoform p .input-group > .form-control-plaintext + textarea,
     .input-group > .form-control-plaintext + .custom-select,
-    .django-form p .input-group > .form-control-plaintext + select,
+    .djangoform p .input-group > .form-control-plaintext + select,
     .input-group > .form-control-plaintext + .custom-file,
     .input-group > .custom-select + .form-control,
-    .django-form p .input-group > select + .form-control,
+    .djangoform p .input-group > select + .form-control,
     .input-group > .custom-select + .sign-up-in--input-group--input,
-    .django-form p .input-group > select + .sign-up-in--input-group--input,
-    .django-form p .input-group > .custom-select + input,
-    .django-form p .input-group > select + input,
-    .django-form p .input-group > .custom-select + select,
-    .django-form p .input-group > select + select,
-    .django-form p .input-group > .custom-select + textarea,
-    .django-form p .input-group > select + textarea,
+    .djangoform p .input-group > select + .sign-up-in--input-group--input,
+    .djangoform p .input-group > .custom-select + input,
+    .djangoform p .input-group > select + input,
+    .djangoform p .input-group > .custom-select + select,
+    .djangoform p .input-group > select + select,
+    .djangoform p .input-group > .custom-select + textarea,
+    .djangoform p .input-group > select + textarea,
     .input-group > .custom-select + .custom-select,
-    .django-form p .input-group > select + .custom-select,
-    .django-form p .input-group > .custom-select + select,
-    .django-form p .input-group > select + select,
+    .djangoform p .input-group > select + .custom-select,
+    .djangoform p .input-group > .custom-select + select,
+    .djangoform p .input-group > select + select,
     .input-group > .custom-select + .custom-file,
-    .django-form p .input-group > select + .custom-file,
+    .djangoform p .input-group > select + .custom-file,
     .input-group > .custom-file + .form-control,
     .input-group > .custom-file + .sign-up-in--input-group--input,
-    .django-form p .input-group > .custom-file + input,
-    .django-form p .input-group > .custom-file + select,
-    .django-form p .input-group > .custom-file + textarea,
+    .djangoform p .input-group > .custom-file + input,
+    .djangoform p .input-group > .custom-file + select,
+    .djangoform p .input-group > .custom-file + textarea,
     .input-group > .custom-file + .custom-select,
-    .django-form p .input-group > .custom-file + select,
+    .djangoform p .input-group > .custom-file + select,
     .input-group > .custom-file + .custom-file {
       margin-left: -1px; }
-  .input-group > .form-control:focus, .input-group > .sign-up-in--input-group--input:focus, .django-form p .input-group > input:focus, .django-form p .input-group > select:focus, .django-form p .input-group > textarea:focus,
+  .input-group > .form-control:focus, .input-group > .sign-up-in--input-group--input:focus, .djangoform p .input-group > input:focus, .djangoform p .input-group > select:focus, .djangoform p .input-group > textarea:focus,
   .input-group > .custom-select:focus,
-  .django-form p .input-group > select:focus,
+  .djangoform p .input-group > select:focus,
   .input-group > .custom-file .custom-file-input:focus ~ .custom-file-label {
     z-index: 3; }
   .input-group > .custom-file .custom-file-input:focus {
     z-index: 4; }
-  .input-group > .form-control:not(:last-child), .input-group > .sign-up-in--input-group--input:not(:last-child), .django-form p .input-group > input:not(:last-child), .django-form p .input-group > select:not(:last-child), .django-form p .input-group > textarea:not(:last-child),
+  .input-group > .form-control:not(:last-child), .input-group > .sign-up-in--input-group--input:not(:last-child), .djangoform p .input-group > input:not(:last-child), .djangoform p .input-group > select:not(:last-child), .djangoform p .input-group > textarea:not(:last-child),
   .input-group > .custom-select:not(:last-child),
-  .django-form p .input-group > select:not(:last-child) {
+  .djangoform p .input-group > select:not(:last-child) {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0; }
-  .input-group > .form-control:not(:first-child), .input-group > .sign-up-in--input-group--input:not(:first-child), .django-form p .input-group > input:not(:first-child), .django-form p .input-group > select:not(:first-child), .django-form p .input-group > textarea:not(:first-child),
+  .input-group > .form-control:not(:first-child), .input-group > .sign-up-in--input-group--input:not(:first-child), .djangoform p .input-group > input:not(:first-child), .djangoform p .input-group > select:not(:first-child), .djangoform p .input-group > textarea:not(:first-child),
   .input-group > .custom-select:not(:first-child),
-  .django-form p .input-group > select:not(:first-child) {
+  .djangoform p .input-group > select:not(:first-child) {
     border-top-left-radius: 0;
     border-bottom-left-radius: 0; }
   .input-group > .custom-file {
@@ -2755,14 +2755,14 @@ input[type="button"].btn-block {
   .input-group-text input[type="checkbox"] {
     margin-top: 0; }
 
-.input-group-lg > .form-control:not(textarea), .input-group-lg > .sign-up-in--input-group--input:not(textarea), .django-form p .input-group-lg > input:not(textarea), .django-form p .input-group-lg > select:not(textarea), .django-form p .input-group-lg > textarea:not(textarea),
+.input-group-lg > .form-control:not(textarea), .input-group-lg > .sign-up-in--input-group--input:not(textarea), .djangoform p .input-group-lg > input:not(textarea), .djangoform p .input-group-lg > select:not(textarea), .djangoform p .input-group-lg > textarea:not(textarea),
 .input-group-lg > .custom-select,
-.django-form p .input-group-lg > select {
+.djangoform p .input-group-lg > select {
   height: calc(1.5em + 1rem + 2px); }
 
-.input-group-lg > .form-control, .input-group-lg > .sign-up-in--input-group--input, .django-form p .input-group-lg > input, .django-form p .input-group-lg > select, .django-form p .input-group-lg > textarea,
+.input-group-lg > .form-control, .input-group-lg > .sign-up-in--input-group--input, .djangoform p .input-group-lg > input, .djangoform p .input-group-lg > select, .djangoform p .input-group-lg > textarea,
 .input-group-lg > .custom-select,
-.django-form p .input-group-lg > select,
+.djangoform p .input-group-lg > select,
 .input-group-lg > .input-group-prepend > .input-group-text,
 .input-group-lg > .input-group-append > .input-group-text,
 .input-group-lg > .input-group-prepend > .btn,
@@ -2776,14 +2776,14 @@ input[type="button"].btn-block {
   line-height: 1.5;
   border-radius: 0.3rem; }
 
-.input-group-sm > .form-control:not(textarea), .input-group-sm > .sign-up-in--input-group--input:not(textarea), .django-form p .input-group-sm > input:not(textarea), .django-form p .input-group-sm > select:not(textarea), .django-form p .input-group-sm > textarea:not(textarea),
+.input-group-sm > .form-control:not(textarea), .input-group-sm > .sign-up-in--input-group--input:not(textarea), .djangoform p .input-group-sm > input:not(textarea), .djangoform p .input-group-sm > select:not(textarea), .djangoform p .input-group-sm > textarea:not(textarea),
 .input-group-sm > .custom-select,
-.django-form p .input-group-sm > select {
+.djangoform p .input-group-sm > select {
   height: calc(1.5em + 0.5rem + 2px); }
 
-.input-group-sm > .form-control, .input-group-sm > .sign-up-in--input-group--input, .django-form p .input-group-sm > input, .django-form p .input-group-sm > select, .django-form p .input-group-sm > textarea,
+.input-group-sm > .form-control, .input-group-sm > .sign-up-in--input-group--input, .djangoform p .input-group-sm > input, .djangoform p .input-group-sm > select, .djangoform p .input-group-sm > textarea,
 .input-group-sm > .custom-select,
-.django-form p .input-group-sm > select,
+.djangoform p .input-group-sm > select,
 .input-group-sm > .input-group-prepend > .input-group-text,
 .input-group-sm > .input-group-append > .input-group-text,
 .input-group-sm > .input-group-prepend > .btn,
@@ -2799,9 +2799,9 @@ input[type="button"].btn-block {
 
 
 .input-group-lg > .custom-select,
-.django-form p .input-group-lg > select,
+.djangoform p .input-group-lg > select,
 .input-group-sm > .custom-select,
-.django-form p .input-group-sm > select {
+.djangoform p .input-group-sm > select {
   padding-right: 1.75rem; }
 
 .input-group > .input-group-prepend > .btn, .input-group > .input-group-prepend > .sign-up-in--button, .input-group > .input-group-prepend > .sign-up-in--switch-button,
@@ -2941,7 +2941,7 @@ input[type="button"].btn-block {
   .custom-switch .custom-control-input:disabled:checked ~ .custom-control-label::before {
     background-color: rgba(0, 123, 255, 0.5); }
 
-.custom-select, .django-form p select {
+.custom-select, .djangoform p select {
   display: inline-block;
   width: 100%;
   height: calc(1.5em + 0.75rem + 2px);
@@ -2955,23 +2955,23 @@ input[type="button"].btn-block {
   border: 1px solid #ced4da;
   border-radius: 0.25rem;
   appearance: none; }
-  .custom-select:focus, .django-form p select:focus {
+  .custom-select:focus, .djangoform p select:focus {
     border-color: #80bdff;
     outline: 0;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); }
-    .custom-select:focus::-ms-value, .django-form p select:focus::-ms-value {
+    .custom-select:focus::-ms-value, .djangoform p select:focus::-ms-value {
       color: #495057;
       background-color: #fff; }
-  .custom-select[multiple], .django-form p select[multiple], .custom-select[size]:not([size="1"]), .django-form p select[size]:not([size="1"]) {
+  .custom-select[multiple], .djangoform p select[multiple], .custom-select[size]:not([size="1"]), .djangoform p select[size]:not([size="1"]) {
     height: auto;
     padding-right: 0.75rem;
     background-image: none; }
-  .custom-select:disabled, .django-form p select:disabled {
+  .custom-select:disabled, .djangoform p select:disabled {
     color: #6c757d;
     background-color: #e9ecef; }
-  .custom-select::-ms-expand, .django-form p select::-ms-expand {
+  .custom-select::-ms-expand, .djangoform p select::-ms-expand {
     display: none; }
-  .custom-select:-moz-focusring, .django-form p select:-moz-focusring {
+  .custom-select:-moz-focusring, .djangoform p select:-moz-focusring {
     color: transparent;
     text-shadow: 0 0 0 #495057; }
 
@@ -3146,11 +3146,11 @@ input[type="button"].btn-block {
     background-color: #adb5bd; }
 
 .custom-control-label::before,
-.custom-file-label, .custom-select, .django-form p select {
+.custom-file-label, .custom-select, .djangoform p select {
   transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; }
   @media (prefers-reduced-motion: reduce) {
     .custom-control-label::before,
-    .custom-file-label, .custom-select, .django-form p select {
+    .custom-file-label, .custom-select, .djangoform p select {
       transition: none; } }
 
 .nav {
@@ -5826,7 +5826,7 @@ button.bg-darker:focus {
 .mx-2 {
   margin-right: 0.5rem !important; }
 
-.mb-2, .sign-up-in--errors, .sign-up-in--input-group, .sign-up-in--input-group--input,
+.mb-2, .sign-up-in--errors, .sign-up-in--input-group, .sign-up-in--input-group--input, .djangoform .errorlist,
 .my-2 {
   margin-bottom: 0.5rem !important; }
 
@@ -7247,13 +7247,13 @@ a.text-success:hover, a.text-success:focus {
 a.text-info:hover, a.text-info:focus {
   color: #0f6674 !important; }
 
-.text-warning {
+.text-warning, .djangoform.djangoform-dark .errorlist li {
   color: #ffc107 !important; }
 
 a.text-warning:hover, a.text-warning:focus {
   color: #ba8b00 !important; }
 
-.text-danger {
+.text-danger, .djangoform .errorlist li {
   color: #dc3545 !important; }
 
 a.text-danger:hover, a.text-danger:focus {
@@ -7280,13 +7280,13 @@ a.text-darker:hover, a.text-darker:focus {
 .text-body {
   color: white !important; }
 
-.text-muted, .django-form p .helptext {
+.text-muted, .djangoform p .helptext, .djangoform ul li {
   color: #6c757d !important; }
 
 .text-black-50 {
   color: rgba(0, 0, 0, 0.5) !important; }
 
-.text-white-50 {
+.text-white-50, .djangoform.djangoform-dark p .helptext, .djangoform.djangoform-dark ul li {
   color: rgba(255, 255, 255, 0.5) !important; }
 
 .text-hide {
@@ -7400,14 +7400,19 @@ body {
   flex-direction: column;
   justify-content: center; }
 
-.django-form p input {
+.djangoform p input {
   font-size: 16px; }
 
-.django-form p select {
+.djangoform p select {
   display: block;
   font-size: 16px; }
 
-.django-form p textarea {
+.djangoform p textarea {
   font-size: 16px; }
+
+.djangoform ul {
+  list-style: none;
+  margin: 0;
+  padding: 0; }
 
 /*# sourceMappingURL=main.css.map */

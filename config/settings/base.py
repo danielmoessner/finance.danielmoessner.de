@@ -98,6 +98,10 @@ DATABASES = {
 
 LOGIN_URL = 'users:signin'
 
+LOGIN_REDIRECT_URL = 'users:redirect'
+
+LOGOUT_REDIRECT_URL = 'users:redirect'
+
 AUTH_USER_MODEL = 'users.StandardUser'
 
 # Password validation

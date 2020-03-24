@@ -1,78 +1,64 @@
-{% macro formGenerator(form, url, csrf_token) %}
-	<form method="post" action="{{ url }}" class="django-form">
-		<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-		{% for hidden_field in form.hidden_fields() %}
-			{{ hidden_field }}
-		{% endfor %}
-
-		{% with errors=form.non_field_errors() %}
-			{% if errors %}
-				<p>
-					{% for error in errors %}
-						<span class="form-child--errors">
-							{{ error }}
-						</span>
-					{% endfor %}
-				</p>
-			{% endif %}
-		{% endwith %}
-
-		{% for field in form.visible_fields() %}
-			<p>
-				{{ field.label_tag() }}
-
-				{{ field }}
-				<span class="form-child--errors">
-					{{ field.errors|striptags|replace(".", ". ")|replace(".  ", ". ") }}
-				</span>
-				<span class="form-child--helptext">
-					{{ field.help_text|striptags|replace(".", ". ")|replace(".  ", ". ") }}
-				</span>
-			</p>
-		{% endfor %}
-		
-		<input type="submit" value="Submit" class="form-child--submit-button">
-	</form>
-{% endmacro %}
-
+{% import 'modules/button.njk' as buttons %}
 
 {% macro formContent(form, csrf_token) %}
-		<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-		{% for hidden_field in form.hidden_fields() %}
-			{{ hidden_field }}
-		{% endfor %}
 
-		{% with errors=form.non_field_errors() %}
-			{% if errors %}
-				<p>
-					{% for error in errors %}
-						<span class="form-child--errors">
-							{{ error }}
-						</span>
-					{% endfor %}
-				</p>
-			{% endif %}
-		{% endwith %}
+    {{ form.as_p() }}
 
-		{% for field in form.visible_fields() %}
-			<p>
-				{{ field.label_tag() }}
-				{{ field }}
-				<span class="form-child--errors">
-					{{ field.errors|striptags|replace(".", ". ")|replace(".  ", ". ") }}
-				</span>
-				<span class="form-child--helptext">
-					{{ field.help_text|striptags|replace(".", ". ")|replace(".  ", ". ") }}
-				</span>
-			</p>
-		{% endfor %}
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+    {#
+    {% for hidden_field in form.hidden_fields() %}
+        {{ hidden_field }}
+    {% endfor %}
+
+    {% with errors=form.non_field_errors() %}
+        {% if errors %}
+            {% for error in errors %}
+                <p class="alert alert-danger" role="alert">
+                    {{ error }}
+                </p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% for field in form.visible_fields() %}
+        <div class="mb-3">
+            <p class="mb-1">
+                {{ field.label_tag() }}
+                {{ field }}
+            </p>
+            {% if field.errors %}
+                <div class="alert alert-danger mb-1" role="alert">
+                    {{ field.errors|striptags|replace(".", ". ")|replace(".  ", ". ") }}
+                </div>
+            {% endif %}
+            <div class="form-text text-muted">
+                {{ field.help_text|striptags|replace(".", ". ")|replace(".  ", ". ") }}
+            </div>
+        </div>
+    {% endfor %}
+    #}
+
 {% endmacro %}
+
+
+{% macro formGenerator(form, url, csrf_token, form_classes='', submit_button_text='', submit_button_classes='') %}
+    <form method="post" action="{{ url }}" class="djangoform {{ form_classes }}">
+        {{ formContent(form, csrf_token) }}
+        {{ buttons.submitButton(text=submit_button_text, classes=submit_button_classes) }}
+    </form>
+{% endmacro %}
+
+
+
 
 
 {% macro setActiveButtonForm(object, url, csrf_token) %}
-	<form method="post" action="{{ url }}">
-		<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-		<input type="hidden" name="is_active" id="id_is_active" value="True">
-		<button type="submit" class="submit-button--small" role="button" {{ "disabled" if object.is_active else "" }}>Set Active</button>
-	</form>
+    <form method="post" action="{{ url }}">
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+        <input type="hidden" name="is_active" id="id_is_active" value="True">
+        <button type="submit" class="submit-button--small" role="button" {{ "disabled" if object.is_active else "" }}>
+            Set Active
+        </button>
+    </form>
 {% endmacro %}
