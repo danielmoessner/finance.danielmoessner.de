@@ -2,18 +2,11 @@ from django.views.generic.base import ContextMixin
 from django.template.loader import render_to_string
 from apps.core.forms import DeleteForm
 from django.utils.html import strip_tags
-from django.shortcuts import get_object_or_404
-from django.shortcuts import render
 from django.contrib import messages
 from django.views import generic
-from django.http import HttpResponseRedirect
 from django.http import HttpResponse
-from django.urls import reverse_lazy
 
 import json
-import re
-
-from apps.core.models import Page
 
 
 # mixins
@@ -69,69 +62,3 @@ class CustomDeleteView(generic.View):
 
     def form_invalid(self, form, **kwargs):
         raise NotImplementedError()
-
-
-class IndexView(generic.TemplateView):
-    template_name = "core_index.njk"
-
-    def get_context_data(self, **kwargs):
-        context = super(IndexView, self).get_context_data(**kwargs)
-        context["pages"] = Page.objects.order_by("-ordering")
-        return context
-
-
-class OldIndexView(generic.TemplateView):
-    template_name = "core_index_old.njk"
-
-    def get_context_data(self, **kwargs):
-        context = super(OldIndexView, self).get_context_data(**kwargs)
-        context["pages"] = Page.objects.order_by("-ordering")
-        return context
-
-
-class PageView(generic.TemplateView):
-    template_name = "core_page.njk"
-
-    def get_context_data(self, **kwargs):
-        context = super(PageView, self).get_context_data(**kwargs)
-        context["pages"] = Page.objects.order_by("-ordering")
-        context["page"] = get_object_or_404(Page, slug=self.kwargs['slug'])
-        return context
-
-
-class DataProtectionView(generic.TemplateView):
-    template_name = "core_dataprotection.njk"
-
-
-class ImprintView(generic.TemplateView):
-    template_name = "core_imprint.njk"
-
-
-class TermsOfUseView(generic.TemplateView):
-    template_name = "core_termsofuse.njk"
-
-
-class StaticRedirectView(generic.View):
-    def get(self, request, *args, **kwargs):
-        current_url = request.get_full_path()
-        splitted_url = re.split(r'(js|images|css|icons)', current_url)
-        url = ''.join(splitted_url[1:])
-        static_url = '/static/' + url
-        return HttpResponseRedirect(static_url)
-
-
-# error views
-def error_400_view(request, exception=None):
-    return render(request, "error_templates/400.html")
-
-
-def error_403_view(request, exception=None):
-    return render(request, "error_templates/403.html")
-
-
-def error_404_view(request, exception=None):
-    return render(request, "error_templates/404.html")
-
-
-def error_500_view(request, exception=None):
-    return render(request, "error_templates/500.html")

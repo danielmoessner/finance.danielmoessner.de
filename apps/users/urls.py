@@ -14,9 +14,9 @@ urlpatterns = [
     # login/
     path("signin/", views.SignInView.as_view(), name="signin"),
     # moesibert/
-    path("settings", views.SettingsView.as_view(), name="settings"),
+    path("settings/", views.SettingsView.as_view(), name="settings"),
 
-    path('redirect', views.RedirectView.as_view(), name='redirect'),
+    path('redirect/', views.RedirectView.as_view(), name='redirect'),
 
     # ADD / EDIT / DELETE
     path("user/<slug>/edit/", form_views.EditUserSettingsView.as_view(), name="edit_user"),
