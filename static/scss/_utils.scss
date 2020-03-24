@@ -1,0 +1,5 @@
+.bg-lg-transparent{
+  @include media-breakpoint-up(lg) {
+    background: transparent!important;
+  }
+}

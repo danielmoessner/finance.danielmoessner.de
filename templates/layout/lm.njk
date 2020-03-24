@@ -12,8 +12,9 @@
 {% import "modules/messages.njk" as messages %}
 
 {% block body %}
-    <body class="container d-flex flex-column flex-lg-row bg-darker">
-        <div class="row w-100 pt-4">
+    <body class="container bg-darker">
+    <div class="d-flex flex-column flex-lg-row">
+        <div class="row flex-grow-1 pt-4">
             <aside class="col-12 col-lg-3">
                 {{ lg.left(request) }}
             </aside>
@@ -29,5 +30,6 @@
                 {% block modals %}{% endblock %}
             </div>
         </div>
+    </div>
     </body>
 {% endblock body %}
