@@ -7398,10 +7398,14 @@ body {
   -webkit-appearance: none !important; }
 
 .btn-group {
+  overflow: visible;
   overflow-x: scroll; }
   @media (min-width: 768px) {
     .btn-group {
-      overflow-x: auto; } }
+      overflow-x: visible; } }
+
+.btn, .sign-up-in--button, .sign-up-in--switch-button {
+  white-space: nowrap; }
 
 .sign-up-in {
   max-width: 300px;

@@ -28,8 +28,6 @@ class IndexView(UserPassesTestMixin, TabContextMixin, generic.DetailView):
         context["user"] = self.request.user
         context["accounts"] = self.object.accounts.order_by("name")
         context["categories"] = self.object.categories.order_by("name")
-        context["timespans"] = self.object.timespans.all()
-        context["timespan"] = self.object.timespans.filter(is_active=True).first()
         # specific
         context['stats'] = self.object.get_stats()
         context['accounts'] = self.object.accounts.order_by('name')
@@ -50,8 +48,6 @@ class AccountView(UserPassesTestMixin, TabContextMixin, generic.DetailView):
         context["depot"] = self.object.depot
         context["accounts"] = context["depot"].accounts.order_by("name")
         context["categories"] = context["depot"].categories.order_by("name")
-        context["timespans"] = context["depot"].timespans.all()
-        context["timespan"] = context["depot"].timespans.filter(is_active=True).first()
         context["account"] = self.object
         context["stats"] = self.object.get_stats()
         context["changes"] = self.object.changes.order_by("-date", "-pk").select_related("category")
@@ -70,8 +66,6 @@ class CategoryView(UserPassesTestMixin, TabContextMixin, generic.DetailView):
         context["depot"] = self.object.depot
         context["accounts"] = context["depot"].accounts.order_by("name")
         context["categories"] = context["depot"].categories.order_by("name")
-        context["timespans"] = context["depot"].timespans.all()
-        context["timespan"] = context["depot"].timespans.filter(is_active=True).first()
         context["category"] = self.object
         context['stats'] = self.object.get_stats()
         context["changes"] = self.object.changes.order_by("-date", "-pk").select_related("account")

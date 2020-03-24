@@ -223,7 +223,3 @@ class Change(models.Model):
         Account.objects.filter(pk=self.account.pk).update(balance=None)
         Change.objects.filter(account=self.account, date__gte=self.date).update(balance=None)
         Depot.objects.filter(pk=self.account.depot.pk).update(balance=None)
-
-
-class Timespan(CoreTimespan):
-    depot = models.ForeignKey(Depot, editable=False, related_name="timespans", on_delete=models.CASCADE)

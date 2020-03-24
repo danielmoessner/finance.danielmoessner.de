@@ -3,17 +3,14 @@ from django.views.generic.edit import FormMixin
 from django.views import generic
 from django.urls import reverse_lazy
 
-from apps.banking.models import Timespan
 from apps.banking.models import Category
 from apps.banking.models import Account
 from apps.banking.models import Change
 from apps.banking.models import Depot
 from apps.banking.forms import CategorySelectForm
-from apps.banking.forms import TimespanActiveForm
 from apps.banking.forms import AccountSelectForm
 from apps.banking.forms import DepotActiveForm
 from apps.banking.forms import DepotSelectForm
-from apps.banking.forms import TimespanForm
 from apps.banking.forms import CategoryForm
 from apps.banking.forms import AccountForm
 from apps.banking.forms import ChangeForm
@@ -153,23 +150,3 @@ class EditChangeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin
 class DeleteChangeView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
     model = Change
     template_name = "modules/delete_snippet.njk"
-
-
-# timespan
-class AddTimespanView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
-    form_class = TimespanForm
-    model = Timespan
-    template_name = "modules/form_snippet.njk"
-
-
-class SetActiveTimespanView(LoginRequiredMixin, CustomGetFormMixin, generic.UpdateView):
-    model = Timespan
-    form_class = TimespanActiveForm
-    template_name = "modules/form_snippet.njk"
-    success_url = reverse_lazy("banking:index")
-
-
-class DeleteTimespanView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxDeleteMixin, generic.DeleteView):
-    model = Timespan
-    template_name = "modules/delete_snippet.njk"
-    form_class = TimespanForm

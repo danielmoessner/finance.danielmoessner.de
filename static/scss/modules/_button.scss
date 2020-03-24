@@ -5,8 +5,13 @@ td {
 }
 
 .btn-group {
+  overflow: visible;
   overflow-x: scroll;
   @include media-breakpoint-up(md) {
-    overflow-x: auto;
+    overflow-x: visible;
   }
+}
+
+.btn {
+  white-space: nowrap;
 }

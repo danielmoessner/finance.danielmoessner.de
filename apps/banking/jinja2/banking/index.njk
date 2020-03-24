@@ -19,7 +19,6 @@
         {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
         {{ bg.hrefButton("Accounts", request.path + '?tab=accounts', active=(tab=='accounts')) }}
         {{ bg.hrefButton("Categories", request.path + '?tab=categories', active=(tab=='categories')) }}
-        {{ bg.hrefButton("Timespans", request.path + '?tab=timespans', active=(tab=='timespans')) }}
         {{ bg.hrefButton("Charts", request.path + '?tab=charts', active=(tab=='charts')) }}
     </div>
 </div>
@@ -45,7 +44,7 @@
                 <td>{{ account.name }}</td>
                 <td>{{ account.get_stats()['Balance'] }}</td>
                 <td>
-                    <div class="d-flex">
+                    <div class="d-flex align-items-center">
                         {{ mg.djangoModal("Deposit / Withdraw", "addChange"+account.slug, url("banking:add_change", args=[account.slug])) }}
                         {{ bg.modalButton("Deposit / Withdraw", "#addChange"+account.slug) }}
                         {{ mg.djangoModal("Edit Account", "editAccount"+account.slug, url("banking:edit_account", args=[account.slug])) }}
@@ -104,45 +103,6 @@
         </tr>
         </tbody>
     </table>
-{% endif %}
-
-{% if tab=='timespans' %}
-<table class="table table-responsive-md table-dark">
-    <thead>
-    <tr>
-        <th class="border-0" scope="col">Name</th>
-        <th class="border-0" scope="col">Start Date</th>
-        <th class="border-0" scope="col">End Date</th>
-        <th class="border-0" scope="col">Action</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for timespan in timespans %}
-    {% set tablebuttons %}
-    {% endset %}
-    <tr>
-        <td>{{ timespan.name }}</td>
-        <td>{{ timespan.get_start_date() }}</td>
-        <td>{{ timespan.get_end_date() }}</td>
-        <td>
-            <div class="d-flex">
-                Set Active
-                {{ mg.djangoModal("Delete", "deleteTimespan"+timespan.pk|string, url("banking:delete_timespan", args=[timespan.pk])) }}
-                {{ bg.modalButton("Delete", "#deleteTimespan"+timespan.pk|string) }}
-            </div>
-        </td>
-    </tr>
-    {% endfor %}
-    <tr>
-        <td colspan="4">
-            <div class="d-flex">
-                {{ mg.djangoModal("Add Timespan", "addTimespan", url("banking:add_timespan")) }}
-                {{ bg.modalButton("Add Timespan", "#addTimespan") }}
-            </div>
-        </td>
-    </tr>
-    </tbody>
-</table>
 {% endif %}
 
 {% if tab=='charts' %}

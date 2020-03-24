@@ -1,6 +1,6 @@
 from rest_framework import permissions
 
-from .models import Account, Depot, Change, Category, Timespan
+from .models import Account, Depot, Change, Category
 
 
 class IsOwner(permissions.BasePermission):
@@ -9,7 +9,7 @@ class IsOwner(permissions.BasePermission):
     """
     def has_object_permission(self, request, view, obj):
         # Only allow access if the object belongs to the user.
-        if obj.__class__ == Account or obj.__class__ == Category or obj.__class__ == Timespan:
+        if obj.__class__ == Account or obj.__class__ == Category:
             return obj.depot.user == request.user
         elif obj.__class__ == Depot:
             return obj.user == request.user

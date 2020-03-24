@@ -48,11 +48,6 @@ urlpatterns = [
     path("account/<slug>/change/<pk>/edit/", form_views.EditChangeView.as_view(), name="edit_change"),
     path("account/<slug>/change/<pk>/delete/", form_views.DeleteChangeView.as_view(), name="delete_change"),
 
-    # timespan
-    path("timespan/add/", form_views.AddTimespanView.as_view(), name="add_timespan"),
-    path("timespan/<pk>/delete", form_views.DeleteTimespanView.as_view(), name="delete_timespan"),
-    path("timespan/<pk>/set", form_views.SetActiveTimespanView.as_view(), name="set_timespan"),
-
     # pages
     path("depots/<int:pk>/", views.IndexView.as_view(), name="index"),
     path("account/<slug>/", views.AccountView.as_view(), name="account"),

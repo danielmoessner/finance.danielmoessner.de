@@ -1,6 +1,5 @@
 from django import forms
 
-from apps.banking.models import Timespan
 from apps.banking.models import Category
 from apps.banking.models import Account
 from apps.banking.models import Change
@@ -128,35 +127,3 @@ class ChangeForm(forms.ModelForm):
         self.fields["account"].queryset = depot.accounts.all()
         self.fields["category"].queryset = depot.categories.all()
         self.fields["date"].initial = datetime.now()
-
-
-# timespan
-class TimespanForm(forms.ModelForm):
-    start_date = forms.DateTimeField(widget=forms.DateTimeInput(
-        attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
-        input_formats=["%Y-%m-%dT%H:%M"], label="Start Date (not required)", required=False)
-    end_date = forms.DateTimeField(widget=forms.DateTimeInput(
-        attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
-        input_formats=["%Y-%m-%dT%H:%M"], label="End Date (not required)", required=False)
-
-    class Meta:
-        model = Timespan
-        fields = (
-            "name",
-            "start_date",
-            "end_date"
-        )
-
-    def __init__(self, depot, *args, **kwargs):
-        super(TimespanForm, self).__init__(*args, **kwargs)
-        self.instance.depot = depot
-
-
-class TimespanActiveForm(forms.ModelForm):
-    class Meta:
-        model = Timespan
-        fields = ("is_active",)
-
-    def __init__(self, depot, *args, **kwargs):
-        super(TimespanActiveForm, self).__init__(*args, **kwargs)
-        depot.timespans.update(is_active=False)
