@@ -26,20 +26,7 @@
     </div>
 </div>
 
-{% if tab == 'stats' %}
-    <div class="row">
-        {% for data in stats %}
-            <div class="col-3">
-                <div class="card text-white bg-dark">
-                    <div class="card-body">
-                        <div class="card-title h5">{{ data[0] }}</div>
-                        <p class="card-text">{{ data[1] }}</p>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
-{% endif %}
+{% include 'symbols/stats.j2' %}
 
 {% if tab == 'alternatives' %}
     <table class="table table-responsive-md rounded table-dark">

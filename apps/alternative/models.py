@@ -258,11 +258,11 @@ class Movie(models.Model):
 
     # getters
     def get_stats(self):
-        return [
-            ['Time Weighted Return', utils.round_value_if_exists(self.time_weighted_return)],
-            ['Current Return', utils.round_value_if_exists(self.current_return)],
-            ['Internal Rate of Return', utils.round_value_if_exists(self.internal_rate_of_return)]
-        ]
+        return {
+            'Time Weighted Return': utils.round_value_if_exists(self.time_weighted_return),
+            'Current Return': utils.round_value_if_exists(self.current_return),
+            'Internal Rate of Return': utils.round_value_if_exists(self.internal_rate_of_return)
+        }
 
     def get_pictures(self):
         pictures = list(self.pictures.all().values('date', 'invested_capital', 'value', 'profit', 'flow'))
