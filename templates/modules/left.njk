@@ -14,15 +14,23 @@
                 <li class="nav-item">
                     <p class="font-weight-bold m-0 mb-2">Dashboards</p>
                 </li>
-                <li class="nav-item">
-                    {{ buttons.navigationButton("Banking", url("banking:index", args=[request.user.get_active_banking_depot_pk()]), active=("banking" in request.path)) }}
-                </li>
+                {% with pk=request.user.get_active_banking_depot_pk() %}
+                    {% if pk %}
+                        <li class="nav-item">
+                            {{ buttons.navigationButton("Banking", url("banking:index", args=[pk]), active=("banking" in request.path)) }}
+                        </li>
+                    {% endif %}
+                {% endwith %}
                 <li class="nav-item">
                     {{ buttons.navigationButton("Crypto", url('crypto:index'), active=("crypto" in request.path)) }}
                 </li>
-                <li class="nav-item">
-                    {{ buttons.navigationButton("Alternative", url('alternative:index', args=[request.user.get_active_alternative_depot_pk()]), active=("alternative" in request.path)) }}
-                </li>
+                {% with pk=request.user.get_active_alternative_depot_pk() %}
+                    {% if pk %}
+                        <li class="nav-item">
+                            {{ buttons.navigationButton("Alternative", url('alternative:index', args=[pk]), active=("alternative" in request.path)) }}
+                        </li>
+                    {% endif %}
+                {% endwith %}
                 <li class="nav-item">
                     <p class="font-weight-bold m-0 mb-2 mt-3">User</p>
                 </li>

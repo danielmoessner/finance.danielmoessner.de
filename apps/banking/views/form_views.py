@@ -1,6 +1,8 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic.edit import FormMixin
+from django.shortcuts import get_object_or_404
 from django.views import generic
+from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 
 from apps.banking.models import Category
@@ -20,6 +22,18 @@ from apps.core.views import CustomAjaxFormMixin
 from django.http import HttpResponse
 
 import json
+
+
+class UserAllowedToChangeStuff(UserPassesTestMixin):
+    def test_func(self):
+        self.object = self.get_object()
+        if self.object.__class__ == Depot:
+            return self.object.user == self.request.user
+        elif self.object.__class__ == Category or self.object.__class__ == Account:
+            return self.object.depot.user == self.request.user
+        elif self.object.__class__ == Change:
+            return self.object.account.user == self.request.user
+        return False
 
 
 # mixins
@@ -67,11 +81,16 @@ class DeleteDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxForm
         return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
 
 
-class SetActiveDepotView(LoginRequiredMixin, CustomGetFormUserMixin, generic.UpdateView):
-    model = Depot
-    form_class = DepotActiveForm
-    template_name = "modules/form_snippet.njk"
-    success_url = reverse_lazy("users:settings")
+class SetActiveDepotView(LoginRequiredMixin, generic.View):
+    http_method_names = ['get', 'head', 'options']
+
+    def get(self, request, pk, *args, **kwargs):
+        depot = get_object_or_404(self.request.user.banking_depots.all(), pk=pk)
+        form = DepotActiveForm(data={'is_active': True}, instance=depot)
+        if form.is_valid():
+            form.save()
+        url = '{}?tab=banking'.format(reverse_lazy('users:settings', args=[self.request.user.pk]))
+        return HttpResponseRedirect(url)
 
 
 # account

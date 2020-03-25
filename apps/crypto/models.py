@@ -65,6 +65,13 @@ class Depot(CoreDepot):
     user = models.ForeignKey(StandardUser, editable=False, related_name="crypto_depots",
                              on_delete=models.CASCADE)
 
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        super().save(force_insert=force_insert, force_update=force_update, using=using,
+                     update_fields=update_fields)
+        if self.is_active:
+            self.user.crypto_depots.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
+
     # getters
     def get_movie(self):
         movie, created = Movie.objects.get_or_create(depot=self, account=None, asset=None)

@@ -20,6 +20,13 @@ class Depot(CoreDepot):
     # query optimization
     latest_picture = models.ForeignKey('Picture', on_delete=models.SET_NULL, blank=True, null=True)
 
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        super().save(force_insert=force_insert, force_update=force_update, using=using,
+                     update_fields=update_fields)
+        if self.is_active:
+            self.user.alternative_depots.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
+
     # getters
     def get_flow_df(self):
         # instantiate a new dataframe

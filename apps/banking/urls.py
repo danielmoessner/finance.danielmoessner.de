@@ -24,17 +24,17 @@ urlpatterns = [
     path('api/depots/<int:pk>/balance-data/', views.BalanceData.as_view(), name='api_depot_balance_data'),
 
     # functions
-    path("reset-balances", views.reset_balances, name="reset_balances"),
+    path("reset-balances/", views.reset_balances, name="reset_balances"),
 
     # depot
-    path("depot/add", form_views.AddDepotView.as_view(), name="add_depot"),
+    path("depot/add/", form_views.AddDepotView.as_view(), name="add_depot"),
     path("depot/delete/", form_views.DeleteDepotView.as_view(), name="delete_depot"),
     path("depot/<pk>/edit/", form_views.EditDepotView.as_view(), name="edit_depot"),
-    path("depot/<pk>/set", form_views.SetActiveDepotView.as_view(), name="set_depot"),
+    path("depot/<pk>/set-active/", form_views.SetActiveDepotView.as_view(), name="set_depot"),
 
     # account
     path("account/add/", form_views.AddAccountView.as_view(), name="add_account"),
-    path("account/delete", form_views.DeleteAccountView.as_view(), name="delete_account"),
+    path("account/delete/", form_views.DeleteAccountView.as_view(), name="delete_account"),
     path("account/<slug>/edit/", form_views.EditAccountView.as_view(), name="edit_account"),
 
     # category

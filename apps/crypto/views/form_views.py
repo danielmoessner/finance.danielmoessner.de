@@ -1,5 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import get_object_or_404
 from django.views import generic
+from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 
 from apps.crypto.models import Transaction
@@ -71,11 +73,16 @@ class DeleteDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxForm
         return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
 
 
-class SetActiveDepotView(LoginRequiredMixin, CustomGetFormUserMixin, generic.UpdateView):
-    model = Depot
-    form_class = DepotActiveForm
-    template_name = "modules/form_snippet.njk"
-    success_url = reverse_lazy("users:settings")
+class SetActiveDepotView(LoginRequiredMixin, generic.View):
+    http_method_names = ['get', 'head', 'options']
+
+    def get(self, request, pk, *args, **kwargs):
+        depot = get_object_or_404(self.request.user.crypto_depots.all(), pk=pk)
+        form = DepotActiveForm(data={'is_active': True}, instance=depot)
+        if form.is_valid():
+            form.save()
+        url = '{}?tab=crypto'.format(reverse_lazy('users:settings', args=[self.request.user.pk]))
+        return HttpResponseRedirect(url)
 
 
 # account

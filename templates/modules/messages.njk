@@ -1,7 +1,6 @@
 {% macro lmMessages(request) %}
 	{% with messages=get_messages(request) %}
 		{% if messages %}
-			<div class="vs-1"></div>
 			<div class="messages">
 				{% for message in messages %}
 					{% if message.level <= 10 %}
@@ -17,8 +16,7 @@
 					{% endif %}
 				{% endfor %}
 			</div>
-			<div class="vs-1"></div>
-			<hr class="hr">
+			<hr class="w-100 mb-2 mt-2 border-secondary">
 		{% endif %}
 	{% endwith %}
 {% endmacro %}

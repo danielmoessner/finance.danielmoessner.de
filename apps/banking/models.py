@@ -6,6 +6,7 @@ from apps.core.models import Timespan as CoreTimespan
 from apps.core.models import Account as CoreAccount
 from apps.core.models import Depot as CoreDepot
 from apps.core.utils import turn_dict_of_dicts_into_list_of_dicts
+
 import apps.banking.duplicated_code as banking_duplicated_code
 import apps.core.duplicated_code as dc
 
@@ -15,6 +16,13 @@ class Depot(CoreDepot):
                              on_delete=models.CASCADE)
     # query optimzation
     balance = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        super().save(force_insert=force_insert, force_update=force_update, using=using,
+                     update_fields=update_fields)
+        if self.is_active:
+            self.user.banking_depots.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
 
     # getters
     def get_date_name_value_chart_data(self, statement):

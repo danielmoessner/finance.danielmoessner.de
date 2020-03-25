@@ -1,11 +1,11 @@
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
-from django.urls import reverse_lazy
 from django.db import models
-from datetime import timedelta
-import random
 
 from apps.core.utils import create_slug
+
+from datetime import timedelta
+import random
 
 
 class StandardUser(AbstractUser):
@@ -22,13 +22,7 @@ class StandardUser(AbstractUser):
         ("SETTINGS", "Settings")
     )
     front_page = models.CharField(max_length=8, choices=FRONT_PAGE_CHOICES, default="SETTINGS")
-    # crypto
-    crypto_is_active = models.BooleanField(default=False)
     rounded_numbers = models.BooleanField(default=True)
-    # banking
-    banking_is_active = models.BooleanField(default=False)
-    # alternative
-    alternative_is_active = models.BooleanField(default=False)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if not self.slug:
@@ -39,13 +33,13 @@ class StandardUser(AbstractUser):
     def get_active_banking_depot_pk(self):
         depots = self.banking_depots.filter(is_active=True)
         if depots.count() <= 0:
-            return 0
+            return None
         return depots.first().pk
 
     def get_active_alternative_depot_pk(self):
         depots = self.alternative_depots.filter(is_active=True)
         if depots.count() <= 0:
-            return 0
+            return None
         return depots.first().pk
 
     # setters
@@ -106,6 +100,8 @@ class StandardUser(AbstractUser):
             changes.append(Change(account=account, category=category, change=change, date=date,
                                   description=description))
         Change.objects.bulk_create(changes)
+        # return the depot that was created and contains the test data
+        return depot
 
     def create_random_alternative_data(self):
         from apps.alternative.models import Depot, Alternative, Value, Flow
@@ -113,7 +109,8 @@ class StandardUser(AbstractUser):
         from apps.core.utils import create_slug
         from django.utils import timezone
         from datetime import timedelta
-        depot = Depot.objects.create(name="Test Depot", user=self)
+        name = 'Depot {}'.format(random.randrange(100, 999))
+        depot = Depot.objects.create(name=name, user=self)
         self.set_alternative_depot_active(depot)
 
         # helper create alternative
@@ -160,3 +157,6 @@ class StandardUser(AbstractUser):
         create_flow(alternative3, 10, 10)
         create_value(alternative3, 10, 60)
         create_value(alternative3, 0, 60)
+
+        # return the depot that contains all the test data
+        return depot

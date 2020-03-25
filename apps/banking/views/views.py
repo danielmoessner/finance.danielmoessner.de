@@ -1,5 +1,4 @@
 from django.contrib.auth.mixins import UserPassesTestMixin
-from django.views.generic.base import ContextMixin
 from django.views import generic
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
@@ -18,6 +17,9 @@ class IndexView(UserPassesTestMixin, TabContextMixin, generic.DetailView):
     template_name = "banking/index.njk"
     model = Depot
     permission_denied_message = 'You have no permission to see this depot.'
+
+    def get(self, *args, **kwargs):
+        return super().get(*args, **kwargs)
 
     def test_func(self):
         return self.get_object().user == self.request.user

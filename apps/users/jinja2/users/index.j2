@@ -9,7 +9,6 @@
 {% import "modules/form.njk" as fg %}
 {% import "modules/heading.njk" as hg %}
 {% import "modules/modal.njk" as mg %}
-{% import "modules/console.njk" as cog %}
 
 {% block main %}
 
@@ -61,8 +60,8 @@
                     <td>{{ depot.name }}</td>
                     <td>
                         <div class="d-flex">
-                            {{ fg.setActiveButtonForm(depot, url("crypto:set_depot", args=[depot.pk]), csrf_token) }}
-                            {{ mg.djangoModal("Edit Depot", "editBankingDepot"+depot.pk|string, url("crypto:edit_depot", args=[depot.pk])) }}
+                            {{ bg.hrefButton(text="Set Active", url=url("banking:set_depot", args=[depot.pk]), disabled=(depot.is_active)) }}
+                            {{ mg.djangoModal("Edit Depot", "editBankingDepot"+depot.pk|string, url("banking:edit_depot", args=[depot.pk])) }}
                             {{ bg.modalButton("Edit", "#editBankingDepot"+depot.pk|string) }}
                         </div>
                     </td>
@@ -97,7 +96,7 @@
                     <td>{{ depot.name }}</td>
                     <td>
                         <div class="d-flex">
-                            {{ fg.setActiveButtonForm(depot, url("crypto:set_depot", args=[depot.pk]), csrf_token) }}
+                            {{ bg.hrefButton(text="Set Active", url=url("crypto:set_depot", args=[depot.pk]), disabled=(depot.is_active)) }}
                             {{ mg.djangoModal("Edit Depot", "editCryptoDepot"+depot.pk|string, url("crypto:edit_depot", args=[depot.pk])) }}
                             {{ bg.modalButton("Edit", "#editCryptoDepot"+depot.pk|string) }}
                         </div>
@@ -133,7 +132,7 @@
                     <td>{{ depot.name }}</td>
                     <td>
                         <div class="d-flex">
-                            {{ fg.setActiveButtonForm(depot, url("alternative:set_depot", args=[depot.pk]), csrf_token) }}
+                            {{ bg.hrefButton(text="Set Active", url=url("alternative:set_depot", args=[depot.pk]), disabled=(depot.is_active)) }}
                             {{ mg.djangoModal("Edit Depot", "editAlternativeDepot"+depot.pk|string, url("alternative:edit_depot", args=[depot.pk])) }}
                             {{ bg.modalButton("Edit", "#editAlternativeDepot"+depot.pk|string) }}
                         </div>

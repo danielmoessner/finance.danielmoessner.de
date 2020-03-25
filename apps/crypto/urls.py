@@ -28,7 +28,7 @@ urlpatterns = [
     path("depot/add/", form_views.AddDepotView.as_view(), name="add_depot"),
     path("depot/delete/", form_views.DeleteDepotView.as_view(), name="delete_depot"),
     path("depot/<pk>/edit/", form_views.EditDepotView.as_view(), name="edit_depot"),
-    path("depot/<pk>/set/", form_views.SetActiveDepotView.as_view(), name="set_depot"),
+    path("depot/<pk>/set-active/", form_views.SetActiveDepotView.as_view(), name="set_depot"),
 
     # account
     path("account/add/", form_views.AddAccountView.as_view(), name="add_account"),

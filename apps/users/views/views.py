@@ -1,11 +1,12 @@
-from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.mixins import UserPassesTestMixin
-from django.contrib.auth import logout as logout_user
+from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import logout
 from django.shortcuts import redirect
+from django.contrib import messages
 from django.views import generic
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-from django.contrib.auth.views import LoginView, LogoutView
 
 from apps.alternative.models import Depot as AlternativeDepot
 from apps.banking.models import Depot as BankingDepot
@@ -49,7 +50,7 @@ class SignInView(LoginView):
 
 class SignOutView(LogoutView):
     def get(self, request, *args, **kwargs):
-        logout_user(request)
+        logout(request)
         return redirect('users:redirect')
 
 
@@ -80,26 +81,26 @@ class IndexView(UserPassesTestMixin, TabContextMixin, generic.DetailView):
 
 def init_banking(request):
     user = request.user
-    user.create_random_banking_data()
-    user.banking_is_active = True
-    user.save()
-    return HttpResponseRedirect(reverse_lazy("users:settings", args=[user.pk]))
+    depot = user.create_random_banking_data()
+    message = "{} was created.".format(depot.name)
+    messages.success(request, message)
+    url = '{}?tab=banking'.format(reverse_lazy("users:settings", args=[user.pk]))
+    return HttpResponseRedirect(url)
 
 
 def init_crypto(request):
     user = request.user
     crypto_init_crypto(user)
-    user.crypto_is_active = True
-    user.save()
     return HttpResponseRedirect(reverse_lazy("users:settings", args=[user.pk]))
 
 
 def init_alternative(request):
     user = request.user
-    user.create_random_alternative_data()
-    user.alternative_is_active = True
-    user.save()
-    return HttpResponseRedirect(reverse_lazy("users:settings", args=[user.pk]))
+    depot = user.create_random_alternative_data()
+    message = "{} was created.".format(depot.name)
+    messages.success(request, message)
+    url = '{}?tab=alternative'.format(reverse_lazy("users:settings", args=[user.pk]))
+    return HttpResponseRedirect(url)
 
 
 def set_banking_depot_active(request, slug, pk):

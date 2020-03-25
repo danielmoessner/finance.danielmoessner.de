@@ -43,10 +43,6 @@ class DepotActiveForm(forms.ModelForm):
         model = Depot
         fields = ('is_active',)
 
-    def __init__(self, user, *args, **kwargs):
-        super(DepotActiveForm, self).__init__(*args, **kwargs)
-        user.alternative_depots.update(is_active=False)
-
 
 # alternative
 class AlternativeForm(forms.ModelForm):
