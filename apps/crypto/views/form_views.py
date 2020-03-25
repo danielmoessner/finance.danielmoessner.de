@@ -22,7 +22,7 @@ from apps.crypto.forms import AccountForm
 from apps.crypto.forms import TradeForm
 from apps.crypto.forms import DepotForm
 from apps.core.views import CustomAjaxDeleteMixin
-from apps.core.views import CustomAjaxFormMixin
+from apps.core.views import CustomAjaxResponseMixin
 from django.http import HttpResponse
 
 import json
@@ -46,19 +46,19 @@ class CustomGetFormUserMixin(object):
 
 
 # depot
-class AddDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxFormMixin, generic.CreateView):
+class AddDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxResponseMixin, generic.CreateView):
     form_class = DepotForm
     model = Depot
     template_name = "modules/form_snippet.njk"
 
 
-class EditDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxFormMixin, generic.UpdateView):
+class EditDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxResponseMixin, generic.UpdateView):
     model = Depot
     form_class = DepotForm
     template_name = "modules/form_snippet.njk"
 
 
-class DeleteDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxFormMixin, generic.FormView):
+class DeleteDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxResponseMixin, generic.FormView):
     model = Depot
     template_name = "modules/form_snippet.njk"
     form_class = DepotSelectForm
@@ -86,19 +86,19 @@ class SetActiveDepotView(LoginRequiredMixin, generic.View):
 
 
 # account
-class AddAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
+class AddAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.CreateView):
     form_class = AccountForm
     model = Account
     template_name = "modules/form_snippet.njk"
 
 
-class EditAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.UpdateView):
+class EditAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.UpdateView):
     model = Account
     form_class = AccountForm
     template_name = "modules/form_snippet.njk"
 
 
-class DeleteAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.FormView):
+class DeleteAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.FormView):
     model = Account
     template_name = "modules/form_snippet.njk"
     form_class = AccountSelectForm
@@ -110,7 +110,7 @@ class DeleteAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMi
 
 
 # asset
-class AddAssetView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.FormView):
+class AddAssetView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.FormView):
     model = Asset
     template_name = "modules/form_snippet.njk"
     form_class = AssetSelectForm
@@ -123,7 +123,7 @@ class AddAssetView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, 
         return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
 
 
-class RemoveAssetView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.FormView):
+class RemoveAssetView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.FormView):
     model = Asset
     template_name = "modules/form_snippet.njk"
     form_class = AssetSelectForm
@@ -138,13 +138,13 @@ class RemoveAssetView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixi
 
 
 # trade
-class AddTradeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
+class AddTradeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.CreateView):
     model = Trade
     form_class = TradeForm
     template_name = "modules/form_snippet.njk"
 
 
-class AddTradeAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
+class AddTradeAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.CreateView):
     model = Trade
     form_class = TradeForm
     template_name = "modules/form_snippet.njk"
@@ -156,7 +156,7 @@ class AddTradeAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxForm
         return kwargs
 
 
-class EditTradeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.UpdateView):
+class EditTradeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.UpdateView):
     model = Trade
     form_class = TradeForm
     template_name = "modules/form_snippet.njk"
@@ -168,13 +168,13 @@ class DeleteTradeView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteV
 
 
 # transaction
-class AddTransactionView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
+class AddTransactionView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.CreateView):
     model = Transaction
     form_class = TransactionForm
     template_name = "modules/form_snippet.njk"
 
 
-class EditTransactionView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.UpdateView):
+class EditTransactionView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.UpdateView):
     model = Transaction
     form_class = TransactionForm
     template_name = "modules/form_snippet.njk"
@@ -186,7 +186,7 @@ class DeleteTransactionView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.D
 
 
 # timespan
-class AddTimespanView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
+class AddTimespanView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.CreateView):
     form_class = TimespanForm
     model = Timespan
     template_name = "modules/form_snippet.njk"

@@ -85,17 +85,26 @@ class BalanceUpdateTestCase(TestCase):
     def get_depot(self):
         return Depot.objects.get(pk=self.depot_pk)
 
-    def test_balance_is_set_and_reset_properly_after_added_changes(self):
-        days_ago_20 = timezone.now() - timedelta(days=20)
+    def create_change_and_set_balances(self, days_ago=20):
+        date_x_days_ago = timezone.now() - timedelta(days=days_ago)
         change = create_change(self.get_depot(), account=self.get_account(), category=self.get_category(),
-                               date=days_ago_20)
-        # test that stats are being set properly
+                               date=date_x_days_ago)
+        # set the balances
         self.get_account().get_stats()
-        assert self.get_account().balance is not None
         self.get_depot().get_stats()
-        assert self.get_depot().balance is not None
         self.get_category().get_stats()
+        # return the change
+        return change
+
+    def test_balance_is_set_properly(self):
+        change = self.create_change_and_set_balances()
+        # test that stats are being set properly
+        assert self.get_account().balance is not None
+        assert self.get_depot().balance is not None
         assert self.get_category().balance is not None
+
+    def test_balance_is_reset_properly_after_change_added(self):
+        change = self.create_change_and_set_balances(days_ago=20)
         # test that balances are reset properly after a change is added
         days_ago_10 = timezone.now() - timedelta(days=10)
         change = create_change(self.get_depot(), account=self.get_account(), category=self.get_category(),
@@ -103,6 +112,14 @@ class BalanceUpdateTestCase(TestCase):
         assert self.get_account().balance is None
         assert self.get_category().balance is None
         assert self.get_depot().balance is None
+
+    def test_balance_is_not_set_to_none_after_no_changes(self):
+        change = self.create_change_and_set_balances()
+        # test that balances are not resetted
+        change.save()
+        assert self.get_account().balance is not None
+        assert self.get_category().balance is not None
+        assert self.get_depot().balance is not None
 
 
 class APITestCase(TestCase):

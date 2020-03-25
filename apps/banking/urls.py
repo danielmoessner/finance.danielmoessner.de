@@ -26,30 +26,29 @@ urlpatterns = [
     # functions
     path("reset-balances/", views.reset_balances, name="reset_balances"),
 
-    # depot
-    path("depot/add/", form_views.AddDepotView.as_view(), name="add_depot"),
-    path("depot/delete/", form_views.DeleteDepotView.as_view(), name="delete_depot"),
-    path("depot/<pk>/edit/", form_views.EditDepotView.as_view(), name="edit_depot"),
-    path("depot/<pk>/set-active/", form_views.SetActiveDepotView.as_view(), name="set_depot"),
+    # depots
+    path("depots/add/", form_views.AddDepotView.as_view(), name="add_depot"),
+    path("depots/delete/", form_views.DeleteDepotView.as_view(), name="delete_depot"),
+    path("depots/<int:pk>/edit/", form_views.EditDepotView.as_view(), name="edit_depot"),
+    path("depots/<int:pk>/set-active/", form_views.SetActiveDepotView.as_view(), name="set_depot"),
 
-    # account
-    path("account/add/", form_views.AddAccountView.as_view(), name="add_account"),
-    path("account/delete/", form_views.DeleteAccountView.as_view(), name="delete_account"),
-    path("account/<slug>/edit/", form_views.EditAccountView.as_view(), name="edit_account"),
+    # accounts
+    path("accounts/add/", form_views.AddAccountView.as_view(), name="add_account"),
+    path("accounts/delete/", form_views.DeleteAccountView.as_view(), name="delete_account"),
+    path("accounts/<int:pk>/edit/", form_views.EditAccountView.as_view(), name="edit_account"),
 
-    # category
-    path("category/add/", form_views.AddCategoryView.as_view(), name="add_category"),
-    path("category/delete/", form_views.DeleteCategoryView.as_view(), name="delete_category"),
-    path("category/<slug>/edit/", form_views.EditCategoryView.as_view(), name="edit_category"),
+    # categories
+    path("categories/add/", form_views.AddCategoryView.as_view(), name="add_category"),
+    path("categories/delete/", form_views.DeleteCategoryView.as_view(), name="delete_category"),
+    path("categories/<int:pk>/edit/", form_views.EditCategoryView.as_view(), name="edit_category"),
 
-    # change
-    path("change/add/", form_views.AddChangeIndexView.as_view(), name="add_change"),
-    path("account/<slug>/change/add/", form_views.AddChangeAccountView.as_view(), name="add_change"),
-    path("account/<slug>/change/<pk>/edit/", form_views.EditChangeView.as_view(), name="edit_change"),
-    path("account/<slug>/change/<pk>/delete/", form_views.DeleteChangeView.as_view(), name="delete_change"),
+    # changes
+    path("changes/add/", form_views.AddChangeView.as_view(), name="add_change"),
+    path("changes/<int:pk>/edit/", form_views.EditChangeView.as_view(), name="edit_change"),
+    path("changes/<int:pk>/delete/", form_views.DeleteChangeView.as_view(), name="delete_change"),
 
     # pages
     path("depots/<int:pk>/", views.IndexView.as_view(), name="index"),
-    path("account/<slug>/", views.AccountView.as_view(), name="account"),
-    path("category/<slug>/", views.CategoryView.as_view(), name="category"),
+    path("accounts/<int:pk>/", views.AccountView.as_view(), name="account"),
+    path("categories/<int:pk>/", views.CategoryView.as_view(), name="category"),
 ]

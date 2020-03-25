@@ -18,12 +18,13 @@ from apps.banking.forms import AccountForm
 from apps.banking.forms import ChangeForm
 from apps.banking.forms import DepotForm
 from apps.core.views import CustomAjaxDeleteMixin
-from apps.core.views import CustomAjaxFormMixin
+from apps.core.views import CustomAjaxResponseMixin
 from django.http import HttpResponse
 
 import json
 
 
+# mixins
 class UserAllowedToChangeStuff(UserPassesTestMixin):
     def test_func(self):
         self.object = self.get_object()
@@ -32,11 +33,10 @@ class UserAllowedToChangeStuff(UserPassesTestMixin):
         elif self.object.__class__ == Category or self.object.__class__ == Account:
             return self.object.depot.user == self.request.user
         elif self.object.__class__ == Change:
-            return self.object.account.user == self.request.user
+            return self.object.account.depot.user == self.request.user
         return False
 
 
-# mixins
 class CustomGetFormMixin(FormMixin):
     def get_form(self, form_class=None):
         if form_class is None:
@@ -54,19 +54,19 @@ class CustomGetFormUserMixin(object):
 
 
 # depot
-class AddDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxFormMixin, generic.CreateView):
+class AddDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxResponseMixin, generic.CreateView):
     form_class = DepotForm
     model = Depot
     template_name = "modules/form_snippet.njk"
 
 
-class EditDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxFormMixin, generic.UpdateView):
+class EditDepotView(UserAllowedToChangeStuff, CustomGetFormUserMixin, CustomAjaxResponseMixin, generic.UpdateView):
     model = Depot
     form_class = DepotForm
     template_name = "modules/form_snippet.njk"
 
 
-class DeleteDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxFormMixin, generic.FormView):
+class DeleteDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxResponseMixin, generic.FormView):
     model = Depot
     template_name = "modules/form_snippet.njk"
     form_class = DepotSelectForm
@@ -94,19 +94,19 @@ class SetActiveDepotView(LoginRequiredMixin, generic.View):
 
 
 # account
-class AddAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
+class AddAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.CreateView):
     form_class = AccountForm
     model = Account
     template_name = "modules/form_snippet.njk"
 
 
-class EditAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.UpdateView):
+class EditAccountView(UserAllowedToChangeStuff, CustomGetFormMixin, CustomAjaxResponseMixin, generic.UpdateView):
     model = Account
     form_class = AccountForm
     template_name = "modules/form_snippet.njk"
 
 
-class DeleteAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.FormView):
+class DeleteAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.FormView):
     model = Account
     template_name = "modules/form_snippet.njk"
     form_class = AccountSelectForm
@@ -118,19 +118,19 @@ class DeleteAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMi
 
 
 # category
-class AddCategoryView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
+class AddCategoryView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.CreateView):
     form_class = CategoryForm
     model = Category
     template_name = "modules/form_snippet.njk"
 
 
-class EditCategoryView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.UpdateView):
+class EditCategoryView(UserAllowedToChangeStuff, CustomGetFormMixin, CustomAjaxResponseMixin, generic.UpdateView):
     model = Category
     form_class = CategoryForm
     template_name = "modules/form_snippet.njk"
 
 
-class DeleteCategoryView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.FormView):
+class DeleteCategoryView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.FormView):
     model = Category
     template_name = "modules/form_snippet.njk"
     form_class = CategorySelectForm
@@ -142,25 +142,21 @@ class DeleteCategoryView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormM
 
 
 # change
-class AddChangeIndexView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
+class AddChangeView(LoginRequiredMixin, CustomAjaxResponseMixin, generic.CreateView):
     model = Change
     form_class = ChangeForm
     template_name = "modules/form_snippet.njk"
 
-
-class AddChangeAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
-    model = Change
-    form_class = ChangeForm
-    template_name = "modules/form_snippet.njk"
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        account = Account.objects.get(slug=self.kwargs["slug"])
-        kwargs.update({"initial": {"account": account}})
-        return kwargs
+    def get_form(self, form_class=None):
+        depot = self.request.user.banking_depots.get(is_active=True)
+        if form_class is None:
+            form_class = self.get_form_class()
+        if self.request.method == 'GET':
+            return form_class(depot, initial=self.request.GET, **self.get_form_kwargs().pop('initial'))
+        return form_class(depot, **self.get_form_kwargs())
 
 
-class EditChangeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.UpdateView):
+class EditChangeView(UserAllowedToChangeStuff, CustomGetFormMixin, CustomAjaxResponseMixin, generic.UpdateView):
     model = Change
     form_class = ChangeForm
     template_name = "modules/form_snippet.njk"

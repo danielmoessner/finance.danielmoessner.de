@@ -182,17 +182,25 @@ class Change(models.Model):
         super(Change, self).__init__(*args, **kwargs)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        if self.pk:
+        something_changed = False
+
+        if self.pk is not None:
             change = Change.objects.get(pk=self.pk)
 
             if (
                     change.account != self.account or change.category != self.category or
                     change.date != self.date or change.change != self.change
             ):
+                something_changed = True
                 change.set_balances_of_affected_objects_to_null()
 
+        elif self.pk is None:
+            something_changed = True
+
         super().save(force_insert, force_update, using, update_fields)
-        self.set_balances_of_affected_objects_to_null()
+
+        if something_changed:
+            self.set_balances_of_affected_objects_to_null()
 
     # getters
     @staticmethod

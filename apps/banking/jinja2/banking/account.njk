@@ -41,9 +41,9 @@
                     <td>{{ change.get_stats()['Balance'] }}</td>
                     <td>
                         <div class="d-flex">
-                            {{ mg.djangoModal("Edit Change", "editChange"+change.pk|string, url("banking:edit_change", args=[account.slug, change.pk])) }}
+                            {{ mg.djangoModal("Edit Change", "editChange"+change.pk|string, url("banking:edit_change", args=[change.pk])) }}
                             {{ bg.modalButton("Edit", "#editChange"+change.pk|string) }}
-                            {{ mg.djangoModal("Delete Change", "deleteChange"+change.pk|string, url("banking:delete_change", args=[account.slug, change.pk])) }}
+                            {{ mg.djangoModal("Delete Change", "deleteChange"+change.pk|string, url("banking:delete_change", args=[change.pk])) }}
                             {{ bg.modalButton("Delete", "#deleteChange"+change.pk|string) }}
                         </div>
                     </td>
@@ -51,7 +51,7 @@
                 {% endfor %}
                 <tr>
                     <td colspan="6">
-                        {{ mg.djangoModal("Deposit / Withdraw", "addChange", url("banking:add_change", args=[account.slug])) }}
+                        {{ mg.djangoModal("Deposit / Withdraw", "addChange", url("banking:add_change")+"?account="+account.pk|string) }}
                         {{ bg.modalButton("Deposit / Withdraw", "#addChange") }}
                     </td>
                 </tr>

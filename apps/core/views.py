@@ -32,7 +32,7 @@ class CustomAjaxDeleteMixin(object):
         return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
 
 
-class CustomAjaxFormMixin(object):
+class CustomAjaxResponseMixin(object):
     def form_invalid(self, form):
         html = render_to_string(self.template_name, self.get_context_data(form=form),
                                 request=self.request)

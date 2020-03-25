@@ -1,31 +1,31 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic.edit import FormMixin
 from django.shortcuts import get_object_or_404
 from django.views import generic
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
 
-from apps.alternative.models import Timespan
-from apps.alternative.models import Alternative
-from apps.alternative.models import Value
-from apps.alternative.models import Flow
-from apps.alternative.models import Depot
-from apps.alternative.forms import TimespanActiveForm
-from apps.alternative.forms import DepotActiveForm
-from apps.alternative.forms import DepotSelectForm
-from apps.alternative.forms import TimespanForm
-from apps.alternative.forms import AlternativeForm
-from apps.alternative.forms import AlternativeSelectForm
-from apps.alternative.forms import FlowForm
-from apps.alternative.forms import ValueForm
-from apps.alternative.forms import DepotForm
-from apps.core.views import CustomAjaxDeleteMixin
-from apps.core.views import CustomAjaxFormMixin
+from apps.alternative.models import Timespan, Alternative, Value, Flow, Depot
+from apps.alternative.forms import TimespanActiveForm, DepotActiveForm, DepotSelectForm, TimespanForm, AlternativeForm
+from apps.alternative.forms import AlternativeSelectForm, FlowForm, ValueForm, DepotForm
+from apps.core.views import CustomAjaxDeleteMixin, CustomAjaxResponseMixin
 
 import json
 
 
 # mixins
+class UserAllowedToChangeStuff(UserPassesTestMixin):
+    def test_func(self):
+        self.object = self.get_object()
+        if self.object.__class__ == Depot:
+            return self.object.user == self.request.user
+        elif self.object.__class__ == Alternative:
+            return self.object.depot.user == self.request.user
+        elif self.object.__class__ == Flow or self.object.__class__ == Value:
+            return self.object.alternative.user == self.request.user
+        return False
+
+
 class CustomGetFormMixin(FormMixin):
     def get_form(self, form_class=None):
         if form_class is None:
@@ -43,19 +43,19 @@ class CustomGetFormUserMixin(object):
 
 
 # depot
-class AddDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxFormMixin, generic.CreateView):
+class AddDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxResponseMixin, generic.CreateView):
     form_class = DepotForm
     model = Depot
     template_name = "modules/form_snippet.njk"
 
 
-class EditDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxFormMixin, generic.UpdateView):
+class EditDepotView(UserAllowedToChangeStuff, CustomGetFormUserMixin, CustomAjaxResponseMixin, generic.UpdateView):
     model = Depot
     form_class = DepotForm
     template_name = "modules/form_snippet.njk"
 
 
-class DeleteDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxFormMixin, generic.FormView):
+class DeleteDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxResponseMixin, generic.FormView):
     model = Depot
     template_name = "modules/form_snippet.njk"
     form_class = DepotSelectForm
@@ -83,19 +83,19 @@ class SetActiveDepotView(LoginRequiredMixin, generic.View):
 
 
 # alternative
-class AddAlternativeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
+class AddAlternativeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.CreateView):
     form_class = AlternativeForm
     model = Alternative
     template_name = "modules/form_snippet.njk"
 
 
-class EditAlternativeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.UpdateView):
+class EditAlternativeView(UserAllowedToChangeStuff, CustomGetFormMixin, CustomAjaxResponseMixin, generic.UpdateView):
     model = Alternative
     form_class = AlternativeForm
     template_name = "modules/form_snippet.njk"
 
 
-class DeleteAlternativeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.FormView):
+class DeleteAlternativeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.FormView):
     model = Alternative
     template_name = "modules/form_snippet.njk"
     form_class = AlternativeSelectForm
@@ -107,13 +107,13 @@ class DeleteAlternativeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFo
 
 
 # value
-class AddValueView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
+class AddValueView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.CreateView):
     model = Value
     form_class = ValueForm
     template_name = "modules/form_snippet.njk"
 
 
-class AddValueAlternativeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
+class AddValueAlternativeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.CreateView):
     model = Value
     form_class = ValueForm
     template_name = "modules/form_snippet.njk"
@@ -125,7 +125,7 @@ class AddValueAlternativeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjax
         return kwargs
 
 
-class EditValueView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.UpdateView):
+class EditValueView(UserAllowedToChangeStuff, CustomGetFormMixin, CustomAjaxResponseMixin, generic.UpdateView):
     model = Value
     form_class = ValueForm
     template_name = "modules/form_snippet.njk"
@@ -137,13 +137,13 @@ class DeleteValueView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteV
 
 
 # flow
-class AddFlowView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
+class AddFlowView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.CreateView):
     model = Flow
     form_class = FlowForm
     template_name = "modules/form_snippet.njk"
 
 
-class AddFlowAlternativeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
+class AddFlowAlternativeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.CreateView):
     model = Flow
     form_class = FlowForm
     template_name = "modules/form_snippet.njk"
@@ -155,7 +155,7 @@ class AddFlowAlternativeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxF
         return kwargs
 
 
-class EditFlowView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.UpdateView):
+class EditFlowView(UserAllowedToChangeStuff, CustomGetFormMixin, CustomAjaxResponseMixin, generic.UpdateView):
     model = Flow
     form_class = FlowForm
     template_name = "modules/form_snippet.njk"
@@ -167,7 +167,7 @@ class DeleteFlowView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteVi
 
 
 # timespan
-class AddTimespanView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxFormMixin, generic.CreateView):
+class AddTimespanView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.CreateView):
     form_class = TimespanForm
     model = Timespan
     template_name = "modules/form_snippet.njk"

@@ -42,11 +42,11 @@
                 <td>{{ account.get_stats()['Balance'] }}</td>
                 <td>
                     <div class="d-flex align-items-center">
-                        {{ mg.djangoModal("Deposit / Withdraw", "addChange"+account.slug, url("banking:add_change", args=[account.slug])) }}
-                        {{ bg.modalButton("Deposit / Withdraw", "#addChange"+account.slug) }}
-                        {{ mg.djangoModal("Edit Account", "editAccount"+account.slug, url("banking:edit_account", args=[account.slug])) }}
-                        {{ bg.modalButton("Edit", "#editAccount"+account.slug) }}
-                        {{ bg.hrefButton("Open", url("banking:account", args=[account.slug])) }}
+                        {{ mg.djangoModal("Deposit / Withdraw", "addChange"+account.pk|string, url("banking:add_change")+"?account="+account.pk|string) }}
+                        {{ bg.modalButton("Deposit / Withdraw", "#addChange"+account.pk|string) }}
+                        {{ mg.djangoModal("Edit Account", "editAccount"+account.pk|string, url("banking:edit_account", args=[account.pk])) }}
+                        {{ bg.modalButton("Edit", "#editAccount"+account.pk|string) }}
+                        {{ bg.hrefButton("Open", url("banking:account", args=[account.pk])) }}
                     </div>
                 </td>
             </tr>
@@ -81,9 +81,9 @@
                 <td>{{ category.get_stats()['Change'] }}</td>
                 <td>
                     <div class="d-flex">
-                        {{ bg.modalButton("Edit", "#editCategory"+category.slug) }}
-                        {{ mg.djangoModal("Edit Category", "editCategory"+category.slug, url("banking:edit_category", args=[category.slug])) }}
-                        {{ bg.hrefButton("Open", url("banking:category", args=[category.slug])) }}
+                        {{ bg.modalButton("Edit", "#editCategory"+category.pk|string) }}
+                        {{ mg.djangoModal("Edit Category", "editCategory"+category.pk|string, url("banking:edit_category", args=[category.pk])) }}
+                        {{ bg.hrefButton("Open", url("banking:category", args=[category.pk])) }}
                     </div>
                 </td>
             </tr>

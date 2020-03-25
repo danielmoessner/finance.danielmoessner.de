@@ -7,7 +7,7 @@ from apps.users.models import StandardUser
 from apps.users.forms import UpdateGeneralStandardUserForm
 from apps.users.forms import UpdateCryptoStandardUserForm
 from apps.users.forms import UpdateStandardUserForm
-from apps.core.views import CustomAjaxFormMixin
+from apps.core.views import CustomAjaxResponseMixin
 
 
 class UserIsLoggedIn(UserPassesTestMixin):
@@ -15,24 +15,24 @@ class UserIsLoggedIn(UserPassesTestMixin):
         return self.get_object() == self.request.user
 
 
-class EditUserSettingsView(UserIsLoggedIn, CustomAjaxFormMixin, generic.UpdateView):
+class EditUserSettingsView(UserIsLoggedIn, CustomAjaxResponseMixin, generic.UpdateView):
     form_class = UpdateStandardUserForm
     model = StandardUser
     template_name = "modules/form_snippet.njk"
 
 
-class EditUserPasswordSettingsView(CustomAjaxFormMixin, PasswordChangeView):
+class EditUserPasswordSettingsView(CustomAjaxResponseMixin, PasswordChangeView):
     form_class = PasswordChangeForm
     template_name = "modules/form_snippet.njk"
 
 
-class EditUserGeneralSettingsView(UserIsLoggedIn, CustomAjaxFormMixin, generic.UpdateView):
+class EditUserGeneralSettingsView(UserIsLoggedIn, CustomAjaxResponseMixin, generic.UpdateView):
     form_class = UpdateGeneralStandardUserForm
     model = StandardUser
     template_name = "modules/form_snippet.njk"
 
 
-class EditUserCryptoSettingsView(UserIsLoggedIn, CustomAjaxFormMixin, generic.UpdateView):
+class EditUserCryptoSettingsView(UserIsLoggedIn, CustomAjaxResponseMixin, generic.UpdateView):
     form_class = UpdateCryptoStandardUserForm
     model = StandardUser
     template_name = "modules/form_snippet.njk"
