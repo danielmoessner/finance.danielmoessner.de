@@ -69,20 +69,16 @@ class StandardUser(AbstractUser):
         account1.slug = create_slug(account1)
         account1.save()
         account2 = Account.objects.create(depot=depot, name="Bank #2")
-        account2.slug = create_slug(account1)
         account2.save()
         # category
         category1 = Category.objects.create(depot=depot, name="Category #1",
                                             description="This category is for test purposes only.")
-        category1.slug = create_slug(category1)
         category1.save()
         category2 = Category.objects.create(depot=depot, name="Category #2",
                                             description="This category is for test purposes only.")
-        category2.slug = create_slug(category2)
         category2.save()
         category3 = Category.objects.create(depot=depot, name="Category #3",
                                             description="This category is for test purposes only.")
-        category3.slug = create_slug(category3)
         category3.save()
         # changes
         changes = list()

@@ -53,10 +53,6 @@ class AccountForm(forms.ModelForm):
         super(AccountForm, self).__init__(*args, **kwargs)
         self.instance.depot = depot
 
-    def save(self, commit=True):
-        self.instance.slug = create_slug(self.instance, self.instance.name)
-        return super(AccountForm, self).save(commit=commit)
-
 
 class AccountSelectForm(forms.Form):
     account = forms.ModelChoiceField(widget=forms.Select, queryset=None)
@@ -83,10 +79,6 @@ class CategoryForm(forms.ModelForm):
     def __init__(self, depot, *args, **kwargs):
         super(CategoryForm, self).__init__(*args, **kwargs)
         self.instance.depot = depot
-
-    def save(self, commit=True):
-        self.instance.slug = create_slug(self.instance, self.instance.name)
-        return super(CategoryForm, self).save(commit=commit)
 
 
 class CategorySelectForm(forms.Form):

@@ -55,7 +55,7 @@ class ViewsTestCase(TestCase):
         self.client.login(username="dummy", password="test")
         self.user = User.objects.get(username="dummy")
         account = self.user.banking_depots.get(is_active=True).accounts.first()
-        response = self.client.get(reverse_lazy("banking:account", args=[account.slug]))
+        response = self.client.get(reverse_lazy("banking:account", args=[account.pk]))
         self.assertEqual(response.status_code, 200)
 
     def test_category_view(self):
@@ -63,7 +63,7 @@ class ViewsTestCase(TestCase):
         self.client.login(username="dummy", password="test")
         self.user = User.objects.get(username="dummy")
         category = self.user.banking_depots.get(is_active=True).categories.first()
-        response = self.client.get(reverse_lazy("banking:category", args=[category.slug]))
+        response = self.client.get(reverse_lazy("banking:category", args=[category.pk]))
         self.assertEqual(response.status_code, 200)
 
 

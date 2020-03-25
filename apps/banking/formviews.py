@@ -17,8 +17,7 @@ from apps.banking.forms import CategoryForm
 from apps.banking.forms import AccountForm
 from apps.banking.forms import ChangeForm
 from apps.banking.forms import DepotForm
-from apps.core.views import CustomAjaxDeleteMixin
-from apps.core.views import CustomAjaxResponseMixin
+from apps.core.views import CustomAjaxDeleteMixin, CustomGetFormUserMixin, CustomAjaxResponseMixin
 from django.http import HttpResponse
 
 import json
@@ -31,14 +30,6 @@ class CustomGetFormMixin(FormMixin):
             form_class = self.get_form_class()
         depot = self.request.user.banking_depots.get(is_active=True)
         return form_class(depot, **self.get_form_kwargs())
-
-
-class CustomGetFormUserMixin(object):
-    def get_form(self, form_class=None):
-        if form_class is None:
-            form_class = self.get_form_class()
-        user = self.request.user
-        return form_class(user, **self.get_form_kwargs())
 
 
 # depot

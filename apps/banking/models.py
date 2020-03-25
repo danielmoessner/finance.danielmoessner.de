@@ -129,7 +129,6 @@ class Account(CoreAccount):
 class Category(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    slug = models.SlugField(unique=True)
     depot = models.ForeignKey(Depot, editable=False, related_name="categories",
                               on_delete=models.CASCADE)
     # query optimzation

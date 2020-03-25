@@ -40,26 +40,6 @@ def create_slug(instance, on=None, slug=None):
     return slug
 
 
-def form_invalid_universal(view, form, errors_name, heading="Something went wrong.", **kwargs):
-    context = view.get_context_data(**kwargs)
-    context[errors_name] = [heading, ]
-    for field in form:
-        context[errors_name].append(
-            strip_tags(field.errors).replace(".", ". ").replace("  ", " ")
-        )
-    while "" in context[errors_name]:
-        context[errors_name].remove("")
-    return view.render_to_response(context)
-
-
-def errors_to_view(view, errors_heading="Something went wrong.", errors=()):
-    errors = list(errors)
-    errors.insert(0, errors_heading)
-    context = view.get_context_data()
-    context["errors"] = errors
-    return view.render_to_response(context)
-
-
 def create_paginator(page_get_param, objects, pages):
     paginator = Paginator(objects, pages)
     success = False
