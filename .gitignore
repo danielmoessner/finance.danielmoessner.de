@@ -13,3 +13,4 @@ app/libs/**
 *.pyc
 **/__pycache__
 **/migrations
+package-lock.json
