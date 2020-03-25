@@ -1,12 +1,16 @@
 <h2>Income & Expenditure</h2>
 
-<div class="w-100 rounded bg-light mb-5" id="incomeAndExpenditureChart" style="height: 600px;"></div>
+<div class="w-100 rounded bg-dark mb-5" id="incomeAndExpenditureChart" style="height: 600px;"></div>
 
-<script>
+<script type="module">
+
+    import * as _ from "/static/js/charts.js";
+
     am4core.ready(function () {
 
         // use a theme
         am4core.useTheme(am4themes_animated);
+        am4core.useTheme(am4themes_dark);
 
         // create the chart and set default settings
         const chart = am4core.create("incomeAndExpenditureChart", am4charts.XYChart);
@@ -36,6 +40,11 @@
         // legend
         chart.legend = new am4charts.Legend();
         chart.scrollbarX = new am4core.Scrollbar();
+        chart.scrollbarX.background.fill = am4core.color("#6c757d");
+        chart.scrollbarX.thumb.background.fill = am4core.color("#6c757d");
+        chart.scrollbarX.startGrip.background.fill = am4core.color("#6c757d");
+        chart.scrollbarX.endGrip.background.fill = am4core.color("#6c757d");
+        chart.scrollbarX.stroke = am4core.color("#6c757d");
 
     });
 </script>

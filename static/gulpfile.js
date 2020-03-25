@@ -1,59 +1,66 @@
-const gulp = require("gulp");
+const source = require("vinyl-source-stream");
+const sourcemaps = require("gulp-sourcemaps");
+const browserify = require("browserify");
+const buffer = require("vinyl-buffer");
+const uglify = require("gulp-uglify");
 const sass = require("gulp-sass");
-const browserify = require('browserify');
-const source = require('vinyl-source-stream');
-const buffer = require('vinyl-buffer');
-const uglify = require('gulp-uglify');
-const sourcemaps = require('gulp-sourcemaps');
-const log = require('gulplog');
+const log = require("gulplog");
+const gulp = require("gulp");
 
 ///
 // css
 ///
 function css() {
-    return gulp.src('./scss/main.scss')
+    return gulp.src("./scss/main.scss")
         .pipe(sourcemaps.init())
         .pipe(sass({
-            includePaths: ['node_modules']
+            includePaths: ["node_modules"]
         }))
-        .pipe(sourcemaps.write('.'))
-        .pipe(gulp.dest('./app/css/'))
+        .pipe(sourcemaps.write("."))
+        .pipe(gulp.dest("./app/css/"))
 }
 
-gulp.task("css:watch", function () {
+function cssWatch() {
     gulp.watch("./scss/**/*.scss", css)
-});
+}
 
 ///
 // javascript
 ///
-function js() {
-    // set up the browserify instance on a task basis
-    var b = browserify({
-        entries: './javascript/index.js',
+function js(entries, filename) {
+    let b = browserify({
+        entries: entries,
         debug: true
     });
 
     return b.bundle()
-        .pipe(source('app.js'))
+        .pipe(source(filename))
         .pipe(buffer())
         .pipe(sourcemaps.init({loadMaps: true}))
-        // Add transformation tasks to the pipeline here.
         .pipe(uglify())
-        .on('error', log.error)
-        .pipe(sourcemaps.write('./'))
-        .pipe(gulp.dest('./app/js/'));
+        .on("error", log.error)
+        .pipe(sourcemaps.write("./"))
+        .pipe(gulp.dest("./app/js/"));
 }
 
-gulp.task("js:watch", function () {
-    gulp.watch("./javascript/**.js", js)
-});
+function jsApp() {
+    return js("./javascript/index.js", "app.js")
+}
+
+function jsCharts() {
+    return js("./javascript/charts.js", "charts.js")
+}
+
+function jsWatch() {
+    gulp.watch("./javascript/**.js", gulp.parallel(jsApp, jsCharts))
+}
 
 ///
 // exports
 ///
 
-exports.default = gulp.parallel("css:watch", "js:watch");
-
-exports.css = css;
-exports.js = js;
+gulp.task("watch", gulp.parallel(cssWatch, jsWatch));
+gulp.task("js", jsApp);
+gulp.task("js:app", jsApp);
+gulp.task("js:charts", jsCharts);
+gulp.task("css", css);
