@@ -4,7 +4,7 @@ from django.urls import reverse_lazy
 from django.test import TestCase
 from django.test import Client
 
-from apps.banking.models import Depot, Category, Account
+from apps.banking.models import Depot, Category, Account, Change
 from apps.banking.forms import ChangeForm, AccountForm, DepotForm, CategoryForm
 from apps.users.models import StandardUser as User
 
@@ -109,6 +109,16 @@ class BalanceUpdateTestCase(TestCase):
         days_ago_10 = timezone.now() - timedelta(days=10)
         change = create_change(self.get_depot(), account=self.get_account(), category=self.get_category(),
                                date=days_ago_10)
+        assert self.get_account().balance is None
+        assert self.get_category().balance is None
+        assert self.get_depot().balance is None
+
+    def test_balance_is_reset_after_change_deletion(self):
+        change1 = self.create_change_and_set_balances(days_ago=20)
+        change2 = self.create_change_and_set_balances(days_ago=10)
+        # test that balances are reset properly after a change is added
+        change1.delete()
+        assert Change.objects.get(pk=change2.pk).balance is None
         assert self.get_account().balance is None
         assert self.get_category().balance is None
         assert self.get_depot().balance is None

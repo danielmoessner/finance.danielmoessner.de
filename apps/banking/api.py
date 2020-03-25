@@ -7,6 +7,9 @@ from apps.banking.serializers import AccountSerializer, ChangeSerializer, Catego
 from apps.banking.permissions import IsOwner
 from apps.banking.models import Account, Change, Category, Depot
 
+from rest_framework.response import Response
+from rest_framework.generics import GenericAPIView
+
 
 class DepotViewSet(viewsets.ModelViewSet):
     """
@@ -70,3 +73,30 @@ class ChangeViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Change.get_objects_by_user(self.request.user)
+
+
+# chart api
+class IncomeAndExpenditureData(GenericAPIView):
+    def get_queryset(self):
+        user = self.request.user
+        return user.banking_depots.all()
+
+    def get(self, request, pk):
+        instance = self.get_object()
+
+        data = instance.get_income_and_expenditure_data()
+
+        return Response(data)
+
+
+class BalanceData(GenericAPIView):
+    def get_queryset(self):
+        user = self.request.user
+        return user.banking_depots.all()
+
+    def get(self, request, pk):
+        instance = self.get_object()
+
+        data = instance.get_balance_data()
+
+        return Response(data)

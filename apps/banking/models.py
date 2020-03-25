@@ -161,18 +161,11 @@ class Category(models.Model):
     def get_objects_by_depot(depot):
         return Category.objects.filter(depot=depot)
 
-    @staticmethod
-    def get_default_category():
-        return Category.objects.get_or_create(
-            name="Default Category",
-            description="This category was created because the original category got deleted.")
-
 
 class Change(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="changes")
     date = models.DateTimeField()
-    category = models.ForeignKey(Category, related_name="changes", null=True,
-                                 on_delete=models.SET_NULL)
+    category = models.ForeignKey(Category, related_name="changes", null=True, on_delete=models.SET_NULL)
     description = models.TextField(blank=True)
     change = models.DecimalField(decimal_places=2, max_digits=15)
     # query optimization
@@ -201,6 +194,10 @@ class Change(models.Model):
 
         if something_changed:
             self.set_balances_of_affected_objects_to_null()
+
+    def delete(self, using=None, keep_parents=False):
+        self.set_balances_of_affected_objects_to_null()
+        return super().delete(using=using, keep_parents=keep_parents)
 
     # getters
     @staticmethod

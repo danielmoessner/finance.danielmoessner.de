@@ -1,9 +1,9 @@
 from rest_framework import routers
 from django.urls import path, include
 
-from apps.banking.views import form_views
-from apps.banking.views import views
-from apps.banking.views import api
+from apps.banking import formviews
+from apps.banking import views
+from apps.banking import api
 
 app_name = "banking"
 
@@ -19,33 +19,30 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 
     # charts
-    path('api/depots/<int:pk>/income-and-expenditure-data/', views.IncomeAndExpenditureData.as_view(),
+    path('api/depots/<int:pk>/income-and-expenditure-data/', api.IncomeAndExpenditureData.as_view(),
          name='api_depot_income_and_expenditure_data'),
-    path('api/depots/<int:pk>/balance-data/', views.BalanceData.as_view(), name='api_depot_balance_data'),
-
-    # functions
-    path("reset-balances/", views.reset_balances, name="reset_balances"),
+    path('api/depots/<int:pk>/balance-data/', api.BalanceData.as_view(), name='api_depot_balance_data'),
 
     # depots
-    path("depots/add/", form_views.AddDepotView.as_view(), name="add_depot"),
-    path("depots/delete/", form_views.DeleteDepotView.as_view(), name="delete_depot"),
-    path("depots/<int:pk>/edit/", form_views.EditDepotView.as_view(), name="edit_depot"),
-    path("depots/<int:pk>/set-active/", form_views.SetActiveDepotView.as_view(), name="set_depot"),
+    path("depots/add/", formviews.AddDepotView.as_view(), name="add_depot"),
+    path("depots/delete/", formviews.DeleteDepotView.as_view(), name="delete_depot"),
+    path("depots/<int:pk>/edit/", formviews.EditDepotView.as_view(), name="edit_depot"),
+    path("depots/<int:pk>/set-active/", formviews.SetActiveDepotView.as_view(), name="set_depot"),
 
     # accounts
-    path("accounts/add/", form_views.AddAccountView.as_view(), name="add_account"),
-    path("accounts/delete/", form_views.DeleteAccountView.as_view(), name="delete_account"),
-    path("accounts/<int:pk>/edit/", form_views.EditAccountView.as_view(), name="edit_account"),
+    path("accounts/add/", formviews.AddAccountView.as_view(), name="add_account"),
+    path("accounts/delete/", formviews.DeleteAccountView.as_view(), name="delete_account"),
+    path("accounts/<int:pk>/edit/", formviews.EditAccountView.as_view(), name="edit_account"),
 
     # categories
-    path("categories/add/", form_views.AddCategoryView.as_view(), name="add_category"),
-    path("categories/delete/", form_views.DeleteCategoryView.as_view(), name="delete_category"),
-    path("categories/<int:pk>/edit/", form_views.EditCategoryView.as_view(), name="edit_category"),
+    path("categories/add/", formviews.AddCategoryView.as_view(), name="add_category"),
+    path("categories/delete/", formviews.DeleteCategoryView.as_view(), name="delete_category"),
+    path("categories/<int:pk>/edit/", formviews.EditCategoryView.as_view(), name="edit_category"),
 
     # changes
-    path("changes/add/", form_views.AddChangeView.as_view(), name="add_change"),
-    path("changes/<int:pk>/edit/", form_views.EditChangeView.as_view(), name="edit_change"),
-    path("changes/<int:pk>/delete/", form_views.DeleteChangeView.as_view(), name="delete_change"),
+    path("changes/add/", formviews.AddChangeView.as_view(), name="add_change"),
+    path("changes/<int:pk>/edit/", formviews.EditChangeView.as_view(), name="edit_change"),
+    path("changes/<int:pk>/delete/", formviews.DeleteChangeView.as_view(), name="delete_change"),
 
     # pages
     path("depots/<int:pk>/", views.IndexView.as_view(), name="index"),
