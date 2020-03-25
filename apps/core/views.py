@@ -10,6 +10,14 @@ import json
 
 
 # mixins
+class CustomGetFormUserMixin(object):
+    def get_form(self, form_class=None):
+        if form_class is None:
+            form_class = self.get_form_class()
+        user = self.request.user
+        return form_class(user, **self.get_form_kwargs())
+
+
 class TabContextMixin(ContextMixin):
     def get_context_data(self, **kwargs):
         context = super(TabContextMixin, self).get_context_data(**kwargs)
@@ -34,18 +42,6 @@ class CustomAjaxFormMixin(object):
     def form_valid(self, form):
         form.save()
         return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
-
-
-class CustomInvalidFormMixin(object):
-    def form_invalid(self, form):
-        message = ["Form Error(s):"]
-        for field in form:
-            if field.errors:
-                text = "{}: {}".format(field.label, strip_tags(field.errors))
-                message.append(text)
-        message = "<br>".join(message)
-        messages.warning(self.request, message)
-        return self.render_to_response(self.get_context_data(form=form))
 
 
 # views

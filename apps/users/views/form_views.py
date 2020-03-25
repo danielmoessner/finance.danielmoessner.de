@@ -1,62 +1,38 @@
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.views import PasswordChangeView
 from django.views import generic
-from django.urls import reverse_lazy
 
-from apps.users.views.views import SettingsView
 from apps.users.models import StandardUser
 from apps.users.forms import UpdateGeneralStandardUserForm
 from apps.users.forms import UpdateCryptoStandardUserForm
 from apps.users.forms import UpdateStandardUserForm
-from apps.core.views import CustomInvalidFormMixin
+from apps.core.views import CustomAjaxFormMixin
 
 
-# user
-class EditUserSettingsView(SettingsView, CustomInvalidFormMixin, generic.UpdateView):
+class UserIsLoggedIn(UserPassesTestMixin):
+    def test_func(self):
+        return self.get_object() == self.request.user
+
+
+class EditUserSettingsView(UserIsLoggedIn, CustomAjaxFormMixin, generic.UpdateView):
     form_class = UpdateStandardUserForm
     model = StandardUser
-    success_url = reverse_lazy("users:settings")
-
-    def get_context_data(self, **kwargs):
-        context = super(EditUserSettingsView, self).get_context_data()
-        context["edit_user_form"] = self.get_form()
-        return context
+    template_name = "modules/form_snippet.njk"
 
 
-class EditUserPasswordSettingsView(SettingsView, CustomInvalidFormMixin, generic.UpdateView):
+class EditUserPasswordSettingsView(CustomAjaxFormMixin, PasswordChangeView):
     form_class = PasswordChangeForm
-    model = StandardUser
-    success_url = reverse_lazy("users:settings")
-
-    def post(self, request, *args, **kwargs):
-        form = PasswordChangeForm(request.user, request.POST)
-        if form.is_valid():
-            return self.form_valid(form)
-        else:
-            return self.form_invalid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super(EditUserPasswordSettingsView, self).get_context_data()
-        context["edit_user_password_form"] = self.get_form()
-        return context
+    template_name = "modules/form_snippet.njk"
 
 
-class EditUserGeneralSettingsView(SettingsView, CustomInvalidFormMixin, generic.UpdateView):
+class EditUserGeneralSettingsView(UserIsLoggedIn, CustomAjaxFormMixin, generic.UpdateView):
     form_class = UpdateGeneralStandardUserForm
     model = StandardUser
-    success_url = reverse_lazy("users:settings")
-
-    def get_context_data(self, **kwargs):
-        context = super(EditUserGeneralSettingsView, self).get_context_data()
-        context["edit_user_general_form"] = self.get_form()
-        return context
+    template_name = "modules/form_snippet.njk"
 
 
-class EditUserCryptoSettingsView(SettingsView, CustomInvalidFormMixin, generic.UpdateView):
+class EditUserCryptoSettingsView(UserIsLoggedIn, CustomAjaxFormMixin, generic.UpdateView):
     form_class = UpdateCryptoStandardUserForm
     model = StandardUser
-    success_url = reverse_lazy("users:settings")
-
-    def get_context_data(self, **kwargs):
-        context = super(EditUserCryptoSettingsView, self).get_context_data()
-        context["edit_user_crypto_form"] = self.get_form()
-        return context
+    template_name = "modules/form_snippet.njk"

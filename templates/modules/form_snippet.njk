@@ -1,3 +1,4 @@
 {% import "modules/form.njk" as fg %}
 
-{{ fg.formContent(form, csrf_token) }}
+{{ form.as_p() }}
+{{ csrf_input }}

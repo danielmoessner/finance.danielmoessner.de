@@ -41,19 +41,9 @@ class UpdateGeneralStandardUserForm(forms.ModelForm):
     class Meta:
         model = StandardUser
         fields = (
-            "currency",
             "date_format",
             "front_page"
         )
-        help_texts = {
-            "currency": "USD is not enabled yet."
-        }
-
-    def clean_currency(self):
-        data = self.cleaned_data["currency"]
-        if data == "USD":
-            raise forms.ValidationError("USD is not enabled yet.")
-        return data
 
 
 class UpdateCryptoStandardUserForm(forms.ModelForm):

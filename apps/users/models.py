@@ -16,14 +16,6 @@ class StandardUser(AbstractUser):
         ("%m/%d/%Y", "Month/Date/Year"),
     )
     date_format = models.CharField(max_length=8, choices=DATE_FORMAT_CHOICES)
-    CURRENCY_CHOICES = (
-        ("EUR", "€"),
-        ("USD", "$"),
-    )
-    currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES)
-    banking_url = reverse_lazy("banking:index", kwargs={})
-    crypto_url = reverse_lazy("crypto:index", kwargs={})
-    settings_url = reverse_lazy("users:settings", kwargs={})
     FRONT_PAGE_CHOICES = (
         ("BANKING", "Banking"),
         ("CRYPTO", "Crypto"),
@@ -74,8 +66,9 @@ class StandardUser(AbstractUser):
 
     # create
     def create_random_banking_data(self):
-        from apps.banking.models import Account, Category, Depot, Change, Timespan
-        depot = Depot.objects.create(name="Random Depot", user=self)
+        from apps.banking.models import Account, Category, Depot, Change
+        name = 'Depot {}'.format(random.randrange(100, 999))
+        depot = Depot.objects.create(name=name, user=self)
         self.set_banking_depot_active(depot)
         # account
         account1 = Account(depot=depot, name="Bank #1")
@@ -113,8 +106,6 @@ class StandardUser(AbstractUser):
             changes.append(Change(account=account, category=category, change=change, date=date,
                                   description=description))
         Change.objects.bulk_create(changes)
-        # timespan
-        Timespan.objects.create(depot=depot, name="Default Timespan", start_date=None, end_date=None, is_active=True)
 
     def create_random_alternative_data(self):
         from apps.alternative.models import Depot, Alternative, Value, Flow

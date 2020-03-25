@@ -38,7 +38,7 @@
 				    $.ajax({
 				        url : "{{ form_url|safe }}",
 				        type : "POST",
-				        data : $("#{{ id }} .django-form").serialize(),
+				        data : $("#{{ id }} .djangoform").serialize(),
 				        success : function(data) {
 				        	if (data.valid) {
 				        		window.location.reload()

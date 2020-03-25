@@ -1,28 +1,22 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.forms import PasswordChangeForm
-from django.views.generic import View
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.auth import logout as logout_user
-from django.contrib.auth import login as login_user
-from django.contrib.auth import authenticate
-from django.shortcuts import render, redirect
-from django.contrib import messages
+from django.shortcuts import redirect
 from django.views import generic
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView
-from django.contrib.auth.forms import UserCreationForm
 
-from apps.core.views import CustomInvalidFormMixin
 from apps.alternative.models import Depot as AlternativeDepot
 from apps.banking.models import Depot as BankingDepot
 from apps.crypto.models import init_crypto as crypto_init_crypto
 from apps.crypto.models import Depot as CryptoDepot
-from apps.users.forms import SignInUserForm
 from apps.users.forms import UpdateCryptoStandardUserForm
 from apps.users.forms import UpdateGeneralStandardUserForm
 from apps.users.forms import UpdateStandardUserForm
 from apps.users.forms import CreateStandardUserForm
 from apps.users.models import StandardUser
+from apps.core.views import TabContextMixin
 
 
 class RedirectView(generic.RedirectView):
@@ -37,31 +31,9 @@ class RedirectView(generic.RedirectView):
             elif front_page == "ALTERNATIVE":
                 return reverse_lazy("alternative:index", args=[user.get_active_alternative_depot_pk()])
             else:
-                return reverse_lazy("users:settings")
+                return reverse_lazy("users:settings", args=[user.pk])
         else:
             return reverse_lazy('users:signin')
-
-
-class SignUpViewOld(CustomInvalidFormMixin, generic.CreateView):
-    form_class = CreateStandardUserForm
-    model = StandardUser
-    template_name = "users_signup.njk"
-
-    def get(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            return redirect('users:signin', permanent=False)
-        else:
-            return super(SignUpViewOld, self).get(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super(SignUpViewOld, self).get_context_data()
-        context["sign_up_form"] = self.get_form()
-        return context
-
-    def form_valid(self, form):
-        user = form.save()
-        login_user(self.request, user)
-        return redirect('core:redirect', permanent=False)
 
 
 class SignUpView(generic.CreateView):
@@ -81,11 +53,15 @@ class SignOutView(LogoutView):
         return redirect('users:redirect')
 
 
-class SettingsView(LoginRequiredMixin, generic.TemplateView):
-    template_name = "users_settings.njk"
+class IndexView(UserPassesTestMixin, TabContextMixin, generic.DetailView):
+    template_name = "users/index.j2"
+    model = StandardUser
+
+    def test_func(self):
+        return self.get_object() == self.request.user
 
     def get_context_data(self, **kwargs):
-        context = dict()
+        context = super().get_context_data(**kwargs)
         context["user"] = self.request.user
         context["edit_user_form"] = UpdateStandardUserForm(instance=self.request.user)
         context["edit_user_password_form"] = PasswordChangeForm(user=self.request.user)
@@ -104,10 +80,10 @@ class SettingsView(LoginRequiredMixin, generic.TemplateView):
 
 def init_banking(request):
     user = request.user
-    request.user.create_random_banking_data()
+    user.create_random_banking_data()
     user.banking_is_active = True
     user.save()
-    return HttpResponseRedirect(reverse_lazy("users:settings"))
+    return HttpResponseRedirect(reverse_lazy("users:settings", args=[user.pk]))
 
 
 def init_crypto(request):
@@ -115,15 +91,15 @@ def init_crypto(request):
     crypto_init_crypto(user)
     user.crypto_is_active = True
     user.save()
-    return HttpResponseRedirect(reverse_lazy("users:settings"))
+    return HttpResponseRedirect(reverse_lazy("users:settings", args=[user.pk]))
 
 
 def init_alternative(request):
     user = request.user
-    # alternative_init_alternative(user)
+    user.create_random_alternative_data()
     user.alternative_is_active = True
     user.save()
-    return HttpResponseRedirect(reverse_lazy("users:settings"))
+    return HttpResponseRedirect(reverse_lazy("users:settings", args=[user.pk]))
 
 
 def set_banking_depot_active(request, slug, pk):

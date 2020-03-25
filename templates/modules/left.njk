@@ -27,7 +27,7 @@
                     <p class="font-weight-bold m-0 mb-2 mt-3">User</p>
                 </li>
                 <li class="nav-item">
-                    {{ buttons.navigationButton("Settings", url('users:settings'), active=("user" in request.path)) }}
+                    {{ buttons.navigationButton("Settings", url('users:settings', args=[request.user.pk]), active=("user" in request.path)) }}
                 </li>
                 <li class="nav-item">
                     <p class="font-weight-bold m-0 mb-2 mt-3">Finance</p>
