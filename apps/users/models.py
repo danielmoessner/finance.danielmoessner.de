@@ -41,8 +41,7 @@ class StandardUser(AbstractUser):
     def create_random_banking_data(self):
         from apps.banking.models import Account, Category, Depot, Change
         name = 'Depot {}'.format(random.randrange(100, 999))
-        depot = Depot.objects.create(name=name, user=self)
-        self.set_banking_depot_active(depot)
+        depot = Depot.objects.create(name=name, user=self, is_active=True)
         # account
         account1 = Account(depot=depot, name="Bank #1")
         account1.slug = create_slug(account1)
@@ -85,8 +84,7 @@ class StandardUser(AbstractUser):
         from django.utils import timezone
         from datetime import timedelta
         name = 'Depot {}'.format(random.randrange(100, 999))
-        depot = Depot.objects.create(name=name, user=self)
-        self.set_alternative_depot_active(depot)
+        depot = Depot.objects.create(name=name, user=self, is_active=True)
 
         # helper create alternative
         def create_alternative(name):
