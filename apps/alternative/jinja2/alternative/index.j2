@@ -46,8 +46,8 @@
                 <td>
                     <div class="d-flex">
                         {{ bg.hrefButton("Open", url('alternative:alternative', args=[alternative.pk])) }}
-                        {{ mg.djangoModal("Edit Alternative", "editAlternative"+alternative.slug, url("alternative:edit_alternative", args=[alternative.slug])) }}
-                        {{ bg.modalButton("Edit", "#editAlternative"+alternative.slug) }}
+                        {{ mg.djangoModal("Edit Alternative", "editAlternative"+alternative.pk|string, url("alternative:edit_alternative", args=[alternative.pk])) }}
+                        {{ bg.modalButton("Edit", "#editAlternative"+alternative.pk|string) }}
                     </div>
                 </td>
             </tr>
