@@ -174,17 +174,6 @@ class Flow(models.Model):
         return '{}: {} {}'.format(self.alternative, timezone.localtime(self.date).strftime('%d.%m.%y %H:%M'), self.flow)
 
 
-class Timespan(CoreTimespan):
-    depot = models.ForeignKey(Depot, editable=False, related_name="timespans", on_delete=models.CASCADE)
-
-    # getters
-    def get_start_date(self):
-        return timezone.localtime(self.start_date).strftime("%d.%m.%Y %H:%M") if self.start_date else None
-
-    def get_end_date(self):
-        return timezone.localtime(self.end_date).strftime("%d.%m.%Y %H:%M") if self.end_date else None
-
-
 class Movie(models.Model):
     update_needed = models.BooleanField(default=True)
     depot = models.ForeignKey(Depot, blank=True, null=True, related_name="movies", on_delete=models.CASCADE)

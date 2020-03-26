@@ -54,4 +54,4 @@ class AlternativeView(PermissionRequiredMixin, TabContextMixin, generic.DetailVi
 def reset_movies(request):
     depot = request.user.alternative_depots.get(is_active=True)
     depot.reset_movies(delete=True)
-    return HttpResponseRedirect(reverse_lazy('alternative:index'))
+    return HttpResponseRedirect(reverse_lazy('alternative:index', args=[depot.pk]))

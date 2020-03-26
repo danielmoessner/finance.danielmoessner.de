@@ -6,10 +6,10 @@ from django.views import generic
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
 
-from apps.alternative.models import Timespan, Alternative, Value, Flow, Depot
-from apps.alternative.forms import TimespanActiveForm, DepotActiveForm, DepotSelectForm, TimespanForm, AlternativeForm
+from apps.alternative.models import Alternative, Value, Flow, Depot
+from apps.alternative.forms import DepotActiveForm, DepotSelectForm, AlternativeForm
 from apps.alternative.forms import AlternativeSelectForm, FlowForm, ValueForm, DepotForm
-from apps.core.views import CustomAjaxDeleteMixin, CustomAjaxResponseMixin, CustomGetFormUserMixin
+from apps.core.views import CustomAjaxResponseMixin, CustomGetFormUserMixin
 
 import json
 
@@ -182,23 +182,3 @@ class DeleteFlowView(LoginRequiredMixin, generic.DeleteView):
         else:
             flow.delete()
         return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
-
-
-# timespan
-class AddTimespanView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.CreateView):
-    form_class = TimespanForm
-    model = Timespan
-    template_name = "modules/form_snippet.njk"
-
-
-class SetActiveTimespanView(LoginRequiredMixin, CustomGetFormMixin, generic.UpdateView):
-    model = Timespan
-    form_class = TimespanActiveForm
-    template_name = "modules/form_snippet.njk"
-    success_url = reverse_lazy("alternative:index")
-
-
-class DeleteTimespanView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxDeleteMixin, generic.DeleteView):
-    model = Timespan
-    template_name = "modules/delete_snippet.njk"
-    form_class = TimespanForm

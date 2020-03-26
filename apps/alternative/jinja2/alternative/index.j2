@@ -7,91 +7,64 @@
 
 {% block main %}
 
-{% import "modules/table.njk" as tg %}
-{% import "modules/button.njk" as bg %}
-{% import "modules/timespan.njk" as tsg %}
-{% import "modules/modal.njk" as mg %}
+    {% import "modules/table.njk" as tg %}
+    {% import "modules/button.njk" as bg %}
+    {% import "modules/timespan.njk" as tsg %}
+    {% import "modules/modal.njk" as mg %}
 
-{%- set resetButton=bg.hrefButton("Reset", url("alternative:reset_movies")) -%}
+    {%- set resetButton=bg.hrefButton("Reset", url("alternative:reset_movies")) -%}
 
-<div class="d-flex justify-content-center mt-2 mb-5">
-    <div class="btn-group" role="group" aria-label="Console">
-        {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
-        {{ bg.hrefButton("Alternatives", request.path + '?tab=alternatives', active=(tab=='alternatives')) }}
-        {{ bg.hrefButton("Calculated", request.path + '?tab=calculated', active=(tab=='calculated')) }}
-{#        {{ bg.hrefButton("Timespans", request.path + '?tab=timespans', active=(tab=='timespans')) }}#}
+    <div class="d-flex justify-content-center mt-2 mb-5">
+        <div class="btn-group" role="group" aria-label="Console">
+            {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
+            {{ bg.hrefButton("Alternatives", request.path + '?tab=alternatives', active=(tab=='alternatives')) }}
+            {{ bg.hrefButton("Calculated", request.path + '?tab=calculated', active=(tab=='calculated')) }}
+        </div>
     </div>
-</div>
 
-{% include 'symbols/stats.j2' %}
+    {% include 'symbols/stats.j2' %}
 
-{% if tab == 'alternatives' %}
-    <table class="table table-responsive-md rounded table-dark">
-        <thead>
-        <tr>
-            <th class="border-0" scope="col">Alternative</th>
-            <th class="border-0" scope="col">Invested Capital</th>
-            <th class="border-0" scope="col">Value</th>
-            <th class="border-0" scope="col">Profit</th>
-            <th class="border-0" scope="col">Action</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for alternative in alternatives %}
+    {% if tab == 'alternatives' %}
+        <table class="table table-responsive-md rounded table-dark">
+            <thead>
             <tr>
-                <td>{{ alternative.name }}</td>
-                <td>{{ alternative.get_latest_picture().invested_capital }}</td>
-                <td>{{ alternative.get_latest_picture().value }}</td>
-                <td>{{ alternative.get_latest_picture().profit }}</td>
-                <td>
+                <th class="border-0" scope="col">Alternative</th>
+                <th class="border-0" scope="col">Invested Capital</th>
+                <th class="border-0" scope="col">Value</th>
+                <th class="border-0" scope="col">Profit</th>
+                <th class="border-0" scope="col">Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for alternative in alternatives %}
+                <tr>
+                    <td>{{ alternative.name }}</td>
+                    <td>{{ alternative.get_latest_picture().invested_capital }}</td>
+                    <td>{{ alternative.get_latest_picture().value }}</td>
+                    <td>{{ alternative.get_latest_picture().profit }}</td>
+                    <td>
+                        <div class="d-flex">
+                            {{ bg.hrefButton("Open", url('alternative:alternative', args=[alternative.pk])) }}
+                            {{ mg.djangoModal("Edit Alternative", "editAlternative"+alternative.pk|string, url("alternative:edit_alternative", args=[alternative.pk])) }}
+                            {{ bg.modalButton("Edit", "#editAlternative"+alternative.pk|string) }}
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            <tr>
+                <td colspan="5">
                     <div class="d-flex">
-                        {{ bg.hrefButton("Open", url('alternative:alternative', args=[alternative.pk])) }}
-                        {{ mg.djangoModal("Edit Alternative", "editAlternative"+alternative.pk|string, url("alternative:edit_alternative", args=[alternative.pk])) }}
-                        {{ bg.modalButton("Edit", "#editAlternative"+alternative.pk|string) }}
+                        {{ bg.modalButton("Add Alternative", "#addAlternative") }}
+                        {{ bg.modalButton("Delete Alternative", "#deleteAlternative") }}
+                        {{ mg.djangoModal("Add Alternative", "addAlternative", url("alternative:add_alternative")) }}
+                        {{ mg.djangoModal("Delete Alternative", "deleteAlternative", url("alternative:delete_alternative")) }}
                     </div>
                 </td>
             </tr>
-        {% endfor %}
-        <tr>
-            <td colspan="5">
-                <div class="d-flex">
-                    {{ bg.modalButton("Add Alternative", "#addAlternative") }}
-                    {{ bg.modalButton("Delete Alternative", "#deleteAlternative") }}
-                    {{ mg.djangoModal("Add Alternative", "addAlternative", url("alternative:add_alternative")) }}
-                    {{ mg.djangoModal("Delete Alternative", "deleteAlternative", url("alternative:delete_alternative")) }}
-                </div>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-{% endif %}
-
-{% if tab == 'timespans' %}
-{%- set addTimespanButton=bg.modalButton("Add Timespan", "#addTimespan") -%}
-{{ mg.djangoModal("Add Timespan", "addTimespan", url("alternative:add_timespan")) }}
-<div class="wrapper console--target" id="timespans">
-    {{ hg.smallLmHeading("Timespans", buttons=[addTimespanButton]) }}
-    <div class="scrollbar-box">
-        <table class="table">
-            {{ tg.head(["Name", "Start Date", "End Date", "Action"]) }}
-            <tbody class="table--body">
-            {% for timespan in timespans %}
-            {% set tablebuttons %}
-            <div class="table--buttons">
-                {{ tsg.setActiveAlternativeButton(timespan, csrf_token) }}
-                <div class="hs-1"></div>
-                {{ tsg.deleteButton(timespan, csrf_token) }}
-            </div>
-            {{ mg.djangoModal("Delete", "deleteTimespan"+timespan.pk|string, url("alternative:delete_timespan", args=[timespan.pk])) }}
-            {% endset %}
-            {{ tg.row([timespan.name, timespan.get_start_date(), timespan.get_end_date(), tablebuttons|safe]) }}
-            {% endfor %}
             </tbody>
         </table>
-    </div>
-</div>
-{% endif %}
+    {% endif %}
 
-{% include 'alternative/symbols/calculated.j2' %}
+    {% include 'alternative/symbols/calculated.j2' %}
 
 {% endblock %}

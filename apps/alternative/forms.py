@@ -2,14 +2,11 @@ from django.utils import timezone
 from django import forms
 
 from apps.alternative.models import Alternative
-from apps.alternative.models import Timespan
 from apps.alternative.models import Value
 from apps.alternative.models import Depot
 from apps.alternative.models import Flow
 from apps.core.utils import create_slug
 import apps.alternative.utils as utils
-
-from datetime import timedelta
 
 
 # depot
@@ -177,35 +174,3 @@ class FlowForm(forms.ModelForm):
 
         # return the cleaned data
         return self.cleaned_data
-
-
-# timespan
-class TimespanForm(forms.ModelForm):
-    start_date = forms.DateTimeField(widget=forms.DateTimeInput(
-        attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
-        input_formats=['%Y-%m-%dT%H:%M'], label='Start Date (not required)', required=False)
-    end_date = forms.DateTimeField(widget=forms.DateTimeInput(
-        attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
-        input_formats=['%Y-%m-%dT%H:%M'], label='End Date (not required)', required=False)
-
-    class Meta:
-        model = Timespan
-        fields = (
-            'name',
-            'start_date',
-            'end_date'
-        )
-
-    def __init__(self, depot, *args, **kwargs):
-        super(TimespanForm, self).__init__(*args, **kwargs)
-        self.instance.depot = depot
-
-
-class TimespanActiveForm(forms.ModelForm):
-    class Meta:
-        model = Timespan
-        fields = ('is_active',)
-
-    def __init__(self, depot, *args, **kwargs):
-        super(TimespanActiveForm, self).__init__(*args, **kwargs)
-        depot.timespans.update(is_active=False)
