@@ -37,7 +37,8 @@ function cssBuild() {
                 content: [
                     "../apps/*/jinja2/*/*.{njk,j2,html}",
                     "../templates/**/*.{njk,j2,html}"
-                ]
+                ],
+                whitelistPatternsChildren: [/djangoform$/]
             }),
             cssnano()
         ]))
