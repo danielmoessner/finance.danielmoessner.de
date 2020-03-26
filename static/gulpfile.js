@@ -36,7 +36,8 @@ function cssBuild() {
             purgecss({
                 content: [
                     "../apps/*/jinja2/*/*.{njk,j2,html}",
-                    "../templates/**/*.{njk,j2,html}"
+                    "../templates/**/*.{njk,j2,html}",
+                    "./node_modules/bootstrap/dist/js/bootstrap.js"
                 ],
                 whitelistPatternsChildren: [/djangoform$/]
             }),

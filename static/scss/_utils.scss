@@ -1,5 +1,9 @@
-.bg-lg-transparent{
+.bg-lg-transparent {
   @include media-breakpoint-up(lg) {
-    background: transparent!important;
+    background: transparent !important;
   }
+}
+
+.overflow-x-scroll {
+  overflow-x: scroll;
 }
