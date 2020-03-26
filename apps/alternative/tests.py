@@ -1,11 +1,33 @@
 from django.utils import timezone
-from django.test import TestCase
+from django.test import TestCase, Client
+from django.urls import reverse_lazy
 
 from apps.users.models import StandardUser as User
 from .models import Alternative, Depot
 from .forms import ValueForm, FlowForm
 
 from datetime import timedelta
+
+
+class ViewsTestCase(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="dummy")
+        self.user.set_password("test")
+        self.user.save()
+        self.user.create_random_alternative_data()
+
+    def test_index_view(self):
+        self.client = Client()
+        self.client.login(username="dummy", password="test")
+        response = self.client.get(reverse_lazy("alternative:index", args=[1]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_account_view(self):
+        self.client = Client()
+        self.client.login(username="dummy", password="test")
+        alternative = self.user.alternative_depots.get(is_active=True).alternatives.first()
+        response = self.client.get(reverse_lazy("alternative:alternative", args=[alternative.pk]))
+        self.assertEqual(response.status_code, 200)
 
 
 class GeneralTestCase(TestCase):
