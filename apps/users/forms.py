@@ -4,7 +4,6 @@ from django import forms
 from .models import StandardUser
 
 
-# standard user
 class CreateStandardUserForm(UserCreationForm):
     class Meta:
         model = StandardUser

@@ -8,15 +8,10 @@ from django.views import generic
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 
-from apps.alternative.models import Depot as AlternativeDepot
-from apps.banking.models import Depot as BankingDepot
 from apps.crypto.models import init_crypto as crypto_init_crypto
-from apps.crypto.models import Depot as CryptoDepot
-from apps.users.forms import UpdateCryptoStandardUserForm
-from apps.users.forms import UpdateGeneralStandardUserForm
-from apps.users.forms import UpdateStandardUserForm
-from apps.users.forms import CreateStandardUserForm
 from apps.users.models import StandardUser
+from apps.users.forms import UpdateCryptoStandardUserForm, UpdateGeneralStandardUserForm
+from apps.users.forms import UpdateStandardUserForm, CreateStandardUserForm
 from apps.core.views import TabContextMixin
 
 
@@ -101,24 +96,3 @@ def init_alternative(request):
     messages.success(request, message)
     url = '{}?tab=alternative'.format(reverse_lazy("users:settings", args=[user.pk]))
     return HttpResponseRedirect(url)
-
-
-def set_banking_depot_active(request, slug, pk):
-    depot_pk = int(pk)
-    depot = BankingDepot.objects.get(pk=depot_pk)
-    request.user.set_banking_depot_active(depot)
-    return HttpResponseRedirect(reverse_lazy("users:settings", args=[request.user.slug]))
-
-
-def set_crypto_depot_active(request, slug, pk):
-    depot_pk = int(pk)
-    depot = CryptoDepot.objects.get(pk=depot_pk)
-    request.user.set_crypto_depot_active(depot)
-    return HttpResponseRedirect(reverse_lazy("users:settings", args=[request.user.slug]))
-
-
-def set_alternative_depot_active(request, slug, pk):
-    depot_pk = int(pk)
-    depot = AlternativeDepot.objects.get(pk=depot_pk)
-    request.user.set_alternative_depot_active(depot)
-    return HttpResponseRedirect(reverse_lazy("users:settings", args=[request.user.slug]))

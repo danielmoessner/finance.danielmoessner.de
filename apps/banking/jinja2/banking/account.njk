@@ -6,7 +6,6 @@
 
 {% block main %}
 
-    {% import "modules/table.njk" as tg %}
     {% import "modules/button.njk" as bg %}
     {% import "modules/modal.njk" as mg %}
 
@@ -17,7 +16,7 @@
         </div>
     </div>
 
-    {% include 'symbols/stats.j2' %}
+    {% include 'modules/stats.j2' %}
 
     {% if tab=='changes' %}
             <table class="table rounded table-responsive-md table-dark">

@@ -19,14 +19,28 @@ class ViewsTestCase(TestCase):
     def test_index_view(self):
         self.client = Client()
         self.client.login(username="dummy", password="test")
-        response = self.client.get(reverse_lazy("alternative:index", args=[1]))
+        url = reverse_lazy("alternative:index", args=[1])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get('{}?tab=stats'.format(url))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get('{}?tab=alternatives'.format(url))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get('{}?tab=calculated'.format(url))
         self.assertEqual(response.status_code, 200)
 
     def test_account_view(self):
         self.client = Client()
         self.client.login(username="dummy", password="test")
         alternative = self.user.alternative_depots.get(is_active=True).alternatives.first()
-        response = self.client.get(reverse_lazy("alternative:alternative", args=[alternative.pk]))
+        url = reverse_lazy("alternative:alternative", args=[alternative.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get('{}?tab=stats'.format(url))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get('{}?tab=data'.format(url))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get('{}?tab=calculated'.format(url))
         self.assertEqual(response.status_code, 200)
 
 

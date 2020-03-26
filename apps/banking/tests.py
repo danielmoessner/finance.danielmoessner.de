@@ -49,13 +49,26 @@ class ViewsTestCase(TestCase):
         self.user = User.objects.get(username="dummy")
         response = self.client.get(reverse_lazy("banking:index", args=[1]))
         self.assertEqual(response.status_code, 200)
+        response = self.client.get('{}?tab=stats'.format(reverse_lazy("banking:index", args=[1])))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get('{}?tab=categories'.format(reverse_lazy("banking:index", args=[1])))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get('{}?tab=accounts'.format(reverse_lazy("banking:index", args=[1])))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get('{}?tab=charts'.format(reverse_lazy("banking:index", args=[1])))
+        self.assertEqual(response.status_code, 200)
 
     def test_account_view(self):
         self.client = Client()
         self.client.login(username="dummy", password="test")
         self.user = User.objects.get(username="dummy")
         account = self.user.banking_depots.get(is_active=True).accounts.first()
-        response = self.client.get(reverse_lazy("banking:account", args=[account.pk]))
+        url = reverse_lazy("banking:account", args=[account.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get('{}?tab=stats'.format(url))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get('{}?tab=changes'.format(url))
         self.assertEqual(response.status_code, 200)
 
     def test_category_view(self):
@@ -63,7 +76,12 @@ class ViewsTestCase(TestCase):
         self.client.login(username="dummy", password="test")
         self.user = User.objects.get(username="dummy")
         category = self.user.banking_depots.get(is_active=True).categories.first()
-        response = self.client.get(reverse_lazy("banking:category", args=[category.pk]))
+        url = reverse_lazy("banking:category", args=[category.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get('{}?tab=stats'.format(url))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get('{}?tab=changes'.format(url))
         self.assertEqual(response.status_code, 200)
 
 

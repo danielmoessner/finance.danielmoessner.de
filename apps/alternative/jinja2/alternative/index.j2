@@ -7,9 +7,7 @@
 
 {% block main %}
 
-    {% import "modules/table.njk" as tg %}
     {% import "modules/button.njk" as bg %}
-    {% import "modules/timespan.njk" as tsg %}
     {% import "modules/modal.njk" as mg %}
 
     {%- set resetButton=bg.hrefButton("Reset", url("alternative:reset_movies")) -%}
@@ -22,7 +20,7 @@
         </div>
     </div>
 
-    {% include 'symbols/stats.j2' %}
+    {% include 'modules/stats.j2' %}
 
     {% if tab == 'alternatives' %}
         <table class="table table-responsive-md rounded table-dark">

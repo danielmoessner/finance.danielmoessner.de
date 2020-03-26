@@ -1,25 +1,7 @@
 {% macro bigLmHeading(category="Dashboard", heading="heading") %}
-<div class="">
-	<p class="m-0">{{ category }}</p>
-	<h1 class="h2 m-0">{{ heading }}</h1>
-	<hr class="w-100 mb-2 mt-3 border-secondary">
-</div>
-{% endmacro %}
-
-{% macro smallLmHeading(heading, buttons=[], right=None) %}
-<div class="small-lm-heading">
-	<div class="small-lm-heading--row">
-	    <h2 class="small-lm-heading--heading">{{ heading }}</h2>
-	    {% for button in buttons %}
-	    	{% if loop.index != 0 %}
-				<div class="small-lm-heading--spacer"></div>
-	    	{% endif %}
-			{{ button|safe }}
-	    {% endfor %}
-	    {% if right %}
-	    	<span class="small-lm-heading--right">{{ right }}</span>
-	    {% endif %}
+    <div class="">
+        <p class="m-0">{{ category }}</p>
+        <h1 class="h2 m-0">{{ heading }}</h1>
+        <hr class="w-100 mb-2 mt-3 border-secondary">
     </div>
-    <hr class="small-lm-heading--hr">
-</div>
 {% endmacro %}
