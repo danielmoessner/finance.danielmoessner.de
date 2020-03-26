@@ -1,8 +1,11 @@
-const source = require("vinyl-source-stream");
+const purgecss = require("@fullhuman/postcss-purgecss");
 const sourcemaps = require("gulp-sourcemaps");
+const source = require("vinyl-source-stream");
 const browserify = require("browserify");
+const postcss = require('gulp-postcss');
 const buffer = require("vinyl-buffer");
 const uglify = require("gulp-uglify");
+const cssnano = require("cssnano");
 const sass = require("gulp-sass");
 const log = require("gulplog");
 const gulp = require("gulp");
@@ -22,6 +25,23 @@ function css() {
 
 function cssWatch() {
     gulp.watch("./scss/**/*.scss", css)
+}
+
+function cssBuild() {
+    return gulp.src("./scss/main.scss")
+        .pipe(sass({
+            includePaths: ["node_modules"]
+        }))
+        .pipe(postcss([
+            purgecss({
+                content: [
+                    "../apps/*/jinja2/*/*.{njk,j2,html}",
+                    "../templates/**/*.{njk,j2,html}"
+                ]
+            }),
+            cssnano()
+        ]))
+        .pipe(gulp.dest("./app/css/"))
 }
 
 ///
@@ -64,3 +84,4 @@ gulp.task("js", jsApp);
 gulp.task("js:app", jsApp);
 gulp.task("js:charts", jsCharts);
 gulp.task("css", css);
+gulp.task("css:build", cssBuild);
