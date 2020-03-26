@@ -1,7 +1,7 @@
 from django.views.generic.detail import SingleObjectMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.edit import FormMixin
-from django.shortcuts import get_object_or_404
+from django.contrib import messages
 from django.views import generic
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
@@ -121,9 +121,23 @@ class EditValueView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMi
             alternative__in=Alternative.objects.filter(depot__in=self.request.user.alternative_depots.all()))
 
 
-class DeleteValueView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
+class DeleteValueView(LoginRequiredMixin, generic.DeleteView):
     model = Value
     template_name = "modules/delete_snippet.njk"
+
+    def delete(self, request, *args, **kwargs):
+        value = self.get_object()
+
+        # test that calculations are not being fucked up by deleting some random value
+        if (
+                Value.objects.filter(alternative=value.alternative, date__gt=value.date).exists() or
+                Flow.objects.filter(alternative=value.alternative, date__gt=value.date).exists()
+        ):
+            message = 'You can only delete this value if there is no flow or value afterwards.'
+            messages.error(request, message)
+        else:
+            value.delete()
+        return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
 
 
 # flow
@@ -151,9 +165,23 @@ class EditFlowView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMix
             alternative__in=Alternative.objects.filter(depot__in=self.request.user.alternative_depots.all()))
 
 
-class DeleteFlowView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
+class DeleteFlowView(LoginRequiredMixin, generic.DeleteView):
     model = Flow
     template_name = "modules/delete_snippet.njk"
+
+    def delete(self, request, *args, **kwargs):
+        flow = self.get_object()
+
+        # test that calculations are not being fucked up by deleting some random flow
+        if (
+                Value.objects.filter(alternative=flow.alternative, date__gt=flow.date).exists() or
+                Flow.objects.filter(alternative=flow.alternative, date__gt=flow.date).exists()
+        ):
+            message = 'You can only delete this flow if there is no flow or value afterwards.'
+            messages.error(request, message)
+        else:
+            flow.delete()
+        return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
 
 
 # timespan

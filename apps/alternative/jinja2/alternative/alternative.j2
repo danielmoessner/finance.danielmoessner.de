@@ -13,12 +13,9 @@
 
     <div class="d-flex justify-content-center mt-2 mb-5">
         <div class="btn-group" role="group" aria-label="Console">
-            {% if tab=='stats' %}{% set classes='active' %}{% else %}{% set classes='' %}{% endif %}
-            {{ bg.hrefButton("Stats", request.path + '?tab=stats', classes=classes) }}
-            {% if tab=='data' %}{% set classes='active' %}{% else %}{% set classes='' %}{% endif %}
-            {{ bg.hrefButton("Data", request.path + '?tab=data', classes=classes) }}
-            {% if tab=='calculated' %}{% set classes='active' %}{% else %}{% set classes='' %}{% endif %}
-            {{ bg.hrefButton("Calculated", request.path + '?tab=calculated', classes=classes) }}
+            {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=="stats")) }}
+            {{ bg.hrefButton("Data", request.path + '?tab=data', active=(tab=="data")) }}
+            {{ bg.hrefButton("Calculated", request.path + '?tab=calculated', active=(tab=="calculated")) }}
         </div>
     </div>
 
@@ -37,7 +34,7 @@
             <tbody>
             {% for data in flows_and_values %}
                 <tr>
-                    <td>{{ data.date.strftime('%d.%m.%Y %H:%M') }}</td>
+                    <td>{{ localtime(data.date).strftime('%d.%m.%Y %H:%M') }}</td>
                     <td>{{ data.flow or "" }}</td>
                     <td>{{ data.value or "" }}</td>
                     <td>

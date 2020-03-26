@@ -34,7 +34,7 @@
                 <tbody>
                 {% for change in changes %}
                 <tr>
-                    <td>{{ change.date.strftime('%d.%m.%Y %H:%M') }}</td>
+                    <td>{{ localtime(change.date).strftime('%d.%m.%Y %H:%M') }}</td>
                     <td>{{ change.category }}</td>
                     <td>{{ change.get_description() }}</td>
                     <td>{{ change.change }}</td>

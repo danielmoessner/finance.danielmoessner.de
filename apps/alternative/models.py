@@ -157,6 +157,10 @@ class Value(models.Model):
     class Meta:
         unique_together = ("alternative", "date")
 
+    def __str__(self):
+        return '{}: {} {}'.format(self.alternative, timezone.localtime(self.date).strftime('%d.%m.%y %H:%M'),
+                                  self.value)
+
 
 class Flow(models.Model):
     alternative = models.ForeignKey(Alternative, related_name="flows", on_delete=models.CASCADE)
@@ -165,6 +169,9 @@ class Flow(models.Model):
 
     class Meta:
         unique_together = ("alternative", "date")
+
+    def __str__(self):
+        return '{}: {} {}'.format(self.alternative, timezone.localtime(self.date).strftime('%d.%m.%y %H:%M'), self.flow)
 
 
 class Timespan(CoreTimespan):

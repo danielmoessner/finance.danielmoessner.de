@@ -12,7 +12,7 @@
 					{% elif message.level <= 30 %}
 						<p class="py-1 px-2 rounded m-0 bg-warning">{{ message|safe }}</p>
 					{% elif message.level >= 40 %}
-						<p class="py-1 px-2 rounded m-0 bg-error">{{ message|safe }}</p>
+						<p class="py-1 px-2 rounded m-0 bg-danger">{{ message|safe }}</p>
 					{% endif %}
 				{% endfor %}
 			</div>

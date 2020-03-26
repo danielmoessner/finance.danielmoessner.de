@@ -12,7 +12,7 @@
         <tbody>
         {% for data in pictures %}
             <tr>
-                <th scope="row">{{ data.date.strftime('%d.%m.%Y %H:%M') }}</th>
+                <th scope="row">{{ localtime(data.date).strftime('%d.%m.%Y %H:%M') }}</th>
                 <td>{{ data.flow }}</td>
                 <td>{{ data.invested_capital }}</td>
                 <td>{{ data.value }}</td>
