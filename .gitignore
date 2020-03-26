@@ -1,0 +1,15 @@
+/finance/files/node_modules/*/
+/finance/static/*/
+/db.sqlite3
+/.idea
+/logs/**
+node_modules/
+app/js/**
+app/css/**
+app/libs/**
+
+*.sqlite3
+*.pyc
+**/__pycache__
+**/migrations
+package-lock.json
