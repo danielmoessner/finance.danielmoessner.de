@@ -33,3 +33,11 @@ class ViewsTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         response = self.client.get("{}?tab=crypto".format(reverse_lazy("users:settings", args=[self.user.pk])))
         self.assertEqual(response.status_code, 200)
+
+    def test_init_works(self):
+        self.client = Client()
+        self.client.login(username="dummy", password="test")
+        response = self.client.get(reverse_lazy("users:init_banking", args=[self.user.pk]))
+        self.assertEqual(response.status_code, 302)
+        response = self.client.get(reverse_lazy("users:init_alternative", args=[self.user.pk]))
+        self.assertEqual(response.status_code, 302)

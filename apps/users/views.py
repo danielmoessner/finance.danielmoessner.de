@@ -74,7 +74,7 @@ class IndexView(UserPassesTestMixin, TabContextMixin, generic.DetailView):
         return context
 
 
-def init_banking(request):
+def init_banking(request, pk):
     user = request.user
     depot = user.create_random_banking_data()
     message = "{} was created.".format(depot.name)
@@ -83,13 +83,13 @@ def init_banking(request):
     return HttpResponseRedirect(url)
 
 
-def init_crypto(request):
+def init_crypto(request, pk):
     user = request.user
     crypto_init_crypto(user)
     return HttpResponseRedirect(reverse_lazy("users:settings", args=[user.pk]))
 
 
-def init_alternative(request):
+def init_alternative(request, pk):
     user = request.user
     depot = user.create_random_alternative_data()
     message = "{} was created.".format(depot.name)

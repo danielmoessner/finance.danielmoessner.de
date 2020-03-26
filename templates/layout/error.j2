@@ -1,4 +1,4 @@
-{% if request.user.is_authenticated %}
+{% if request and request.user.is_authenticated %}
     {% extends "layout/lm.njk" %}
 {% else %}
     {% import "modules/button.njk" as buttons %}
@@ -6,7 +6,7 @@
 {% endif %}
 
 {% block main %}
-    {% if request.user.is_authenticated %}
+    {% if request and request.user.is_authenticated %}
         {% if exception %}
             <p class="mt-4">{{ exception }}</p>
         {% else %}
