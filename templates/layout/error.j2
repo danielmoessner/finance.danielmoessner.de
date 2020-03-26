@@ -1,0 +1,38 @@
+{% if request.user.is_authenticated %}
+    {% extends "layout/lm.njk" %}
+{% else %}
+    {% import "modules/button.njk" as buttons %}
+    {% extends "layout/m.njk" %}
+{% endif %}
+
+{% block main %}
+    {% if request.user.is_authenticated %}
+        {% if exception %}
+            <p class="mt-4">{{ exception }}</p>
+        {% else %}
+            <p class="mt-4">{{ message }}</p>
+        {% endif %}
+    {% else %}
+        <div class="row">
+            <div class="col-12 col-lg-4 offset-lg-4">
+                <div class="min-vh-100 d-flex flex-column align-items-stretch justify-content-center">
+                    <div class="d-flex mt-4 mb-4 align-items-center">
+                        <img class="mr-2" src="{{ static('img/owl.png') }}" width="42" height="42" alt="Owl">
+                        <h1 class="m-0">{{ code }} Error</h1>
+                    </div>
+                    {% if exception %}
+                        <p class="mb-4">{{ exception }}</p>
+                    {% else %}
+                        <p class="mb-4">{{ message }}</p>
+                    {% endif %}
+                    <div>
+                        {{ buttons.hrefButton(text='Go to the login page', url=url('users:signin'), classes='mb-2') }}
+                    </div>
+                    <div>
+                        {{ buttons.hrefButton(text='Go to the signup page', url=url('users:signup'), classes='mb-2') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

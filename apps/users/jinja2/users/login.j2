@@ -6,20 +6,18 @@
 {% import "modules/form.njk" as forms %}
 
 {% block main %}
-    <div class="container">
-        <div class="row">
-            <div class="col-12 col-lg-4 offset-lg-4">
-                <div class="min-vh-100 d-flex flex-column align-items-stretch justify-content-center">
-                    <div class="d-flex mb-5 align-items-center mt-4">
-                        <img class="mr-2" src="{{ static('img/owl.png') }}" width="42" height="42" alt="Owl">
-                        <h1 class="m-0">Login</h1>
-                    </div>
-                    <div class="mb-5">
-                        {{ forms.formGenerator(form, url('users:signin'), csrf_token, submit_button_text='Login', submit_button_classes='ml-auto', form_classes='djangoform-dark') }}
-                    </div>
-                    <div>
-                        {{ buttons.hrefButton(text='Sign up as a new user', url=url('users:signup'), classes='mb-4') }}
-                    </div>
+    <div class="row">
+        <div class="col-12 col-lg-4 offset-lg-4">
+            <div class="min-vh-100 d-flex flex-column align-items-stretch justify-content-center">
+                <div class="d-flex mb-5 align-items-center mt-4">
+                    <img class="mr-2" src="{{ static('img/owl.png') }}" width="42" height="42" alt="Owl">
+                    <h1 class="m-0">Login</h1>
+                </div>
+                <div class="mb-5">
+                    {{ forms.formGenerator(form, url('users:signin'), csrf_token, submit_button_text='Login', submit_button_classes='ml-auto', form_classes='djangoform-dark') }}
+                </div>
+                <div>
+                    {{ buttons.hrefButton(text='Sign up as a new user', url=url('users:signup'), classes='mb-4') }}
                 </div>
             </div>
         </div>
