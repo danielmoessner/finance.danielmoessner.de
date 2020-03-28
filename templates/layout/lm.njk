@@ -13,15 +13,11 @@
             </aside>
             <main class="col-12 col-lg-9 mt-5 mt-lg-0">
                 {{ hg.bigLmHeading(headingCategory, headingHeading) }}
-                <div class="wrapper">
-                    {% block chart %}{% endblock %}
-                </div>
                 {{ messages.lmMessages(request) }}
-                {% block main %}{% endblock %}
+                {% block main %}
+
+                {% endblock %}
             </main>
-            <div class="wrapper">
-                {% block modals %}{% endblock %}
-            </div>
         </div>
     </div>
     </body>
