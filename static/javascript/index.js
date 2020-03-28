@@ -42,7 +42,7 @@ function postData(postUrl, formData, elementToInsertErrorInto) {
             return response.json()
         })
         .then((data) => {
-            data.valid ? console.log('submit') : $(elementToInsertErrorInto).html(data.html);
+            data.valid ? window.location.reload() : $(elementToInsertErrorInto).html(data.html);
         })
         .catch((error) => {
             $(elementToInsertErrorInto).html("Error");
