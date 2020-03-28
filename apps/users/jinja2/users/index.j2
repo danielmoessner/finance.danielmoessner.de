@@ -34,7 +34,7 @@
                     <dd class="col-12 col-sm-8 mb-2 mb-sm-1">{{ user.get_date_format_display() }}</dd>
                 </dl>
             </div>
-            <div class="d-flex overflow-x-scroll">
+            <div class="d-flex overflow-x-scroll overflow-x-md-auto">
                 {{ mg.djangoModal("Edit Username & E-Mail", "editUser", url('users:edit_user', args=[user.pk])) }}
                 {{ bg.modalButton("Edit Username & E-Mail", "#editUser", classes="mr-1") }}
                 {{ mg.djangoModal("Edit Password", "editPassword", url('users:edit_user_password', args=[user.pk])) }}

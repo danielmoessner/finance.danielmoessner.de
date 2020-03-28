@@ -1,57 +1,24 @@
 {% import "modules/button.njk" as buttons %}
 
 {% macro djangoModal(title, id, form_url) %}
-	<div class="modal text-darker" id="{{ id }}">
-		<div class="modal-dialog" role="document">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h4 class="modal-title">{{ title }}</h4>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-				</div> 
-				<form action="{{ form_url|safe }}" method="post" class="djangoform">
-					<div class="modal-body">
-					</div>
-					<div class="modal-footer">
+    <div class="modal text-darker" id="{{ id }}">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">{{ title }}</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="{{ form_url|safe }}" method="post" class="djangoform">
+                    <div class="modal-body">
+                    </div>
+                    <div class="modal-footer">
                         {{ buttons.submitButton(classes="") }}
                         {{ buttons.dismissButton() }}
-					</div>
-				</form>
-			</div>
-		</div>
-		<div class="d-none">
-			<script>
-				// fill the modal with data
-				jQuery(function(){
-					$("#{{ id }}").on('show.bs.modal', function (event) {
-					    $.ajax({
-					        url: "{{ form_url|safe }}"
-					    }).done(function(response) {
-					        $("#{{ id }} .modal-body").html(response);
-					    });
-					})
-				});
-				// do an ajax post instead of normal post
-				$("#{{ id }}").on("submit", function(event){
-				    event.preventDefault();
-				    $.ajax({
-				        url : "{{ form_url|safe }}",
-				        type : "POST",
-				        data : $("#{{ id }} .djangoform").serialize(),
-				        success : function(data) {
-				        	if (data.valid) {
-				        		window.location.reload()
-				        	} else {
-				        		$("#{{ id }} .modal-body").html(data.html);
-				        	}
-				        },
-				        error : function(data) {
-				        	$("#{{ id }} .modal-body").html("Error");
-				        }
-				    });
-				});
-			</script>
-		</div>
-	</div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 {% endmacro %}

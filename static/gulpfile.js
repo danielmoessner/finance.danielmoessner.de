@@ -59,7 +59,7 @@ function js(entries, filename) {
         .pipe(source(filename))
         .pipe(buffer())
         .pipe(sourcemaps.init({loadMaps: true}))
-        .pipe(uglify())
+        // .pipe(uglify())
         .on("error", log.error)
         .pipe(sourcemaps.write("./"))
         .pipe(gulp.dest("./app/js/"));
@@ -74,7 +74,7 @@ function jsCharts() {
 }
 
 function jsWatch() {
-    gulp.watch("./javascript/**.js", gulp.parallel(jsApp, jsCharts))
+    gulp.watch("./javascript/**.js", jsApp)
 }
 
 ///

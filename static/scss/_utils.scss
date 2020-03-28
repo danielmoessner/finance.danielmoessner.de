@@ -7,3 +7,9 @@
 .overflow-x-scroll {
   overflow-x: scroll;
 }
+
+.overflow-x-md-auto {
+  @include media-breakpoint-up(md) {
+    overflow-x: auto;
+  }
+}
