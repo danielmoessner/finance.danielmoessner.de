@@ -4,7 +4,7 @@ const source = require("vinyl-source-stream");
 const browserify = require("browserify");
 const postcss = require('gulp-postcss');
 const buffer = require("vinyl-buffer");
-const uglify = require("gulp-uglify");
+const terser = require('gulp-terser');
 const cssnano = require("cssnano");
 const sass = require("gulp-sass");
 const log = require("gulplog");
@@ -49,28 +49,48 @@ function cssBuild() {
 ///
 // javascript
 ///
-function js(entries, filename) {
-    let b = browserify({
+function js(entries, filename, build = true) {
+    let b1 = browserify({
         entries: entries,
-        debug: true
+        debug: false
     });
 
-    return b.bundle()
-        .pipe(source(filename))
-        .pipe(buffer())
-        .pipe(sourcemaps.init({loadMaps: true}))
-        // .pipe(uglify())
+    let b2 = b1.bundle()
         .on("error", log.error)
-        .pipe(sourcemaps.write("./"))
-        .pipe(gulp.dest("./app/js/"));
+        .pipe(source(filename))
+        .pipe(buffer());
+
+    if (build) {
+        return b2
+            .pipe(sourcemaps.init({loadMaps: true}))
+            .pipe(sourcemaps.write("./"))
+            .pipe(gulp.dest("./app/js/"));
+    } else {
+        return b2
+            .pipe(terser({
+                ecma: 2017,
+                compress: true,
+                output: {
+                    comments: false
+                }
+            }))
+            .pipe(gulp.dest("./app/js/"));
+    }
 }
 
 function jsApp() {
-    return js("./javascript/index.js", "app.js")
+    return js("./javascript/index.js", "app.js", false)
 }
 
 function jsCharts() {
-    return js("./javascript/charts.js", "charts.js")
+    return js("./javascript/charts.js", "charts.js", false)
+}
+
+function jsBuild() {
+    gulp.parallel(
+        js("./javascript/index.js", "app.js", true),
+        js("./javascript/charts.js", "charts.js", true)
+    )
 }
 
 function jsWatch() {
@@ -85,5 +105,7 @@ gulp.task("watch", gulp.parallel(cssWatch, jsWatch));
 gulp.task("js", jsApp);
 gulp.task("js:app", jsApp);
 gulp.task("js:charts", jsCharts);
+gulp.task("js:build", jsCharts);
 gulp.task("css", css);
 gulp.task("css:build", cssBuild);
+gulp.task("build", gulp.parallel("js:build", "css:build"));
