@@ -1,8 +1,6 @@
 from django.utils import timezone
 from django.db import models
 
-from apps.core.utils import create_slug
-
 
 class Timespan(models.Model):
     name = models.CharField(max_length=200)
@@ -43,7 +41,6 @@ class Depot(models.Model):
 
 class Account(models.Model):
     name = models.CharField(max_length=200)
-    slug = models.SlugField(unique=True, blank=True, null=True)
 
     class Meta:
         abstract = True

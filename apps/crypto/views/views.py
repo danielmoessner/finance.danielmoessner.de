@@ -4,7 +4,7 @@ from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 
-from apps.crypto.models import Asset, Account, Depot
+from apps.crypto.models import Asset, Account, Depot, Price
 from apps.crypto.tasks import update_movies_task
 from apps.core.views import TabContextMixin
 
@@ -54,7 +54,7 @@ class AssetView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["stats"] = {}
-        context["prices"] = self.object.prices.order_by("-date")
+        context["prices"] = Price.objects.filter(symbol=self.object.symbol).order_by("-date")
         accounts = Account.objects.filter(depot=self.request.user.get_active_crypto_depot_pk())
         buy_trades = self.object.buy_trades.filter(account__in=accounts)
         sell_trades = self.object.sell_trades.filter(account__in=accounts)

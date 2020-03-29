@@ -2,7 +2,6 @@ from django.db.models import Sum
 from django.db.models import Q
 from django import forms
 
-from apps.core.utils import create_slug
 from .models import Transaction
 from .models import Timespan
 from .models import Account

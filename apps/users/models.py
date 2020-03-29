@@ -3,8 +3,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from django.db import models
 
-from apps.core.utils import create_slug
-
 from datetime import timedelta
 import random
 
@@ -51,7 +49,6 @@ class StandardUser(AbstractUser):
         depot = Depot.objects.create(name=name, user=self, is_active=True)
         # account
         account1 = Account(depot=depot, name="Bank #1")
-        account1.slug = create_slug(account1)
         account1.save()
         account2 = Account.objects.create(depot=depot, name="Bank #2")
         account2.save()

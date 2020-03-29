@@ -5,7 +5,6 @@ from apps.alternative.models import Alternative
 from apps.alternative.models import Value
 from apps.alternative.models import Depot
 from apps.alternative.models import Flow
-from apps.core.utils import create_slug
 import apps.alternative.utils as utils
 
 

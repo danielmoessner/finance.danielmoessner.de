@@ -4,7 +4,6 @@ from apps.banking.models import Category
 from apps.banking.models import Account
 from apps.banking.models import Change
 from apps.banking.models import Depot
-from apps.core.utils import create_slug
 
 from datetime import datetime
 

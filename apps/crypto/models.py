@@ -5,9 +5,7 @@ from django.utils import timezone
 from django.db import models
 
 from apps.users.models import StandardUser
-from apps.core.models import Timespan as CoreTimespan
-from apps.core.models import Account as CoreAccount
-from apps.core.models import Depot as CoreDepot
+from apps.core.models import Timespan as CoreTimespan, Account as CoreAccount, Depot as CoreDepot
 
 import pandas as pd
 import numpy as np
@@ -15,15 +13,8 @@ import time
 
 
 class Depot(CoreDepot):
-    user = models.ForeignKey(StandardUser, editable=False, related_name="crypto_depots",
-                             on_delete=models.CASCADE)
-
-    def save(self, force_insert=False, force_update=False, using=None,
-             update_fields=None):
-        super().save(force_insert=force_insert, force_update=force_update, using=using,
-                     update_fields=update_fields)
-        if self.is_active:
-            self.user.crypto_depots.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
+    user = models.ForeignKey(StandardUser, editable=False, related_name="crypto_depots", on_delete=models.CASCADE)
+    value = models.DecimalField(max_digits=20, decimal_places=8, blank=True, null=True)
 
     # getters
     def get_movie(self):
@@ -67,6 +58,7 @@ class Depot(CoreDepot):
 
 class Account(CoreAccount):
     depot = models.ForeignKey(Depot, on_delete=models.CASCADE, related_name="accounts")
+    value = models.DecimalField(max_digits=20, decimal_places=8, blank=True, null=True)
 
     # getters
     def get_movie(self):
@@ -74,31 +66,9 @@ class Account(CoreAccount):
 
 
 class Asset(models.Model):
-    SYMBOL_CHOICES = (("BTC", "Bitcoin"), ("ETH", "Ethereum"), ("XRP", "Ripple"),
-                      ("BCH", "Bitcoin Cash"), ("EOS", "EOS"), ("LTC", "Litecoin"),
-                      ("XLM", "Stellar"), ("ADA", "Cardano"), ("TRX", "TRON"), ("MIOTA", "IOTA"),
-                      ("USDT", "Tether"), ("NEO", "NEO"), ("DASH", "Dash"),
-                      ("BNB", "Binance Coin"), ("XMR", "Monero"), ("ETC", "Ethereum Classic"),
-                      ("VEN", "VeChain"), ("XEM", "NEM"), ("OMG", "OmiseGO"), ("ONT", "Ontology"),
-                      ("QTUM", "Qtum"), ("ZEC", "Zcash"), ("ICX", "ICON"), ("LSK", "Lisk"),
-                      ("DCR", "Decred"), ("ZIL", "Zilliqa"), ("BCN", "Bytecoin"),
-                      ("AE", "Aeternity"), ("BTG", "Bitcoin Gold"), ("BTM", "Bytom"),
-                      ("SC", "Siacoin"), ("ZRX", "0x"), ("XVG", "Verge"), ("BTS", "BitShares"),
-                      ("STEEM", "Steem"), ("NANO", "Nano"), ("REP", "Augur"), ("MKR", "Maker"),
-                      ("BCD", "Bitcoin Diamond"), ("DOGE", "Dogecoin"), ("RHOC", "RChain"),
-                      ("WAVES", "Waves"), ("WAN", "Wanchain"), ("GNT", "Golem"),
-                      ("BTCP", "Bitcoin Private"), ("STRAT", "Stratis"),
-                      ("BAT", "Basic Attention Token"), ("PPT", "Populous"), ("DGB", "DigiByte"),
-                      ("HT", "Huobi Token"), ("KCS", "KuCoin Shares"), ("SNT", "Status"),
-                      ("NAS", "Nebulas"), ("WTC", "Waltonchain"), ("HSR", "Hshare"),
-                      ("IOST", "IOST"), ("DGD", "DigixDAO"), ("AION", "Aion"), ("FCT", "Factom"),
-                      ("LRC", "Loopring"), ("GXS", "GXChain"), ("CNX", "Cryptonex"),
-                      ("KMD", "Komodo"), ("BNT", "Bancor"), ("RDD", "ReddCoin"), ("PAY", "TenX"),
-                      ("ARDR", "Ardor"), ("GTC", "Game.com"), ("ARK", "Ark"), ("EUR", "Euro"),
-                      ("MONA", "MonaCoin"), ("MAID", "MaidSafeCoin"), ("MOAC", "MOAC"))
-    symbol = models.CharField(choices=SYMBOL_CHOICES, max_length=5, null=True, blank=True)
-    slug = models.SlugField(unique=True)
-    depots = models.ManyToManyField(Depot, related_name="assets")
+    symbol = models.CharField(max_length=5)
+    depot = models.ForeignKey(Depot, related_name="assets", on_delete=models.CASCADE)
+    value = models.DecimalField(max_digits=20, decimal_places=8, blank=True, null=True)
 
     def __str__(self):
         return "{}".format(self.symbol)
@@ -111,9 +81,7 @@ class Asset(models.Model):
         return self.movies.get(depot=depot, account=account)
 
     def get_name(self):
-        name = self.get_symbol_display()
-        name = "{}".format(name)
-        return name
+        return '{}'.format(self.symbol)
 
     def get_worth(self, date, amount):
         prices = Price.objects.filter(asset=self)  # maybe improve that by getting values list
@@ -173,35 +141,19 @@ class Transaction(models.Model):
 
 
 class Price(models.Model):
-    asset = models.ForeignKey(Asset, related_name="prices", on_delete=models.PROTECT)
+    symbol = models.CharField(max_length=5, null=True)
     date = models.DateTimeField()
     price = models.DecimalField(decimal_places=2, max_digits=15, default=0)
-    currency = models.CharField(max_length=3)
 
     class Meta:
-        unique_together = ("asset", "date", "currency")
+        unique_together = ("symbol", "date")
 
     def __str__(self):
-        return "{} {} {}".format(self.asset, self.get_date(), self.price)
+        return "{} {} {}".format(self.symbol, self.get_date(), self.price)
 
     # getters
     def get_date(self):
         return timezone.localtime(self.date).strftime("%d.%m.%Y")
-
-    # clean
-    @staticmethod
-    def clean_db():
-        for asset in Asset.objects.all():
-            prices = list(Price.objects.filter(asset=asset).order_by("date"))
-            prices2 = Price.objects.filter(asset=asset).order_by("date")
-            deletes = list()
-            for i in range(len(prices)):
-                if prices[i].date.replace(hour=0, minute=0, second=0, microsecond=0) in \
-                        [price.date.replace(hour=0, minute=0, second=0, microsecond=0)
-                         for price in prices2[i+1:]]:
-                    deletes.append(i)
-            for i in reversed(deletes):
-                prices[i].delete()
 
 
 class Timespan(CoreTimespan):
@@ -334,10 +286,11 @@ class Movie(models.Model):
     @staticmethod
     def init_update(sender, instance, **kwargs):
         if sender is Price:
-            q1 = Q(asset=instance.asset)
-            q2 = Q(depot__in=instance.asset.depots.all(), asset=None, account=None)
-            movies = Movie.objects.filter(q1 | q2)
-            movies.update(update_needed=True)
+            pass
+            # q1 = Q(asset=instance.asset)
+            # q2 = Q(depot__in=instance.asset.depots.all(), asset=None, account=None)
+            # movies = Movie.objects.filter(q1 | q2)
+            # movies.update(update_needed=True)
         elif sender is Transaction:
             q1 = Q(account=instance.from_account, asset=instance.asset)
             q2 = Q(account=instance.to_account, asset=instance.asset)
