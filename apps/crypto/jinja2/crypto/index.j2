@@ -44,7 +44,7 @@
                         {{ bg.modalButton("Buy/Sell", "#addTrade") }}
                         {{ mg.djangoModal("Add Transaction", "addTransaction", url("crypto:add_transaction")) }}
                         {{ bg.modalButton("Send/Receive", "#addTransaction") }}
-                        {{ bg.hrefButton("Open", url=url("crypto:asset", args=[asset.slug])) }}
+                        {{ bg.hrefButton("Open", url=url("crypto:asset", args=[asset.pk])) }}
                     </div>
                 </td>
             </tr>
@@ -79,9 +79,9 @@
                 <td>todo: account.value</td>
                 <td>
                     <div class="d-flex">
-                        {{ bg.hrefButton("Open", url=url("crypto:account", args=[account.slug])) }}
-                        {{ bg.modalButton("Edit", "#editAccount"+account.slug) }}
-                        {{ mg.djangoModal("Edit Account", "editAccount"+account.slug, url("crypto:edit_account", args=[account.slug])) }}
+                        {{ bg.hrefButton("Open", url=url("crypto:account", args=[account.pk])) }}
+                        {{ bg.modalButton("Edit", "#editAccount"+account.pk|string) }}
+                        {{ mg.djangoModal("Edit Account", "editAccount"+account.pk|string, url("crypto:edit_account", args=[account.pk])) }}
                     </div>
                 </td>
             </tr>
