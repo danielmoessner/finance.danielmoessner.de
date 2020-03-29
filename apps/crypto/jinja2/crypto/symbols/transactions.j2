@@ -1,0 +1,43 @@
+{% if tab=="transactions" %}
+    <table class="table table-dark table-responsive-md rounded mb-5">
+        <thead>
+        <tr>
+            <th class="border-0" scope="col">Date</th>
+            <th class="border-0" scope="col">Asset</th>
+            <th class="border-0" scope="col">From Account</th>
+            <th class="border-0" scope="col">To Account</th>
+            <th class="border-0" scope="col">Amount</th>
+            <th class="border-0" scope="col">Fees</th>
+            <th class="border-0" scope="col">Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for transaction in transactions %}
+            <tr>
+                <td>{{ localtime(transaction.date).strftime('%d.%m.%Y %H:%M') }}</td>
+                <td>{{ transaction.asset }}</td>
+                <td>{{ transaction.from_account }}</td>
+                <td>{{ transaction.to_account }}</td>
+                <td>{{ transaction.amount }}</td>
+                <td>{{ transaction.fees }}</td>
+                <td>
+                    <div class="d-flex">
+                        {{ mg.djangoModal("Edit Transaction", "editTransaction"+transaction.pk|string, url("crypto:edit_transaction", args=[transaction.pk])) }}
+                        {{ bg.modalButton("Edit", "#editTransaction"+transaction.pk|string) }}
+                        {{ mg.djangoModal("Delete Transaction", "deleteTransaction"+transaction.pk|string, url("crypto:delete_transaction", args=[transaction.pk])) }}
+                        {{ bg.modalButton("Delete", "#deleteTransaction"+transaction.pk|string) }}
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="7">
+                <div class="d-flex">
+                    {{ mg.djangoModal("Add Transaction", "addTransaction", url("crypto:add_transaction")) }}
+                    {{ bg.modalButton("Send/Receive Asset", "#addTransaction") }}
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+{% endif %}

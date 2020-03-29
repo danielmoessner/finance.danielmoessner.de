@@ -1,0 +1,52 @@
+{% extends "layout/lm.njk" %}
+
+{% set headingCategory="Account" %}
+{% set headingHeading=account.name %}
+{% set title="Account " + account.name + " | Crypto" %}
+
+{% block main %}
+
+    {% import "modules/button.njk" as bg %}
+    {% import "modules/modal.njk" as mg %}
+
+    <div class="d-flex justify-content-center mt-2 mb-5">
+        <div class="btn-group" role="group" aria-label="Console">
+            {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
+            {{ bg.hrefButton("Assets", request.path + '?tab=assets', active=(tab=='assets')) }}
+            {{ bg.hrefButton("Trades", request.path + '?tab=trades', active=(tab=='trades')) }}
+            {{ bg.hrefButton("Transactions", request.path + '?tab=transactions', active=(tab=='transactions')) }}
+        </div>
+    </div>
+
+    {% include "modules/stats.j2" %}
+
+    {% if tab=="assets" %}
+        <table class="table table-dark table-responsive-md rounded mb-5">
+            <thead>
+            <tr>
+                <th class="border-0" scope="col">Asset</th>
+                <th class="border-0" scope="col">Price</th>
+                <th class="border-0" scope="col">Amount</th>
+                <th class="border-0" scope="col">Value</th>
+                <th class="border-0" scope="col">Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for asset in assets %}
+                <tr>
+                    <td>{{ asset.symbol }}</td>
+                    <td>todo: asset.price</td>
+                    <td>todo: asset.amount</td>
+                    <td>todo: asset.value</td>
+                    <td>todo: asset.action</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    {% include 'crypto/symbols/trades.j2' %}
+
+    {% include 'crypto/symbols/transactions.j2' %}
+
+{% endblock %}

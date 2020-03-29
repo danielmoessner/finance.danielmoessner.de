@@ -1,4 +1,4 @@
-from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import generic
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
@@ -9,13 +9,13 @@ from apps.core.views import TabContextMixin
 
 
 # views
-class IndexView(PermissionRequiredMixin, TabContextMixin, generic.DetailView):
+class IndexView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
     template_name = 'alternative/index.j2'
     model = Depot
     permission_denied_message = 'You have no permission to see this depot.'
 
-    def has_permission(self):
-        return self.get_object().user == self.request.user
+    def get_queryset(self):
+        return self.request.user.alternative_depots.all()
 
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
@@ -29,13 +29,13 @@ class IndexView(PermissionRequiredMixin, TabContextMixin, generic.DetailView):
         return context
 
 
-class AlternativeView(PermissionRequiredMixin, TabContextMixin, generic.DetailView):
+class AlternativeView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
     template_name = 'alternative/alternative.j2'
     model = Alternative
     permission_denied_message = 'You have no permission to see this alternative.'
 
-    def has_permission(self):
-        return self.get_object().depot.user == self.request.user
+    def get_queryset(self):
+        return Alternative.objects.filter(depot__in=self.request.user.alternative_depots.all())
 
     def get_context_data(self, **kwargs):
         context = super(AlternativeView, self).get_context_data(**kwargs)

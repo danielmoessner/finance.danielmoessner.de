@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import generic
 
 from apps.banking.models import Category, Account, Depot
@@ -5,7 +6,7 @@ from apps.core.views import TabContextMixin
 
 
 # views
-class IndexView(TabContextMixin, generic.DetailView):
+class IndexView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
     template_name = "banking/index.njk"
     model = Depot
 
@@ -26,7 +27,7 @@ class IndexView(TabContextMixin, generic.DetailView):
         return context
 
 
-class AccountView(TabContextMixin, generic.DetailView):
+class AccountView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
     template_name = "banking/account.njk"
     model = Account
 
@@ -44,7 +45,7 @@ class AccountView(TabContextMixin, generic.DetailView):
         return context
 
 
-class CategoryView(TabContextMixin, generic.DetailView):
+class CategoryView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
     template_name = "banking/category.njk"
     model = Category
 

@@ -15,17 +15,21 @@
                     <p class="font-weight-bold m-0 mb-2">Dashboards</p>
                 </li>
                 {% with pk=request.user.get_active_banking_depot_pk() %}
-                    {% if pk %}
+                    {% if pk != None %}
                         <li class="nav-item">
                             {{ buttons.navigationButton("Banking", url("banking:index", args=[pk]), active=("banking" in request.path)) }}
                         </li>
                     {% endif %}
                 {% endwith %}
-                <li class="nav-item">
-                    {{ buttons.navigationButton("Crypto", url('crypto:index'), active=("crypto" in request.path)) }}
-                </li>
+                {% with pk=request.user.get_active_crypto_depot_pk() %}
+                    {% if pk != None %}
+                        <li class="nav-item">
+                            {{ buttons.navigationButton("Crypto", url('crypto:index', args=[pk]), active=("crypto" in request.path)) }}
+                        </li>
+                    {% endif %}
+                {% endwith %}
                 {% with pk=request.user.get_active_alternative_depot_pk() %}
-                    {% if pk %}
+                    {% if pk != None %}
                         <li class="nav-item">
                             {{ buttons.navigationButton("Alternative", url('alternative:index', args=[pk]), active=("alternative" in request.path)) }}
                         </li>

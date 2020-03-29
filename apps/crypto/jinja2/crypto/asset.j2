@@ -1,0 +1,48 @@
+{% extends "layout/lm.njk" %}
+
+{% set headingCategory="Asset" %}
+{% set headingHeading=asset.get_name() %}
+{% set title="Asset " + asset.get_name() + " | Crypto" %}
+
+{% block main %}
+
+    {% import "modules/button.njk" as bg %}
+    {% import "modules/modal.njk" as mg %}
+
+    {%- set addTransactionButton=bg.modalButton("Send/Receive Asset", "#addTransaction") -%}
+
+    <div class="d-flex justify-content-center mt-2 mb-5">
+        <div class="btn-group" role="group" aria-label="Console">
+            {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
+            {{ bg.hrefButton("Prices", request.path + '?tab=prices', active=(tab=='prices')) }}
+            {{ bg.hrefButton("Trades", request.path + '?tab=trades', active=(tab=='trades')) }}
+            {{ bg.hrefButton("Transactions", request.path + '?tab=transactions', active=(tab=='transactions')) }}
+        </div>
+    </div>
+
+    {% include "modules/stats.j2" %}
+
+    {% if tab=="prices" %}
+        <table class="table table-dark table-responsive-md rounded mb-5">
+            <thead>
+            <tr>
+                <th class="border-0" scope="col">Date</th>
+                <th class="border-0" scope="col">Price</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for price in prices %}
+                <tr>
+                    <td>{{ localtime(price.date).strftime('%d.%m.%Y %H:%M') }}</td>
+                    <td>{{ price.price }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    {% include "crypto/symbols/trades.j2" %}
+
+    {% include "crypto/symbols/transactions.j2" %}
+
+{% endblock %}

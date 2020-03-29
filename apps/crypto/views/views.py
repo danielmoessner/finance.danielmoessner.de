@@ -6,11 +6,10 @@ from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 
-from apps.crypto.models import Depot
-from apps.crypto.models import Asset
-from apps.crypto.models import Movie
+from apps.crypto.models import Asset, Account, Depot
 from apps.crypto.tasks import update_movies_task
 from apps.core.utils import create_paginator
+from apps.core.views import TabContextMixin
 
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -20,143 +19,59 @@ from rest_framework.views import APIView
 import json
 
 
-# messenger
-def messenger(request, depot):
-    # update message
-    if depot.movies.exclude(asset__symbol=request.user.currency).filter(update_needed=True).exists():
-        hit = False
-        tasks = Task.objects.filter(task_name="apps.crypto.tasks.update_movies_task")
-        for task in tasks:
-            depot_pk = json.loads(task.task_params)[0][0]
-            if depot_pk == depot.pk:
-                text = "One update is scheduled. You will be notified as soon as it succeeded."
-                messages.info(request, text)
-                hit = True
-        if not hit:
-            text = "New data is available. Hit the update button so that I can update everything."
-            messages.info(request, text)
-    else:
-        text = "Everything is up to date."
-        messages.success(request, text)
+class IndexView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
+    template_name = 'crypto/index.j2'
+    model = Depot
 
-
-# VIEWS
-class IndexView(LoginRequiredMixin, generic.TemplateView):
-    template_name = "crypto_index.njk"
+    def get_queryset(self):
+        return self.request.user.crypto_depots.all()
 
     def get_context_data(self, **kwargs):
-        # general
-        context = dict(user=self.request.user)
-        try:
-            context["depot"] = context["user"].crypto_depots.get(is_active=True)
-        except Depot.DoesNotExist:
-            messages.warning(self.request,
-                             "You need to set a crypto depot active. You can do that under Settings -> Crypto.")
-            context["depot"] = context["user"].crypto_depots.first()
-        context["timespans"] = context["depot"].timespans.all()
-        context["timespan"] = context["depot"].timespans.get(is_active=True)
-        # accounts
-        context["accounts"] = context["depot"].accounts.order_by("name")
-        account_movies = context["depot"].movies.filter(
-            account__in=context["accounts"], asset=None).order_by("account__name")
-        context["accounts_movies"] = zip(context["accounts"], account_movies)
-        # assets
-        context["assets"] = context["depot"].assets.order_by("symbol")
-        context["asset_symbol_choices"] = Asset.SYMBOL_CHOICES
-        asset_movies = context["depot"].movies.filter(asset__in=context["assets"], account=None)\
-            .order_by("asset__symbol")
-        context["assets_movies"] = zip(context["assets"], asset_movies)
-        # movie
-        context["movie"] = context["depot"].movies.get(account=None, asset=None)
-        # error
-        if (not len(context["assets"]) == len(asset_movies)) or \
-                (not len(context["accounts"]) == len(account_movies)):
-            context["depot"].reset_movies()
-            context = self.get_context_data(**kwargs)
-        # messages
-        messenger(self.request, context["depot"])
-        # return
+        context = super().get_context_data(**kwargs)
+        context['stats'] = {}
+        context['assets'] = self.object.assets.order_by('symbol')
+        context['accounts'] = self.object.accounts.order_by('name')
         return context
 
 
-class AccountView(LoginRequiredMixin, generic.TemplateView):
-    template_name = "crypto_account.njk"
+class AccountView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
+    template_name = "crypto/account.j2"
+    model = Account
+
+    def get_queryset(self):
+        return Account.objects.filter(depot__in=self.request.user.crypto_depots.all())
 
     def get_context_data(self, **kwargs):
-        # general
-        context = dict(user=self.request.user)
-        context["depot"] = context["user"].crypto_depots.get(is_active=True)
-        context["timespans"] = context["depot"].timespans.all()
-        context["timespan"] = context["depot"].timespans.get(is_active=True)
-        # account(s)
-        context["accounts"] = context["depot"].accounts.all()
-        context["account"] = context["accounts"].get(slug=kwargs["slug"])
-        # assets
-        context["assets"] = context["depot"].assets.order_by("symbol")
-        context["public_assets"] = context["assets"].exclude(symbol=None)
-        context["asset_symbol_choices"] = Asset.SYMBOL_CHOICES
-        asset_movies = context["depot"].movies.filter(asset__in=context["assets"], account=None) \
-            .order_by("asset__symbol")
-        context["assets_movies"] = zip(context["assets"], asset_movies)
-        # trades
-        trades = context["account"].trades.order_by("-date").select_related("account", "buy_asset", "sell_asset",
-                                                                            "fees_asset")
-        context["trades"], success = create_paginator(self.request.GET.get("trades-page"), trades, 10)
-        context["console"] = "trades" if success else "console-main"
-        # transactions
-        to_transactions = context["account"].to_transactions.all()
-        from_transactions = context["account"].from_transactions.all()
-        transactions = (to_transactions | from_transactions).order_by("-date").select_related("from_account",
-                                                                                              "to_account", "asset")
-        context["transactions"], success = create_paginator(self.request.GET.get("transactions-page"), transactions, 10)
-        context["console"] = "transactions" if success else context["console"]
-        # movie
-        context["movie"] = context["depot"].movies.get(account=context["account"], asset=None)
-        # error
-        if not len(context["assets"]) == len(asset_movies):
-            context["depot"].reset_movies()
-            context = self.get_context_data(**kwargs)
-        # messages
-        messenger(self.request, context["depot"])
-        # return
+        context = super().get_context_data(**kwargs)
+        context['stats'] = {}
+        context['assets'] = self.object.depot.assets.order_by('symbol')
+        context["trades"] = self.object.trades.order_by("-date")\
+            .select_related("account", "buy_asset", "sell_asset", "fees_asset")
+        to_transactions = self.object.to_transactions.all()
+        from_transactions = self.object.from_transactions.all()
+        context["transactions"] = (to_transactions | from_transactions).order_by("-date")\
+            .select_related("from_account", "to_account", "asset")
         return context
 
 
-class AssetView(LoginRequiredMixin, generic.TemplateView):
-    template_name = "crypto_asset.njk"
+class AssetView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
+    template_name = "crypto/asset.j2"
+    model = Asset
+
+    def get_queryset(self):
+        return Asset.objects.all()
 
     def get_context_data(self, **kwargs):
-        # general
-        context = dict(user=self.request.user)
-        context["depot"] = context["user"].crypto_depots.get(is_active=True)
-        context["timespans"] = context["depot"].timespans.all()
-        context["timespan"] = context["depot"].timespans.get(is_active=True)
-        # account
-        context["accounts"] = context["depot"].accounts.all()
-        # asset(s)
-        context["assets"] = context["depot"].assets.order_by("symbol")
-        context["asset"] = context["assets"].get(slug=kwargs["slug"])
-        # prices
-        prices = context["asset"].prices.order_by("-date")
-        context["prices"], success = create_paginator(self.request.GET.get("prices-page"), prices, 10)
-        context["console"] = "prices" if success else "console-main"
-        # trades
-        buy_trades = context["asset"].buy_trades.all()
-        sell_trades = context["asset"].sell_trades.all()
-        trades = (buy_trades | sell_trades).order_by("-date").select_related("account", "buy_asset", "sell_asset",
-                                                                             "fees_asset")
-        context["trades"], success = create_paginator(self.request.GET.get("trades-page"), trades, 10)
-        context["console"] = "trades" if success else context["console"]
-        # transactions
-        transactions = context["asset"].transactions.order_by("-date").select_related("from_account", "to_account",
-                                                                                      "asset")
-        context["transactions"], success = create_paginator(self.request.GET.get("transactions-page"), transactions, 10)
-        context["console"] = "transactions" if success else context["console"]
-        # movie
-        context["movie"] = context["depot"].movies.get(account=None, asset=context["asset"])
-        # messages
-        messenger(self.request, context["depot"])
-        # return
+        context = super().get_context_data(**kwargs)
+        context["stats"] = {}
+        context["prices"] = self.object.prices.order_by("-date")
+        accounts = Account.objects.filter(depot=self.request.user.get_active_crypto_depot_pk())
+        buy_trades = self.object.buy_trades.filter(account__in=accounts)
+        sell_trades = self.object.sell_trades.filter(account__in=accounts)
+        context["trades"] = (buy_trades | sell_trades).order_by("-date")\
+            .select_related("account", "buy_asset", "sell_asset", "fees_asset")
+        context["transactions"] = self.object.transactions.filter(from_account__in=accounts).order_by("-date")\
+            .select_related("from_account", "to_account", "asset")
         return context
 
 
@@ -203,13 +118,13 @@ def json_data(pi, g=True, p=True, v=True, cr=True, twr=True, cs=True):
     if cr:
         data_cr = dict()
         data_cr["label"] = "Current return"
-        data_cr["data"] = map(lambda x: x*100, pi["cr"])
+        data_cr["data"] = map(lambda x: x * 100, pi["cr"])
         data_cr["yAxisID"] = "yield"
         datasets.append(data_cr)
     if twr:
         data_twr = dict()
         data_twr["label"] = "True time weighted return"
-        data_twr["data"] = map(lambda x: x*100, pi["twr"])
+        data_twr["data"] = map(lambda x: x * 100, pi["twr"])
         data_twr["yAxisID"] = "yield"
         datasets.append(data_twr)
     if cs:

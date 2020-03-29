@@ -1,0 +1,103 @@
+{% extends "layout/lm.njk" %}
+
+{% set headingCategory="Dashboard" %}
+{% set headingHeading="Crypto" %}
+{% set title="Crypto" %}
+
+{% block main %}
+
+{% import "modules/button.njk" as bg %}
+{% import "modules/modal.njk" as mg %}
+
+<div class="d-flex justify-content-center mt-2 mb-5">
+    <div class="btn-group" role="group" aria-label="Console">
+        {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
+        {{ bg.hrefButton("Assets", request.path + '?tab=assets', active=(tab=='assets')) }}
+        {{ bg.hrefButton("Accounts", request.path + '?tab=accounts', active=(tab=='accounts')) }}
+        {{ bg.hrefButton("Charts", request.path + '?tab=charts', active=(tab=='charts')) }}
+    </div>
+</div>
+
+{% include 'modules/stats.j2' %}
+
+{% if tab=="assets" %}
+    <table class="table rounded table-responsive-md table-dark">
+        <thead>
+        <tr>
+            <th class="border-0" scope="col">Asset</th>
+            <th class="border-0" scope="col">Price</th>
+            <th class="border-0" scope="col">Amount</th>
+            <th class="border-0" scope="col">Value</th>
+            <th class="border-0" scope="col">Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for asset in assets %}
+            <tr>
+                <td>{{ asset.symbol }}</td>
+                <td>todo: asset.price</td>
+                <td>todo: asset.amount</td>
+                <td>todo: asset.value</td>
+                <td>
+                    <div class="d-flex">
+                        {{ mg.djangoModal("Add Trade", "addTrade", url("crypto:add_trade")) }}
+                        {{ bg.modalButton("Buy/Sell", "#addTrade") }}
+                        {{ mg.djangoModal("Add Transaction", "addTransaction", url("crypto:add_transaction")) }}
+                        {{ bg.modalButton("Send/Receive", "#addTransaction") }}
+                        {{ bg.hrefButton("Open", url=url("crypto:asset", args=[asset.slug])) }}
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="5">
+                <div class="d-flex">
+                    {{ mg.djangoModal("Add Asset", "addAsset", url("crypto:add_asset")) }}
+                    {{ bg.modalButton("Add Asset", "#addAsset") }}
+                    {{ mg.djangoModal("Remove Asset", "removeAsset", url("crypto:remove_asset")) }}
+                    {{ bg.modalButton("Remove Asset", "#removeAsset") }}
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+{% endif %}
+
+{% if tab=="accounts" %}
+    <table class="table table-dark table-responsive-md rounded">
+        <thead>
+        <tr>
+            <th class="border-0" scope="col">Account</th>
+            <th class="border-0" scope="col">Value</th>
+            <th class="border-0" scope="col">Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for account in accounts %}
+            <tr>
+                <td>{{ account.name }}</td>
+                <td>todo: account.value</td>
+                <td>
+                    <div class="d-flex">
+                        {{ bg.hrefButton("Open", url=url("crypto:account", args=[account.slug])) }}
+                        {{ bg.modalButton("Edit", "#editAccount"+account.slug) }}
+                        {{ mg.djangoModal("Edit Account", "editAccount"+account.slug, url("crypto:edit_account", args=[account.slug])) }}
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="3">
+                <div class="d-flex">
+                    {{ mg.djangoModal("Add Account", "addAccount", url("crypto:add_account")) }}
+                    {{ bg.modalButton("Add Account", "#addAccount") }}
+                    {{ mg.djangoModal("Delete Account", "deleteAccount", url("crypto:delete_account")) }}
+                    {{ bg.modalButton("Delete Account", "#deleteAccount") }}
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+{% endif %}
+
+{% endblock %}

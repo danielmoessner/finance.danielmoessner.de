@@ -57,7 +57,7 @@ urlpatterns = [
 
     # PAGES
     # index
-    path("", views.IndexView.as_view(), name="index"),
+    path("depots/<int:pk>/", views.IndexView.as_view(), name="index"),
     # account/bittrex/
     path("account/<slug>/", views.AccountView.as_view(), name="account"),
     # asset/bitcoin/

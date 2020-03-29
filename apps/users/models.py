@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from django.db import models
 
@@ -25,17 +26,23 @@ class StandardUser(AbstractUser):
     rounded_numbers = models.BooleanField(default=True)
 
     # getters
-    def get_active_banking_depot_pk(self):
-        depots = self.banking_depots.filter(is_active=True)
-        if depots.count() <= 0:
+    def get_active_crypto_depot_pk(self):
+        try:
+            return self.crypto_depots.get(is_active=True).pk
+        except ObjectDoesNotExist:
             return None
-        return depots.first().pk
+
+    def get_active_banking_depot_pk(self):
+        try:
+            return self.banking_depots.get(is_active=True).pk
+        except ObjectDoesNotExist:
+            return None
 
     def get_active_alternative_depot_pk(self):
-        depots = self.alternative_depots.filter(is_active=True)
-        if depots.count() <= 0:
+        try:
+            return self.alternative_depots.get(is_active=True).pk
+        except ObjectDoesNotExist:
             return None
-        return depots.first().pk
 
     # create
     def create_random_banking_data(self):
