@@ -8,7 +8,6 @@ from django.views import generic
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 
-from apps.crypto.models import init_crypto as crypto_init_crypto
 from apps.users.models import StandardUser
 from apps.users.forms import UpdateCryptoStandardUserForm, UpdateGeneralStandardUserForm
 from apps.users.forms import UpdateStandardUserForm, CreateStandardUserForm
@@ -58,19 +57,9 @@ class IndexView(UserPassesTestMixin, TabContextMixin, generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["user"] = self.request.user
-        context["edit_user_form"] = UpdateStandardUserForm(instance=self.request.user)
-        context["edit_user_password_form"] = PasswordChangeForm(user=self.request.user)
-        context["edit_user_general_form"] = UpdateGeneralStandardUserForm(
-            instance=self.request.user)
-
-        # banking
-        context["banking_depots"] = context["user"].banking_depots.all()
-        # crypto
-        context["crypto_depots"] = context["user"].crypto_depots.all()
-        context["edit_user_crypto_form"] = UpdateCryptoStandardUserForm(instance=self.request.user)
-        # alternative
-        context["alternative_depots"] = context["user"].alternative_depots.all()
+        context["banking_depots"] = self.object.banking_depots.all()
+        context["crypto_depots"] = self.object.crypto_depots.all()
+        context["alternative_depots"] = self.object.alternative_depots.all()
         return context
 
 
@@ -85,8 +74,11 @@ def init_banking(request, pk):
 
 def init_crypto(request, pk):
     user = request.user
-    crypto_init_crypto(user)
-    return HttpResponseRedirect(reverse_lazy("users:settings", args=[user.pk]))
+    depot = user.create_random_crypto_data()
+    message = "{} was created.".format(depot.name)
+    messages.success(request, message)
+    url = '{}?tab=crypto'.format(reverse_lazy("users:settings", args=[user.pk]))
+    return HttpResponseRedirect(url)
 
 
 def init_alternative(request, pk):

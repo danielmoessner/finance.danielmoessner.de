@@ -140,3 +140,48 @@ class StandardUser(AbstractUser):
 
         # return the depot that contains all the test data
         return depot
+
+    def create_random_crypto_data(self):
+        from django.utils import timezone
+        from datetime import timedelta
+        import random
+        from apps.crypto.models import Depot, Account, Asset, Timespan, Trade, Transaction
+        depot = Depot.objects.create(name="Test Depot", user=self, is_active=True)
+        # account
+        account1 = Account(depot=depot, name="Wallet 1", slug="320320932")
+        account1.save()
+        account2 = Account(depot=depot, name="Exchange 1", slug="3209239032")
+        account2.save()
+        # asset
+        btc = Asset.objects.get(symbol="BTC")
+        btc.depots.add(depot)
+        eth = Asset.objects.get(symbol="ETH")
+        eth.depots.add(depot)
+        ltc = Asset.objects.get(symbol="LTC")
+        ltc.depots.add(depot)
+        eur = Asset.objects.get(symbol="EUR")
+        # trade
+        date = timezone.now() - timedelta(days=random.randint(50, 300))
+        price = btc.get_worth(date, 1.1)
+        Trade.objects.create(account=account2, date=date, buy_amount=1.1, buy_asset=btc, fees=2.80, fees_asset=eur,
+                             sell_amount=price, sell_asset=eur)
+        date = timezone.now() - timedelta(days=random.randint(50, 300))
+        price = eth.get_worth(date, 4.1)
+        Trade.objects.create(account=account2, date=date, buy_amount=4.1, buy_asset=eth, fees=1.80, fees_asset=eur,
+                             sell_amount=price, sell_asset=eur)
+        date = timezone.now() - timedelta(days=random.randint(50, 300))
+        price = ltc.get_worth(date, 11.7)
+        Trade.objects.create(account=account2, date=date, buy_amount=11.7, buy_asset=ltc, fees=3.20, fees_asset=eur,
+                             sell_amount=price, sell_asset=eur)
+        # transaction
+        date = timezone.now() - timedelta(days=random.randint(1, 40))
+        Transaction.objects.create(asset=btc, from_account=account2, to_account=account1, date=date, amount=1.09,
+                                   fees=0.01)
+        date = timezone.now() - timedelta(days=random.randint(1, 40))
+        Transaction.objects.create(asset=eth, from_account=account2, to_account=account1, date=date, amount=4.05,
+                                   fees=0.05)
+        # timespan
+        Timespan.objects.create(depot=depot, name="Default Timespan", start_date=None, end_date=None, is_active=True)
+
+        # return the depot with the generated data
+        return depot

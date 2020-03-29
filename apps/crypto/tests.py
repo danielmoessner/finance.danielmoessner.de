@@ -2,7 +2,7 @@ from django.urls import reverse_lazy
 from django.test import TestCase
 from django.test import Client
 
-from apps.crypto.models import init_crypto
+from apps.crypto.models import create_random_crypto_data
 from apps.crypto.models import Asset
 from apps.users.models import StandardUser
 
