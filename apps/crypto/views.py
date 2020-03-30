@@ -1,11 +1,10 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import get_object_or_404
 from django.views import generic
-from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 
-from apps.crypto.models import Asset, Account, Depot, Price
-from apps.crypto.tasks import update_movies_task
+from apps.crypto.models import Asset, Account, Depot, Price, Trade, Transaction, Flow
 from apps.core.views import TabContextMixin
 
 
@@ -18,9 +17,14 @@ class IndexView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['stats'] = {}
+        context['stats'] = self.object.get_stats()
         context['assets'] = self.object.assets.order_by('symbol')
         context['accounts'] = self.object.accounts.order_by('name')
+        context['trades'] = Trade.objects.filter(account__in=self.object.accounts.all()) \
+            .select_related('account', 'buy_asset', 'sell_asset')
+        context['transactions'] = Transaction.objects.filter(asset__in=self.object.assets.all()) \
+            .select_related('from_account', 'to_account', 'asset')
+        context['flows'] = Flow.objects.filter(account__in=self.object.accounts.all()).order_by('-date')
         return context
 
 
@@ -33,13 +37,13 @@ class AccountView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['stats'] = {}
-        context['assets'] = self.object.depot.assets.order_by('symbol')
-        context["trades"] = self.object.trades.order_by("-date")\
-            .select_related("account", "buy_asset", "sell_asset", "fees_asset")
+        context['stats'] = self.object.get_stats()
+        context['assets'] = self.object.depot.assets.prefetch_related('account_stats').order_by('symbol')
+        context["trades"] = self.object.trades.order_by("-date") \
+            .select_related("account", "buy_asset", "sell_asset")
         to_transactions = self.object.to_transactions.all()
         from_transactions = self.object.from_transactions.all()
-        context["transactions"] = (to_transactions | from_transactions).order_by("-date")\
+        context["transactions"] = (to_transactions | from_transactions).order_by("-date") \
             .select_related("from_account", "to_account", "asset")
         return context
 
@@ -53,29 +57,19 @@ class AssetView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["stats"] = {}
+        context["stats"] = self.object.get_stats()
         context["prices"] = Price.objects.filter(symbol=self.object.symbol).order_by("-date")
         accounts = Account.objects.filter(depot=self.request.user.get_active_crypto_depot_pk())
         buy_trades = self.object.buy_trades.filter(account__in=accounts)
         sell_trades = self.object.sell_trades.filter(account__in=accounts)
-        context["trades"] = (buy_trades | sell_trades).order_by("-date")\
-            .select_related("account", "buy_asset", "sell_asset", "fees_asset")
-        context["transactions"] = self.object.transactions.filter(from_account__in=accounts).order_by("-date")\
+        context["trades"] = (buy_trades | sell_trades).order_by("-date") \
+            .select_related("account", "buy_asset", "sell_asset")
+        context["transactions"] = self.object.transactions.filter(from_account__in=accounts).order_by("-date") \
             .select_related("from_account", "to_account", "asset")
         return context
 
 
-def update_movies(request, *args, **kwargs):
-    if settings.DEBUG:
-        depot = request.user.crypto_depots.get(is_active=True)
-        depot.update_movies()
-    else:
-        depot_pk = request.user.crypto_depots.get(is_active=True).pk
-        update_movies_task(depot_pk)
-    return HttpResponseRedirect(reverse_lazy("crypto:index"))
-
-
-def reset_movies(request, *args, **kwargs):
-    depot = request.user.crypto_depots.get(is_active=True)
-    depot.reset_movies(delete=True)
-    return HttpResponseRedirect(reverse_lazy("crypto:index"))
+def reset_depot_stats(request, pk, *args, **kwargs):
+    depot = get_object_or_404(request.user.crypto_depots.all(), pk=pk)
+    depot.reset_all()
+    return HttpResponseRedirect(reverse_lazy("crypto:index", args=[depot.pk]))

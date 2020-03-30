@@ -1,13 +1,8 @@
 from django.db.models import Sum
-from django.db.models import Q
+from django.utils import timezone
 from django import forms
 
-from .models import Transaction
-from .models import Timespan
-from .models import Account
-from .models import Asset
-from .models import Trade
-from .models import Depot
+from .models import Account, Flow, Transaction, Timespan, Trade, Depot
 
 from datetime import datetime
 
@@ -56,10 +51,6 @@ class AccountForm(forms.ModelForm):
         super(AccountForm, self).__init__(*args, **kwargs)
         self.instance.depot = depot
 
-    def save(self, commit=True):
-        self.instance.slug = create_slug(self.instance, self.instance.name)
-        return super(AccountForm, self).save(commit=commit)
-
 
 class AccountSelectForm(forms.Form):
     account = forms.ModelChoiceField(widget=forms.Select, queryset=None)
@@ -85,27 +76,12 @@ class AssetSelectForm(forms.Form):
 
     def __init__(self, depot, *args, **kwargs):
         super(AssetSelectForm, self).__init__(*args, **kwargs)
-        self.depot = depot
-        self.fields["asset"].queryset = Asset.objects.exclude(symbol=None)
-
-    def clean(self):
-        depot = self.depot
-        asset = self.cleaned_data["asset"]
-        if Trade.objects.filter(Q(buy_asset=asset) | Q(sell_asset=asset),
-                                account__in=depot.accounts.all()).exists():
-            raise forms.ValidationError(
-                "You can't select this asset, because there still exist trades with that asset.")
-        if Transaction.objects.filter(Q(from_account__in=depot.accounts.all()) | Q(
-                to_account__in=depot.accounts.all()), asset=asset).exists():
-            raise forms.ValidationError(
-                "You can't select this asset, because there still exist transaction with that "
-                "asset.")
+        self.fields["asset"].queryset = depot.assets.all()
 
 
 # trade
 class TradeForm(forms.ModelForm):
-    date = forms.DateTimeField(widget=forms.DateTimeInput(attrs={"type": "datetime-local"},
-                                                          format="%Y-%m-%dT%H:%M"),
+    date = forms.DateTimeField(widget=forms.DateTimeInput(attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
                                input_formats=["%Y-%m-%dT%H:%M"], label="Date")
 
     class Meta:
@@ -117,8 +93,6 @@ class TradeForm(forms.ModelForm):
             "buy_asset",
             "sell_amount",
             "sell_asset",
-            "fees",
-            "fees_asset"
         )
 
     def __init__(self, depot, *args, **kwargs):
@@ -126,7 +100,6 @@ class TradeForm(forms.ModelForm):
         self.fields["account"].queryset = depot.accounts.order_by("name")
         self.fields["buy_asset"].queryset = depot.assets.order_by("symbol")
         self.fields["sell_asset"].queryset = depot.assets.order_by("symbol")
-        self.fields["fees_asset"].queryset = depot.assets.order_by("symbol")
         self.fields["date"].initial = datetime.now()
 
     def clean(self):
@@ -201,6 +174,27 @@ class TransactionForm(forms.ModelForm):
             ca = (ba - fa - sa) + (rt - st - ft)
             if transaction_amount > ca:
                 raise forms.ValidationError("You don't have enough assets to support this trade.")
+
+
+# flow
+class FlowForm(forms.ModelForm):
+    date = forms.DateTimeField(widget=forms.DateTimeInput(
+        attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+        input_formats=['%Y-%m-%dT%H:%M'], label='Date')
+
+    class Meta:
+        model = Flow
+        fields = (
+            'account',
+            'date',
+            'flow',
+        )
+
+    def __init__(self, depot, *args, **kwargs):
+        super(FlowForm, self).__init__(*args, **kwargs)
+        self.instance.asset = depot.assets.get(symbol='EUR')
+        self.fields['account'].queryset = depot.accounts.all()
+        self.fields['date'].initial = timezone.now().date
 
 
 # timespan

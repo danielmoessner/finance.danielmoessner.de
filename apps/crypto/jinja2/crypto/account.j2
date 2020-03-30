@@ -28,17 +28,15 @@
                 <th class="border-0" scope="col">Price</th>
                 <th class="border-0" scope="col">Amount</th>
                 <th class="border-0" scope="col">Value</th>
-                <th class="border-0" scope="col">Action</th>
             </tr>
             </thead>
             <tbody>
             {% for asset in assets %}
                 <tr>
                     <td>{{ asset.symbol }}</td>
-                    <td>todo: asset.price</td>
-                    <td>todo: asset.amount</td>
-                    <td>todo: asset.value</td>
-                    <td>todo: asset.action</td>
+                    <td>{{ asset.get_price() }}</td>
+                    <td>{{ asset.get_amount_account(object) }}</td>
+                    <td>{{ asset.get_value_account(object) }}</td>
                 </tr>
             {% endfor %}
             </tbody>

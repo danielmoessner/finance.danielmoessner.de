@@ -3,8 +3,6 @@ from django.db.utils import IntegrityError
 
 from .models import Asset
 from .models import Price
-from .models import Depot
-from .models import Movie
 
 from background_task import background
 from datetime import timedelta
@@ -19,14 +17,7 @@ import json
 import pytz
 import os
 
-
 logger = logging.getLogger("background_tasks")
-
-
-@background()
-def update_movies_task(depot_pk):
-    depot = Depot.objects.get(pk=depot_pk)
-    depot.update_movies()
 
 
 @background()
@@ -80,7 +71,7 @@ def update_prices():
                                 Price.objects.create(asset=asset, currency="EUR", date=pdate,
                                                      price=pprice)
                             except IntegrityError:
-                                text = "{} - Integrity Error: {} --filedate: {} --assetdate: {}"\
+                                text = "{} - Integrity Error: {} --filedate: {} --assetdate: {}" \
                                     .format(time_now, asset, date, pdate)
                                 logger.warning(text)
                             break

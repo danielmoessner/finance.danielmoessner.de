@@ -6,7 +6,6 @@
             <th class="border-0" scope="col">Account</th>
             <th class="border-0" scope="col">Buy</th>
             <th class="border-0" scope="col">Sell</th>
-            <th class="border-0" scope="col">Fees</th>
             <th class="border-0" scope="col">Action</th>
         </tr>
         </thead>
@@ -17,12 +16,11 @@
                 <td>{{ trade.account }}</td>
                 <td>{{ trade.buy_amount }} {{ trade.buy_asset.symbol }}</td>
                 <td>{{ trade.sell_amount }} {{ trade.sell_asset.symbol }}</td>
-                <td>{{ trade.fees }} {{ trade.fees_asset }}</td>
                 <td>
                     <div class="d-flex">
                         {{ mg.djangoModal("Edit Trade", "editTrade"+trade.pk|string, url("crypto:edit_trade", args=[trade.pk])) }}
-                        {{ mg.djangoModal("Delete Trade", "deleteTrade"+trade.pk|string, url("crypto:delete_trade", args=[trade.pk])) }}
                         {{ bg.modalButton("Edit", "#editTrade"+trade.pk|string) }}
+                        {{ mg.djangoModal("Delete Trade", "deleteTrade"+trade.pk|string, url("crypto:delete_trade", args=[trade.pk])) }}
                         {{ bg.modalButton("Delete", "#deleteTrade"+trade.pk|string) }}
                     </div>
                 </td>

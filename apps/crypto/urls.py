@@ -1,44 +1,45 @@
 from django.urls import path
 
-from apps.crypto.views import views
-from apps.crypto.views import form_views
+from apps.crypto import formviews, views
 
 app_name = "crypto"
 
 urlpatterns = [
-    # functions
-    path("update-movies/", views.update_movies, name="update_movies"),
-    path("reset-movies/", views.reset_movies, name="reset_movies"),
-
     # depot
-    path("depots/add/", form_views.AddDepotView.as_view(), name="add_depot"),
-    path("depots/delete/", form_views.DeleteDepotView.as_view(), name="delete_depot"),
-    path("depots/<int:pk>/edit/", form_views.EditDepotView.as_view(), name="edit_depot"),
-    path("depots/<int:pk>/set-active/", form_views.SetActiveDepotView.as_view(), name="set_depot"),
+    path("depots/add/", formviews.AddDepotView.as_view(), name="add_depot"),
+    path("depots/delete/", formviews.DeleteDepotView.as_view(), name="delete_depot"),
+    path("depots/<int:pk>/edit/", formviews.EditDepotView.as_view(), name="edit_depot"),
+    path("depots/<int:pk>/set-active/", formviews.SetActiveDepotView.as_view(), name="set_depot"),
+    path("depots/<int:pk>/reset/", views.reset_depot_stats, name="reset_stats"),
 
     # account
-    path("accounts/add/", form_views.AddAccountView.as_view(), name="add_account"),
-    path("accounts/delete/", form_views.DeleteAccountView.as_view(), name="delete_account"),
-    path("accounts/<int:pk>/edit/", form_views.EditAccountView.as_view(), name="edit_account"),
+    path("accounts/add/", formviews.AddAccountView.as_view(), name="add_account"),
+    path("accounts/delete/", formviews.DeleteAccountView.as_view(), name="delete_account"),
+    path("accounts/<int:pk>/edit/", formviews.EditAccountView.as_view(), name="edit_account"),
 
     # asset
-    path("assets/add/", form_views.AddAssetView.as_view(), name="add_asset"),
-    path("assets/remove/", form_views.RemoveAssetView.as_view(), name="remove_asset"),
+    path("assets/add/", formviews.AddAssetView.as_view(), name="add_asset"),
+    path("assets/remove/", formviews.DeleteAssetView.as_view(), name="remove_asset"),
 
     # trade
-    path("trades/add/", form_views.AddTradeView.as_view(), name="add_trade"),
-    path("trades/<int:pk>/edit/", form_views.EditTradeView.as_view(), name="edit_trade"),
-    path("trades/<int:pk>/delete/", form_views.DeleteTradeView.as_view(), name="delete_trade"),
+    path("trades/add/", formviews.AddTradeView.as_view(), name="add_trade"),
+    path("trades/<int:pk>/edit/", formviews.EditTradeView.as_view(), name="edit_trade"),
+    path("trades/<int:pk>/delete/", formviews.DeleteTradeView.as_view(), name="delete_trade"),
 
     # transaction
-    path("transactions/add/", form_views.AddTransactionView.as_view(), name="add_transaction"),
-    path("transactions/<int:pk>/edit/", form_views.EditTransactionView.as_view(), name="edit_transaction"),
-    path("transactions/<int:pk>/delete/", form_views.DeleteTransactionView.as_view(), name="delete_transaction"),
+    path("transactions/add/", formviews.AddTransactionView.as_view(), name="add_transaction"),
+    path("transactions/<int:pk>/edit/", formviews.EditTransactionView.as_view(), name="edit_transaction"),
+    path("transactions/<int:pk>/delete/", formviews.DeleteTransactionView.as_view(), name="delete_transaction"),
+
+    # flows
+    path("flows/add/", formviews.AddFlowView.as_view(), name="add_flow"),
+    path("flows/<int:pk>/edit/", formviews.EditFlowView.as_view(), name="edit_flow"),
+    path("flows/<int:pk>/delete/", formviews.DeleteFlowView.as_view(), name="delete_flow"),
 
     # timespan
-    path("timespans/add/", form_views.AddTimespanView.as_view(), name="add_timespan"),
-    path("timespans/<int:pk>/delete/", form_views.DeleteTimespanView.as_view(), name="delete_timespan"),
-    path("timespans/<int:pk>/set/", form_views.SetActiveTimespanView.as_view(), name="set_timespan"),
+    path("timespans/add/", formviews.AddTimespanView.as_view(), name="add_timespan"),
+    path("timespans/<int:pk>/delete/", formviews.DeleteTimespanView.as_view(), name="delete_timespan"),
+    path("timespans/<int:pk>/set/", formviews.SetActiveTimespanView.as_view(), name="set_timespan"),
 
     # views
     path("depots/<int:pk>/", views.IndexView.as_view(), name="index"),
