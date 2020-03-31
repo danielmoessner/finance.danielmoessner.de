@@ -69,7 +69,7 @@ class Depot(CoreDepot):
         if self.balance is None:
             changes = Change.objects.filter(account__in=self.accounts.all(), category__in=self.categories.all())
             banking_duplicated_code.set_balance(self, changes)
-        return self.balance
+        return round(self.balance, 2)
 
     @staticmethod
     def get_objects_by_user(user):
@@ -104,7 +104,7 @@ class Account(CoreAccount):
         if self.balance is None:
             changes = Change.objects.filter(account=self)
             banking_duplicated_code.set_balance(self, changes)
-        return self.balance
+        return round(self.balance, 2)
 
     def get_stats(self):
         balance = self.get_balance()
@@ -142,7 +142,7 @@ class Category(models.Model):
         if self.balance is None:
             changes = Change.objects.filter(category=self)
             banking_duplicated_code.set_balance(self, changes)
-        return self.balance
+        return round(self.balance, 2)
 
     def get_stats(self):
         balance = self.get_balance()
@@ -211,7 +211,7 @@ class Change(models.Model):
         if self.balance is None:
             changes = Change.objects.filter(account=self.account, date__lte=self.date)
             banking_duplicated_code.set_balance(self, changes)
-        return self.balance
+        return round(self.balance, 2)
 
     def get_stats(self):
         balance = self.get_balance()
