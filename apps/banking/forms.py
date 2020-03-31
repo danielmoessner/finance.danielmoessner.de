@@ -114,3 +114,4 @@ class ChangeForm(forms.ModelForm):
         self.fields["account"].queryset = depot.accounts.all()
         self.fields["category"].queryset = depot.categories.all()
         self.fields["date"].initial = datetime.now()
+        self.fields['description'].widget.attrs.update({'class': 'small'})

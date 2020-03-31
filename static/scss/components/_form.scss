@@ -17,6 +17,9 @@
     textarea {
       @extend .form-control;
       font-size: 16px;
+      &.small {
+        height: 64px;
+      }
     }
 
     .helptext {
