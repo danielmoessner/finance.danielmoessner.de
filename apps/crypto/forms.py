@@ -102,33 +102,6 @@ class TradeForm(forms.ModelForm):
         self.fields["sell_asset"].queryset = depot.assets.order_by("symbol")
         self.fields["date"].initial = datetime.now()
 
-    def clean(self):
-        # check if it fees make sense
-        if self.cleaned_data["buy_asset"] != self.cleaned_data["fees_asset"] and \
-                self.cleaned_data["sell_asset"] != self.cleaned_data["fees_asset"]:
-            raise forms.ValidationError("The fees asset must be the same as the buy or the sell asset.")
-        # check if enough asset is available
-        asset = self.cleaned_data["sell_asset"]
-        account = self.cleaned_data["account"]
-        if asset.symbol != account.depot.user.currency:
-            trade_sa = self.cleaned_data["sell_amount"]
-            trade_fa = self.cleaned_data["fees"] if self.cleaned_data["fees_asset"] == asset else 0
-            trade_amount = trade_sa + trade_fa
-            ba = Trade.objects.filter(buy_asset=asset, account=account).aggregate(Sum("buy_amount"))
-            ba = ba["buy_amount__sum"] if ba["buy_amount__sum"] else 0
-            fa = Trade.objects.filter(sell_asset=asset, fees_asset=asset, account=account).aggregate(Sum("fees"))
-            fa = fa["fees__sum"] if fa["fees__sum"] else 0
-            sa = Trade.objects.filter(sell_asset=asset, account=account).aggregate(Sum("sell_amount"))
-            sa = sa["sell_amount__sum"] if sa["sell_amount__sum"] else 0
-            rt = Transaction.objects.filter(to_account=account, asset=asset).aggregate(Sum("amount"))
-            rt = rt["amount__sum"] if rt["amount__sum"] else 0
-            t = Transaction.objects.filter(from_account=account, asset=asset).aggregate(Sum("amount"), Sum("fees"))
-            st = t["amount__sum"] if t["amount__sum"] else 0
-            ft = t["fees__sum"] if t["fees__sum"] else 0
-            ca = (ba - fa - sa) + (rt - st - ft)
-            if trade_amount > ca:
-                raise forms.ValidationError("You don't have enough assets to support this trade.")
-
 
 # transaction
 class TransactionForm(forms.ModelForm):
@@ -153,27 +126,6 @@ class TransactionForm(forms.ModelForm):
         self.fields["from_account"].queryset = depot.accounts.order_by("name")
         self.fields["to_account"].queryset = depot.accounts.order_by("name")
         self.fields["date"].initial = datetime.now()
-
-    def clean(self):
-        # check if enough asset is available
-        asset = self.cleaned_data["asset"]
-        account = self.cleaned_data["from_account"]
-        if asset.symbol != account.depot.user.currency:
-            transaction_amount = self.cleaned_data["amount"] + self.cleaned_data["fees"]
-            ba = Trade.objects.filter(buy_asset=asset, account=account).aggregate(Sum("buy_amount"))
-            ba = ba["buy_amount__sum"] if ba["buy_amount__sum"] else 0
-            fa = Trade.objects.filter(sell_asset=asset, fees_asset=asset, account=account).aggregate(Sum("fees"))
-            fa = fa["fees__sum"] if fa["fees__sum"] else 0
-            sa = Trade.objects.filter(sell_asset=asset, account=account).aggregate(Sum("sell_amount"))
-            sa = sa["sell_amount__sum"] if sa["sell_amount__sum"] else 0
-            rt = Transaction.objects.filter(to_account=account, asset=asset).aggregate(Sum("amount"))
-            rt = rt["amount__sum"] if rt["amount__sum"] else 0
-            t = Transaction.objects.filter(from_account=account, asset=asset).aggregate(Sum("amount"), Sum("fees"))
-            st = t["amount__sum"] if t["amount__sum"] else 0
-            ft = t["fees__sum"] if t["fees__sum"] else 0
-            ca = (ba - fa - sa) + (rt - st - ft)
-            if transaction_amount > ca:
-                raise forms.ValidationError("You don't have enough assets to support this trade.")
 
 
 # flow
