@@ -1,8 +1,8 @@
 {% extends "layout/lm.njk" %}
 
 {% set headingCategory="Asset" %}
-{% set headingHeading=asset.get_name() %}
-{% set title="Asset " + asset.get_name() + " | Crypto" %}
+{% set headingHeading=object.symbol %}
+{% set title="Asset " + object.symbol + " | Crypto" %}
 
 {% block main %}
 

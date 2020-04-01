@@ -91,6 +91,15 @@ class Asset(models.Model):
     def __str__(self):
         return '{}'.format(self.symbol)
 
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        # uppercase the symbol for convenience
+        self.symbol = self.symbol.upper()
+        super().save(force_update=force_update, force_insert=force_insert, using=using, update_fields=update_fields)
+        # test that there is a price for the euro asset or the base asset which is euro in this case
+        if self.symbol == 'EUR' and not Price.objects.filter(symbol='EUR').exists():
+            Price.objects.create(symbol='EUR', price=1, date=timezone.now())
+
     # getters
     def get_stats(self):
         return {
@@ -100,8 +109,11 @@ class Asset(models.Model):
 
     def get_price(self):
         if self.price is None:
-            price = Price.objects.filter(symbol=self.symbol).order_by('date').last().price or 0
-            self.price = price
+            price = Price.objects.filter(symbol=self.symbol).order_by('date').last()
+            if price is not None:
+                self.price = price.price or 0
+            else:
+                self.price = 0
             self.save()
         return self.price
 

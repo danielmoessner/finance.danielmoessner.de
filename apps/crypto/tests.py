@@ -10,39 +10,32 @@ from apps.crypto.forms import DepotForm, FlowForm, TransactionForm, TradeForm
 from datetime import timedelta
 
 
-# class ViewsTestCase(TestCase):
-#     def setUp(self):
-#         user = StandardUser.objects.create_user(username="Dummy")
-#         user.set_password("test")
-#         user.save()
-#         Asset.objects.create(symbol="BTC", slug="bitcoin")
-#         Asset.objects.create(symbol="ETH", slug="ethereum")
-#         Asset.objects.create(symbol="LTC", slug="litecoin")
-#         Asset.objects.create(symbol="EUR", slug="euro")
-#         init_crypto(user)
-#
-#     def test_index_view(self):
-#         client = Client()
-#         client.login(username="Dummy", password="test")
-#         user = StandardUser.objects.get(username="Dummy")
-#         response = client.get(reverse_lazy("crypto:index"))
-#         self.assertEqual(response.status_code, 200)
-#
-#     def test_account_view(self):
-#         client = Client()
-#         client.login(username="Dummy", password="test")
-#         user = StandardUser.objects.get(username="Dummy")
-#         account = user.crypto_depots.get(is_active=True).accounts.first()
-#         response = client.get(reverse_lazy("crypto:account", args=[account.slug]))
-#         self.assertEqual(response.status_code, 200)
-#
-#     def test_asset_view(self):
-#         client = Client()
-#         client.login(username="Dummy", password="test")
-#         user = StandardUser.objects.get(username="Dummy")
-#         asset = user.crypto_depots.get(is_active=True).assets.first()
-#         response = client.get(reverse_lazy("crypto:asset", args=[asset.slug]))
-#         self.assertEqual(response.status_code, 200)
+class ViewsTestCase(TestCase):
+    def setUp(self):
+        self.user = StandardUser.objects.create_user(username="Dummy2")
+        self.user.set_password("test")
+        self.user.save()
+        self.client = Client()
+        self.client.login(username="Dummy2", password="test")
+        self.depot = self.user.create_random_crypto_data()
+
+    def test_index_view(self):
+        url = reverse_lazy("crypto:index", args=[self.depot.pk])
+        for tab in ['', 'stats', 'assets', 'accounts', 'trades', 'transactions', 'flows', 'charts']:
+            response = self.client.get('{}?tab={}'.format(url, tab))
+            self.assertEqual(response.status_code, 200)
+
+    def test_account_view(self):
+        url = reverse_lazy("crypto:account", args=[self.depot.accounts.first().pk])
+        for tab in ['', 'stats', 'assets', 'trades', 'transactions', 'flows']:
+            response = self.client.get('{}?tab={}'.format(url, tab))
+            self.assertEqual(response.status_code, 200)
+
+    def test_asset_view(self):
+        url = reverse_lazy("crypto:asset", args=[self.depot.assets.first().pk])
+        for tab in ['', 'stats', 'prices', 'trades', 'transactions']:
+            response = self.client.get('{}?tab={}'.format(url, tab))
+            self.assertEqual(response.status_code, 200)
 
 
 class FormValidationTestCase(TestCase):
