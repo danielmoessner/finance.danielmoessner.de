@@ -145,6 +145,14 @@ class AddFlowView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixi
     form_class = FlowForm
     template_name = "modules/form_snippet.njk"
 
+    def get_form(self, form_class=None):
+        depot = self.request.user.crypto_depots.get(is_active=True)
+        if form_class is None:
+            form_class = self.get_form_class()
+        if self.request.method == 'GET':
+            return form_class(depot, initial=self.request.GET, **self.get_form_kwargs().pop('initial'))
+        return form_class(depot, **self.get_form_kwargs())
+
 
 class EditFlowView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.UpdateView):
     model = Flow

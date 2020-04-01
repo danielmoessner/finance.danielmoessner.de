@@ -15,6 +15,7 @@
             {{ bg.hrefButton("Assets", request.path + '?tab=assets', active=(tab=='assets')) }}
             {{ bg.hrefButton("Trades", request.path + '?tab=trades', active=(tab=='trades')) }}
             {{ bg.hrefButton("Transactions", request.path + '?tab=transactions', active=(tab=='transactions')) }}
+            {{ bg.hrefButton("Flows", request.path + '?tab=flows', active=(tab=='flows')) }}
         </div>
     </div>
 
@@ -46,5 +47,7 @@
     {% include 'crypto/symbols/trades.j2' %}
 
     {% include 'crypto/symbols/transactions.j2' %}
+
+    {% include 'crypto/symbols/flows.j2' %}
 
 {% endblock %}

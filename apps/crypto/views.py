@@ -45,6 +45,7 @@ class AccountView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
         from_transactions = self.object.from_transactions.all()
         context["transactions"] = (to_transactions | from_transactions).order_by("-date") \
             .select_related("from_account", "to_account", "asset")
+        context['flows'] = Flow.objects.filter(account=self.object).order_by('-date')
         return context
 
 

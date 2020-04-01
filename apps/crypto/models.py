@@ -59,14 +59,14 @@ class Account(CoreAccount):
         return self.value
 
     def get_asset_stats(self, asset):
-        stats = AccountAssetStats.objects.get_or_create(asset=asset, account=self)
+        stats, created = AccountAssetStats.objects.get_or_create(asset=asset, account=self)
         return stats
 
-    def get_value_account(self, asset):
+    def get_value_asset(self, asset):
         stats = self.get_asset_stats(asset)
         return stats.get_value()
 
-    def get_amount_account(self, asset):
+    def get_amount_asset(self, asset):
         stats = self.get_asset_stats(asset)
         return stats.get_amount()
 

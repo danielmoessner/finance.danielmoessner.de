@@ -148,6 +148,14 @@ class FlowForm(forms.ModelForm):
         self.fields['account'].queryset = depot.accounts.all()
         self.fields['date'].initial = timezone.now().date
 
+    def clean(self):
+        flow = self.cleaned_data['flow']
+        account = self.cleaned_data['account']
+        asset = self.instance.asset
+        # check that enough asset is available if asset is withdrawn
+        if flow < 0 and account.get_amount_asset(asset) < abs(flow):
+            raise forms.ValidationError('There is not enough asset on this account to support this flow.')
+
 
 # timespan
 class TimespanForm(forms.ModelForm):
