@@ -18,6 +18,8 @@ class Depot(CoreDepot):
         super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
         if not self.assets.filter(symbol='EUR').exists():
             self.assets.create(symbol='EUR')
+        if self.is_active:
+            self.user.crypto_depots.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
 
     # getters
     def get_value(self):

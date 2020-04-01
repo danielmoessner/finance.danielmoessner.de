@@ -1,5 +1,5 @@
 from django.contrib.auth.models import AbstractUser
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.utils import timezone
 from django.db import models
 
@@ -29,6 +29,8 @@ class StandardUser(AbstractUser):
             return self.crypto_depots.get(is_active=True).pk
         except ObjectDoesNotExist:
             return None
+        except MultipleObjectsReturned:
+            self.crypto_depots.update(is_active=False)
 
     def get_active_banking_depot_pk(self):
         try:
