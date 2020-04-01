@@ -1,10 +1,12 @@
-from django.db.models import Sum, Q
+from django.db.models import Sum
 from django.utils import timezone
 from django.db import models
 
 from apps.users.models import StandardUser
 from apps.core.models import Timespan as CoreTimespan, Account as CoreAccount, Depot as CoreDepot
 from apps.crypto.utils import round_sigfigs
+
+from datetime import timedelta
 
 
 class Depot(CoreDepot):
@@ -139,18 +141,18 @@ class Asset(models.Model):
 
     def get_amount(self):
         if self.amount is None:
-            trade_buy_amount = Trade.objects \
-                                   .filter(buy_asset=self, account__in=self.depot.accounts.all()) \
-                                   .aggregate(Sum('buy_amount'))['buy_amount__sum'] or 0
-            trade_sell_amount = Trade.objects \
-                                    .filter(sell_asset=self, account__in=self.depot.accounts.all()) \
-                                    .aggregate(Sum('sell_amount'))['sell_amount__sum'] or 0
-            transaction_fees_amount = Transaction.objects \
-                                          .filter(asset=self, from_account__in=self.depot.accounts.all()) \
-                                          .aggregate(Sum('fees'))['fees__sum'] or 0
-            flow_amount = Flow.objects \
-                              .filter(asset=self) \
-                              .aggregate(Sum('flow'))['flow__sum'] or 0
+            trade_buy_amount = (Trade.objects
+                                .filter(buy_asset=self, account__in=self.depot.accounts.all())
+                                .aggregate(Sum('buy_amount'))['buy_amount__sum'] or 0)
+            trade_sell_amount = (Trade.objects
+                                 .filter(sell_asset=self, account__in=self.depot.accounts.all())
+                                 .aggregate(Sum('sell_amount'))['sell_amount__sum'] or 0)
+            transaction_fees_amount = (Transaction.objects
+                                       .filter(asset=self, from_account__in=self.depot.accounts.all())
+                                       .aggregate(Sum('fees'))['fees__sum'] or 0)
+            flow_amount = (Flow.objects
+                           .filter(asset=self)
+                           .aggregate(Sum('flow'))['flow__sum'] or 0)
             self.amount = trade_buy_amount - trade_sell_amount - transaction_fees_amount + flow_amount
             self.save()
         return round_sigfigs(self.amount, 4)
@@ -165,21 +167,21 @@ class AccountAssetStats(models.Model):
     # getters
     def get_amount(self):
         if self.amount is None:
-            trade_buy_amount = Trade.objects \
-                                   .filter(buy_asset=self.asset, account=self.account) \
-                                   .aggregate(Sum('buy_amount'))['buy_amount__sum'] or 0
-            trade_sell_amount = Trade.objects \
-                                    .filter(sell_asset=self.asset, account=self.account) \
-                                    .aggregate(Sum('sell_amount'))['sell_amount__sum'] or 0
-            transaction_to_amount = Transaction.objects \
-                                        .filter(asset=self.asset, to_account=self.account) \
-                                        .aggregate(Sum('amount'))['amount__sum'] or 0
-            transaction_from_and_fees_amount = Transaction.objects \
-                .filter(asset=self.asset, from_account=self.account) \
-                .aggregate(Sum('fees'), Sum('amount'))
-            flow_amount = Flow.objects \
-                              .filter(asset=self.asset, account=self.account) \
-                              .aggregate(Sum('flow'))['flow__sum'] or 0
+            trade_buy_amount = (Trade.objects
+                                .filter(buy_asset=self.asset, account=self.account)
+                                .aggregate(Sum('buy_amount'))['buy_amount__sum'] or 0)
+            trade_sell_amount = (Trade.objects
+                                 .filter(sell_asset=self.asset, account=self.account)
+                                 .aggregate(Sum('sell_amount'))['sell_amount__sum'] or 0)
+            transaction_to_amount = (Transaction.objects
+                                     .filter(asset=self.asset, to_account=self.account)
+                                     .aggregate(Sum('amount'))['amount__sum'] or 0)
+            transaction_from_and_fees_amount = (Transaction.objects
+                                                .filter(asset=self.asset, from_account=self.account)
+                                                .aggregate(Sum('fees'), Sum('amount')))
+            flow_amount = (Flow.objects
+                           .filter(asset=self.asset, account=self.account)
+                           .aggregate(Sum('flow'))['flow__sum'] or 0)
             transaction_from_amount = transaction_from_and_fees_amount['amount__sum'] or 0
             transaction_fees_amount = transaction_from_and_fees_amount['fees__sum'] or 0
             trade_amount = trade_buy_amount - trade_sell_amount
@@ -281,6 +283,8 @@ class Price(models.Model):
         return "{} {} {}".format(self.symbol, self.get_date(), self.price)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        if Price.objects.filter(symbol=self.symbol, date__gte=(self.date - timedelta(hours=23))).exists():
+            return
         super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
         [asset.depot.reset_all() for asset in Asset.objects.filter(symbol=self.symbol)]
 
@@ -312,3 +316,9 @@ class Timespan(CoreTimespan):
 
     def get_end_date(self):
         return timezone.localtime(self.end_date).strftime("%d.%m.%Y %H:%M") if self.end_date else None
+
+
+class CoinGeckoAsset(models.Model):
+    symbol = models.CharField(max_length=5, unique=True)
+    coingecko_symbol = models.CharField(max_length=10, unique=True)
+    coingecko_id = models.CharField(max_length=40, unique=True)

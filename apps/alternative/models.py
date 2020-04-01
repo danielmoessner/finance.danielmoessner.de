@@ -100,7 +100,6 @@ class Depot(CoreDepot):
 
 class Alternative(models.Model):
     name = models.CharField(max_length=200)
-    slug = models.SlugField(unique=True)
     depot = models.ForeignKey(Depot, on_delete=models.CASCADE, related_name="alternatives")
     # query optimization
     latest_picture = models.ForeignKey('Picture', on_delete=models.SET_NULL, blank=True, null=True)

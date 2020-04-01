@@ -1,77 +1,40 @@
-from django.conf import settings
-from django.db.utils import IntegrityError
+from django.utils import timezone
 
-from .models import Asset
-from .models import Price
+from .models import Asset, CoinGeckoAsset, Price
 
 from background_task import background
-from datetime import timedelta
-from datetime import datetime
-from datetime import time
-from os.path import isfile, join
-from os import listdir
-import urllib.request
-import urllib.error
-import logging
+from urllib.request import urlopen
 import json
-import pytz
-import os
 
-logger = logging.getLogger("background_tasks")
+
+def create_coingecko_asset(symbol):
+    url = 'https://api.coingecko.com/api/v3/coins/list'
+    with urlopen(url) as response:
+        all_available_coins = json.loads(response.read().decode())
+        coins_i_am_looking_for = list(filter(lambda coin: coin['symbol'] == symbol.lower(), all_available_coins))
+        if len(coins_i_am_looking_for) != 1:
+            return None
+        coin = coins_i_am_looking_for[0]
+        CoinGeckoAsset.objects.create(coingecko_id=coin['id'], coingecko_symbol=coin['symbol'], symbol=symbol)
+
+
+def fetch_price(coingecko_asset):
+    url = 'https://api.coingecko.com/api/v3/simple/price?ids={}&vs_currencies=eur'.format(coingecko_asset.coingecko_id)
+    with urlopen(url) as response:
+        price = json.loads(response.read().decode())
+        price = price[coingecko_asset.coingecko_id]['eur']
+        Price.objects.create(symbol=coingecko_asset.symbol, price=price, date=timezone.now())
 
 
 @background()
 def update_prices():
-    # fetch
-    time_now = datetime.now()
-    file_path = os.path.join(settings.MEDIA_ROOT, "crypto/prices")
-    file_name = datetime.strftime(time_now, "%Y%m%d") + ".json"
-    file = os.path.join(file_path, file_name)
-    if not os.path.exists(file):
-        text = "{} - Fetching coinmarketcap prices.".format(time_now)
-        logger.info(text)
+    asset_symbols = Asset.objects.all().values_list('symbol', flat=True).distinct()
+    # create coingecko connections for every asset that there is
+    for symbol in asset_symbols:
         try:
-            with urllib.request.urlopen("https://api.coinmarketcap.com/v1/ticker/?convert=EUR") \
-                    as url:
-                data = json.loads(url.read().decode())
-                file_path = os.path.join(settings.MEDIA_ROOT, "crypto/prices")
-                file_name = datetime.strftime(time_now, "%Y%m%d") + ".json"
-                file = os.path.join(file_path, file_name)
-                with open(file, "w+") as file:
-                    json.dump(data, file)
-        except urllib.error.HTTPError as e:
-            logger.error(str(e))
-    else:
-        text = "{} - Prices have already been fetched.".format(time_now)
-        logger.info(text)
-        return
-    # update
-    file_path = os.path.join(settings.MEDIA_ROOT, "crypto/prices")
-    files = [f for f in listdir(file_path) if isfile(join(file_path, f))]
-    for file in files:
-        try:
-            date = datetime.strptime(file[:-5], "%Y%m%d")
-        except ValueError:
+            asset = CoinGeckoAsset.objects.get(symbol=symbol)
+        except CoinGeckoAsset.DoesNotExist:
+            create_coingecko_asset(symbol)
+            # skip the price fetching for this asset at the moment
             continue
-        date_start = pytz.utc.localize(
-            datetime.combine(date, time(hour=0, minute=0))) - timedelta(hours=6)
-        date_end = pytz.utc.localize(
-            datetime.combine(date, time(hour=23, minute=59, second=59))) + timedelta(hours=6)
-        for asset in Asset.objects.exclude(symbol="EUR"):
-            if not Price.objects.filter(asset=asset, currency="EUR", date__gte=date_start,
-                                        date__lte=date_end).exists():
-                with open(os.path.join(file_path, file), "r") as f:
-                    data = json.load(f)
-                    for entry in data:
-                        if entry["symbol"] == asset.symbol:
-                            pprice = entry["price_" + "eur"]
-                            pdate = pytz.utc.localize(
-                                datetime.fromtimestamp(int(entry["last_updated"])))
-                            try:
-                                Price.objects.create(asset=asset, currency="EUR", date=pdate,
-                                                     price=pprice)
-                            except IntegrityError:
-                                text = "{} - Integrity Error: {} --filedate: {} --assetdate: {}" \
-                                    .format(time_now, asset, date, pdate)
-                                logger.warning(text)
-                            break
+        fetch_price(asset)
