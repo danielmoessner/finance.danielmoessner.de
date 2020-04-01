@@ -1,4 +1,3 @@
-from django.db.models import Sum
 from django.utils import timezone
 from django import forms
 
@@ -102,6 +101,19 @@ class TradeForm(forms.ModelForm):
         self.fields["sell_asset"].queryset = depot.assets.order_by("symbol")
         self.fields["date"].initial = datetime.now()
 
+    def clean(self):
+        account = self.cleaned_data['account']
+        sell_asset = self.cleaned_data['sell_asset']
+        sell_amount = self.cleaned_data['sell_amount']
+        buy_amount = self.cleaned_data['buy_amount']
+        date = self.cleaned_data['date']
+        # check that buy and sell amount is positive because a trade doesnt make sense otherwise
+        if sell_amount < 0 or buy_amount < 0:
+            raise forms.ValidationError('Sell and buy amount must be positive.')
+        # check that enough asset is available of the asset that is sold
+        if account.get_amount_asset_before_date(sell_asset, date) < sell_amount:
+            raise forms.ValidationError('There is not enough asset on this account to support this trade.')
+
 
 # transaction
 class TransactionForm(forms.ModelForm):
@@ -127,6 +139,19 @@ class TransactionForm(forms.ModelForm):
         self.fields["to_account"].queryset = depot.accounts.order_by("name")
         self.fields["date"].initial = datetime.now()
 
+    def clean(self):
+        from_account = self.cleaned_data['from_account']
+        asset = self.cleaned_data['asset']
+        amount = self.cleaned_data['amount']
+        fees = self.cleaned_data['fees']
+        date = self.cleaned_data['date']
+        # check that buy and sell amount is positive because a trade doesnt make sense otherwise
+        if amount < 0:
+            raise forms.ValidationError('The amount must be positive.')
+        # check that enough asset is available of the asset that is sold
+        if from_account.get_amount_asset_before_date(asset, date) < (amount + fees):
+            raise forms.ValidationError('There is not enough asset on this account to support this transaction.')
+
 
 # flow
 class FlowForm(forms.ModelForm):
@@ -149,11 +174,12 @@ class FlowForm(forms.ModelForm):
         self.fields['date'].initial = timezone.now().date
 
     def clean(self):
+        date = self.cleaned_data['date']
         flow = self.cleaned_data['flow']
         account = self.cleaned_data['account']
         asset = self.instance.asset
         # check that enough asset is available if asset is withdrawn
-        if flow < 0 and account.get_amount_asset(asset) < abs(flow):
+        if flow < 0 and account.get_amount_asset_before_date(asset, date) < abs(flow):
             raise forms.ValidationError('There is not enough asset on this account to support this flow.')
 
 

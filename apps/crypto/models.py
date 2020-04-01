@@ -12,6 +12,11 @@ class Depot(CoreDepot):
     # query optimization
     value = models.DecimalField(max_digits=20, decimal_places=2, blank=True, null=True)
 
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+        if not self.assets.filter(symbol='EUR').exists():
+            self.assets.create(symbol='EUR')
+
     # getters
     def get_value(self):
         if self.value is None:
@@ -69,6 +74,10 @@ class Account(CoreAccount):
     def get_amount_asset(self, asset):
         stats = self.get_asset_stats(asset)
         return stats.get_amount()
+
+    def get_amount_asset_before_date(self, asset, date):
+        stats = self.get_asset_stats(asset)
+        return stats.get_amount_before_date(date)
 
 
 class Asset(models.Model):
@@ -128,8 +137,8 @@ class Asset(models.Model):
                                           .filter(asset=self, from_account__in=self.depot.accounts.all()) \
                                           .aggregate(Sum('fees'))['fees__sum'] or 0
             flow_amount = Flow.objects \
-                .filter(asset=self) \
-                .aggregate(Sum('flow'))['flow__sum'] or 0
+                              .filter(asset=self) \
+                              .aggregate(Sum('flow'))['flow__sum'] or 0
             self.amount = trade_buy_amount - trade_sell_amount - transaction_fees_amount + flow_amount
             self.save()
         return round_sigfigs(self.amount, 4)
@@ -157,8 +166,8 @@ class AccountAssetStats(models.Model):
                 .filter(asset=self.asset, from_account=self.account) \
                 .aggregate(Sum('fees'), Sum('amount'))
             flow_amount = Flow.objects \
-                .filter(asset=self.asset, account=self.account) \
-                .aggregate(Sum('flow'))['flow__sum'] or 0
+                              .filter(asset=self.asset, account=self.account) \
+                              .aggregate(Sum('flow'))['flow__sum'] or 0
             transaction_from_amount = transaction_from_and_fees_amount['amount__sum'] or 0
             transaction_fees_amount = transaction_from_and_fees_amount['fees__sum'] or 0
             trade_amount = trade_buy_amount - trade_sell_amount
@@ -166,6 +175,29 @@ class AccountAssetStats(models.Model):
             self.amount = trade_amount + transaction_amount + flow_amount
             self.save()
         return round_sigfigs(self.amount, 4)
+
+    def get_amount_before_date(self, date):
+        trade_buy_amount = (Trade.objects
+                            .filter(buy_asset=self.asset, account=self.account, date__lte=date)
+                            .aggregate(Sum('buy_amount'))['buy_amount__sum'] or 0)
+        trade_sell_amount = (Trade.objects
+                             .filter(sell_asset=self.asset, account=self.account, date__lte=date)
+                             .aggregate(Sum('sell_amount'))['sell_amount__sum'] or 0)
+        transaction_to_amount = (Transaction.objects
+                                 .filter(asset=self.asset, to_account=self.account, date__lte=date)
+                                 .aggregate(Sum('amount'))['amount__sum'] or 0)
+        transaction_from_and_fees_amount = (Transaction.objects
+                                            .filter(asset=self.asset, from_account=self.account, date__lte=date)
+                                            .aggregate(Sum('fees'), Sum('amount')))
+        flow_amount = (Flow.objects
+                       .filter(asset=self.asset, account=self.account, date__lte=date)
+                       .aggregate(Sum('flow'))['flow__sum'] or 0)
+        transaction_from_amount = transaction_from_and_fees_amount['amount__sum'] or 0
+        transaction_fees_amount = transaction_from_and_fees_amount['fees__sum'] or 0
+        trade_amount = trade_buy_amount - trade_sell_amount
+        transaction_amount = transaction_to_amount - transaction_fees_amount - transaction_from_amount
+        amount = trade_amount + transaction_amount + flow_amount
+        return amount
 
     def get_value(self):
         if self.value is None:

@@ -84,7 +84,6 @@ class StandardUser(AbstractUser):
     def create_random_alternative_data(self):
         from apps.alternative.models import Depot, Alternative, Value, Flow
         from apps.alternative.forms import ValueForm, FlowForm
-        from apps.core.utils import create_slug
         from django.utils import timezone
         from datetime import timedelta
         name = 'Depot {}'.format(random.randrange(100, 999))
@@ -93,7 +92,7 @@ class StandardUser(AbstractUser):
         # helper create alternative
         def create_alternative(name):
             alternative = Alternative(depot=depot, name=name)
-            alternative.slug = create_slug(alternative)
+            alternative.slug = 'remove-asap'
             alternative.save()
             return alternative
 
@@ -141,44 +140,49 @@ class StandardUser(AbstractUser):
     def create_random_crypto_data(self):
         from django.utils import timezone
         from datetime import timedelta
-        import random
-        from apps.crypto.models import Depot, Account, Asset, Timespan, Trade, Transaction
+        from apps.crypto.models import Depot, Account, Asset
+        from apps.crypto.forms import TradeForm, TransactionForm, FlowForm
+
+        # helpers
+        def create_trade(depot, days_before, account, buy_amount, buy_asset, sell_amount, sell_asset):
+            date = timezone.now() - timedelta(days=days_before)
+            trade = TradeForm(depot, {'account': account, 'date': date, 'buy_amount': buy_amount,
+                                      'buy_asset': buy_asset, 'sell_amount': sell_amount, 'sell_asset': sell_asset})
+            trade.save()
+            return trade
+
+        def create_transaction(depot, days_before, amount, fees, asset, from_account, to_account):
+            date = timezone.now() - timedelta(days=days_before)
+            transaction = TransactionForm(depot, {'asset': asset, 'from_account': from_account,
+                                                  'to_account': to_account, 'date': date, 'amount': amount,
+                                                  'fees': fees})
+            transaction.save()
+            return transaction
+
+        def create_flow(depot, days_before, flow, account):
+            date = timezone.now() - timedelta(days=days_before)
+            flow = FlowForm(depot, {'date': date, 'flow': flow, 'account': account})
+            flow.save()
+            return flow
+
+        # depot
         depot = Depot.objects.create(name="Test Depot", user=self, is_active=True)
         # account
-        account1 = Account(depot=depot, name="Wallet 1", slug="320320932")
-        account1.save()
-        account2 = Account(depot=depot, name="Exchange 1", slug="3209239032")
-        account2.save()
+        account1 = Account.objects.create(depot=depot, name="Wallet 1")
+        account2 = Account.objects.create(depot=depot, name="Exchange 1")
         # asset
-        btc = Asset.objects.get(symbol="BTC")
-        btc.depots.add(depot)
-        eth = Asset.objects.get(symbol="ETH")
-        eth.depots.add(depot)
-        ltc = Asset.objects.get(symbol="LTC")
-        ltc.depots.add(depot)
-        eur = Asset.objects.get(symbol="EUR")
+        btc = Asset.objects.create(depot=depot, symbol="BTC")
+        eth = Asset.objects.create(depot=depot, symbol="ETH")
+        ltc = Asset.objects.create(depot=depot, symbol="LTC")
+        eur = Asset.objects.get(depot=depot, symbol='EUR')
+        # flow
+        create_flow(depot, 60, 6000, account1)
+        create_flow(depot, 55, 2000, account2)
         # trade
-        date = timezone.now() - timedelta(days=random.randint(50, 300))
-        price = btc.get_worth(date, 1.1)
-        Trade.objects.create(account=account2, date=date, buy_amount=1.1, buy_asset=btc, fees=2.80, fees_asset=eur,
-                             sell_amount=price, sell_asset=eur)
-        date = timezone.now() - timedelta(days=random.randint(50, 300))
-        price = eth.get_worth(date, 4.1)
-        Trade.objects.create(account=account2, date=date, buy_amount=4.1, buy_asset=eth, fees=1.80, fees_asset=eur,
-                             sell_amount=price, sell_asset=eur)
-        date = timezone.now() - timedelta(days=random.randint(50, 300))
-        price = ltc.get_worth(date, 11.7)
-        Trade.objects.create(account=account2, date=date, buy_amount=11.7, buy_asset=ltc, fees=3.20, fees_asset=eur,
-                             sell_amount=price, sell_asset=eur)
+        create_trade(depot, 50, account1, 1, btc, 5000, eur)
+        create_trade(depot, 50, account2, 10, eth, 2000, eur)
+        create_trade(depot, 30, account2, 15, ltc, 5, eth)
         # transaction
-        date = timezone.now() - timedelta(days=random.randint(1, 40))
-        Transaction.objects.create(asset=btc, from_account=account2, to_account=account1, date=date, amount=1.09,
-                                   fees=0.01)
-        date = timezone.now() - timedelta(days=random.randint(1, 40))
-        Transaction.objects.create(asset=eth, from_account=account2, to_account=account1, date=date, amount=4.05,
-                                   fees=0.05)
-        # timespan
-        Timespan.objects.create(depot=depot, name="Default Timespan", start_date=None, end_date=None, is_active=True)
-
+        create_transaction(depot, 20, 5, 1, ltc, account2, account1)
         # return the depot with the generated data
         return depot
