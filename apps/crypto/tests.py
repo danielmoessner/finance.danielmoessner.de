@@ -48,25 +48,25 @@ class FormValidationTestCase(TestCase):
         self.depot = self.user.create_random_crypto_data()
         self.account = Account.objects.create(depot=self.depot, name='Test Acc')
 
-    def create_trade(self, days_before, account, buy_amount, buy_asset, sell_amount, sell_asset):
-        date = timezone.now() - timedelta(days=days_before)
+    def create_trade(self, days_before, account, buy_amount, buy_asset, sell_amount, sell_asset, date=None):
+        date = timezone.now() - timedelta(days=days_before) if date is None else date
         trade = TradeForm(self.depot, {'account': account, 'date': date, 'buy_amount': buy_amount,
                                        'buy_asset': buy_asset, 'sell_amount': sell_amount, 'sell_asset': sell_asset})
-        trade.save()
+        trade = trade.save()
         return trade
 
-    def create_transaction(self, days_before, amount, fees, asset, from_account, to_account):
-        date = timezone.now() - timedelta(days=days_before)
+    def create_transaction(self, days_before, amount, fees, asset, from_account, to_account, date=None):
+        date = timezone.now() - timedelta(days=days_before) if date is None else date
         transaction = TransactionForm(self.depot, {'asset': asset, 'from_account': from_account,
                                                    'to_account': to_account, 'date': date, 'amount': amount,
                                                    'fees': fees})
-        transaction.save()
+        transaction = transaction.save()
         return transaction
 
-    def create_flow(self, days_before, flow, account):
-        date = timezone.now() - timedelta(days=days_before)
+    def create_flow(self, days_before, flow, account, date=None):
+        date = timezone.now() - timedelta(days=days_before) if date is None else date
         flow = FlowForm(self.depot, {'date': date, 'flow': flow, 'account': account})
-        flow.save()
+        flow = flow.save()
         return flow
 
     def test_flow_form_not_allowing_more_withdraw_than_possible(self):
@@ -82,6 +82,72 @@ class FormValidationTestCase(TestCase):
             self.create_flow(25, -500, self.account)
         # test you can actually withdraw all of the asset that is there
         self.create_flow(10, -1000, self.account)
+
+    def test_trade_form_allowing_amount_change(self):
+        flow = self.create_flow(20, 1000, self.account)
+        btc, created = self.depot.assets.get_or_create(symbol='BTC')
+        eur = self.depot.assets.get(symbol='EUR')
+        trade = self.create_trade(10, self.account, 1, btc, 900, eur)
+        trade_new = TradeForm(self.depot, instance=trade,
+                              data={'account': trade.account, 'date': trade.date, 'buy_amount': trade.buy_amount,
+                                    'buy_asset': trade.buy_asset, 'sell_amount': 950,
+                                    'sell_asset': trade.sell_asset})
+        trade_new.save()
+
+    def test_flow_form_allowing_amount_change(self):
+        flow = self.create_flow(20, 1000, self.account)
+        flow = self.create_flow(10, -1000, self.account)
+        flow_new = FlowForm(self.depot, instance=flow, data={'date': flow.date, 'flow': -500, 'account': flow.account})
+        flow_new.save()
+
+    def test_transaction_form_allowing_amount_change(self):
+        eur = self.depot.assets.get(symbol='EUR')
+        flow = self.create_flow(20, 1000, self.account)
+        account2 = Account.objects.create(depot=self.depot, name='acc2')
+        transaction = self.create_transaction(10, 900, 10, eur, self.account, account2)
+        transaction_new = TransactionForm(self.depot, instance=transaction,
+                                          data={'asset': transaction.asset, 'from_account': transaction.from_account,
+                                                'to_account': transaction.to_account, 'date': transaction.date,
+                                                'amount': 950,
+                                                'fees': transaction.fees})
+        transaction_new.save()
+
+    def test_no_trade_transaction_or_flow_on_the_same_account_and_date(self):
+        flow = self.create_flow(10, 1000, self.account)
+        btc, created = self.depot.assets.get_or_create(symbol='BTC')
+        eur = self.depot.assets.get(symbol='EUR')
+        account2 = Account.objects.create(depot=self.depot, name='acc2')
+        flow = self.create_flow(10, 1000, account2)
+        # test
+        date = timezone.now()
+        # test with existing flow
+        flow = self.create_flow(0, 1000, self.account, date=date)
+        with self.assertRaises(ValueError):
+            self.create_transaction(0, 500, 10, eur, self.account, account2, date=date)
+        with self.assertRaises(ValueError):
+            self.create_transaction(0, 500, 10, eur, account2, self.account, date=date)
+        with self.assertRaises(ValueError):
+            self.create_trade(0, self.account, 1, btc, 500, eur, date=date)
+        flow.delete()
+        # test with existing trade
+        trade = self.create_trade(0, self.account, 1, btc, 500, eur, date=date)
+        with self.assertRaises(ValueError):
+            self.create_transaction(0, 500, 10, eur, self.account, account2, date=date)
+        with self.assertRaises(ValueError):
+            self.create_transaction(0, 500, 10, eur, self.account, account2, date=date)
+        with self.assertRaises(ValueError):
+            flow = self.create_flow(0, 1000, self.account, date=date)
+        trade.delete()
+        # test with existing transaction
+        self.create_transaction(0, 500, 10, eur, self.account, account2, date=date)
+        with self.assertRaises(ValueError):
+            flow = self.create_flow(0, 1000, self.account, date=date)
+        with self.assertRaises(ValueError):
+            flow = self.create_flow(0, 1000, account2, date=date)
+        with self.assertRaises(ValueError):
+            self.create_trade(0, self.account, 1, btc, 500, eur, date=date)
+        with self.assertRaises(ValueError):
+            self.create_trade(0, account2, 1, btc, 500, eur, date=date)
 
     def test_trade_form_not_allowing_more_sell_asset_than_what_is_available(self):
         self.create_flow(20, 1000, self.account)
@@ -108,13 +174,3 @@ class FormValidationTestCase(TestCase):
             self.create_transaction(30, 500, 10, eur, self.account, account2)
         # test you can actually send assets
         self.create_transaction(10, 990, 10, eur, self.account, account2)
-
-
-
-
-
-
-
-
-
-

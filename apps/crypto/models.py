@@ -193,19 +193,19 @@ class AccountAssetStats(models.Model):
 
     def get_amount_before_date(self, date):
         trade_buy_amount = (Trade.objects
-                            .filter(buy_asset=self.asset, account=self.account, date__lte=date)
+                            .filter(buy_asset=self.asset, account=self.account, date__lt=date)
                             .aggregate(Sum('buy_amount'))['buy_amount__sum'] or 0)
         trade_sell_amount = (Trade.objects
-                             .filter(sell_asset=self.asset, account=self.account, date__lte=date)
+                             .filter(sell_asset=self.asset, account=self.account, date__lt=date)
                              .aggregate(Sum('sell_amount'))['sell_amount__sum'] or 0)
         transaction_to_amount = (Transaction.objects
-                                 .filter(asset=self.asset, to_account=self.account, date__lte=date)
+                                 .filter(asset=self.asset, to_account=self.account, date__lt=date)
                                  .aggregate(Sum('amount'))['amount__sum'] or 0)
         transaction_from_and_fees_amount = (Transaction.objects
-                                            .filter(asset=self.asset, from_account=self.account, date__lte=date)
+                                            .filter(asset=self.asset, from_account=self.account, date__lt=date)
                                             .aggregate(Sum('fees'), Sum('amount')))
         flow_amount = (Flow.objects
-                       .filter(asset=self.asset, account=self.account, date__lte=date)
+                       .filter(asset=self.asset, account=self.account, date__lt=date)
                        .aggregate(Sum('flow'))['flow__sum'] or 0)
         transaction_from_amount = transaction_from_and_fees_amount['amount__sum'] or 0
         transaction_fees_amount = transaction_from_and_fees_amount['fees__sum'] or 0
@@ -233,6 +233,7 @@ class Trade(models.Model):
 
     class Meta:
         ordering = ["-date"]
+        unique_together = ('account', 'date')
 
     def __str__(self):
         account = str(self.account)
@@ -245,6 +246,10 @@ class Trade(models.Model):
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+        self.account.depot.reset_all()
+
+    def delete(self, using=None, keep_parents=False):
+        super().delete(using=using, keep_parents=keep_parents)
         self.account.depot.reset_all()
 
     # getters
@@ -260,11 +265,18 @@ class Transaction(models.Model):
     amount = models.DecimalField(max_digits=20, decimal_places=8)
     fees = models.DecimalField(max_digits=20, decimal_places=8)
 
+    class Meta:
+        unique_together = (('from_account', 'date'), ('to_account', 'date'))
+
     def __str__(self):
         return '{} {} {} {} {}'.format(self.asset, self.date, self.from_account, self.to_account, self.amount)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+        self.asset.depot.reset_all()
+
+    def delete(self, using=None, keep_parents=False):
+        super().delete(using=using, keep_parents=keep_parents)
         self.asset.depot.reset_all()
 
     # getters
@@ -289,6 +301,10 @@ class Price(models.Model):
         super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
         [asset.depot.reset_all() for asset in Asset.objects.filter(symbol=self.symbol)]
 
+    def delete(self, using=None, keep_parents=False):
+        super().delete(using=using, keep_parents=keep_parents)
+        [asset.depot.reset_all() for asset in Asset.objects.filter(symbol=self.symbol)]
+
     # getters
     def get_date(self):
         return timezone.localtime(self.date).strftime("%d.%m.%Y")
@@ -300,8 +316,19 @@ class Flow(models.Model):
     flow = models.DecimalField(max_digits=20, decimal_places=2)
     asset = models.ForeignKey(Asset, related_name='flows', on_delete=models.CASCADE)
 
+    class Meta:
+        unique_together = ('account', 'date')
+
     def __str__(self):
         return '{} {} {}'.format(self.get_date(), self.account, self.flow)
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+        self.account.depot.reset_all()
+
+    def delete(self, using=None, keep_parents=False):
+        super().delete(using=using, keep_parents=keep_parents)
+        self.account.depot.reset_all()
 
     # getters
     def get_date(self):

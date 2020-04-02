@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.utils import timezone
 from django import forms
 
@@ -107,6 +108,11 @@ class TradeForm(forms.ModelForm):
         sell_amount = self.cleaned_data['sell_amount']
         buy_amount = self.cleaned_data['buy_amount']
         date = self.cleaned_data['date']
+        # check that there is not already a transaction or flow on this exact date and account
+        if Transaction.objects.filter(Q(date=date), Q(from_account=account) | Q(to_account=account)).exists():
+            raise forms.ValidationError('There is already a transaction at this date and account.')
+        if Flow.objects.filter(date=date, account=account).exists():
+            raise forms.ValidationError('There is already a flow at this date and account')
         # check that buy and sell amount is positive because a trade doesnt make sense otherwise
         if sell_amount < 0 or buy_amount < 0:
             raise forms.ValidationError('Sell and buy amount must be positive.')
@@ -141,10 +147,16 @@ class TransactionForm(forms.ModelForm):
 
     def clean(self):
         from_account = self.cleaned_data['from_account']
+        to_account = self.cleaned_data['to_account']
         asset = self.cleaned_data['asset']
         amount = self.cleaned_data['amount']
         fees = self.cleaned_data['fees']
         date = self.cleaned_data['date']
+        # check that there is not already a trade or flow on this exact date and account
+        if Trade.objects.filter(Q(date=date), Q(account=from_account) | Q(account=to_account)).exists():
+            raise forms.ValidationError('There is already a trade at this date and one of the accounts.')
+        if Flow.objects.filter(Q(date=date), Q(account=from_account) | Q(account=to_account)).exists():
+            raise forms.ValidationError('There is already a flow at this date and account')
         # check that buy and sell amount is positive because a trade doesnt make sense otherwise
         if amount < 0:
             raise forms.ValidationError('The amount must be positive.')
@@ -178,6 +190,11 @@ class FlowForm(forms.ModelForm):
         flow = self.cleaned_data['flow']
         account = self.cleaned_data['account']
         asset = self.instance.asset
+        # check that there is not already a transaction or trade on this exact date and account
+        if Transaction.objects.filter(Q(date=date), Q(from_account=account) | Q(to_account=account)).exists():
+            raise forms.ValidationError('There is already a transaction at this date and account.')
+        if Trade.objects.filter(date=date, account=account).exists():
+            raise forms.ValidationError('There is already a trade at this date and account.')
         # check that enough asset is available if asset is withdrawn
         if flow < 0 and account.get_amount_asset_before_date(asset, date) < abs(flow):
             raise forms.ValidationError('There is not enough asset on this account to support this flow.')
