@@ -49,10 +49,12 @@
                     <td>{{ asset.get_value() }}</td>
                     <td>
                         <div class="d-flex">
-                            {{ mg.djangoModal("Add Trade", "addTrade", url("crypto:add_trade")) }}
-                            {{ bg.modalButton("Buy/Sell", "#addTrade") }}
-                            {{ mg.djangoModal("Add Transaction", "addTransaction", url("crypto:add_transaction")) }}
-                            {{ bg.modalButton("Send/Receive", "#addTransaction") }}
+                            {{ mg.djangoModal("Add Trade", "addTrade", url("crypto:add_trade")+"?buy_asset="+asset.pk|string+"&sell_asset="+asset.pk|string) }}
+                            {{ bg.modalButton("Buy / Sell", "#addTrade") }}
+                            {{ mg.djangoModal("Add Transaction", "addTransaction", url("crypto:add_transaction")+"?asset="+asset.pk|string) }}
+                            {{ bg.modalButton("Send / Receive", "#addTransaction") }}
+                            {{ bg.modalButton("Edit", "#editAsset"+asset.pk|string) }}
+                            {{ mg.djangoModal("Edit Asset", "editAsset"+asset.pk|string, url("crypto:edit_asset", args=[asset.pk])) }}
                             {{ bg.hrefButton("Open", url=url("crypto:asset", args=[asset.pk])) }}
                         </div>
                     </td>
@@ -63,8 +65,8 @@
                     <div class="d-flex">
                         {{ mg.djangoModal("Add Asset", "addAsset", url("crypto:add_asset")) }}
                         {{ bg.modalButton("Add Asset", "#addAsset") }}
-                        {{ mg.djangoModal("Remove Asset", "removeAsset", url("crypto:remove_asset")) }}
-                        {{ bg.modalButton("Remove Asset", "#removeAsset") }}
+                        {{ mg.djangoModal("Delete Asset", "removeAsset", url("crypto:remove_asset")) }}
+                        {{ bg.modalButton("Delete Asset", "#removeAsset") }}
                     </div>
                 </td>
             </tr>
@@ -88,11 +90,11 @@
                     <td>{{ account.get_value() }}</td>
                     <td>
                         <div class="d-flex">
-                            {{ bg.hrefButton("Open", url=url("crypto:account", args=[account.pk])) }}
-                            {{ bg.modalButton("Edit", "#editAccount"+account.pk|string) }}
-                            {{ mg.djangoModal("Edit Account", "editAccount"+account.pk|string, url("crypto:edit_account", args=[account.pk])) }}
                             {{ mg.djangoModal("Deposit / Withdraw", "addFlow"+account.pk|string, url("crypto:add_flow")+"?account="+account.pk|string) }}
                             {{ bg.modalButton("Deposit / Withdraw", "#addFlow"+account.pk|string) }}
+                            {{ bg.modalButton("Edit", "#editAccount"+account.pk|string) }}
+                            {{ mg.djangoModal("Edit Account", "editAccount"+account.pk|string, url("crypto:edit_account", args=[account.pk])) }}
+                            {{ bg.hrefButton("Open", url=url("crypto:account", args=[account.pk])) }}
                         </div>
                     </td>
                 </tr>

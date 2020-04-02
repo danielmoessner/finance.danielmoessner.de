@@ -348,5 +348,5 @@ class Timespan(CoreTimespan):
 
 class CoinGeckoAsset(models.Model):
     symbol = models.CharField(max_length=5, unique=True)
-    coingecko_symbol = models.CharField(max_length=10, unique=True)
+    coingecko_symbol = models.CharField(max_length=10)
     coingecko_id = models.CharField(max_length=40, unique=True)

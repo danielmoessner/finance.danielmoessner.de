@@ -27,7 +27,7 @@ class CustomAjaxDeleteMixin:
         return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
 
 
-class CustomAjaxResponseMixin:
+class AjaxResponseMixin:
     def form_invalid(self, form):
         html = render_to_string(self.template_name, self.get_context_data(form=form), request=self.request)
         return HttpResponse(json.dumps({"valid": False, "html": html}), content_type="application/json")
@@ -35,3 +35,21 @@ class CustomAjaxResponseMixin:
     def form_valid(self, form):
         form.save()
         return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
+
+
+class GetFormWithDepotMixin:
+    def get_form(self, form_class=None):
+        depot = self.get_depot()
+        if form_class is None:
+            form_class = self.get_form_class()
+        return form_class(depot, **self.get_form_kwargs())
+
+
+class GetFormWithDepotAndInitialDataMixin:
+    def get_form(self, form_class=None):
+        depot = self.get_depot()
+        if form_class is None:
+            form_class = self.get_form_class()
+        if self.request.method == 'GET':
+            return form_class(depot, initial=self.request.GET, **self.get_form_kwargs().pop('initial'))
+        return form_class(depot, **self.get_form_kwargs())

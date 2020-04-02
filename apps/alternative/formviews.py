@@ -9,7 +9,7 @@ from django.urls import reverse_lazy
 from apps.alternative.models import Alternative, Value, Flow, Depot
 from apps.alternative.forms import DepotActiveForm, DepotSelectForm, AlternativeForm
 from apps.alternative.forms import AlternativeSelectForm, FlowForm, ValueForm, DepotForm
-from apps.core.views import CustomAjaxResponseMixin, CustomGetFormUserMixin
+from apps.core.views import AjaxResponseMixin, CustomGetFormUserMixin
 
 import json
 
@@ -24,13 +24,13 @@ class CustomGetFormMixin(FormMixin):
 
 
 # depot
-class AddDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxResponseMixin, generic.CreateView):
+class AddDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.CreateView):
     form_class = DepotForm
     model = Depot
     template_name = "modules/form_snippet.njk"
 
 
-class EditDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxResponseMixin, generic.UpdateView):
+class EditDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.UpdateView):
     model = Depot
     form_class = DepotForm
     template_name = "modules/form_snippet.njk"
@@ -39,7 +39,7 @@ class EditDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxRespon
         return self.request.user.alternative_depots.all()
 
 
-class DeleteDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxResponseMixin, generic.FormView):
+class DeleteDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.FormView):
     model = Depot
     template_name = "modules/form_snippet.njk"
     form_class = DepotSelectForm
@@ -70,13 +70,13 @@ class SetActiveDepotView(LoginRequiredMixin, SingleObjectMixin, generic.View):
 
 
 # alternative
-class AddAlternativeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.CreateView):
+class AddAlternativeView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.CreateView):
     form_class = AlternativeForm
     model = Alternative
     template_name = "modules/form_snippet.njk"
 
 
-class EditAlternativeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.UpdateView):
+class EditAlternativeView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
     model = Alternative
     form_class = AlternativeForm
     template_name = "modules/form_snippet.njk"
@@ -85,7 +85,7 @@ class EditAlternativeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResp
         return Alternative.objects.filter(depot__in=self.request.user.alternative_depots.all())
 
 
-class DeleteAlternativeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.FormView):
+class DeleteAlternativeView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.FormView):
     model = Alternative
     template_name = "modules/form_snippet.njk"
     form_class = AlternativeSelectForm
@@ -97,7 +97,7 @@ class DeleteAlternativeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxRe
 
 
 # value
-class AddValueView(LoginRequiredMixin, CustomAjaxResponseMixin, generic.CreateView):
+class AddValueView(LoginRequiredMixin, AjaxResponseMixin, generic.CreateView):
     model = Value
     form_class = ValueForm
     template_name = "modules/form_snippet.njk"
@@ -111,7 +111,7 @@ class AddValueView(LoginRequiredMixin, CustomAjaxResponseMixin, generic.CreateVi
         return form_class(depot, **self.get_form_kwargs())
 
 
-class EditValueView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.UpdateView):
+class EditValueView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
     model = Value
     form_class = ValueForm
     template_name = "modules/form_snippet.njk"
@@ -141,7 +141,7 @@ class DeleteValueView(LoginRequiredMixin, generic.DeleteView):
 
 
 # flow
-class AddFlowView(LoginRequiredMixin, CustomAjaxResponseMixin, generic.CreateView):
+class AddFlowView(LoginRequiredMixin, AjaxResponseMixin, generic.CreateView):
     model = Flow
     form_class = FlowForm
     template_name = "modules/form_snippet.njk"
@@ -155,7 +155,7 @@ class AddFlowView(LoginRequiredMixin, CustomAjaxResponseMixin, generic.CreateVie
         return form_class(depot, **self.get_form_kwargs())
 
 
-class EditFlowView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.UpdateView):
+class EditFlowView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
     model = Flow
     form_class = FlowForm
     template_name = "modules/form_snippet.njk"

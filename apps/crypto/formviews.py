@@ -7,7 +7,9 @@ from django.urls import reverse_lazy
 from apps.crypto.models import Transaction, Flow, Timespan, Account, Asset, Trade, Depot
 from apps.crypto.forms import TimespanActiveForm, FlowForm, AccountSelectForm, TradeForm, DepotForm, AccountForm
 from apps.crypto.forms import AssetSelectForm, DepotSelectForm, DepotActiveForm, TransactionForm, TimespanForm
-from apps.core.views import CustomAjaxDeleteMixin, CustomAjaxResponseMixin, CustomGetFormUserMixin
+from apps.crypto.forms import AssetForm
+from apps.core.views import CustomAjaxDeleteMixin, AjaxResponseMixin, CustomGetFormUserMixin
+from apps.core.views import GetFormWithDepotAndInitialDataMixin, GetFormWithDepotMixin
 
 import json
 
@@ -21,20 +23,25 @@ class CustomGetFormMixin:
         return form_class(depot, **self.get_form_kwargs())
 
 
+class GetDepotMixin:
+    def get_depot(self):
+        return self.request.user.crypto_depots.filter(is_active=True).first()
+
+
 # depot
-class AddDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxResponseMixin, generic.CreateView):
+class AddDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.CreateView):
     form_class = DepotForm
     model = Depot
     template_name = "modules/form_snippet.njk"
 
 
-class EditDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxResponseMixin, generic.UpdateView):
+class EditDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.UpdateView):
     model = Depot
     form_class = DepotForm
     template_name = "modules/form_snippet.njk"
 
 
-class DeleteDepotView(LoginRequiredMixin, CustomGetFormUserMixin, CustomAjaxResponseMixin, generic.FormView):
+class DeleteDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.FormView):
     model = Depot
     template_name = "modules/form_snippet.njk"
     form_class = DepotSelectForm
@@ -62,19 +69,19 @@ class SetActiveDepotView(LoginRequiredMixin, generic.View):
 
 
 # account
-class AddAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.CreateView):
+class AddAccountView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.CreateView):
     form_class = AccountForm
     model = Account
     template_name = "modules/form_snippet.njk"
 
 
-class EditAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.UpdateView):
+class EditAccountView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
     model = Account
     form_class = AccountForm
     template_name = "modules/form_snippet.njk"
 
 
-class DeleteAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.FormView):
+class DeleteAccountView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.FormView):
     model = Account
     template_name = "modules/form_snippet.njk"
     form_class = AccountSelectForm
@@ -86,13 +93,19 @@ class DeleteAccountView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxRespon
 
 
 # asset
-class AddAssetView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.FormView):
+class AddAssetView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.CreateView):
     model = Asset
     template_name = "modules/form_snippet.njk"
-    form_class = AssetSelectForm
+    form_class = AssetForm
 
 
-class DeleteAssetView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.FormView):
+class EditAssetView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
+    model = Asset
+    template_name = "modules/form_snippet.njk"
+    form_class = AssetForm
+
+
+class DeleteAssetView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.FormView):
     model = Asset
     template_name = "modules/form_snippet.njk"
     form_class = AssetSelectForm
@@ -104,13 +117,14 @@ class DeleteAssetView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponse
 
 
 # trade
-class AddTradeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.CreateView):
+class AddTradeView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAndInitialDataMixin, AjaxResponseMixin,
+                   generic.CreateView):
     model = Trade
     form_class = TradeForm
     template_name = "modules/form_snippet.njk"
 
 
-class EditTradeView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.UpdateView):
+class EditTradeView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
     model = Trade
     form_class = TradeForm
     template_name = "modules/form_snippet.njk"
@@ -122,13 +136,14 @@ class DeleteTradeView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteV
 
 
 # transaction
-class AddTransactionView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.CreateView):
+class AddTransactionView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAndInitialDataMixin, AjaxResponseMixin,
+                         generic.CreateView):
     model = Transaction
     form_class = TransactionForm
     template_name = "modules/form_snippet.njk"
 
 
-class EditTransactionView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.UpdateView):
+class EditTransactionView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
     model = Transaction
     form_class = TransactionForm
     template_name = "modules/form_snippet.njk"
@@ -140,21 +155,14 @@ class DeleteTransactionView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.D
 
 
 # flow
-class AddFlowView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.CreateView):
+class AddFlowView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAndInitialDataMixin, AjaxResponseMixin,
+                  generic.CreateView):
     model = Flow
     form_class = FlowForm
     template_name = "modules/form_snippet.njk"
 
-    def get_form(self, form_class=None):
-        depot = self.request.user.crypto_depots.get(is_active=True)
-        if form_class is None:
-            form_class = self.get_form_class()
-        if self.request.method == 'GET':
-            return form_class(depot, initial=self.request.GET, **self.get_form_kwargs().pop('initial'))
-        return form_class(depot, **self.get_form_kwargs())
 
-
-class EditFlowView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.UpdateView):
+class EditFlowView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
     model = Flow
     form_class = FlowForm
     template_name = "modules/form_snippet.njk"
@@ -166,7 +174,7 @@ class DeleteFlowView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteVi
 
 
 # timespan
-class AddTimespanView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxResponseMixin, generic.CreateView):
+class AddTimespanView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.CreateView):
     form_class = TimespanForm
     model = Timespan
     template_name = "modules/form_snippet.njk"

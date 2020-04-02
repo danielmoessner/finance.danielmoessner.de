@@ -19,7 +19,8 @@ urlpatterns = [
 
     # asset
     path("assets/add/", formviews.AddAssetView.as_view(), name="add_asset"),
-    path("assets/remove/", formviews.DeleteAssetView.as_view(), name="remove_asset"),
+    path("assets/<int:pk>/edit/", formviews.EditAssetView.as_view(), name="edit_asset"),
+    path("assets/delete/", formviews.DeleteAssetView.as_view(), name="remove_asset"),
 
     # trade
     path("trades/add/", formviews.AddTradeView.as_view(), name="add_trade"),

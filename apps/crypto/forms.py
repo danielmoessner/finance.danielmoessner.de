@@ -2,7 +2,7 @@ from django.db.models import Q
 from django.utils import timezone
 from django import forms
 
-from .models import Account, Flow, Transaction, Timespan, Trade, Depot
+from .models import Account, Flow, Transaction, Timespan, Trade, Depot, Asset
 
 from datetime import datetime
 
@@ -66,6 +66,21 @@ class AccountSelectForm(forms.Form):
 
 
 # asset
+class AssetForm(forms.ModelForm):
+    class Meta:
+        model = Asset
+        fields = (
+            'symbol',
+        )
+        help_texts = {
+            'symbol': "It's not advised to change the symbol of an asset as the prices of the asset will change.",
+        }
+
+    def __init__(self, depot, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.instance.depot = depot
+
+
 class AssetSelectForm(forms.Form):
     asset = forms.ModelChoiceField(widget=forms.Select, queryset=None)
 
@@ -75,7 +90,7 @@ class AssetSelectForm(forms.Form):
         )
 
     def __init__(self, depot, *args, **kwargs):
-        super(AssetSelectForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields["asset"].queryset = depot.assets.all()
 
 
