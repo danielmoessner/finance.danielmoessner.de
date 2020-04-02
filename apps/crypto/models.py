@@ -4,7 +4,6 @@ from django.db import models
 
 from apps.users.models import StandardUser
 from apps.core.models import Timespan as CoreTimespan, Account as CoreAccount, Depot as CoreDepot
-from apps.crypto.utils import round_sigfigs
 
 from datetime import timedelta
 
@@ -157,7 +156,7 @@ class Asset(models.Model):
                            .aggregate(Sum('flow'))['flow__sum'] or 0)
             self.amount = trade_buy_amount - trade_sell_amount - transaction_fees_amount + flow_amount
             self.save()
-        return round_sigfigs(self.amount, 4)
+        return self.amount
 
 
 class AccountAssetStats(models.Model):
@@ -190,7 +189,7 @@ class AccountAssetStats(models.Model):
             transaction_amount = transaction_to_amount - transaction_fees_amount - transaction_from_amount
             self.amount = trade_amount + transaction_amount + flow_amount
             self.save()
-        return round_sigfigs(self.amount, 4)
+        return self.amount
 
     def get_amount_before_date(self, date):
         trade_buy_amount = (Trade.objects
