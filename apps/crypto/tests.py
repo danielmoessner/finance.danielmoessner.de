@@ -149,6 +149,12 @@ class FormValidationTestCase(TestCase):
         with self.assertRaises(ValueError):
             self.create_trade(0, account2, 1, btc, 500, eur, date=date)
 
+    def test_depot_value_is_reset_after_flow_trade_or_transaction_added(self):
+        pass
+
+    def test_depot_value_is_reset_after_flow_trade_or_transaction_delete(self):
+        pass
+
     def test_trade_form_not_allowing_more_sell_asset_than_what_is_available(self):
         self.create_flow(20, 1000, self.account)
         btc, created = self.depot.assets.get_or_create(symbol='BTC')
