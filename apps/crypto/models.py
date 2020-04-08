@@ -4,14 +4,23 @@ from django.db import models
 
 from apps.users.models import StandardUser
 from apps.core.models import Timespan as CoreTimespan, Account as CoreAccount, Depot as CoreDepot
+from apps.core.utils import sum_up_all_value_columns_in_a_dataframe, get_merged_value_df_from_queryset
+from apps.core.utils import change_time_of_date_column_in_df, remove_all_nans_at_beginning_and_end
+import apps.core.return_calculation as rc
 
 from datetime import timedelta
+import pandas as pd
+import numpy as np
 
 
 class Depot(CoreDepot):
     user = models.ForeignKey(StandardUser, editable=False, related_name="crypto_depots", on_delete=models.CASCADE)
     # query optimization
     value = models.DecimalField(max_digits=20, decimal_places=2, blank=True, null=True)
+    current_return = models.DecimalField(max_digits=20, decimal_places=2, blank=True, null=True)
+    invested_capital = models.DecimalField(max_digits=20, decimal_places=2, blank=True, null=True)
+    time_weighted_return = models.DecimalField(max_digits=20, decimal_places=2, blank=True, null=True)
+    internal_rate_of_return = models.DecimalField(max_digits=20, decimal_places=2, blank=True, null=True)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
@@ -21,6 +30,35 @@ class Depot(CoreDepot):
             self.user.crypto_depots.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
 
     # getters
+    def get_flow_df(self):
+        if not hasattr(self, 'flow_df'):
+            # get the flow df
+            df = pd.DataFrame(data=list(Flow.objects.filter(account__in=self.accounts.all()).values('date', 'flow')),
+                              columns=['date', 'flow'])
+            # make it to float so that pandas can calculate everything, decimal doesn't work fine with pandas
+            df.loc[:, 'flow'] = df.loc[:, 'flow'].apply(pd.to_numeric, downcast='float')
+            # make the time to the same as in the value df: 12:00, in order to calculate everything correctly
+            df = change_time_of_date_column_in_df(df, 12)
+            # combine the duplicates to a single flow
+            df = df.groupby(by='date').sum()
+            # reset index as it got set on group by
+            df = df.reset_index()
+            # set the df
+            self.flow_df = df
+        return self.flow_df
+
+    def get_value_df(self):
+        if not hasattr(self, 'value_df'):
+            # get the df with all values
+            df = get_merged_value_df_from_queryset(self.assets.all())
+            # sums up all the values of the assets and interpolates
+            df = sum_up_all_value_columns_in_a_dataframe(df)
+            # remove all the rows where the value is 0 as it doesn't make sense in the calculations
+            df = df.loc[df.loc[:, 'value'] != 0]
+            # set the df
+            self.value_df = df
+        return self.value_df
+
     def get_value(self):
         if self.value is None:
             self.value = 0
@@ -29,14 +67,47 @@ class Depot(CoreDepot):
             self.save()
         return self.value
 
+    def get_invested_capital(self):
+        if self.invested_capital is None:
+            df = rc.get_current_return_df(self.get_flow_df(), self.get_value_df())
+            self.invested_capital = df.iloc[-1, df.columns.get_loc('invested_capital')]
+            self.save()
+        return self.invested_capital
+
+    def get_time_weighted_return(self):
+        if self.time_weighted_return is None:
+            df = rc.get_time_weighted_return_df(self.get_flow_df(), self.get_value_df())
+            self.time_weighted_return = rc.get_time_weighted_return(df)
+            self.save()
+        return self.time_weighted_return
+
+    def get_current_return(self):
+        if self.current_return is None:
+            df = rc .get_current_return_df(self.get_flow_df(), self.get_value_df())
+            self.current_return = rc.get_current_return(df)
+            self.save()
+        return self.current_return
+
+    def get_internal_rate_of_return(self):
+        if self.internal_rate_of_return is None:
+            df = rc.get_internal_rate_of_return_df(self.get_flow_df(), self.get_value_df())
+            self.internal_rate_of_return = rc.get_internal_rate_of_return(df)
+            self.save()
+        return self.internal_rate_of_return
+
     def get_stats(self):
         return {
-            'Value': self.get_value()
+            'Value': self.get_value(),
+            'Invested Capital': self.get_invested_capital(),
+            'Time Weighted Return': self.get_time_weighted_return(),
+            'Current Return': self.get_current_return(),
+            'Internal Rate of Return': self.get_internal_rate_of_return()
         }
 
     # setters
     def reset_all(self):
-        Depot.objects.filter(pk=self.pk).update(value=None)
+        Depot.objects.filter(pk=self.pk).update(value=None, internal_rate_of_return=None, invested_capital=None,
+                                                time_weighted_return=None, current_return=None)
         Asset.objects.filter(depot=self).update(value=None, amount=None, price=None)
         Account.objects.filter(depot=self).update(value=None)
         AccountAssetStats.objects.filter(account__in=self.accounts.all()).update(value=None, amount=None)
@@ -104,6 +175,102 @@ class Asset(models.Model):
             Price.objects.create(symbol='EUR', price=1, date=timezone.now())
 
     # getters
+    def get_price_df(self):
+        # get all prices
+        df = pd.DataFrame(data=list(Price.objects.filter(symbol=self.symbol).values('date', 'price')),
+                          columns=['date', 'price'])
+        if df.empty:
+            return df
+        # make it float so that everything with pandas work, for example interpolate doesn't work with decimal
+        df.loc[:, 'price'] = df.loc[:, 'price'].apply(pd.to_numeric, downcast='float')
+        # remove the time; we need this because of the merging of the value dfs in the depot get_value_df function
+        df = change_time_of_date_column_in_df(df, 12)
+        # drop duplicates as asfreq will throw an error if duplicates exist
+        df = df.groupby(by='date').tail(1)
+        # set index to date so that the coming functions work better
+        df.set_index('date', inplace=True)
+        # insert missing dates
+        price_series = df.loc[:, 'price'].asfreq('D')
+        # add missing prices
+        price_series = price_series.interpolate(method='time')
+        # make a df from the series
+        df = price_series.to_frame()
+        # reset the index
+        df.reset_index(inplace=True)
+        # return the df
+        return df
+
+    def get_value_df(self):
+        # get price and amount df
+        price_df = self.get_price_df()
+        amount_df = self.get_amount_df()
+        # merge dfs into on df
+        df = pd.merge(price_df, amount_df, how='outer')
+        if price_df.empty or amount_df.empty:
+            return pd.DataFrame(columns=['date', 'value'])
+        # sort by date so that forward fill and interpolate will work
+        df = df.sort_values(by='date')
+        # set the time to 12:00 for further calculations
+        df = change_time_of_date_column_in_df(df, 12)
+        # drop duplicates of the dates and only keep the last
+        df = df.groupby(by='date').tail(1)
+        # set the date column to a daily frequency
+        if len(df) >= 2:
+            idx = pd.date_range(start=df.iloc[0, df.columns.get_loc('date')],
+                                end=df.iloc[-1, df.columns.get_loc('date')],
+                                freq='D')
+            df.set_index('date', inplace=True)
+            df = df.reindex(idx, fill_value=np.nan)
+        df.reset_index(inplace=True)
+        df = df.rename(columns={'index': 'date'})
+        # forward fill the amount
+        df.loc[:, 'amount'] = df.loc[:, 'amount'].fillna(method='ffill')
+        # interpolate the price
+        df.set_index('date', inplace=True)
+        df.loc[:, 'price'] = df.loc[:, 'price'].interpolate(method='time', limit_direction='both')
+        df.reset_index(inplace=True)
+        # calculate the value
+        df.loc[:, 'value'] = df.loc[:, 'amount'] * df.loc[:, 'price']
+        # make the df smaller
+        df = df.loc[:, ['date', 'value']]
+        # replace 0 with nan as it makes further manipulations easier
+        df = df.replace(0, np.nan)
+        # slice the dataframe only keep the important values
+        df = remove_all_nans_at_beginning_and_end(df, 'value')
+        # fill nan with 0 as that is the true value
+        df = df.fillna(0)
+        # return the df
+        return df
+
+    def get_amount_df(self):
+        # get all possible amount changing objects
+        trade_buy_df = pd.DataFrame(data=list(Trade.objects.filter(buy_asset=self).values('date', 'buy_amount')),
+                                    columns=['date', 'buy_amount'])
+        trade_sell_df = pd.DataFrame(data=list(Trade.objects.filter(sell_asset=self).values('date', 'sell_amount')),
+                                     columns=['date', 'sell_amount'])
+        transaction_fees_df = pd.DataFrame(data=list(Transaction.objects.filter(asset=self).values('date', 'fees')),
+                                           columns=['date', 'fees'])
+        flow_df = pd.DataFrame(data=list(Flow.objects.filter(asset=self).values('date', 'flow')),
+                               columns=['date', 'flow'])
+        # merge everything into a big dataframe
+        df = pd.merge(trade_buy_df, trade_sell_df, how='outer')
+        df = df.merge(transaction_fees_df, how='outer')
+        df = df.merge(flow_df, how='outer')
+        # replace nan with 0
+        df = df.fillna(0)
+        # sort by date so that the cumsum will work properly later on
+        df = df.sort_values(by='date')
+        # calculate the change on each date
+        df.loc[:, 'change'] = df.loc[:, 'buy_amount'] - df.loc[:, 'sell_amount'] - df.loc[:, 'fees'] + df.loc[:, 'flow']
+        # the amount is the sum of all changes
+        df.loc[:, 'amount'] = df.loc[:, 'change'].cumsum()
+        # make the df smaller
+        df = df.loc[:, ['date', 'amount']]
+        # cast to float otherwise pandas can not reliably use all methods for example interpolate wouldn't work
+        df.loc[:, 'amount'] = df.loc[:, 'amount'].apply(pd.to_numeric, downcast='float')
+        # return the df
+        return df
+
     def get_stats(self):
         return {
             'Amount': self.get_amount(),

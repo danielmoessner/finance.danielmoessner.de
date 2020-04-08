@@ -1,4 +1,5 @@
 from scipy.optimize import newton
+import pandas as pd
 import numpy as np
 
 
@@ -14,13 +15,16 @@ def _get_merged_flow_and_value_df(flow_df, value_df):
     # merge the dfs and sort for date
     df = flow_df.merge(value_df, how='outer')
     df.sort_values(axis='rows', by=['date'], inplace=True)
+    # stop calculation if there is not a flow in the first row
+    if np.isnan(df.iloc[0, df.columns.get_loc('flow')]):
+        return None
     # stop calculations if there is no value in the last row
     if np.isnan(df.iloc[-1, df.columns.get_loc('value')]):
         return None
     # test that there are is always a value after a flow
-    for i in range(0, df.shape[0]):
-        if not np.isnan(df.iloc[i, df.columns.get_loc('flow')]):
-            assert np.isnan(df.iloc[i + 1, df.columns.get_loc('flow')])
+    # for i in range(0, df.shape[0]):
+    #     if not np.isnan(df.iloc[i, df.columns.get_loc('flow')]):
+    #         assert np.isnan(df.iloc[i + 1, df.columns.get_loc('flow')])
     # return the new df
     return df
 
@@ -31,12 +35,21 @@ def get_value_with_flow_df(flow_df, value_df):
     # stop calculations if something went wrong beforehand
     if df is None:
         return None
+
     # shift the flows up to the values
-    df.loc[:, 'flow'] = df.loc[:, 'flow'].shift(1)
+    # df.loc[:, 'flow'] = df.loc[:, 'flow'].shift(1)
+    # instead of shifting it might make sense to just interpolate the values back and forth
+
+    # fill the nan values next to the flows with values that make sense based on the time
+    df = df.set_index('date')
+    df.loc[:, 'value'] = df.loc[:, 'value'].interpolate(method='time', limit_direction='both')
+    df = df.reset_index()
+
     # drop the old flow rows
-    df = df.loc[df.loc[:, 'value'].notna()]
+    # df = df.loc[df.loc[:, 'value'].notna()]
     # test that the length is equal to the length of the value df
-    assert len(df.index) == len(value_df.index)
+    # assert len(df.index) == len(value_df.index)
+
     # fill the nan flow with 0
     df.loc[:, 'flow'].fillna(0, inplace=True)
     # return the combined df
@@ -61,16 +74,19 @@ def get_time_weighted_return_df(flow_df, value_df):
 
 
 def get_time_weighted_return(df):
-    # return nan if something went wrong beforehand
+    # return None if something went wrong beforehand
     if df is None:
-        return np.nan
+        return None
     # test that all necessary columns are available
     assert 'twr' in df.columns
     # return nan if there are nan values in the twr column
     if df.loc[:, 'twr'].isnull().values.any():
-        return np.nan
+        return None
     # calculate twr
     time_weighted_return = df.loc[:, 'twr'].product() - 1
+    # safety stuff to make sure the db can save it
+    if abs(time_weighted_return) == np.inf or np.isnan(time_weighted_return):
+        time_weighted_return = None
     # return the rate
     return time_weighted_return
 
@@ -131,13 +147,16 @@ def _get_daily_internal_rate_of_return(df, guess=0.000210874):
 def get_internal_rate_of_return(df):
     # stop calculations if something went wrong beforehand
     if df is None:
-        return np.nan
+        return None
     # get the daily rate
     internal_rate_of_return = _get_daily_internal_rate_of_return(df)
     # turn the daily rate into the rate of the period
     internal_rate_of_return = (1 + internal_rate_of_return) ** (df.iloc[-1, df.columns.get_loc('days')])
     # adjust to represent a percentage value
     internal_rate_of_return -= 1
+    # safety stuff to make sure the db can save it
+    if abs(internal_rate_of_return) == np.inf or np.isnan(internal_rate_of_return):
+        internal_rate_of_return = None
     # return the rate
     return internal_rate_of_return
 
@@ -159,7 +178,7 @@ def get_current_return_df(flow_df, value_df):
     # calculate the invested capital
     for i in range(0, df.shape[0]):
         flow = df.iloc[i, df.columns.get_loc('flow')]
-        previous_invested_capital = df.iloc[i-1, df.columns.get_loc('invested_capital')] if i > 0 else 0
+        previous_invested_capital = df.iloc[i - 1, df.columns.get_loc('invested_capital')] if i > 0 else 0
         if flow > 0:
             invested_capital = previous_invested_capital + flow
         elif flow < 0:
@@ -169,20 +188,24 @@ def get_current_return_df(flow_df, value_df):
             invested_capital = previous_invested_capital
         df.iloc[i, df.columns.get_loc('invested_capital')] = invested_capital
     # calculate the current return
+    df.loc[:, 'invested_capital'] = df.loc[:, 'invested_capital'].apply(pd.to_numeric, downcast='float')
     df.loc[:, 'current_return'] = df.loc[:, 'value'] / df.loc[:, 'invested_capital']
     # return the df
     return df
 
 
 def get_current_return(df):
-    # return nan if something went wrong before
+    # return None if something went wrong before
     if df is None:
-        return np.nan
+        return None
     # test that all necessary columns are available
     assert 'current_return' in df.columns
     # current return of a period is always the last value
     current_return = df.iloc[-1, df.columns.get_loc('current_return')]
     # adjust to represent a percentage value
     current_return -= 1
+    # safety stuff to make sure the db can save it
+    if abs(current_return) == np.inf or np.isnan(current_return):
+        current_return = None
     # return the current return
     return current_return

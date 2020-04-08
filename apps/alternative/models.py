@@ -50,35 +50,10 @@ class Depot(CoreDepot):
         return df
 
     def get_value_df(self):
-        # instantiate a new dataframe
-        df = pd.DataFrame(columns=['date', 'value'])
-        # merge the dataframe with all alternatives
-        for alternative in list(self.alternatives.all()):
-            alternative_df = alternative.get_value_df()
-            if alternative_df is None:
-                break
-            alternative_df.rename(columns={'value': 'value__' + str(alternative.pk)}, inplace=True)
-            df = df.merge(alternative_df, how='outer')
-        # return none if the df is empty
-        if df.empty:
-            return None
-        # set the date as index and sort the df as preparation for the interpolate method
-        df.set_index('date', inplace=True)
-        df.sort_index(inplace=True)
-        # interpolate the alternative value columns based on the time
-        alternative_value_columns = df.columns.str.contains('value__')
-        df.iloc[:, alternative_value_columns] = df.iloc[:, alternative_value_columns].interpolate(
-            method='time', limit_direction='forward')
-        # sum the alternative values in the valu column
-        df.loc[:, 'value'] = df.iloc[:, alternative_value_columns].sum(axis=1)
-        # drop all unnecessary columns
-        df = df.loc[:, ['value']]
-        # set the index as column
-        df.reset_index(inplace=True)
-        # standardize the time of the values from the dataframe date column for correct calculations
-        df = utils.change_time_of_date_column_in_df(df, 12)
-        # get the latest value of the day
-        df = df.groupby('date').tail(1)
+        # get the df with all values
+        df = utils.get_merged_value_df_from_queryset(self.alternatives.all())
+        # sums up all the values of the assets and interpolates
+        df = utils.sum_up_all_value_columns_in_a_dataframe(df)
         # return the new df
         return df
 

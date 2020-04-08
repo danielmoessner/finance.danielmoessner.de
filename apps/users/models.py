@@ -37,12 +37,16 @@ class StandardUser(AbstractUser):
             return self.banking_depots.get(is_active=True).pk
         except ObjectDoesNotExist:
             return None
+        except MultipleObjectsReturned:
+            self.banking_depots.update(is_active=False)
 
     def get_active_alternative_depot_pk(self):
         try:
             return self.alternative_depots.get(is_active=True).pk
         except ObjectDoesNotExist:
             return None
+        except MultipleObjectsReturned:
+            self.alternative_depots.update(is_active=False)
 
     # create
     def create_random_banking_data(self):
