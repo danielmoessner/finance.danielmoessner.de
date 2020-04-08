@@ -8,23 +8,18 @@ import numpy as np
 #############
 def _get_merged_flow_and_value_df(flow_df, value_df):
     # no calculations are possible if on of the dfs is none
-    if value_df is None or flow_df is None:
+    if value_df is None or flow_df is None or value_df.empty or flow_df.empty:
         return None
     # test that the first df has a flow column and the second a value column
     assert 'flow' in flow_df.columns and 'value' in value_df.columns
     # merge the dfs and sort for date
-    df = flow_df.merge(value_df, how='outer')
-    df.sort_values(axis='rows', by=['date'], inplace=True)
+    df = flow_df.merge(value_df, how='outer', sort=True, on='date')
     # stop calculation if there is not a flow in the first row
     if np.isnan(df.iloc[0, df.columns.get_loc('flow')]):
         return None
     # stop calculations if there is no value in the last row
     if np.isnan(df.iloc[-1, df.columns.get_loc('value')]):
         return None
-    # test that there are is always a value after a flow
-    # for i in range(0, df.shape[0]):
-    #     if not np.isnan(df.iloc[i, df.columns.get_loc('flow')]):
-    #         assert np.isnan(df.iloc[i + 1, df.columns.get_loc('flow')])
     # return the new df
     return df
 
@@ -35,21 +30,8 @@ def get_value_with_flow_df(flow_df, value_df):
     # stop calculations if something went wrong beforehand
     if df is None:
         return None
-
-    # shift the flows up to the values
-    # df.loc[:, 'flow'] = df.loc[:, 'flow'].shift(1)
-    # instead of shifting it might make sense to just interpolate the values back and forth
-
     # fill the nan values next to the flows with values that make sense based on the time
-    df = df.set_index('date')
     df.loc[:, 'value'] = df.loc[:, 'value'].interpolate(method='time', limit_direction='both')
-    df = df.reset_index()
-
-    # drop the old flow rows
-    # df = df.loc[df.loc[:, 'value'].notna()]
-    # test that the length is equal to the length of the value df
-    # assert len(df.index) == len(value_df.index)
-
     # fill the nan flow with 0
     df.loc[:, 'flow'].fillna(0, inplace=True)
     # return the combined df
@@ -112,9 +94,9 @@ def get_internal_rate_of_return_df(flow_df, value_df):
     # test that the length is equal to the length of the flow df plus the last row of the value df
     assert len(df.index) == len(flow_df.index) + 1 or len(df.index) == len(flow_df.index) + 2
     # drop the value column
-    df = df.loc[:, ['date', 'flow']]
+    df = df.loc[:, ['flow']]
     # add the days column
-    df.loc[:, 'days'] = df.loc[:, 'date'] - df.iloc[0, df.columns.get_loc('date')]
+    df.loc[:, 'days'] = df.index - df.index[0]
     # convert the days column to a number in days
     df.loc[:, 'days'] = df.loc[:, 'days'].map(lambda x: x.days)
     # return the df

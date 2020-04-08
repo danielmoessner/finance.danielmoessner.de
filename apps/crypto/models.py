@@ -4,8 +4,9 @@ from django.db import models
 
 from apps.users.models import StandardUser
 from apps.core.models import Timespan as CoreTimespan, Account as CoreAccount, Depot as CoreDepot
-from apps.core.utils import sum_up_all_value_columns_in_a_dataframe, get_merged_value_df_from_queryset
+from apps.core.utils import sum_up_columns_in_a_dataframe, get_merged_value_df_from_queryset
 from apps.core.utils import change_time_of_date_column_in_df, remove_all_nans_at_beginning_and_end
+from apps.core.utils import change_time_of_date_index_in_df
 import apps.core.return_calculation as rc
 
 from datetime import timedelta
@@ -35,14 +36,13 @@ class Depot(CoreDepot):
             # get the flow df
             df = pd.DataFrame(data=list(Flow.objects.filter(account__in=self.accounts.all()).values('date', 'flow')),
                               columns=['date', 'flow'])
+            df.set_index('date', inplace=True)
             # make it to float so that pandas can calculate everything, decimal doesn't work fine with pandas
             df.loc[:, 'flow'] = df.loc[:, 'flow'].apply(pd.to_numeric, downcast='float')
             # make the time to the same as in the value df: 12:00, in order to calculate everything correctly
-            df = change_time_of_date_column_in_df(df, 12)
+            df = change_time_of_date_index_in_df(df, 12)
             # combine the duplicates to a single flow
             df = df.groupby(by='date').sum()
-            # reset index as it got set on group by
-            df = df.reset_index()
             # set the df
             self.flow_df = df
         return self.flow_df
@@ -52,7 +52,7 @@ class Depot(CoreDepot):
             # get the df with all values
             df = get_merged_value_df_from_queryset(self.assets.all())
             # sums up all the values of the assets and interpolates
-            df = sum_up_all_value_columns_in_a_dataframe(df)
+            df = sum_up_columns_in_a_dataframe(df)
             # remove all the rows where the value is 0 as it doesn't make sense in the calculations
             df = df.loc[df.loc[:, 'value'] != 0]
             # set the df
@@ -179,24 +179,22 @@ class Asset(models.Model):
         # get all prices
         df = pd.DataFrame(data=list(Price.objects.filter(symbol=self.symbol).values('date', 'price')),
                           columns=['date', 'price'])
+        df.set_index('date', inplace=True)
+        # return none if there is nothing to be calculated
         if df.empty:
-            return df
+            return None
         # make it float so that everything with pandas work, for example interpolate doesn't work with decimal
         df.loc[:, 'price'] = df.loc[:, 'price'].apply(pd.to_numeric, downcast='float')
         # remove the time; we need this because of the merging of the value dfs in the depot get_value_df function
-        df = change_time_of_date_column_in_df(df, 12)
-        # drop duplicates as asfreq will throw an error if duplicates exist
-        df = df.groupby(by='date').tail(1)
-        # set index to date so that the coming functions work better
-        df.set_index('date', inplace=True)
+        df = change_time_of_date_index_in_df(df, 12)
+        # drop duplicates as asfreq will throw an error if duplicates exist and sort
+        df = df.groupby(df.index, sort=True).tail(1)
         # insert missing dates
         price_series = df.loc[:, 'price'].asfreq('D')
         # add missing prices
         price_series = price_series.interpolate(method='time')
         # make a df from the series
         df = price_series.to_frame()
-        # reset the index
-        df.reset_index(inplace=True)
         # return the df
         return df
 
@@ -204,35 +202,23 @@ class Asset(models.Model):
         # get price and amount df
         price_df = self.get_price_df()
         amount_df = self.get_amount_df()
+        # return none if there is nothing to be calculated
+        if price_df is None or amount_df is None:
+            return None
         # merge dfs into on df
-        df = pd.merge(price_df, amount_df, how='outer')
-        if price_df.empty or amount_df.empty:
-            return pd.DataFrame(columns=['date', 'value'])
-        # sort by date so that forward fill and interpolate will work
-        df = df.sort_values(by='date')
-        # set the time to 12:00 for further calculations
-        df = change_time_of_date_column_in_df(df, 12)
-        # drop duplicates of the dates and only keep the last
-        df = df.groupby(by='date').tail(1)
+        df = pd.merge(price_df, amount_df, on='date', how='outer', sort=True)
         # set the date column to a daily frequency
-        if len(df) >= 2:
-            idx = pd.date_range(start=df.iloc[0, df.columns.get_loc('date')],
-                                end=df.iloc[-1, df.columns.get_loc('date')],
-                                freq='D')
-            df.set_index('date', inplace=True)
-            df = df.reindex(idx, fill_value=np.nan)
-        df.reset_index(inplace=True)
-        df = df.rename(columns={'index': 'date'})
+        idx = pd.date_range(start=df.index[0], end=df.index[-1], freq='D')
+        df = df.reindex(idx, fill_value=np.nan)
+        df.index.rename('date', inplace=True)
         # forward fill the amount
         df.loc[:, 'amount'] = df.loc[:, 'amount'].fillna(method='ffill')
         # interpolate the price
-        df.set_index('date', inplace=True)
         df.loc[:, 'price'] = df.loc[:, 'price'].interpolate(method='time', limit_direction='both')
-        df.reset_index(inplace=True)
         # calculate the value
         df.loc[:, 'value'] = df.loc[:, 'amount'] * df.loc[:, 'price']
         # make the df smaller
-        df = df.loc[:, ['date', 'value']]
+        df = df.loc[:, ['value']]
         # replace 0 with nan as it makes further manipulations easier
         df = df.replace(0, np.nan)
         # slice the dataframe only keep the important values
@@ -256,18 +242,26 @@ class Asset(models.Model):
         df = pd.merge(trade_buy_df, trade_sell_df, how='outer')
         df = df.merge(transaction_fees_df, how='outer')
         df = df.merge(flow_df, how='outer')
+        # return none if the df is empty
+        if df.empty:
+            return None
+        # set index
+        df.set_index('date', inplace=True)
         # replace nan with 0
         df = df.fillna(0)
         # sort by date so that the cumsum will work properly later on
-        df = df.sort_values(by='date')
+        df.sort_index(inplace=True)
         # calculate the change on each date
         df.loc[:, 'change'] = df.loc[:, 'buy_amount'] - df.loc[:, 'sell_amount'] - df.loc[:, 'fees'] + df.loc[:, 'flow']
         # the amount is the sum of all changes
         df.loc[:, 'amount'] = df.loc[:, 'change'].cumsum()
         # make the df smaller
-        df = df.loc[:, ['date', 'amount']]
+        df = df.loc[:, ['amount']]
         # cast to float otherwise pandas can not reliably use all methods for example interpolate wouldn't work
         df.loc[:, 'amount'] = df.loc[:, 'amount'].apply(pd.to_numeric, downcast='float')
+        # set a standard time for easir calculations and group by date
+        df = change_time_of_date_index_in_df(df, 12)
+        df = df.groupby(df.index, sort=True).tail(1)
         # return the df
         return df
 

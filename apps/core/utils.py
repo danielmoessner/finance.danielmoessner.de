@@ -26,33 +26,28 @@ def remove_all_nans_at_beginning_and_end(df, column):
 def get_merged_value_df_from_queryset(queryset):
     # instantiate a new dataframe
     df = pd.DataFrame(columns=['date', 'value'])
-    # merge the dataframe with all alternatives
+    df.set_index('date', inplace=True)
+    # merge the dataframe with all items
     for item in list(queryset):
         item_df = item.get_value_df()
         if item_df is None:
-            break
+            continue
         item_df.rename(columns={'value': 'value__' + str(item.pk)}, inplace=True)
-        df = df.merge(item_df, how='outer')
+        df = df.merge(item_df, how='outer', sort=True, on='date')
     # return the df
     return df
 
 
-def sum_up_all_value_columns_in_a_dataframe(df):
+def sum_up_columns_in_a_dataframe(df, column='value'):
     # return none if the df is empty
     if df.empty:
         return None
-    # set the date as index and sort the df as preparation for the interpolate method
-    df.set_index('date', inplace=True)
-    df.sort_index(inplace=True)
-    # interpolate the alternative value columns based on the time
-    value_columns = df.columns.str.contains('value__')
-    df.iloc[:, value_columns] = df.iloc[:, value_columns].interpolate(method='time', limit_direction='forward')
+    # get all the value columns as list
+    value_columns = df.columns.str.contains(column + '__')
     # sum the alternative values in the value column
-    df.loc[:, 'value'] = df.iloc[:, value_columns].sum(axis=1)
+    df.loc[:, column] = df.iloc[:, value_columns].sum(axis=1)
     # drop all unnecessary columns
-    df = df.loc[:, ['value']]
-    # set the index as column
-    df.reset_index(inplace=True)
+    df = df.loc[:, [column]]
     # return the new df
     return df
 
@@ -69,6 +64,13 @@ def change_time_of_date_column_in_df(df, hours):
     assert 0 <= hours <= 24
     if not df.empty:
         df.loc[:, 'date'] = df.loc[:, 'date'].dt.normalize() + timedelta(hours=hours)
+    return df
+
+
+def change_time_of_date_index_in_df(df, hours):
+    assert 0 <= hours <= 24
+    if not df.empty:
+        df.index = df.index.normalize() + timedelta(hours=hours)
     return df
 
 

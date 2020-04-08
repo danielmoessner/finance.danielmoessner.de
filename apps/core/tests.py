@@ -26,7 +26,7 @@ def get_test_empty_value_df():
     values = [
     ]
     aware_datetimes = get_aware_datetimes(dates)
-    return pd.DataFrame({'date': aware_datetimes, 'value': values})
+    return pd.DataFrame({'date': aware_datetimes, 'value': values}).set_index('date')
 
 
 def get_test_flow_df():
@@ -45,7 +45,7 @@ def get_test_flow_df():
         -500
     ]
     aware_datetimes = get_aware_datetimes(dates)
-    return pd.DataFrame({'date': aware_datetimes, 'flow': flows})
+    return pd.DataFrame({'date': aware_datetimes, 'flow': flows}).set_index('date')
 
 
 def get_test_empty_flow_df():
@@ -54,7 +54,7 @@ def get_test_empty_flow_df():
     flows = [
     ]
     aware_datetimes = get_aware_datetimes(dates)
-    return pd.DataFrame({'date': aware_datetimes, 'flow': flows})
+    return pd.DataFrame({'date': aware_datetimes, 'flow': flows}).set_index('date')
 
 
 def get_test_late_flow_df():
@@ -67,7 +67,7 @@ def get_test_late_flow_df():
         -500
     ]
     aware_datetimes = get_aware_datetimes(dates)
-    return pd.DataFrame({'date': aware_datetimes, 'flow': flows})
+    return pd.DataFrame({'date': aware_datetimes, 'flow': flows}).set_index('date')
 
 
 def get_test_dates_and_values():
@@ -101,12 +101,12 @@ def get_test_dates_and_values():
 def get_test_value_df():
     dates, values = get_test_dates_and_values()
     aware_datetimes = get_aware_datetimes(dates)
-    return pd.DataFrame({'date': aware_datetimes, 'value': values})
+    return pd.DataFrame({'date': aware_datetimes, 'value': values}).set_index('date')
 
 
 def get_test_datetime_unaware_value_df():
     dates, values = get_test_dates_and_values()
-    return pd.DataFrame({'date': dates, 'value': values})
+    return pd.DataFrame({'date': dates, 'value': values}).set_index('date')
 
 
 def get_test_no_first_row_flow_df():
@@ -125,7 +125,7 @@ def get_test_investment_sold_flow_df():
         -500
     ]
     aware_datetimes = get_aware_datetimes(dates)
-    return pd.DataFrame({'date': aware_datetimes, 'flow': flows})
+    return pd.DataFrame({'date': aware_datetimes, 'flow': flows}).set_index('date')
 
 
 def get_test_investment_sold_value_df():
@@ -148,7 +148,7 @@ def get_test_investment_sold_value_df():
         0,
     ]
     aware_datetimes = get_aware_datetimes(dates)
-    return pd.DataFrame({'date': aware_datetimes, 'value': values})
+    return pd.DataFrame({'date': aware_datetimes, 'value': values}).set_index('date')
 
 
 class ReturnCalculationTestCase(TestCase):
