@@ -7,11 +7,7 @@
 
 {% block main %}
     {% if request and request.user.is_authenticated %}
-        {% if exception %}
-            <p class="mt-4">{{ exception }}</p>
-        {% else %}
-            <p class="mt-4">{{ message }}</p>
-        {% endif %}
+        <p class="mt-4">{{ message }}</p>
     {% else %}
         <div class="row">
             <div class="col-12 col-lg-4 offset-lg-4">
@@ -20,11 +16,7 @@
                         <img class="mr-2" src="{{ static('img/owl.svg') }}" width="42" height="42" alt="Owl">
                         <h1 class="m-0">{{ code }} Error</h1>
                     </div>
-                    {% if exception %}
-                        <p class="mb-4">{{ exception }}</p>
-                    {% else %}
-                        <p class="mb-4">{{ message }}</p>
-                    {% endif %}
+                    <p class="mb-4">{{ message }}</p>
                     <div>
                         {{ buttons.hrefButton(text='Go to the login page', url=url('users:signin'), classes='mb-2') }}
                     </div>

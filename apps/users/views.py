@@ -1,6 +1,5 @@
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.auth.views import LoginView, LogoutView
-from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import logout
 from django.shortcuts import redirect
 from django.contrib import messages
@@ -9,8 +8,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 
 from apps.users.models import StandardUser
-from apps.users.forms import UpdateCryptoStandardUserForm, UpdateGeneralStandardUserForm
-from apps.users.forms import UpdateStandardUserForm, CreateStandardUserForm
+from apps.users.forms import CreateStandardUserForm
 from apps.core.views import TabContextMixin
 
 

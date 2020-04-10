@@ -8,7 +8,7 @@ $(window).on('load', function () {
     $(".modal").appendTo("body")
 });
 
-// bootstrap modal form fetch data aka the form if it is shown
+// bootstrap modal form fetch data (the form) if it is shown
 $(window).on('load', function () {
     $(".modal").on('show.bs.modal', function (event) {
         const url = $(event.target).find("form").attr('action');
@@ -17,7 +17,7 @@ $(window).on('load', function () {
     })
 });
 
-// bootstrap form modal submit the data with an fetch request
+// bootstrap form modal post the data on submit with an fetch request
 $(window).on('load', function () {
     $(".modal form").on("submit", function (event) {
         event.preventDefault();
