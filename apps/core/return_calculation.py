@@ -179,7 +179,7 @@ def get_current_return_df(flow_df, value_df):
 
 def get_current_return(df):
     # return None if something went wrong before
-    if df is None or df.emtpy:
+    if df is None or df.empty:
         return None
     # test that all necessary columns are available
     assert 'current_return' in df.columns
@@ -196,7 +196,7 @@ def get_current_return(df):
 
 def get_invested_capital(df):
     # return None if something went wrong before
-    if df is None or df.emtpy:
+    if df is None or df.empty:
         return None
     # test that all necessary columns are available
     assert 'invested_capital' in df.columns

@@ -178,6 +178,11 @@ class ReturnCalculationTestCase(TestCase):
         current_return = rc.get_current_return(current_return_df)
         self.assertAlmostEqual(current_return, 0.7783650458069062)
 
+    def test_invested_capital_working(self):
+        current_return_df = rc.get_current_return_df(self.flow_df, self.value_df)
+        invested_capital = rc.get_invested_capital(current_return_df)
+        self.assertAlmostEqual(invested_capital, 674.7770953041411)
+
     def test_time_weighted_return_failing_with_no_values(self):
         time_weighted_return_df = rc.get_time_weighted_return_df(self.flow_df, self.empty_value_df)
         time_weighted_return = rc.get_time_weighted_return(time_weighted_return_df)
