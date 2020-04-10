@@ -12,7 +12,7 @@ def _get_merged_flow_and_value_df(flow_df, value_df):
         return None
     # test that the first df has a flow column and the second a value column
     assert 'flow' in flow_df.columns and 'value' in value_df.columns
-    # merge the dfs and sort for date
+    # merge the dfs and sort by date
     df = flow_df.merge(value_df, how='outer', sort=True, on='date')
     # stop calculation if there is not a flow in the first row
     if np.isnan(df.iloc[0, df.columns.get_loc('flow')]):
@@ -28,9 +28,10 @@ def get_value_with_flow_df(flow_df, value_df):
     # get the right df
     df = _get_merged_flow_and_value_df(flow_df, value_df)
     # stop calculations if something went wrong beforehand
-    if df is None:
+    if df is None or df.empty:
         return None
     # fill the nan values next to the flows with values that make sense based on the time
+    # best case scenario: this does nothing; worst case: it fills most of the values
     df.loc[:, 'value'] = df.loc[:, 'value'].interpolate(method='time', limit_direction='both')
     # fill the nan flow with 0
     df.loc[:, 'flow'].fillna(0, inplace=True)
@@ -45,7 +46,7 @@ def get_time_weighted_return_df(flow_df, value_df):
     # get the right df
     df = get_value_with_flow_df(flow_df, value_df)
     # stop calculations if something went wrong beforehand
-    if df is None:
+    if df is None or df.empty:
         return None
     # calculate twr for each sub period
     df.loc[:, 'twr'] = (df.loc[:, 'value'] - df.loc[:, 'flow']) / df.loc[:, 'value'].shift(1)
@@ -57,7 +58,7 @@ def get_time_weighted_return_df(flow_df, value_df):
 
 def get_time_weighted_return(df):
     # return None if something went wrong beforehand
-    if df is None:
+    if df is None or df.empty:
         return None
     # test that all necessary columns are available
     assert 'twr' in df.columns
@@ -80,7 +81,7 @@ def get_internal_rate_of_return_df(flow_df, value_df):
     # get the right df
     df = _get_merged_flow_and_value_df(flow_df, value_df)
     # stop calculations if something went wrong beforehand
-    if df is None:
+    if df is None or df.empty:
         return None
     # move the first value to the flow column if there is no flow
     if np.isnan(df.iloc[0, df.columns.get_loc('flow')]):
@@ -128,7 +129,7 @@ def _get_daily_internal_rate_of_return(df, guess=0.000210874):
 
 def get_internal_rate_of_return(df):
     # stop calculations if something went wrong beforehand
-    if df is None:
+    if df is None or df.empty:
         return None
     # get the daily rate
     internal_rate_of_return = _get_daily_internal_rate_of_return(df)
@@ -150,7 +151,7 @@ def get_current_return_df(flow_df, value_df):
     # get the right df
     df = get_value_with_flow_df(flow_df, value_df)
     # stop calculations if something went wrong beforehand
-    if df is None:
+    if df is None or df.empty:
         return None
     # copy the first value to the flow column if there is no flow
     if df.iloc[0, df.columns.get_loc('flow')] == 0:
@@ -178,7 +179,7 @@ def get_current_return_df(flow_df, value_df):
 
 def get_current_return(df):
     # return None if something went wrong before
-    if df is None:
+    if df is None or df.emtpy:
         return None
     # test that all necessary columns are available
     assert 'current_return' in df.columns
@@ -191,3 +192,18 @@ def get_current_return(df):
         current_return = None
     # return the current return
     return current_return
+
+
+def get_invested_capital(df):
+    # return None if something went wrong before
+    if df is None or df.emtpy:
+        return None
+    # test that all necessary columns are available
+    assert 'invested_capital' in df.columns
+    # invested capital is always the last value
+    invested_capital = df.iloc[-1, df.columns.get_loc('invested_capital')]
+    # safety stuff to make sure the db can save it
+    if abs(invested_capital) == np.inf or np.isnan(invested_capital):
+        invested_capital = None
+    # return the invested capital
+    return invested_capital

@@ -1,16 +1,18 @@
+from django.db.models.functions import TruncDate
+from django.db.models import Q, Count
 from django.utils import timezone
 from django.urls import reverse_lazy
 from django.test import TestCase
 from django.test import Client
 
-from apps.crypto.models import Asset, Depot, Account
+from apps.crypto.models import Asset, Depot, Account, Price, Flow, Trade, Transaction
 from apps.users.models import StandardUser
-from apps.crypto.forms import DepotForm, FlowForm, TransactionForm, TradeForm
+from apps.crypto.forms import FlowForm, TransactionForm, TradeForm
 
 from datetime import timedelta
 
 
-class ViewsTestCase(TestCase):
+class StandardSetUpTestCase(TestCase):
     def setUp(self):
         self.user = StandardUser.objects.create_user(username="Dummy2")
         self.user.set_password("test")
@@ -18,35 +20,6 @@ class ViewsTestCase(TestCase):
         self.client = Client()
         self.client.login(username="Dummy2", password="test")
         self.depot = self.user.create_random_crypto_data()
-
-    def test_index_view(self):
-        url = reverse_lazy("crypto:index", args=[self.depot.pk])
-        for tab in ['', 'stats', 'assets', 'accounts', 'trades', 'transactions', 'flows', 'charts']:
-            response = self.client.get('{}?tab={}'.format(url, tab))
-            self.assertEqual(response.status_code, 200)
-
-    def test_account_view(self):
-        url = reverse_lazy("crypto:account", args=[self.depot.accounts.first().pk])
-        for tab in ['', 'stats', 'assets', 'trades', 'transactions', 'flows']:
-            response = self.client.get('{}?tab={}'.format(url, tab))
-            self.assertEqual(response.status_code, 200)
-
-    def test_asset_view(self):
-        url = reverse_lazy("crypto:asset", args=[self.depot.assets.first().pk])
-        for tab in ['', 'stats', 'prices', 'trades', 'transactions']:
-            response = self.client.get('{}?tab={}'.format(url, tab))
-            self.assertEqual(response.status_code, 200)
-
-
-class FormValidationTestCase(TestCase):
-    def setUp(self):
-        self.user = StandardUser.objects.create_user(username="Dummy")
-        self.user.set_password("test")
-        self.user.save()
-        self.client = Client()
-        self.client.login(username="Dummy", password="test")
-        self.depot = self.user.create_random_crypto_data()
-        self.account = Account.objects.create(depot=self.depot, name='Test Acc')
 
     def get_depot(self):
         return Depot.objects.get(pk=self.depot.pk)
@@ -71,6 +44,103 @@ class FormValidationTestCase(TestCase):
         flow = FlowForm(self.depot, {'date': date, 'flow': flow, 'account': account})
         flow = flow.save()
         return flow
+
+
+class ViewsTestCase(StandardSetUpTestCase):
+    def test_index_view(self):
+        url = reverse_lazy("crypto:index", args=[self.depot.pk])
+        for tab in ['', 'stats', 'assets', 'accounts', 'trades', 'transactions', 'flows', 'charts']:
+            response = self.client.get('{}?tab={}'.format(url, tab))
+            self.assertEqual(response.status_code, 200)
+
+    def test_account_view(self):
+        url = reverse_lazy("crypto:account", args=[self.depot.accounts.first().pk])
+        for tab in ['', 'stats', 'assets', 'trades', 'transactions', 'flows']:
+            response = self.client.get('{}?tab={}'.format(url, tab))
+            self.assertEqual(response.status_code, 200)
+
+    def test_asset_view(self):
+        url = reverse_lazy("crypto:asset", args=[self.depot.assets.first().pk])
+        for tab in ['', 'stats', 'prices', 'trades', 'transactions']:
+            response = self.client.get('{}?tab={}'.format(url, tab))
+            self.assertEqual(response.status_code, 200)
+
+
+class FlowValueAmountTestCase(StandardSetUpTestCase):
+    def setUp(self):
+        self.user = StandardUser.objects.create_user(username="Dummy3")
+        self.user.set_password("test")
+        self.user.save()
+        self.client = Client()
+        self.client.login(username="Dummy3", password="test")
+        self.depot = self.user.create_random_crypto_data()
+
+    def test_price_df_working(self):
+        for asset in Asset.objects.filter(depot=self.depot):
+            asset.get_price_df()
+
+    def test_price_df_is_sorted(self):
+        btc = Asset.objects.get(symbol='BTC', depot=self.depot)
+        Price(symbol='BTC', price=1000, date=(timezone.now() - timedelta(days=10))).save()
+        Price(symbol='BTC', price=2000, date=(timezone.now() - timedelta(days=20))).save()
+        df = btc.get_price_df()
+        assert df.loc[:, 'price'].tolist() == [2000, 1000]
+
+    def test_amount_df_working(self):
+        for asset in Asset.objects.filter(depot=self.depot):
+            asset.get_amount_df()
+
+    def test_amount_df_is_sorted(self):
+        eur = Asset.objects.get(symbol='EUR', depot=self.depot)
+        Flow(asset=eur,
+             account=self.depot.accounts.first(),
+             date=(timezone.now() - timedelta(days=100)),
+             flow=333).save()
+        df = eur.get_amount_df()
+        assert df.loc[:, 'amount'].tolist()[0] == 333
+
+    def test_value_df_working(self):
+        for asset in Asset.objects.filter(depot=self.depot):
+            asset.get_value_df()
+
+    def test_value_df_sorted(self):
+        date = timezone.now()
+        ltc = Asset.objects.get(depot=self.depot, symbol='LTC')
+        Price.objects.create(symbol='LTC', date=(date - timedelta(days=300)), price=100)
+        Price.objects.create(symbol='LTC', date=date, price=100)
+        df = ltc.get_value_df()
+        assert df.index[-1] == date.replace(hour=12, minute=0, second=0, microsecond=0)
+
+    def test_price_df_length_equal_to_prices(self):
+        btc = Asset.objects.get(depot=self.depot, symbol='BTC')
+        Price(symbol='BTC', price=1000, date=(timezone.now() - timedelta(days=10))).save()
+        Price(symbol='BTC', price=2000, date=(timezone.now() - timedelta(days=20))).save()
+        assert len(btc.get_price_df()) == Price.objects.filter(symbol='BTC').count()
+
+    def test_amount_df_length_equal_to_trades_transactions_and_flows(self):
+        btc = Asset.objects.get(depot=self.depot, symbol='BTC')
+        eur = Asset.objects.get(depot=self.depot, symbol='EUR')
+        ltc = Asset.objects.get(depot=self.depot, symbol='LTC')
+        Price(symbol='BTC', price=1000, date=(timezone.now() - timedelta(days=10))).save()
+
+        def right_length(asset):
+            return (
+                Trade.objects.filter(Q(buy_asset=asset) | Q(sell_asset=asset))
+                .order_by().annotate(date2=TruncDate('date')).values('date2').annotate(x=Count('*')).count() +
+                Transaction.objects.filter(asset=asset)
+                .order_by().annotate(date2=TruncDate('date')).values('date2').annotate(x=Count('*')).count() +
+                Flow.objects.filter(asset=asset)
+                .order_by().annotate(date2=TruncDate('date')).values('date2').annotate(x=Count('*')).count()
+            )
+        assert len(btc.get_amount_df()) == right_length(btc)
+        assert len(eur.get_amount_df()) == right_length(eur)
+        assert len(ltc.get_amount_df()) == right_length(ltc)
+
+
+class FormValidationTestCase(StandardSetUpTestCase):
+    def setUp(self):
+        super().setUp()
+        self.account = Account.objects.create(depot=self.depot, name='Test Acc')
 
     def test_flow_form_not_allowing_more_withdraw_than_possible(self):
         # test you can not withdraw if there is no asset

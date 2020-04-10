@@ -5,8 +5,7 @@ from django.db import models
 from apps.users.models import StandardUser
 from apps.core.models import Timespan as CoreTimespan, Account as CoreAccount, Depot as CoreDepot
 from apps.core.utils import sum_up_columns_in_a_dataframe, get_merged_value_df_from_queryset
-from apps.core.utils import change_time_of_date_column_in_df, remove_all_nans_at_beginning_and_end
-from apps.core.utils import change_time_of_date_index_in_df
+from apps.core.utils import remove_all_nans_at_beginning_and_end, change_time_of_date_index_in_df
 import apps.core.return_calculation as rc
 
 from datetime import timedelta
@@ -70,7 +69,7 @@ class Depot(CoreDepot):
     def get_invested_capital(self):
         if self.invested_capital is None:
             df = rc.get_current_return_df(self.get_flow_df(), self.get_value_df())
-            self.invested_capital = df.iloc[-1, df.columns.get_loc('invested_capital')]
+            self.invested_capital = rc.get_invested_capital(df)
             self.save()
         return self.invested_capital
 
@@ -180,6 +179,7 @@ class Asset(models.Model):
         df = pd.DataFrame(data=list(Price.objects.filter(symbol=self.symbol).values('date', 'price')),
                           columns=['date', 'price'])
         df.set_index('date', inplace=True)
+        # print(df)
         # return none if there is nothing to be calculated
         if df.empty:
             return None
@@ -189,12 +189,6 @@ class Asset(models.Model):
         df = change_time_of_date_index_in_df(df, 12)
         # drop duplicates as asfreq will throw an error if duplicates exist and sort
         df = df.groupby(df.index, sort=True).tail(1)
-        # insert missing dates
-        price_series = df.loc[:, 'price'].asfreq('D')
-        # add missing prices
-        price_series = price_series.interpolate(method='time')
-        # make a df from the series
-        df = price_series.to_frame()
         # return the df
         return df
 
@@ -239,9 +233,9 @@ class Asset(models.Model):
         flow_df = pd.DataFrame(data=list(Flow.objects.filter(asset=self).values('date', 'flow')),
                                columns=['date', 'flow'])
         # merge everything into a big dataframe
-        df = pd.merge(trade_buy_df, trade_sell_df, how='outer')
-        df = df.merge(transaction_fees_df, how='outer')
-        df = df.merge(flow_df, how='outer')
+        df = pd.merge(trade_buy_df, trade_sell_df, how='outer', on='date', sort=True)
+        df = df.merge(transaction_fees_df, how='outer', on='date', sort=True)
+        df = df.merge(flow_df, how='outer', on='date', sort=True)
         # return none if the df is empty
         if df.empty:
             return None
@@ -249,8 +243,6 @@ class Asset(models.Model):
         df.set_index('date', inplace=True)
         # replace nan with 0
         df = df.fillna(0)
-        # sort by date so that the cumsum will work properly later on
-        df.sort_index(inplace=True)
         # calculate the change on each date
         df.loc[:, 'change'] = df.loc[:, 'buy_amount'] - df.loc[:, 'sell_amount'] - df.loc[:, 'fees'] + df.loc[:, 'flow']
         # the amount is the sum of all changes
@@ -403,7 +395,7 @@ class Trade(models.Model):
         buy_amount = str(self.buy_amount)
         sell_asset = str(self.sell_asset)
         sell_amount = str(self.sell_amount)
-        return "{} {} {} {} {} {}".format(date, account, buy_amount, buy_asset, sell_amount, sell_asset)
+        return "{} {} {} {} {} {}".format(self.get_date(), account, buy_amount, buy_asset, sell_amount, sell_asset)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
@@ -457,7 +449,9 @@ class Price(models.Model):
         return "{} {} {}".format(self.symbol, self.get_date(), self.price)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        if Price.objects.filter(symbol=self.symbol, date__gte=(self.date - timedelta(hours=23))).exists():
+        if Price.objects.filter(symbol=self.symbol,
+                                date__gte=(self.date - timedelta(hours=23)),
+                                date__lte=self.date).exists():
             return
         super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
         [asset.depot.reset_all() for asset in Asset.objects.filter(symbol=self.symbol)]

@@ -60,13 +60,6 @@ def turn_dict_of_dicts_into_list_of_dicts(dict_of_dicts, name_of_key):
     return list_of_dicts
 
 
-def change_time_of_date_column_in_df(df, hours):
-    assert 0 <= hours <= 24
-    if not df.empty:
-        df.loc[:, 'date'] = df.loc[:, 'date'].dt.normalize() + timedelta(hours=hours)
-    return df
-
-
 def change_time_of_date_index_in_df(df, hours):
     assert 0 <= hours <= 24
     if not df.empty:
