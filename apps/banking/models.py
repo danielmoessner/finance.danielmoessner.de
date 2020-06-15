@@ -99,6 +99,10 @@ class Account(CoreAccount):
     # query optimzation
     balance = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
 
+    def delete(self, using=None, keep_parents=False):
+        self.depot.set_balances_to_none()
+        return super().delete(using=using, keep_parents=keep_parents)
+
     # getters
     def get_balance(self):
         if self.balance is None:
@@ -136,6 +140,10 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
+    def delete(self, using=None, keep_parents=False):
+        self.depot.set_balances_to_none()
+        return super().delete(using=using, keep_parents=keep_parents)
 
     # getters
     def get_balance(self):

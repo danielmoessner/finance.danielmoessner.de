@@ -60,7 +60,7 @@ function js(entries, filename, build) {
         .pipe(source(filename))
         .pipe(buffer());
 
-    if (!build) {
+    if (true) {  // instead of !build
         b3 = b2
             .pipe(sourcemaps.init({loadMaps: true}))
             .pipe(sourcemaps.write("./"))
