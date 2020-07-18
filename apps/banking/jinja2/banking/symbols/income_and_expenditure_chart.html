@@ -2,9 +2,10 @@
 
 <div class="w-100 rounded bg-dark mb-5" id="incomeAndExpenditureChart" style="height: 600px;"></div>
 
-<script type="module">
+<script src="{{ static('js/charts.js') }}"></script>
+<script>
 
-    import * as _ from "/static/js/charts.js";
+    {#import * as _ from "/static/js/charts.js";#}
 
     am4core.ready(function () {
 
