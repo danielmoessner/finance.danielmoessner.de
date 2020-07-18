@@ -17,6 +17,7 @@
             {{ bg.hrefButton("Banking", request.path + '?tab=banking', active=(tab=='banking')) }}
             {{ bg.hrefButton("Crypto", request.path + '?tab=crypto', active=(tab=='crypto')) }}
             {{ bg.hrefButton("Alternative", request.path + '?tab=alternative', active=(tab=='alternative')) }}
+            {{ bg.hrefButton('Stocks', request.path + '?tab=stocks', active=(tab=='stocks')) }}
         </div>
     </div>
 
@@ -146,6 +147,39 @@
                         {{ mg.djangoModal("Delete Depot", "deleteAlternativeDepot", url("alternative:delete_depot")) }}
                         {{ bg.modalButton("Delete Depot", "#deleteAlternativeDepot") }}
                         {{ bg.hrefButton("Generate example depot", url("users:init_alternative", args=[object.pk])) }}
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    {% endif %}
+
+    {% if tab=='stocks' %}
+        <table class="table table-dark table-responsive-md rounded mb-5">
+            <thead>
+            <tr>
+                <th class="border-0" scope="col">Depot</th>
+                <th class="border-0" scope="col">Action</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for depot in stock_depots %}
+                <tr>
+                    <td>{{ depot.name }}</td>
+                    <td>
+                        <div class="d-flex">
+
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+
+            <tr>
+                <td colspan="2">
+                    <div class="d-flex">
+                        {{ mg.djangoModal("Add Depot", "addStocksDepot", url("stocks:add_depot")) }}
+                        {{ bg.modalButton("Add Depot", "#addStocksDepot") }}
                     </div>
                 </td>
             </tr>

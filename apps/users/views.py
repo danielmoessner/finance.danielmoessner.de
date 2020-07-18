@@ -58,6 +58,7 @@ class IndexView(UserPassesTestMixin, TabContextMixin, generic.DetailView):
         context["banking_depots"] = self.object.banking_depots.all()
         context["crypto_depots"] = self.object.crypto_depots.all()
         context["alternative_depots"] = self.object.alternative_depots.all()
+        context['stock_depots'] = self.object.stock_depots.all()
         return context
 
 

@@ -26,6 +26,7 @@ urlpatterns = [
     path('banking/', include('apps.banking.urls')),
     path('crypto/', include('apps.crypto.urls')),
     path('alternative/', include('apps.alternative.urls')),
+    path('stocks/', include('apps.stocks.urls'))
 ]
 
 if settings.DEBUG:
