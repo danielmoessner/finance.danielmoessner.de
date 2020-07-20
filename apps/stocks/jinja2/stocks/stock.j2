@@ -1,1 +1,22 @@
-stock
+{% extends "layout/lm.njk" %}
+
+{% set headingCategory="Stock" %}
+{% set headingHeading=stock.name %}
+{% set title="Stock " + stock.name + " | Stocks" %}
+
+{% block main %}
+
+    {% import "modules/button.njk" as bg %}
+    {% import "modules/modal.njk" as mg %}
+
+    <div class="d-flex justify-content-center mt-2 mb-5">
+        <div class="btn-group" role="group" aria-label="Console">
+            {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
+            {{ bg.hrefButton("Prices", request.path + '?tab=prices', active=(tab=='prices')) }}
+            {{ bg.hrefButton("Trades", request.path + '?tab=trades', active=(tab=='trades')) }}
+        </div>
+    </div>
+
+    {% include 'stocks/symbols/trades.j2' %}
+
+{% endblock %}

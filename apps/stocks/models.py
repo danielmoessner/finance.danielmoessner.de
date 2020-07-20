@@ -15,6 +15,10 @@ class Depot(models.Model):
     def __str__(self):
         return '{}'.format(self.name)
 
+    # getters
+    def get_stats(self):
+        return {'balance': 0}
+
 
 class Bank(models.Model):
     name = models.CharField(max_length=200)
@@ -27,10 +31,14 @@ class Bank(models.Model):
     def __str__(self):
         return '{}'.format(self.name)
 
+    # getters
+    def get_stats(self):
+        return {'balance': 0}
+
 
 class Stock(models.Model):
-    bank = models.ForeignKey(Bank, on_delete=models.CASCADE, related_name='stocks')
-    date = models.DateTimeField()
+    name = models.CharField(max_length=50)
+    depot = models.ForeignKey(Depot, on_delete=models.CASCADE, related_name='stocks')
     ticker = models.CharField(max_length=10)
 
     class Meta:
@@ -39,6 +47,13 @@ class Stock(models.Model):
 
     def __str__(self):
         return '{}'.format(self.ticker)
+
+    # getters
+    def get_stats(self):
+        return {
+            'price': 0,
+            'value': 0
+        }
 
 
 class Flow(models.Model):

@@ -1,1 +1,107 @@
-index
+{% extends "layout/lm.njk" %}
+
+{% set headingCategory="Dashboard" %}
+{% set headingHeading="Stocks" %}
+{% set title="Stocks" %}
+
+{% block main %}
+
+    {% import "modules/button.njk" as bg %}
+    {% import "modules/modal.njk" as mg %}
+
+    <div class="d-flex justify-content-center mt-2 mb-5">
+        <div class="btn-group" role="group" aria-label="Console">
+            {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
+            {{ bg.hrefButton("Banks", request.path + '?tab=banks', active=(tab=='banks')) }}
+            {{ bg.hrefButton("Stocks", request.path + '?tab=stocks', active=(tab=='stocks')) }}
+            {{ bg.hrefButton("Charts", request.path + '?tab=charts', active=(tab=='charts')) }}
+        </div>
+    </div>
+
+    {% include 'modules/stats.j2' %}
+
+    {% if tab=='banks' %}
+        <table class="table rounded table-responsive-md table-dark mb-5">
+            <thead>
+            <tr>
+                <th class="border-0" scope="col">Bank</th>
+                <th class="border-0" scope="col">Balance</th>
+                <th class="border-0" scope="col">Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for bank in banks %}
+                <tr>
+                    <td>{{ bank.name }}</td>
+                    <td>{{ bank.get_stats()['balance'] }}</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            {{ mg.djangoModal("Edit Bank", "editBank"+bank.pk|string, url("stocks:edit_bank", args=[bank.pk])) }}
+                            {{ bg.modalButton("Edit", "#editBank"+bank.pk|string) }}
+                            {{ bg.hrefButton("Open", url("stocks:banks", args=[bank.pk])) }}
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            <tr>
+                <td colspan="3">
+                    <div class="d-flex">
+                        {{ mg.djangoModal("Add Bank", "addBank", url("stocks:add_bank")) }}
+                        {{ bg.modalButton("Add Bank", "#addBank") }}
+                        {{ mg.djangoModal("Delete Bank", "deleteBank", url("stocks:delete_bank")) }}
+                        {{ bg.modalButton("Delete Bank", "#deleteBank") }}
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    {% endif %}
+
+    {% if tab=='stocks' %}
+        <table class="table rounded table-responsive-md table-dark mb-5">
+            <thead>
+            <tr>
+                <th class="border-0" scope="col">Name</th>
+                <th class="border-0" scope="col">Ticker</th>
+                <th class="border-0" scope="col">Price</th>
+                <th class="border-0" scope="col">Value</th>
+                <th class="border-0" scope="col">Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for stock in stocks %}
+                <tr>
+                    <td>{{ stock.name }}</td>
+                    <td>{{ stock.ticker }}</td>
+                    {% with stats=stock.get_stats() %}
+                        <td>{{ stats['price'] }}</td>
+                        <td>{{ stats['value'] }}</td>
+                    {% endwith %}
+                    <td>
+                        <div class="d-flex align-items-center">
+                            {{ mg.djangoModal("Edit Stock", "editStock"+stock.pk|string, url("stocks:edit_stock", args=[stock.pk])) }}
+                            {{ bg.modalButton("Edit", "#editStock"+stock.pk|string) }}
+                            {{ bg.hrefButton("Open", url("stocks:stocks", args=[stock.pk])) }}
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            <tr>
+                <td colspan="5">
+                    <div class="d-flex">
+                        {{ mg.djangoModal("Add Stock", "addStock", url("stocks:add_stock")) }}
+                        {{ bg.modalButton("Add Stock", "#addStock") }}
+                        {{ mg.djangoModal("Delete Stock", "deleteStock", url("stocks:delete_stock")) }}
+                        {{ bg.modalButton("Delete Stock", "#deleteStock") }}
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    {% endif %}
+
+    {% if tab=="charts" %}
+        charts todo
+    {% endif %}
+
+{% endblock %}

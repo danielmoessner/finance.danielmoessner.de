@@ -1,13 +1,14 @@
-import json
-
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.views import generic
-from .models import Depot, Stock, Bank
-from apps.core.views import CustomGetFormUserMixin, AjaxResponseMixin
-from .forms import DepotForm, DepotActiveForm, DepotSelectForm
+from .models import Depot, Stock, Bank, Flow, Trade
+from apps.core.views import CustomGetFormUserMixin, AjaxResponseMixin, TabContextMixin, \
+    GetFormWithDepotAndInitialDataMixin, CustomAjaxDeleteMixin
+from .forms import DepotForm, DepotActiveForm, DepotSelectForm, BankForm, BankSelectForm, StockSelectForm, StockForm, \
+    FlowForm, TradeForm
+import json
 
 
 ###
@@ -29,12 +30,19 @@ class GetDepotMixin:
 ###
 # Depot: Detail, Create, Edit, Delete, SetActive
 ###
-class IndexView(generic.DetailView):
+class IndexView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
     template_name = 'stocks/index.j2'
     model = Depot
 
     def get_queryset(self):
         return self.request.user.stock_depots.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['stats'] = self.object.get_stats()
+        context['banks'] = self.object.banks.all()
+        context['stocks'] = self.object.stocks.all()
+        return context
 
 
 class CreateDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.CreateView):
@@ -76,28 +84,121 @@ class SetActiveDepotView(LoginRequiredMixin, generic.View):
 
 
 ###
-# Stock: Detail
+# Stock: Detail, Add, Edit, Delete
 ###
-class StockView(generic.DetailView):
+class StockView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
     template_name = 'stocks/stock.j2'
     model = Stock
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['trades'] = self.object.trades.all()
+        return context
+
+
+class AddStockView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.CreateView):
+    form_class = StockForm
+    model = Stock
+    template_name = "modules/form_snippet.njk"
+
+
+class EditStockView(CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
+    model = Stock
+    form_class = StockForm
+    template_name = "modules/form_snippet.njk"
+
+    def get_queryset(self):
+        return Stock.objects.filter(depot__in=self.request.user.stock_depots.all())
+
+
+class DeleteStockView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.FormView):
+    model = Stock
+    template_name = "modules/form_snippet.njk"
+    form_class = StockSelectForm
+
+    def form_valid(self, form):
+        stock = form.cleaned_data["stock"]
+        stock.delete()
+        return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
+
 
 ###
-# Bank: Detail
+# Bank: Detail, Add, Edit, Delete
 ###
-class BankView(generic.DetailView):
+class BankView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
     template_name = 'stocks/bank.j2'
     model = Bank
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['flows'] = Flow.objects.filter(bank=self.object)
+        context['trades'] = Trade.objects.filter(bank=self.object)
+        return context
+
+
+class AddBankView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.CreateView):
+    form_class = BankForm
+    model = Bank
+    template_name = "modules/form_snippet.njk"
+
+
+class EditBankView(CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
+    model = Bank
+    form_class = BankForm
+    template_name = "modules/form_snippet.njk"
+
+    def get_queryset(self):
+        return Bank.objects.filter(depot__in=self.request.user.stock_depots.all())
+
+
+class DeleteBankView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.FormView):
+    model = Bank
+    template_name = "modules/form_snippet.njk"
+    form_class = BankSelectForm
+
+    def form_valid(self, form):
+        bank = form.cleaned_data["bank"]
+        bank.delete()
+        return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
+
 
 ###
-# Flow:
+# Flow: Add, Edit, Delete
 ###
-pass
+class AddFlowView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAndInitialDataMixin, AjaxResponseMixin,
+                  generic.CreateView):
+    model = Flow
+    form_class = FlowForm
+    template_name = "modules/form_snippet.njk"
+
+
+class EditFlowView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
+    model = Flow
+    form_class = FlowForm
+    template_name = "modules/form_snippet.njk"
+
+
+class DeleteFlowView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
+    model = Flow
+    template_name = "modules/delete_snippet.njk"
 
 
 ###
-# Trade:
+# Trade: Add, Edit, Delete
 ###
-pass
+class AddTradeView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAndInitialDataMixin, AjaxResponseMixin,
+                   generic.CreateView):
+    model = Trade
+    form_class = TradeForm
+    template_name = "modules/form_snippet.njk"
+
+
+class EditTradeView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
+    model = Trade
+    form_class = TradeForm
+    template_name = "modules/form_snippet.njk"
+
+
+class DeleteTradeView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
+    model = Trade
+    template_name = "modules/delete_snippet.njk"
