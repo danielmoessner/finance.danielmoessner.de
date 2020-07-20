@@ -35,6 +35,13 @@
                         </li>
                     {% endif %}
                 {% endwith %}
+                {% with pk=request.user.get_active_stocks_depot_pk() %}
+                    {% if pk != None %}
+                        <li class="nav-item">
+                            {{ buttons.navigationButton("Stocks", url('stocks:index', args=[pk]), active=("stocks" in request.path)) }}
+                        </li>
+                    {% endif %}
+                {% endwith %}
                 <li class="nav-item">
                     <p class="font-weight-bold m-0 mb-2 mt-3">User</p>
                 </li>

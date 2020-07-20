@@ -7,9 +7,9 @@ app_name = "stocks"
 urlpatterns = [
     # # depot
     path("depots/add/", views.CreateDepotView.as_view(), name="add_depot"),
-    # path("depots/delete/", formviews.DeleteDepotView.as_view(), name="delete_depot"),
-    # path("depots/<int:pk>/edit/", formviews.EditDepotView.as_view(), name="edit_depot"),
-    # path("depots/<int:pk>/set-active/", formviews.SetActiveDepotView.as_view(), name="set_depot"),
+    path("depots/delete/", views.DeleteDepotView.as_view(), name="delete_depot"),
+    path("depots/<int:pk>/edit/", views.EditDepotView.as_view(), name="edit_depot"),
+    path("depots/<int:pk>/set-active/", views.SetActiveDepotView.as_view(), name="set_depot"),
     # path("depots/<int:pk>/reset/", views.reset_depot_stats, name="reset_stats"),
     #
     # # account

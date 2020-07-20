@@ -162,24 +162,26 @@
                 <th class="border-0" scope="col">Action</th>
             </tr>
             </thead>
-
             <tbody>
             {% for depot in stock_depots %}
                 <tr>
                     <td>{{ depot.name }}</td>
                     <td>
                         <div class="d-flex">
-
+                            {{ bg.hrefButton(text="Set Active", url=url("stocks:set_depot", args=[depot.pk]), disabled=(depot.is_active)) }}
+                            {{ mg.djangoModal("Edit Depot", "editStocksDepot"+depot.pk|string, url("stocks:edit_depot", args=[depot.pk])) }}
+                            {{ bg.modalButton("Edit", "#editStocksDepot"+depot.pk|string) }}
                         </div>
                     </td>
                 </tr>
             {% endfor %}
-
             <tr>
                 <td colspan="2">
                     <div class="d-flex">
                         {{ mg.djangoModal("Add Depot", "addStocksDepot", url("stocks:add_depot")) }}
                         {{ bg.modalButton("Add Depot", "#addStocksDepot") }}
+                        {{ mg.djangoModal("Delete Depot", "deleteStocksDepot", url("stocks:delete_depot")) }}
+                        {{ bg.modalButton("Delete Depot", "#deleteStocksDepot") }}
                     </div>
                 </td>
             </tr>

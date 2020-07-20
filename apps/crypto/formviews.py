@@ -51,7 +51,6 @@ class DeleteDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMi
         user = depot.user
         depot.delete()
         if user.crypto_depots.count() <= 0:
-            user.crypto_is_active = False
             user.save()
         return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
 
