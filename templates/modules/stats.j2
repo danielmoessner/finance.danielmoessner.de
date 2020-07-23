@@ -5,7 +5,11 @@
                 <div class="card text-white bg-dark mb-1">
                     <div class="card-body">
                         <div class="card-title h5">{{ key }}</div>
-                        <p class="card-text">{{ value }}</p>
+                        {% if value is float %}
+                            <p class="card-text">{{ "%.2f"|format(value) }}</p>
+                        {% else %}
+                            <p class="card-text">{{ value }}</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>

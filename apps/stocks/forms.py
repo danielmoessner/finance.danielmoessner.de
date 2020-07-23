@@ -116,13 +116,25 @@ class FlowForm(forms.ModelForm):
         self.fields['date'].initial = timezone.now()
 
     def clean(self):
+        cleaned_data = super().clean()
         date = self.cleaned_data['date']
         flow = self.cleaned_data['flow']
         bank = self.cleaned_data['bank']
-        # todo
-        # check that enough asset is available if money is withdrawn
-        # if flow < 0 and bank.get_money_amoun_before_date(date) < abs(flow):
-        #     raise forms.ValidationError('There is not enough money on this account to support this flow.')
+        # check that there doesn't already exist a flow or trade on this particular date
+        if bank.flows.filter(date=date).exists() or bank.trades.filter(date=date).exists():
+            raise forms.ValidationError(
+                'There exists already a flow or a trade on this particular date. Choose a different date.')
+        # check that enough money is available if money is withdrawn
+        if flow < 0:
+            bank_balance = bank.get_balance_on_date(date)
+            if (bank_balance + flow) < 0:
+                msg = (
+                    'There is not enough money on this bank to support this flow. '
+                    'There are only {} € available.'.format(bank_balance)
+                )
+                raise forms.ValidationError(msg)
+        # return
+        return self.cleaned_data
 
 
 ###
@@ -150,22 +162,27 @@ class TradeForm(forms.ModelForm):
         self.fields["date"].initial = timezone.now()
 
     def clean(self):
+        cleaned_data = super().clean()
         bank = self.cleaned_data['bank']
         stock = self.cleaned_data['stock']
         buy_or_sell = self.cleaned_data['buy_or_sell']
         money_amount = self.cleaned_data['money_amount']
         stock_amount = self.cleaned_data['stock_amount']
         date = self.cleaned_data['date']
-        # todo
-        # check that there is not already a trade or flow on this exact date and bank
-        # if Transaction.objects.filter(Q(date=date), Q(from_account=account) | Q(to_account=account)).exists():
-        #     raise forms.ValidationError('There is already a transaction at this date and account.')
-        # if Flow.objects.filter(date=date, account=account).exists():
-        #     raise forms.ValidationError('There is already a flow at this date and account')
+        if bank.flows.filter(date=date).exists() or bank.trades.filter(date=date).exists():
+            raise forms.ValidationError(
+                'There exists already a flow or a trade on this particular date. Choose a different date.')
         # check that buy and sell amount is positive because a trade doesnt make sense otherwise
         if money_amount < 0 or stock_amount < 0:
             raise forms.ValidationError('Sell and buy amount must be positive.')
-        # todo
-        # check that enough asset is available of the asset that is sold
-        # if account.get_amount_asset_before_date(sell_asset, date) < sell_amount:
-        #     raise forms.ValidationError('There is not enough asset on this account to support this trade.')
+        # check that enough money is available to buy the stocks
+        if buy_or_sell == 'BUY':
+            bank_balance = bank.get_balance_on_date(date)
+            msg = (
+                'There is not enough money on this bank to support this trade. '
+                'This particular bank has {} € available.'.format(bank_balance)
+            )
+            if bank_balance < 0:
+                raise forms.ValidationError(msg)
+        # return
+        return self.cleaned_data

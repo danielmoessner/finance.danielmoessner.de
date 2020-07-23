@@ -26,6 +26,7 @@
             <tr>
                 <th class="border-0" scope="col">Bank</th>
                 <th class="border-0" scope="col">Balance</th>
+                <th class="border-0" scope="col">Value</th>
                 <th class="border-0" scope="col">Action</th>
             </tr>
             </thead>
@@ -33,7 +34,8 @@
             {% for bank in banks %}
                 <tr>
                     <td>{{ bank.name }}</td>
-                    <td>{{ bank.get_stats()['balance'] }}</td>
+                    <td>{{ "%.2f"|format(bank.get_stats()['Balance']) }}</td>
+                    <td>{{ "%.2f"|format(bank.get_stats()['Value']) }}</td>
                     <td>
                         <div class="d-flex align-items-center">
                             {{ mg.djangoModal("Edit Bank", "editBank"+bank.pk|string, url("stocks:edit_bank", args=[bank.pk])) }}
@@ -44,7 +46,7 @@
                 </tr>
             {% endfor %}
             <tr>
-                <td colspan="3">
+                <td colspan="4">
                     <div class="d-flex">
                         {{ mg.djangoModal("Add Bank", "addBank", url("stocks:add_bank")) }}
                         {{ bg.modalButton("Add Bank", "#addBank") }}
@@ -64,6 +66,7 @@
                 <th class="border-0" scope="col">Name</th>
                 <th class="border-0" scope="col">Ticker</th>
                 <th class="border-0" scope="col">Price</th>
+                <th class="border-0" scope="col">Amount</th>
                 <th class="border-0" scope="col">Value</th>
                 <th class="border-0" scope="col">Action</th>
             </tr>
@@ -74,8 +77,9 @@
                     <td>{{ stock.name }}</td>
                     <td>{{ stock.ticker }}</td>
                     {% with stats=stock.get_stats() %}
-                        <td>{{ stats['price'] }}</td>
-                        <td>{{ stats['value'] }}</td>
+                        <td>{{ "%.2f"|format(stats['Price']) }}</td>
+                        <td>{{ stats['Amount'] }}</td>
+                        <td>{{ "%.2f"|format(stats['Value']) }}</td>
                     {% endwith %}
                     <td>
                         <div class="d-flex align-items-center">
@@ -87,7 +91,7 @@
                 </tr>
             {% endfor %}
             <tr>
-                <td colspan="5">
+                <td colspan="6">
                     <div class="d-flex">
                         {{ mg.djangoModal("Add Stock", "addStock", url("stocks:add_stock")) }}
                         {{ bg.modalButton("Add Stock", "#addStock") }}
