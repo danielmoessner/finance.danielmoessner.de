@@ -1,6 +1,13 @@
+import json
+import urllib
+from datetime import datetime
+from decimal import Decimal
+
+import requests
 from django import forms
 from django.utils import timezone
-from apps.stocks.models import Depot, Bank, Trade, Stock, Flow
+from apps.stocks.models import Depot, Bank, Trade, Stock, Flow, Price
+from django.conf import settings
 
 
 ###
@@ -73,11 +80,59 @@ class StockForm(forms.ModelForm):
         model = Stock
         fields = (
             'name',
-            "ticker",
+            'ticker',
+            'exchange'
         )
 
     def __init__(self, depot, *args, **kwargs):
         super(StockForm, self).__init__(*args, **kwargs)
+        self.instance.depot = depot
+
+    def clean(self):
+        cleaned_data = super().clean()
+        ticker = cleaned_data['ticker']
+        exchange = cleaned_data['exchange']
+        # check if we can fetch prices for this particular stock
+        symbol = '{}.{}'.format(ticker, exchange)
+        url = 'http://api.marketstack.com/v1/eod/latest?symbols={}'.format(symbol)
+        params = {
+            'access_key': settings.MARKETSTACK_API_KEY
+        }
+        try:
+            api_result = requests.get(url, params)
+            api_response = api_result.json()
+            for price in api_response['data']:
+                if price is not None:
+                    price = PriceForm({'ticker': price['symbol'],
+                                       'exchange': price['exchange'],
+                                       'date': price['date'],
+                                       'price': price['close']
+                                       })
+                    if price.is_valid():
+                        price.save()
+                else:
+                    raise forms.ValidationError(
+                        'We could not find {} on Marketstack. '
+                        'Take a look yourself: https://marketstack.com/search.'.format(symbol)
+                    )
+        except forms.ValidationError as validation_error:
+            raise validation_error
+        except Exception as err:
+            raise forms.ValidationError(
+                'There was an error with Marketstack. We could not find out if the stock exists.')
+        # return
+        return cleaned_data
+
+
+class EditStockForm(forms.ModelForm):
+    class Meta:
+        model = Stock
+        fields = (
+            'name',
+        )
+
+    def __init__(self, depot, *args, **kwargs):
+        super(EditStockForm, self).__init__(*args, **kwargs)
         self.instance.depot = depot
 
 
@@ -186,3 +241,31 @@ class TradeForm(forms.ModelForm):
                 raise forms.ValidationError(msg)
         # return
         return self.cleaned_data
+
+
+###
+# Price
+###
+class PriceForm(forms.ModelForm):
+    date = forms.DateTimeField(widget=forms.DateTimeInput(attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
+                               input_formats=["%Y-%m-%dT%H:%M", '%Y-%m-%dT%H:%M:%S%z'], label="Date")
+
+    class Meta:
+        model = Price
+        fields = (
+            'date',
+            'ticker',
+            'exchange',
+            'price'
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if Price.objects.filter(ticker=cleaned_data['ticker'], date=cleaned_data['date']).exists():
+            raise forms.ValidationError('There exists already a price for this stock on this date.')
+        return cleaned_data
+
+    def clean_ticker(self):
+        ticker = self.cleaned_data['ticker']
+        ticker = ticker.split('.')[0]
+        return ticker

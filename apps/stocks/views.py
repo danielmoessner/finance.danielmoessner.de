@@ -3,11 +3,11 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.views import generic
-from .models import Depot, Stock, Bank, Flow, Trade
+from .models import Depot, Stock, Bank, Flow, Trade, Price
 from apps.core.views import CustomGetFormUserMixin, AjaxResponseMixin, TabContextMixin, \
     GetFormWithDepotAndInitialDataMixin, CustomAjaxDeleteMixin
 from .forms import DepotForm, DepotActiveForm, DepotSelectForm, BankForm, BankSelectForm, StockSelectForm, StockForm, \
-    FlowForm, TradeForm
+    FlowForm, TradeForm, EditStockForm
 import json
 
 
@@ -93,6 +93,7 @@ class StockView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['trades'] = self.object.trades.all()
+        context['prices'] = Price.objects.filter(ticker=self.object.ticker, exchange=self.object.exchange)
         return context
 
 
@@ -104,7 +105,7 @@ class AddStockView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, ge
 
 class EditStockView(CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
     model = Stock
-    form_class = StockForm
+    form_class = EditStockForm
     template_name = "modules/form_snippet.njk"
 
     def get_queryset(self):

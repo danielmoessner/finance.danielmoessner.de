@@ -65,6 +65,7 @@
             <tr>
                 <th class="border-0" scope="col">Name</th>
                 <th class="border-0" scope="col">Ticker</th>
+                <th class="border-0" scope="col">Exchange</th>
                 <th class="border-0" scope="col">Price</th>
                 <th class="border-0" scope="col">Amount</th>
                 <th class="border-0" scope="col">Value</th>
@@ -76,6 +77,7 @@
                 <tr>
                     <td>{{ stock.name }}</td>
                     <td>{{ stock.ticker }}</td>
+                    <td>{{ stock.exchange }}</td>
                     {% with stats=stock.get_stats() %}
                         <td>{{ "%.2f"|format(stats['Price']) }}</td>
                         <td>{{ stats['Amount'] }}</td>
@@ -91,7 +93,7 @@
                 </tr>
             {% endfor %}
             <tr>
-                <td colspan="6">
+                <td colspan="7">
                     <div class="d-flex">
                         {{ mg.djangoModal("Add Stock", "addStock", url("stocks:add_stock")) }}
                         {{ bg.modalButton("Add Stock", "#addStock") }}

@@ -10,7 +10,8 @@ class Depot(models.Model):
     is_active = models.BooleanField(default=False)
     user = models.ForeignKey(StandardUser, on_delete=models.CASCADE, related_name='stock_depots', editable=False)
     # query optimization
-    balance = models.DecimalField(max_digits=20, decimal_places=2, blank=True, null=True)
+    balance = models.DecimalField(max_digits=20, decimal_places=2, null=True)
+    value = models.DecimalField(max_digits=20, decimal_places=2, null=True)
 
     class Meta:
         verbose_name = 'Depot'
@@ -20,8 +21,10 @@ class Depot(models.Model):
         return '{}'.format(self.name)
 
     def reset(self):
-        self.balance = None
-        self.save()
+        if self.balance is not None or self.value is not None:
+            self.balance = None
+            self.value = None
+            self.save()
 
     # getters
     def get_stats(self):
@@ -29,6 +32,14 @@ class Depot(models.Model):
             'Balance': float(self.get_balance()),
             'Value': float(0)  # todo
         }
+
+    def get_value(self):
+        if self.value is None:
+            self.value = 0
+            stocks_value = self.stocks.all().aggregate(Sum('value'))['value__sum']
+            self.value += stocks_value if stocks_value else 0
+            # self.save()
+        return self.value
 
     def get_balance(self):
         if self.balance is None:
@@ -49,6 +60,7 @@ class Bank(models.Model):
     depot = models.ForeignKey(Depot, on_delete=models.CASCADE, related_name='banks', editable=False)
     # query optimization
     balance = models.DecimalField(max_digits=20, decimal_places=2, blank=True, null=True)
+    value = models.DecimalField(max_digits=20, decimal_places=2, blank=True, null=True)
 
     class Meta:
         verbose_name = 'Bank'
@@ -58,16 +70,25 @@ class Bank(models.Model):
         return '{}'.format(self.name)
 
     def reset(self):
-        self.balance = None
-        self.save()
-        self.depot.reset()
+        if self.balance is not None or self.value is not None:
+            self.balance = None
+            self.value = None
+            self.save()
 
     # getters
     def get_stats(self):
         return {
             'Balance': self.get_balance(),
-            'Value': 0  # todo
+            'Value': self.get_value()
         }
+
+    def get_value(self):
+        if self.value is None:
+            self.value = 0
+            for stock in self.depot.stocks.all():
+                self.value += stock.get_amount_bank(self) * stock.get_price()
+            # self.save()
+        return self.value
 
     def get_balance(self):
         if self.balance is None:
@@ -100,21 +121,63 @@ class Stock(models.Model):
     name = models.CharField(max_length=50)
     depot = models.ForeignKey(Depot, on_delete=models.CASCADE, related_name='stocks')
     ticker = models.CharField(max_length=10)
+    exchange = models.CharField(max_length=20, default='XETRA')
+    # query optimization
+    amount = models.PositiveIntegerField(null=True)
+    value = models.DecimalField(max_digits=20, decimal_places=2, null=True)
 
     class Meta:
         verbose_name = 'Stock'
         verbose_name_plural = 'Stocks'
 
     def __str__(self):
-        return '{}'.format(self.ticker)
+        return '{}'.format(self.name)
+
+    def reset(self):
+        if self.amount is not None or self.value is not None:
+            self.amount = None
+            self.value = None
+            self.save()
 
     # getters
+    def get_marketstack_symbol(self):
+        return '{}.{}'.format(self.ticker, self.exchange)
+
     def get_stats(self):
         return {
-            'Price': 0,
-            'Value': 0,
-            'Amount': 0
+            'Price': self.get_price(),
+            'Value': self.get_value(),
+            'Amount': self.get_amount()
         }
+
+    def get_amount(self):
+        if not self.amount:
+            self.amount = 0
+            trades = Trade.objects.filter(bank__in=self.depot.banks.all(), stock=self)
+            buy_amount = trades.filter(buy_or_sell='BUY').aggregate(Sum('stock_amount'))['stock_amount__sum']
+            sell_amount = trades.filter(buy_or_sell='SELL').aggregate(Sum('stock_amount'))['stock_amount__sum']
+            self.amount += buy_amount if buy_amount else 0
+            self.amount -= sell_amount if sell_amount else 0
+            # self.save()
+        return self.amount
+
+    def get_amount_bank(self, bank):
+        amount = 0
+        trades = Trade.objects.filter(bank=bank, stock=self)
+        buy_amount = trades.filter(buy_or_sell='BUY').aggregate(Sum('stock_amount'))['stock_amount__sum']
+        sell_amount = trades.filter(buy_or_sell='SELL').aggregate(Sum('stock_amount'))['stock_amount__sum']
+        amount += buy_amount if buy_amount else 0
+        amount -= sell_amount if sell_amount else 0
+        return amount
+
+    def get_value(self):
+        if not self.value:
+            self.value = self.get_price() * self.get_amount()
+            # self.save()
+        return self.value
+
+    def get_price(self):
+        return Price.objects.filter(ticker=self.ticker, exchange=self.exchange).order_by('date').first().price
 
 
 class Flow(models.Model):
@@ -131,9 +194,12 @@ class Flow(models.Model):
 
     def save(self, *args, **kwargs):
         if self.pk:
-            Flow.objects.get(pk=self.pk).bank.reset()
+            bank = Flow.objects.get(pk=self.pk).bank
+            bank.reset()
+            bank.depot.reset()
         super().save(*args, **kwargs)
         self.bank.reset()
+        self.bank.depot.reset()
 
     # getters
     def get_date(self):
@@ -158,9 +224,38 @@ class Trade(models.Model):
 
     def save(self, *args, **kwargs):
         if self.pk:
-            Trade.objects.get(pk=self.pk).bank.reset()
+            trade = Trade.objects.get(pk=self.pk)
+            bank = trade.bank
+            bank.reset()
+            bank.depot.reset()
+            stock = trade.stock
+            stock.reset()
         super().save(*args, **kwargs)
         self.bank.reset()
+        self.bank.depot.reset()
+        self.stock.reset()
+
+    # getters
+    def get_date(self):
+        return timezone.localtime(self.date).strftime('%d.%m.%Y %H:%M')
+
+
+class Price(models.Model):
+    date = models.DateTimeField()
+    ticker = models.CharField(max_length=20)
+    price = models.DecimalField(max_digits=20, decimal_places=2)
+    exchange = models.CharField(max_length=20)
+
+    def __str__(self):
+        return '{} - {} - {}'.format(self.ticker, self.get_date(), self.price)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        affected_stocks = Stock.objects.filter(ticker=self.ticker, exchange=self.exchange).select_related('depot')
+        for stock in list(affected_stocks):
+            stock.reset()
+            stock.depot.reset()
+            [bank.reset() for bank in list(stock.depot.banks.all())]
 
     # getters
     def get_date(self):

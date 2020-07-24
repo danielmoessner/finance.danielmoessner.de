@@ -19,4 +19,23 @@
 
     {% include 'stocks/symbols/trades.j2' %}
 
+    {% if tab=='prices' %}
+        <table class="table table-dark table-responsive-md rounded mb-5">
+            <thead>
+            <tr>
+                <th class="border-0" scope="col">Date</th>
+                <th class="border-0" scope="col">Price</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for price in prices %}
+                <tr>
+                    <td>{{ localtime(price.date).strftime('%d.%m.%Y %H:%M') }}</td>
+                    <td>{{ price.price }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
 {% endblock %}
