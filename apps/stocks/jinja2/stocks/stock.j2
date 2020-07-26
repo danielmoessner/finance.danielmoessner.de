@@ -14,8 +14,11 @@
             {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
             {{ bg.hrefButton("Prices", request.path + '?tab=prices', active=(tab=='prices')) }}
             {{ bg.hrefButton("Trades", request.path + '?tab=trades', active=(tab=='trades')) }}
+            {{ bg.hrefButton("Dividends", request.path + "?tab=dividends", active=(tab=="dividends")) }}
         </div>
     </div>
+
+    {% include 'modules/stats.j2' %}
 
     {% include 'stocks/symbols/trades.j2' %}
 
@@ -37,5 +40,7 @@
             </tbody>
         </table>
     {% endif %}
+
+    {% include 'stocks/symbols/dividends.j2' %}
 
 {% endblock %}

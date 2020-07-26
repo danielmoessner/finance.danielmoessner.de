@@ -32,6 +32,11 @@ urlpatterns = [
     path("flows/<int:pk>/edit/", views.EditFlowView.as_view(), name="edit_flow"),
     path("flows/<int:pk>/delete/", views.DeleteFlowView.as_view(), name="delete_flow"),
 
+    # dividend
+    path("dividends/add/", views.AddDividendView.as_view(), name="add_dividend"),
+    path("dividends/<int:pk>/edit/", views.EditDividendView.as_view(), name="edit_dividend"),
+    path("dividends/<int:pk>/delete/", views.DeleteDividendView.as_view(), name="delete_dividend"),
+
     # views
     path("depots/<int:pk>/", views.IndexView.as_view(), name="index"),
     path("banks/<int:pk>/", views.BankView.as_view(), name="banks"),

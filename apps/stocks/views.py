@@ -3,11 +3,11 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.views import generic
-from .models import Depot, Stock, Bank, Flow, Trade, Price
+from .models import Depot, Stock, Bank, Flow, Trade, Price, Dividend
 from apps.core.views import CustomGetFormUserMixin, AjaxResponseMixin, TabContextMixin, \
     GetFormWithDepotAndInitialDataMixin, CustomAjaxDeleteMixin
 from .forms import DepotForm, DepotActiveForm, DepotSelectForm, BankForm, BankSelectForm, StockSelectForm, StockForm, \
-    FlowForm, TradeForm, EditStockForm
+    FlowForm, TradeForm, EditStockForm, DividendForm
 import json
 
 
@@ -93,7 +93,9 @@ class StockView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['trades'] = self.object.trades.all()
+        context['stats'] = self.object.get_stats()
         context['prices'] = Price.objects.filter(ticker=self.object.ticker, exchange=self.object.exchange)
+        context['dividends'] = self.object.dividends.all()
         return context
 
 
@@ -133,7 +135,9 @@ class BankView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['flows'] = Flow.objects.filter(bank=self.object)
+        context['stats'] = self.object.get_stats()
         context['trades'] = Trade.objects.filter(bank=self.object)
+        context['dividends'] = self.object.dividends.all()
         return context
 
 
@@ -181,6 +185,27 @@ class EditFlowView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, ge
 
 class DeleteFlowView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
     model = Flow
+    template_name = "modules/delete_snippet.njk"
+
+
+###
+# Dividend: Add, Edit, Delete
+###
+class AddDividendView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAndInitialDataMixin, AjaxResponseMixin,
+                      generic.CreateView):
+    model = Dividend
+    form_class = DividendForm
+    template_name = "modules/form_snippet.njk"
+
+
+class EditDividendView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
+    model = Dividend
+    form_class = DividendForm
+    template_name = "modules/form_snippet.njk"
+
+
+class DeleteDividendView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
+    model = Dividend
     template_name = "modules/delete_snippet.njk"
 
 

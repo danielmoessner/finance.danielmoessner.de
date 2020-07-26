@@ -6,7 +6,7 @@ from decimal import Decimal
 import requests
 from django import forms
 from django.utils import timezone
-from apps.stocks.models import Depot, Bank, Trade, Stock, Flow, Price
+from apps.stocks.models import Depot, Bank, Trade, Stock, Flow, Price, Dividend
 from django.conf import settings
 
 
@@ -163,6 +163,7 @@ class FlowForm(forms.ModelForm):
             'bank',
             'date',
             'flow',
+            'short_description'
         )
 
     def __init__(self, depot, *args, **kwargs):
@@ -176,9 +177,16 @@ class FlowForm(forms.ModelForm):
         flow = self.cleaned_data['flow']
         bank = self.cleaned_data['bank']
         # check that there doesn't already exist a flow or trade on this particular date
-        if bank.flows.filter(date=date).exists() or bank.trades.filter(date=date).exists():
+        instance_pk = self.instance.pk if self.instance.pk else 0
+        if (
+            bank.flows.filter(date=date).exclude(pk=instance_pk).exists() or
+            bank.trades.filter(date=date).exists() or
+            bank.dividends.filter(date=date).exists()
+        ):
             raise forms.ValidationError(
-                'There exists already a flow or a trade on this particular date. Choose a different date.')
+                'There exists already a flow, trade or dividend on this particular date and time. '
+                'Choose a different date.'
+            )
         # check that enough money is available if money is withdrawn
         if flow < 0:
             bank_balance = bank.get_balance_on_date(date)
@@ -190,6 +198,56 @@ class FlowForm(forms.ModelForm):
                 raise forms.ValidationError(msg)
         # return
         return self.cleaned_data
+
+
+###
+# Dividend
+###
+class DividendForm(forms.ModelForm):
+    date = forms.DateTimeField(widget=forms.DateTimeInput(attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
+                               input_formats=["%Y-%m-%dT%H:%M"], label="Date")
+
+    class Meta:
+        model = Dividend
+        fields = (
+            'bank',
+            'stock',
+            'date',
+            'dividend'
+        )
+
+    def __init__(self, depot, *args, **kwargs):
+        super(DividendForm, self).__init__(*args, **kwargs)
+        self.fields['bank'].queryset = depot.banks.order_by('name')
+        self.fields['stock'].queryset = depot.stocks.order_by('name')
+        self.fields['date'].initial = timezone.now()
+
+    def clean(self):
+        cleaned_data = super().clean()
+        date = self.cleaned_data['date']
+        bank = self.cleaned_data['bank']
+        stock = self.cleaned_data['stock']
+        # check that no flow, trade or dividend already existst on this date
+        instance_pk = self.instance.pk if self.instance.pk else 0
+        if (
+                bank.flows.filter(date=date).exists() or
+                bank.trades.filter(date=date).exists() or
+                bank.dividends.filter(date=date).exclude(pk=instance_pk).exists() or
+                stock.trades.filter(date=date).exists() or
+                stock.dividends.filter(date=date).exclude(pk=instance_pk).exists()
+        ):
+            raise forms.ValidationError(
+                'There exists already a flow, trade or dividend on this particular date and time. '
+                'Choose a different date.'
+            )
+        # return
+        return cleaned_data
+
+    def clean_dividend(self):
+        dividend = self.cleaned_data['dividend']
+        if dividend <= 0:
+            raise forms.ValidationError('The dividend needs to be greater than 0')
+        return dividend
 
 
 ###
@@ -224,9 +282,19 @@ class TradeForm(forms.ModelForm):
         money_amount = self.cleaned_data['money_amount']
         stock_amount = self.cleaned_data['stock_amount']
         date = self.cleaned_data['date']
-        if bank.flows.filter(date=date).exists() or bank.trades.filter(date=date).exists():
+        # check that no flow or trade already exists on this date
+        instance_pk = self.instance.pk if self.instance.pk else 0
+        if (
+                bank.flows.filter(date=date).exists() or
+                bank.trades.filter(date=date).exclude(pk=instance_pk).exists() or
+                bank.dividends.filter(date=date).exists() or
+                stock.trades.filter(date=date).exclude(pk=instance_pk).exists() or
+                stock.dividends.filter(date=date).exists()
+        ):
             raise forms.ValidationError(
-                'There exists already a flow or a trade on this particular date. Choose a different date.')
+                'There exists already a flow, trade or dividend on this particular date and time. '
+                'Choose a different date.'
+            )
         # check that buy and sell amount is positive because a trade doesnt make sense otherwise
         if money_amount < 0 or stock_amount < 0:
             raise forms.ValidationError('Sell and buy amount must be positive.')

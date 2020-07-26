@@ -1,0 +1,37 @@
+{% if tab=="dividends" %}
+    <table class="table table-dark table-responsive-md rounded mb-5">
+        <thead>
+        <tr>
+            <th class="border-0" scope="col">Date</th>
+            <th class="border-0" scope="col">Bank</th>
+            <th class="border-0" scope="col">Stock</th>
+            <th class="border-0" scope="col">Dividend</th>
+            <th class="border-0" scope="col">Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for dividend in dividends %}
+            <tr>
+                <td>{{ localtime(dividend.date).strftime('%d.%m.%Y %H:%M') }}</td>
+                <td>{{ dividend.bank }}</td>
+                <td>{{ dividend.stock }}</td>
+                <td>{{ dividend.dividend }}</td>
+                <td>
+                    {{ mg.djangoModal("Edit Dividend", "editDividend"+dividend.pk|string, url("stocks:edit_dividend", args=[dividend.pk])) }}
+                    {{ bg.modalButton("Edit", "#editDividend"+dividend.pk|string) }}
+                    {{ mg.djangoModal("Delete Dividend", "deleteDividend"+dividend.pk|string, url("stocks:delete_dividend", args=[dividend.pk])) }}
+                    {{ bg.modalButton("Delete", "#deleteDividend"+dividend.pk|string) }}
+                </td>
+            </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="4">
+                <div class="d-flex">
+                    {{ mg.djangoModal("Add Dividend", "addDividend", url("stocks:add_dividend")) }}
+                    {{ bg.modalButton("Add Dividend", "#addDividend") }}
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+{% endif %}

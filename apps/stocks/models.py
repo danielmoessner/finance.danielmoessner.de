@@ -30,7 +30,7 @@ class Depot(models.Model):
     def get_stats(self):
         return {
             'Balance': float(self.get_balance()),
-            'Value': float(0)  # todo
+            'Value': float(self.get_value())
         }
 
     def get_value(self):
@@ -51,6 +51,8 @@ class Depot(models.Model):
             self.balance -= buy_trades_amount['money_amount__sum'] if buy_trades_amount['money_amount__sum'] else 0
             sell_trades_amount = Trade.objects.filter(bank__in=banks, buy_or_sell='SELL').aggregate(Sum('money_amount'))
             self.balance += sell_trades_amount['money_amount__sum'] if sell_trades_amount['money_amount__sum'] else 0
+            dividends = Dividend.objects.filter(bank__in=banks).aggregate(Sum('dividend'))
+            self.balance += dividends['dividend__sum'] if dividends['dividend__sum'] else 0
             # self.save()  todo
         return self.balance
 
@@ -78,8 +80,8 @@ class Bank(models.Model):
     # getters
     def get_stats(self):
         return {
-            'Balance': self.get_balance(),
-            'Value': self.get_value()
+            'Balance': float(self.get_balance()),
+            'Value': float(self.get_value())
         }
 
     def get_value(self):
@@ -99,6 +101,8 @@ class Bank(models.Model):
             self.balance -= buy_trades_amount['money_amount__sum'] if buy_trades_amount['money_amount__sum'] else 0
             sell_trades_amount = self.trades.filter(buy_or_sell='SELL').aggregate(Sum('money_amount'))
             self.balance += sell_trades_amount['money_amount__sum'] if sell_trades_amount['money_amount__sum'] else 0
+            dividends_amount = self.dividends.all().aggregate(Sum('dividend'))
+            self.balance += dividends_amount['dividend__sum'] if dividends_amount['dividend__sum'] else 0
             # self.save()  todo
         return self.balance
 
@@ -114,6 +118,8 @@ class Bank(models.Model):
             self.trades.filter(date__lte=date, buy_or_sell='SELL').aggregate(Sum('money_amount'))['money_amount__sum']
         )
         balance += sell_trades_amount if sell_trades_amount else 0
+        dividends_amount = self.dividends.filter(date__lte=date).aggregate(Sum('dividend'))
+        balance += dividends_amount['dividend__sum'] if dividends_amount['dividend__sum'] else 0
         return balance
 
 
@@ -147,8 +153,13 @@ class Stock(models.Model):
         return {
             'Price': self.get_price(),
             'Value': self.get_value(),
-            'Amount': self.get_amount()
+            'Amount': self.get_amount(),
+            'Divdends': self.get_dividends()
         }
+
+    def get_dividends(self):
+        dividends = self.dividends.all().aggregate(Sum('dividend'))['dividend__sum']
+        return dividends if dividends else 0
 
     def get_amount(self):
         if not self.amount:
@@ -184,6 +195,7 @@ class Flow(models.Model):
     bank = models.ForeignKey(Bank, related_name='flows', on_delete=models.CASCADE)
     date = models.DateTimeField()
     flow = models.DecimalField(max_digits=20, decimal_places=2)
+    short_description = models.CharField(max_length=200, blank=True)
 
     class Meta:
         verbose_name = 'Depot'
@@ -200,6 +212,24 @@ class Flow(models.Model):
         super().save(*args, **kwargs)
         self.bank.reset()
         self.bank.depot.reset()
+
+    # getters
+    def get_date(self):
+        return timezone.localtime(self.date).strftime('%d.%m.%Y %H:%M')
+
+
+class Dividend(models.Model):
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='dividends')
+    bank = models.ForeignKey(Bank, on_delete=models.CASCADE, related_name='dividends')
+    date = models.DateTimeField()
+    dividend = models.DecimalField(decimal_places=2, max_digits=20)
+
+    class Meta:
+        verbose_name = 'Dividend'
+        verbose_name_plural = 'Dividends'
+
+    def __str__(self):
+        return '{} - {} - {}'.format(self.stock, self.get_date(), self.dividend)
 
     # getters
     def get_date(self):

@@ -3,6 +3,7 @@
         <thead>
         <tr>
             <th class="border-0" scope="col">Date</th>
+            <th class="border-0" scope="col">Description</th>
             <th class="border-0" scope="col">Bank</th>
             <th class="border-0" scope="col">Flow</th>
             <th class="border-0" scope="col">Action</th>
@@ -12,6 +13,7 @@
         {% for flow in flows %}
             <tr>
                 <td>{{ localtime(flow.date).strftime('%d.%m.%Y %H:%M') }}</td>
+                <td>{{ flow.short_description }}</td>
                 <td>{{ flow.bank }}</td>
                 <td>{{ flow.flow }}</td>
                 <td>
