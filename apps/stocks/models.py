@@ -36,8 +36,8 @@ class Depot(models.Model):
     def get_value(self):
         if self.value is None:
             self.value = 0
-            stocks_value = self.stocks.all().aggregate(Sum('value'))['value__sum']
-            self.value += stocks_value if stocks_value else 0
+            for stock in self.stocks.all():
+                self.value += stock.get_value()
             self.save()
         return self.value
 
@@ -95,6 +95,7 @@ class Bank(models.Model):
             self.value = 0
             for stock in self.depot.stocks.all():
                 self.value += stock.get_amount_bank(self) * stock.get_price()
+                print(self.value, stock)
             self.save()
         return self.value
 
