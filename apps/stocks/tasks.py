@@ -5,7 +5,7 @@ from .forms import PriceForm
 import requests
 
 
-# @background()
+@background()
 def fetch_prices():
     # create a list of all symbols for the query
     symbols = [stock.get_marketstack_symbol() for stock in list(Stock.objects.all())]

@@ -38,7 +38,7 @@ class Depot(models.Model):
             self.value = 0
             stocks_value = self.stocks.all().aggregate(Sum('value'))['value__sum']
             self.value += stocks_value if stocks_value else 0
-            # self.save()
+            self.save()
         return self.value
 
     def get_balance(self):
@@ -53,8 +53,14 @@ class Depot(models.Model):
             self.balance += sell_trades_amount['money_amount__sum'] if sell_trades_amount['money_amount__sum'] else 0
             dividends = Dividend.objects.filter(bank__in=banks).aggregate(Sum('dividend'))
             self.balance += dividends['dividend__sum'] if dividends['dividend__sum'] else 0
-            # self.save()  todo
+            self.save()
         return self.balance
+
+    def get_flow_df(self):
+        pass
+
+    def get_value_df(self):
+        pass
 
 
 class Bank(models.Model):
@@ -89,7 +95,7 @@ class Bank(models.Model):
             self.value = 0
             for stock in self.depot.stocks.all():
                 self.value += stock.get_amount_bank(self) * stock.get_price()
-            # self.save()
+            self.save()
         return self.value
 
     def get_balance(self):
@@ -103,7 +109,7 @@ class Bank(models.Model):
             self.balance += sell_trades_amount['money_amount__sum'] if sell_trades_amount['money_amount__sum'] else 0
             dividends_amount = self.dividends.all().aggregate(Sum('dividend'))
             self.balance += dividends_amount['dividend__sum'] if dividends_amount['dividend__sum'] else 0
-            # self.save()  todo
+            self.save()
         return self.balance
 
     def get_balance_on_date(self, date):
@@ -121,6 +127,12 @@ class Bank(models.Model):
         dividends_amount = self.dividends.filter(date__lte=date).aggregate(Sum('dividend'))
         balance += dividends_amount['dividend__sum'] if dividends_amount['dividend__sum'] else 0
         return balance
+
+    def get_flow_df(self):
+        pass
+
+    def get_value_df(self):
+        pass
 
 
 class Stock(models.Model):
@@ -151,10 +163,10 @@ class Stock(models.Model):
 
     def get_stats(self):
         return {
-            'Price': self.get_price(),
-            'Value': self.get_value(),
+            'Price': float(self.get_price()),
+            'Value': float(self.get_value()),
             'Amount': self.get_amount(),
-            'Divdends': self.get_dividends()
+            'Divdends': float(self.get_dividends())
         }
 
     def get_dividends(self):
@@ -169,7 +181,7 @@ class Stock(models.Model):
             sell_amount = trades.filter(buy_or_sell='SELL').aggregate(Sum('stock_amount'))['stock_amount__sum']
             self.amount += buy_amount if buy_amount else 0
             self.amount -= sell_amount if sell_amount else 0
-            # self.save()
+            self.save()
         return self.amount
 
     def get_amount_bank(self, bank):
@@ -184,11 +196,17 @@ class Stock(models.Model):
     def get_value(self):
         if not self.value:
             self.value = self.get_price() * self.get_amount()
-            # self.save()
+            self.save()
         return self.value
 
     def get_price(self):
         return Price.objects.filter(ticker=self.ticker, exchange=self.exchange).order_by('date').first().price
+
+    def get_flow_df(self):
+        pass
+
+    def get_value_df(self):
+        pass
 
 
 class Flow(models.Model):
@@ -230,6 +248,14 @@ class Dividend(models.Model):
 
     def __str__(self):
         return '{} - {} - {}'.format(self.stock, self.get_date(), self.dividend)
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            Dividend.objects.get(pk=self.pk).stock.reset()
+            Dividend.objects.get(pk=self.pk).stock.depot.reset()
+        super().save(*args, **kwargs)
+        self.stock.reset()
+        self.stock.depot.reset()
 
     # getters
     def get_date(self):
