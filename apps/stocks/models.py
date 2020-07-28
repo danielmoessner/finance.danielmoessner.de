@@ -252,9 +252,11 @@ class Dividend(models.Model):
     def save(self, *args, **kwargs):
         if self.pk:
             Dividend.objects.get(pk=self.pk).stock.reset()
+            Dividend.objects.get(pk=self.pk).bank.reset()
             Dividend.objects.get(pk=self.pk).stock.depot.reset()
         super().save(*args, **kwargs)
         self.stock.reset()
+        self.bank.reset()
         self.stock.depot.reset()
 
     # getters
