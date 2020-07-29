@@ -8,6 +8,14 @@
        type="button" href="{{ url }}">{{ text }}</a>
 {% endmacro %}
 
+{% macro dropdownButton(text, classes="btn-sm", active=False, disabled=False) %}
+    <button type="button" class="btn btn-secondary dropdown-toggle {{ classes }} {{ "disabled" if disabled else "" }}
+{{ "active" if active else "" }}" data-toggle="dropdown"
+            aria-haspopup="true" aria-expanded="false">
+        {{ text }}
+    </button>
+{% endmacro %}
+
 {% macro submitButton(text="Submit", classes="btn-sm") %}
     <button type="submit" class="btn btn-dark {{ classes }}" role="button">{{ text }}</button>
 {% endmacro %}

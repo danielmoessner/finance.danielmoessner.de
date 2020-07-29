@@ -15,6 +15,11 @@
             {{ bg.hrefButton("Banks", request.path + '?tab=banks', active=(tab=='banks')) }}
             {{ bg.hrefButton("Stocks", request.path + '?tab=stocks', active=(tab=='stocks')) }}
             {{ bg.hrefButton("Charts", request.path + '?tab=charts', active=(tab=='charts')) }}
+            {{ bg.dropdownButton("Calculations", active=(tab=="values" or tab=="flows")) }}
+            <div class="dropdown-menu bg-secondary py-1">
+                <a class="dropdown-item bg-secondary text-white btn-sm" href="?tab=flows">Flows</a>
+                <a class="dropdown-item bg-secondary text-white btn-sm" href="?tab=values">Values</a>
+            </div>
         </div>
     </div>
 
@@ -109,5 +114,9 @@
     {% if tab=="charts" %}
         charts todo
     {% endif %}
+
+    {% include 'symbols/values.j2' %}
+
+    {% include 'symbols/flows.j2' %}
 
 {% endblock %}

@@ -1,5 +1,6 @@
 from datetime import timedelta
 import pandas as pd
+from django.db import connection
 
 
 def remove_all_nans_at_beginning_and_end(df, column):
@@ -64,6 +65,7 @@ def change_time_of_date_index_in_df(df, hours):
     assert 0 <= hours <= 24
     if not df.empty:
         df.index = df.index.normalize() + timedelta(hours=hours)
+        df = df.tz_localize(None)
     return df
 
 
@@ -71,3 +73,13 @@ def round_value_if_exists(value, places=2):
     if value is not None:
         return round(value, places)
     return None
+
+
+def get_df_from_database(statement, columns):
+    cursor = connection.cursor()
+    cursor.execute(statement)
+    data = cursor.fetchall()
+    df = pd.DataFrame(data=data, columns=columns)
+    df.loc[:, 'date'] = pd.to_datetime(df.loc[:, 'date'])
+    df.set_index('date', inplace=True)
+    return df

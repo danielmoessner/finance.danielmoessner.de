@@ -42,6 +42,8 @@ class IndexView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
         context['stats'] = self.object.get_stats()
         context['banks'] = self.object.banks.all()
         context['stocks'] = self.object.stocks.all()
+        context['values'] = self.object.get_values()
+        context['flows'] = self.object.get_flows()
         return context
 
 
@@ -92,10 +94,12 @@ class StockView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['trades'] = self.object.trades.all()
+        context['trades'] = self.object.trades.all().select_related('bank', 'stock')
         context['stats'] = self.object.get_stats()
         context['prices'] = Price.objects.filter(ticker=self.object.ticker, exchange=self.object.exchange)
         context['dividends'] = self.object.dividends.all()
+        context['values'] = self.object.get_values()
+        context['flows'] = self.object.get_flows()
         return context
 
 

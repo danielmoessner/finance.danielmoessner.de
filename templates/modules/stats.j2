@@ -1,9 +1,9 @@
 {% if tab == 'stats' %}
     <div class="row mb-5">
-        {% for key, value in stats.items() %}
-            <div class="col-12 col-sm-6 col-md-3">
-                <div class="card text-white bg-dark mb-1">
-                    <div class="card-body">
+        {% for key, value in stats.items() if not key == 'info' %}
+            <div class="col-12 col-sm-6 col-md-3 d-flex flex-column">
+                <div class="card text-white bg-dark mb-3 h-100">
+                    <div class="card-body d-flex flex-column justify-content-between">
                         <div class="card-title h5">{{ key }}</div>
                         {% if value is float %}
                             <p class="card-text">{{ "%.2f"|format(value) }}</p>
@@ -15,4 +15,7 @@
             </div>
         {% endfor %}
     </div>
+    {% if 'info' in stats %}
+        <p class="text-white-50">{{ stats['info']|safe() }}</p>
+    {% endif %}
 {% endif %}

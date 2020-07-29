@@ -12,7 +12,6 @@
     <div class="d-flex justify-content-center mt-2 mb-5">
         <div class="btn-group" role="group" aria-label="Console">
             {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
-            {{ bg.hrefButton("Stocks", request.path + '?tab=stocks', active=(tab=='stocks')) }}
             {{ bg.hrefButton("Flows", request.path + '?tab=flows', active=(tab=='flows')) }}
             {{ bg.hrefButton("Trades", request.path + '?tab=trades', active=(tab=='trades')) }}
             {{ bg.hrefButton("Dividends", request.path + "?tab=dividends", active=(tab=="dividends")) }}

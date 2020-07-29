@@ -15,6 +15,11 @@
             {{ bg.hrefButton("Prices", request.path + '?tab=prices', active=(tab=='prices')) }}
             {{ bg.hrefButton("Trades", request.path + '?tab=trades', active=(tab=='trades')) }}
             {{ bg.hrefButton("Dividends", request.path + "?tab=dividends", active=(tab=="dividends")) }}
+            {{ bg.dropdownButton("Calculations", active=(tab=="values" or tab=="flows")) }}
+            <div class="dropdown-menu bg-secondary py-1">
+                <a class="dropdown-item bg-secondary text-white btn-sm" href="?tab=flows">Flows</a>
+                <a class="dropdown-item bg-secondary text-white btn-sm" href="?tab=values">Values</a>
+            </div>
         </div>
     </div>
 
@@ -42,5 +47,11 @@
     {% endif %}
 
     {% include 'stocks/symbols/dividends.j2' %}
+
+    {% with price_and_amount=True %}
+        {% include 'symbols/values.j2' %}
+    {% endwith %}
+
+    {% include 'symbols/flows.j2' %}
 
 {% endblock %}
