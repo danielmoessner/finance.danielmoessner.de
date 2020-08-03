@@ -200,8 +200,8 @@ class Movie(models.Model):
         time_weighted_return_df = rc.get_time_weighted_return_df(self.flow_df, self.value_df)
         time_weighted_return = rc.get_time_weighted_return(time_weighted_return_df)
         # check to avoid errors with db queries
-        if np.isnan(time_weighted_return):
-            time_weighted_return = None
+        # if np.isnan(time_weighted_return):
+        #     time_weighted_return = None
         # set the value
         self.time_weighted_return = time_weighted_return
 
@@ -210,8 +210,8 @@ class Movie(models.Model):
         internal_rate_of_return_df = rc.get_internal_rate_of_return_df(self.flow_df, self.value_df)
         internal_rate_of_return = rc.get_internal_rate_of_return(internal_rate_of_return_df)
         # check to avoid errors with db queries
-        if np.isnan(internal_rate_of_return):
-            internal_rate_of_return = None
+        # if np.isnan(internal_rate_of_return):
+        #     internal_rate_of_return = None
         # set the value
         self.internal_rate_of_return = internal_rate_of_return
 
@@ -220,8 +220,8 @@ class Movie(models.Model):
         current_return_df = rc.get_current_return_df(self.flow_df, self.value_df)
         current_return = rc.get_current_return(current_return_df)
         # check to avoid errors with db queries
-        if np.isnan(current_return):
-            current_return = None
+        # if np.isnan(current_return):
+        #     current_return = None
         # set the value
         self.current_return = current_return
 

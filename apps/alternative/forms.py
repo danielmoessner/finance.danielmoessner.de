@@ -52,10 +52,6 @@ class AlternativeForm(forms.ModelForm):
         super(AlternativeForm, self).__init__(*args, **kwargs)
         self.instance.depot = depot
 
-    def save(self, commit=True):
-        self.instance.slug = create_slug(self.instance, self.instance.name)
-        return super(AlternativeForm, self).save(commit=commit)
-
 
 class AlternativeSelectForm(forms.Form):
     alternative = forms.ModelChoiceField(widget=forms.Select, queryset=None)

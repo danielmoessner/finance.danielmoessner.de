@@ -31,6 +31,6 @@ urlpatterns = [
     path('flows/<int:pk>/delete/', formviews.DeleteFlowView.as_view(), name='delete_flow'),
 
     # pages
-    path('depots/<int:pk>/', (views.IndexView.as_view()), name='index'),
-    path('alternatives/<int:pk>/', (views.AlternativeView.as_view()), name='alternative'),
+    path('depots/<int:pk>/', views.IndexView.as_view(), name='index'),
+    path('alternatives/<int:pk>/', views.AlternativeView.as_view(), name='alternative'),
 ]
