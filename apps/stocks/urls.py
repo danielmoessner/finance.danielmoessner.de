@@ -22,7 +22,7 @@ urlpatterns = [
     path("stocks/<int:pk>/edit/", views.EditStockView.as_view(), name="edit_stock"),
     path("stocks/delete/", views.DeleteStockView.as_view(), name="delete_stock"),
 
-    # # trade
+    # trade
     path("trades/add/", views.AddTradeView.as_view(), name="add_trade"),
     path("trades/<int:pk>/edit/", views.EditTradeView.as_view(), name="edit_trade"),
     path("trades/<int:pk>/delete/", views.DeleteTradeView.as_view(), name="delete_trade"),
@@ -36,6 +36,11 @@ urlpatterns = [
     path("dividends/add/", views.AddDividendView.as_view(), name="add_dividend"),
     path("dividends/<int:pk>/edit/", views.EditDividendView.as_view(), name="edit_dividend"),
     path("dividends/<int:pk>/delete/", views.DeleteDividendView.as_view(), name="delete_dividend"),
+
+    # stock price fetcher
+    path("price-fetcher/add/", views.AddPriceFetcherView.as_view(), name="add_price_fetcher"),
+    path("price-fetcher/<int:pk>/edit/", views.EditPriceFetcherView.as_view(), name="edit_price_fetcher"),
+    path("price-fetcher/<int:pk>/delete/", views.DeletePriceFetcherView.as_view(), name="delete_price_fetcher"),
 
     # views
     path("depots/<int:pk>/", views.IndexView.as_view(), name="index"),

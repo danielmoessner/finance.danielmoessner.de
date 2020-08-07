@@ -3,11 +3,11 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.views import generic
-from .models import Depot, Stock, Bank, Flow, Trade, Price, Dividend
+from .models import Depot, Stock, Bank, Flow, Trade, Price, Dividend, PriceFetcher
 from apps.core.views import CustomGetFormUserMixin, AjaxResponseMixin, TabContextMixin, \
     GetFormWithDepotAndInitialDataMixin, CustomAjaxDeleteMixin
 from .forms import DepotForm, DepotActiveForm, DepotSelectForm, BankForm, BankSelectForm, StockSelectForm, StockForm, \
-    FlowForm, TradeForm, EditStockForm, DividendForm
+    FlowForm, TradeForm, EditStockForm, DividendForm, PriceFetcherForm
 import json
 
 
@@ -100,6 +100,7 @@ class StockView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
         context['dividends'] = self.object.dividends.all()
         context['values'] = self.object.get_values()
         context['flows'] = self.object.get_flows()
+        context['price_fetcher'] = self.object.price_fetcher if hasattr(self.object, 'price_fetcher') else None
         return context
 
 
@@ -127,6 +128,31 @@ class DeleteStockView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin,
         stock = form.cleaned_data["stock"]
         stock.delete()
         return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
+
+
+###
+# StockPriceFetcher: Add, Edit, Delete
+###
+class AddPriceFetcherView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.CreateView):
+    form_class = PriceFetcherForm
+    model = PriceFetcher
+    template_name = "modules/form_snippet.njk"
+
+
+class EditPriceFetcherView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
+    model = PriceFetcher
+    form_class = PriceFetcherForm
+    template_name = "modules/form_snippet.njk"
+
+
+class DeletePriceFetcherView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
+    model = PriceFetcher
+    template_name = "modules/delete_snippet.njk"
+
+    def get_queryset(self):
+        return PriceFetcher.objects.filter(
+            stock__in=Stock.objects.filter(
+                depot__pk=self.request.user.get_active_stocks_depot_pk()))
 
 
 ###
@@ -191,6 +217,11 @@ class DeleteFlowView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteVi
     model = Flow
     template_name = "modules/delete_snippet.njk"
 
+    def get_queryset(self):
+        return Flow.objects.filter(
+            bank__in=Bank.objects.filter(
+                depot__pk=self.request.user.get_active_stocks_depot_pk()))
+
 
 ###
 # Dividend: Add, Edit, Delete
@@ -212,6 +243,11 @@ class DeleteDividendView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.Dele
     model = Dividend
     template_name = "modules/delete_snippet.njk"
 
+    def get_queryset(self):
+        return Dividend.objects.filter(
+            bank__in=Bank.objects.filter(
+                depot__pk=self.request.user.get_active_stocks_depot_pk()))
+
 
 ###
 # Trade: Add, Edit, Delete
@@ -232,3 +268,8 @@ class EditTradeView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, g
 class DeleteTradeView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
     model = Trade
     template_name = "modules/delete_snippet.njk"
+
+    def get_queryset(self):
+        return Trade.objects.filter(
+            bank__in=Bank.objects.filter(
+                depot__pk=self.request.user.get_active_stocks_depot_pk()))

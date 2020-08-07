@@ -1,12 +1,17 @@
+import re
+import time
+from django.conf import settings
 from django.db import models
 from django.db.models import Sum
 from apps.core.utils import get_merged_value_df_from_queryset, sum_up_columns_in_a_dataframe, \
-    remove_all_nans_at_beginning_and_end, get_df_from_database
+    get_df_from_database
 from apps.users.models import StandardUser
 from django.utils import timezone
 import apps.core.return_calculation as rc
 import pandas as pd
 import numpy as np
+from bs4 import BeautifulSoup
+import requests
 
 
 class Depot(models.Model):
@@ -224,7 +229,7 @@ class Stock(models.Model):
     ticker = models.CharField(max_length=10)
     exchange = models.CharField(max_length=20, default='XETRA')
     # query optimization
-    amount = models.PositiveIntegerField(null=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=3, null=True)
     value = models.FloatField(null=True)
     invested_total = models.FloatField(null=True)
     invested_capital = models.FloatField(null=True)
@@ -240,15 +245,14 @@ class Stock(models.Model):
         return '{}'.format(self.name)
 
     def reset(self):
-        if self.amount is not None or self.value is not None:
-            self.amount = None
-            self.value = None
-            self.invested_capital = None
-            self.invested_total = None
-            self.dividends_amount = None
-            self.sold_total = None
-            self.price = None
-            self.save()
+        self.amount = None
+        self.value = None
+        self.invested_capital = None
+        self.invested_total = None
+        self.dividends_amount = None
+        self.sold_total = None
+        self.price = None
+        self.save()
 
     # getters
     def get_marketstack_symbol(self):
@@ -337,7 +341,11 @@ class Stock(models.Model):
     def get_price(self):
         if self.price is None:
             # every stock always has a price, because a price is fetched every time a stock is added
-            self.price = Price.objects.filter(ticker=self.ticker, exchange=self.exchange).order_by('date').first().price
+            prices = Price.objects.filter(ticker=self.ticker, exchange=self.exchange)
+            if prices.exists():
+                self.price = prices.order_by('date').last().price
+            else:
+                self.price = 0
             self.save()
         return self.price
 
@@ -415,7 +423,7 @@ class Stock(models.Model):
         price_df = self.get_price_df()
         amount_df = self.get_amount_df()
         # return none if there is nothing to be calculated
-        if price_df is None or amount_df is None:
+        if price_df is None or amount_df is None or price_df.empty or amount_df.empty:
             return None
         # merge dfs into on df
         df = pd.merge(price_df, amount_df, on='date', how='outer', sort=True)
@@ -437,6 +445,37 @@ class Stock(models.Model):
         df = df.fillna(0)
         # return the df
         return df
+
+
+class PriceFetcher(models.Model):
+    stock = models.OneToOneField(Stock, on_delete=models.CASCADE, related_name='price_fetcher')
+    website = models.URLField()
+    target = models.CharField(max_length=250)
+
+    def __str__(self):
+        return '{} - {}'.format(self.stock, self.website)
+
+    # getters
+    @staticmethod
+    def get_price_static(website, target, sleep=10):
+        try:
+            r = requests.get(website)
+        except requests.exceptions.ConnectionError as err:
+            return None
+        if not settings.DEBUG:
+            time.sleep(sleep)
+        text = r.text
+        soup = BeautifulSoup(text, features='html.parser')
+        selection = soup.select_one(target)
+        if selection:
+            price = re.search('[0-9]+,[0-9]+', str(selection)).group()
+            price = price.replace(',', '.')
+            price = float(price)
+            return price
+        return None
+
+    def get_price(self):
+        return PriceFetcher.get_price_static(self.website, self.target)
 
 
 class Flow(models.Model):
@@ -499,7 +538,7 @@ class Trade(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='trades')
     date = models.DateTimeField()
     money_amount = models.DecimalField(max_digits=20, decimal_places=2)
-    stock_amount = models.PositiveSmallIntegerField()
+    stock_amount = models.DecimalField(max_digits=10, decimal_places=3)
     TRADE_TYPES = (('BUY', 'Buy'), ('SELL', 'Sell'))
     buy_or_sell = models.CharField(max_length=50, choices=TRADE_TYPES)
 

@@ -6,7 +6,7 @@ from decimal import Decimal
 import requests
 from django import forms
 from django.utils import timezone
-from apps.stocks.models import Depot, Bank, Trade, Stock, Flow, Price, Dividend
+from apps.stocks.models import Depot, Bank, Trade, Stock, Flow, Price, Dividend, PriceFetcher
 from django.conf import settings
 
 
@@ -93,33 +93,34 @@ class StockForm(forms.ModelForm):
         ticker = cleaned_data['ticker']
         exchange = cleaned_data['exchange']
         # check if we can fetch prices for this particular stock
-        symbol = '{}.{}'.format(ticker, exchange)
-        url = 'http://api.marketstack.com/v1/eod/latest?symbols={}'.format(symbol)
-        params = {
-            'access_key': settings.MARKETSTACK_API_KEY
-        }
-        try:
-            api_result = requests.get(url, params)
-            api_response = api_result.json()
-            for price in api_response['data']:
-                if price is not None:
-                    price = PriceForm({'ticker': price['symbol'],
-                                       'exchange': price['exchange'],
-                                       'date': price['date'],
-                                       'price': price['close']
-                                       })
-                    if price.is_valid():
-                        price.save()
-                else:
-                    raise forms.ValidationError(
-                        'We could not find {} on Marketstack. '
-                        'Take a look yourself: https://marketstack.com/search.'.format(symbol)
-                    )
-        except forms.ValidationError as validation_error:
-            raise validation_error
-        except Exception as err:
-            raise forms.ValidationError(
-                'There was an error with Marketstack. We could not find out if the stock exists.')
+        # deactivated because we can not get it to work with etf who exist on marketstack
+        # symbol = '{}.{}'.format(ticker, exchange)
+        # url = 'http://api.marketstack.com/v1/eod/latest?symbols={}'.format(symbol)
+        # params = {
+        #     'access_key': settings.MARKETSTACK_API_KEY
+        # }
+        # try:
+        #     api_result = requests.get(url, params)
+        #     api_response = api_result.json()
+        #     for price in api_response['data']:
+        #         if price is not None and price != []:
+        #             price = PriceForm({'ticker': price['symbol'],
+        #                                'exchange': price['exchange'],
+        #                                'date': price['date'],
+        #                                'price': price['close']
+        #                                })
+        #             if price.is_valid():
+        #                 price.save()
+        #         else:
+        #             raise forms.ValidationError(
+        #                 'We could not find {} on Marketstack. '
+        #                 'Take a look yourself: https://marketstack.com/search.'.format(symbol)
+        #             )
+        # except forms.ValidationError as validation_error:
+        #     raise validation_error
+        # except Exception as err:
+        #     raise forms.ValidationError(
+        #         'There was an error with Marketstack. We could not find out if the stock exists.')
         # return
         return cleaned_data
 
@@ -147,6 +148,30 @@ class StockSelectForm(forms.Form):
     def __init__(self, depot, *args, **kwargs):
         super(StockSelectForm, self).__init__(*args, **kwargs)
         self.fields["stock"].queryset = depot.stocks.all()
+
+
+###
+# StockPriceFetcher
+###
+class PriceFetcherForm(forms.ModelForm):
+    class Meta:
+        model = PriceFetcher
+        fields = '__all__'
+
+    def __init__(self, depot, *args, **kwargs):
+        super(PriceFetcherForm, self).__init__(*args, **kwargs)
+        self.fields['stock'].queryset = depot.stocks.all()
+
+    def clean(self):
+        cleaned_data = super().clean()
+        # test this fetcher is actually pulling prices
+        website = cleaned_data['website']
+        target = cleaned_data['target']
+        if PriceFetcher.get_price_static(website, target, sleep=0) is None:
+            raise forms.ValidationError('This fetcher could not pull a correct price. '
+                                        'Please check if the website and the target ist correct.')
+        # return
+        return cleaned_data
 
 
 ###

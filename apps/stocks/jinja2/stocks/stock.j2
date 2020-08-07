@@ -42,6 +42,19 @@
                     <td>{{ price.price }}</td>
                 </tr>
             {% endfor %}
+            <tr>
+                <td colspan="2">
+                    {% if price_fetcher %}
+                        {{ mg.djangoModal("Edit Price Fetcher", "editPriceFetcher", url("stocks:edit_price_fetcher", args=[price_fetcher.pk])) }}
+                        {{ bg.modalButton("Edit Price Fetcher", "#editPriceFetcher") }}
+                        {{ mg.djangoModal("Delete Price Fetcher", "deletePriceFetcher", url("stocks:delete_price_fetcher", args=[price_fetcher.pk])) }}
+                        {{ bg.modalButton("Delete Price Fetcher", "#deletePriceFetcher") }}
+                    {% else %}
+                        {{ mg.djangoModal("Add Price Fetcher", "addPriceFetcher", url("stocks:add_price_fetcher")) }}
+                        {{ bg.modalButton("Add Price Fetcher", "#addPriceFetcher") }}
+                    {% endif %}
+                </td>
+            </tr>
             </tbody>
         </table>
     {% endif %}

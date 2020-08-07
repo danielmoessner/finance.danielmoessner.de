@@ -181,6 +181,9 @@ class Change(models.Model):
     def __init__(self, *args, **kwargs):
         super(Change, self).__init__(*args, **kwargs)
 
+    def __str__(self):
+        return '{} - {}'.format(self.get_date(self.account.depot.user), self.change)
+
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         something_changed = False
 
