@@ -362,3 +362,11 @@ class PriceForm(forms.ModelForm):
         ticker = self.cleaned_data['ticker']
         ticker = ticker.split('.')[0]
         return ticker
+
+
+class PriceEditForm(forms.ModelForm):
+    class Meta:
+        model = Price
+        fields = (
+            'price',
+        )

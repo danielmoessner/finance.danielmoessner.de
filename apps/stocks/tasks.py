@@ -16,7 +16,7 @@ def fetch_prices():
     price_fetcher_stocks = []
     marketstack_stocks = []
     for stock in list(Stock.objects.all()):
-        if stock.price_fetcher:
+        if hasattr(stock, 'price_fetcher'):
             price_fetcher_stocks.append(stock)
         else:
             marketstack_stocks.append(stock)

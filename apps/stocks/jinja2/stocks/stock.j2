@@ -33,6 +33,7 @@
             <tr>
                 <th class="border-0" scope="col">Date</th>
                 <th class="border-0" scope="col">Price</th>
+                <th class="border-0" scope="col">Action</th>
             </tr>
             </thead>
             <tbody>
@@ -40,10 +41,14 @@
                 <tr>
                     <td>{{ localtime(price.date).strftime('%d.%m.%Y %H:%M') }}</td>
                     <td>{{ price.price }}</td>
+                    <td>
+                        {{ mg.djangoModal("Edit Price", "editPrice", url("stocks:edit_price", args=[price.pk])) }}
+                        {{ bg.modalButton("Edit Price", "#editPrice") }}
+                    </td>
                 </tr>
             {% endfor %}
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     {% if price_fetcher %}
                         {{ mg.djangoModal("Edit Price Fetcher", "editPriceFetcher", url("stocks:edit_price_fetcher", args=[price_fetcher.pk])) }}
                         {{ bg.modalButton("Edit Price Fetcher", "#editPriceFetcher") }}

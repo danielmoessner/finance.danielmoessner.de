@@ -7,7 +7,7 @@ from .models import Depot, Stock, Bank, Flow, Trade, Price, Dividend, PriceFetch
 from apps.core.views import CustomGetFormUserMixin, AjaxResponseMixin, TabContextMixin, \
     GetFormWithDepotAndInitialDataMixin, CustomAjaxDeleteMixin
 from .forms import DepotForm, DepotActiveForm, DepotSelectForm, BankForm, BankSelectForm, StockSelectForm, StockForm, \
-    FlowForm, TradeForm, EditStockForm, DividendForm, PriceFetcherForm
+    FlowForm, TradeForm, EditStockForm, DividendForm, PriceFetcherForm, PriceEditForm
 import json
 
 
@@ -128,6 +128,15 @@ class DeleteStockView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin,
         stock = form.cleaned_data["stock"]
         stock.delete()
         return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
+
+
+###
+# Price: Edit
+###
+class EditPriceView(LoginRequiredMixin, AjaxResponseMixin, generic.UpdateView):
+    model = Price
+    form_class = PriceEditForm
+    template_name = 'modules/form_snippet.njk'
 
 
 ###

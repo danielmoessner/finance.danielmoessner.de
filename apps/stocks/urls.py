@@ -37,7 +37,10 @@ urlpatterns = [
     path("dividends/<int:pk>/edit/", views.EditDividendView.as_view(), name="edit_dividend"),
     path("dividends/<int:pk>/delete/", views.DeleteDividendView.as_view(), name="delete_dividend"),
 
-    # stock price fetcher
+    # price
+    path('price/<int:pk>/edit/', views.EditPriceView.as_view(), name='edit_price'),
+
+    # price fetcher
     path("price-fetcher/add/", views.AddPriceFetcherView.as_view(), name="add_price_fetcher"),
     path("price-fetcher/<int:pk>/edit/", views.EditPriceFetcherView.as_view(), name="edit_price_fetcher"),
     path("price-fetcher/<int:pk>/delete/", views.DeletePriceFetcherView.as_view(), name="delete_price_fetcher"),
