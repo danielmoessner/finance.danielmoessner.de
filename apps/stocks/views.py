@@ -41,7 +41,7 @@ class IndexView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
         context = super().get_context_data(**kwargs)
         context['stats'] = self.object.get_stats()
         context['banks'] = self.object.banks.all()
-        context['stocks'] = self.object.stocks.all()
+        context['stocks'] = self.object.stocks.order_by('-value')
         context['values'] = self.object.get_values()
         context['flows'] = self.object.get_flows()
         return context

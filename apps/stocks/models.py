@@ -240,6 +240,7 @@ class Stock(models.Model):
     class Meta:
         verbose_name = 'Stock'
         verbose_name_plural = 'Stocks'
+        ordering = ['name']
 
     def __str__(self):
         return '{}'.format(self.name)
