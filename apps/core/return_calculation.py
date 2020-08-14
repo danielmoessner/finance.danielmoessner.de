@@ -145,7 +145,7 @@ def get_internal_rate_of_return(df):
     internal_rate_of_return -= 1
     # safety stuff to make sure the db can save it
     if abs(internal_rate_of_return) == np.inf or np.isnan(internal_rate_of_return):
-        internal_rate_of_return = None
+        return None
     # return the rate
     return internal_rate_of_return
 

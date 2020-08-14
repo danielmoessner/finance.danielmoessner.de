@@ -83,3 +83,14 @@ def get_df_from_database(statement, columns):
     df.loc[:, 'date'] = pd.to_datetime(df.loc[:, 'date'])
     df.set_index('date', inplace=True)
     return df
+
+
+def get_number_from_database(statement):
+    cursor = connection.cursor()
+    cursor.execute(statement)
+    data = cursor.fetchall()
+    # if there is not a single number returned just fallback to none
+    if len(data) != 1 or len(data[0]) != 1:
+        return None
+    data = data[0][0]
+    return data

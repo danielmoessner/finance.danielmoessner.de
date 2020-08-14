@@ -1,3 +1,6 @@
+###
+# General
+###
 def get_closest_value_or_flow(flow_qs, value_qs, date, direction='previous'):
     """
     Return the closest value or flow. If a flow is closer it

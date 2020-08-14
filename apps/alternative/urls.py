@@ -5,10 +5,6 @@ from apps.alternative import formviews, views
 app_name = 'alternative'
 
 urlpatterns = [
-    # FUNCTIONS
-    # # reset-movies/
-    path('reset-movies/', views.reset_movies, name='reset_movies'),
-
     # depot
     path('depots/add/', formviews.AddDepotView.as_view(), name='add_depot'),
     path('depots/<int:pk>/edit/', formviews.EditDepotView.as_view(), name='edit_depot'),

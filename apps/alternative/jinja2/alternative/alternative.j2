@@ -14,7 +14,6 @@
         <div class="btn-group" role="group" aria-label="Console">
             {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=="stats")) }}
             {{ bg.hrefButton("Data", request.path + '?tab=data', active=(tab=="data")) }}
-            {{ bg.hrefButton("Calculated", request.path + '?tab=calculated', active=(tab=="calculated")) }}
         </div>
     </div>
 
@@ -66,7 +65,5 @@
             </tbody>
         </table>
     {% endif %}
-
-    {% include 'alternative/symbols/calculated.j2' %}
 
 {% endblock %}

@@ -106,7 +106,7 @@ class ValueForm(forms.ModelForm):
             err = "You can't add more values to this alternative, because its value is 0."
             raise forms.ValidationError(err)
 
-        # check that if the previous value or flow is a flow that the date is close to the flow
+        # check that, if the previous value or flow is a flow, the date is close to the flow
         flow_qs = Flow.objects.filter(alternative=alternative)
         value_qs = Value.objects.filter(alternative=alternative).exclude(pk=self.instance.pk)
         previous_value_or_flow = utils.get_closest_value_or_flow(flow_qs, value_qs, date, direction='previous')

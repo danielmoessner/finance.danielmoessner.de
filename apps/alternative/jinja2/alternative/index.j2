@@ -10,13 +10,10 @@
     {% import "modules/button.njk" as bg %}
     {% import "modules/modal.njk" as mg %}
 
-    {%- set resetButton=bg.hrefButton("Reset", url("alternative:reset_movies")) -%}
-
     <div class="d-flex justify-content-center mt-2 mb-5">
         <div class="btn-group" role="group" aria-label="Console">
             {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
             {{ bg.hrefButton("Alternatives", request.path + '?tab=alternatives', active=(tab=='alternatives')) }}
-            {{ bg.hrefButton("Calculated", request.path + '?tab=calculated', active=(tab=='calculated')) }}
         </div>
     </div>
 
@@ -37,9 +34,9 @@
             {% for alternative in alternatives %}
                 <tr>
                     <td>{{ alternative.name }}</td>
-                    <td>{{ alternative.get_latest_picture().invested_capital }}</td>
-                    <td>{{ alternative.get_latest_picture().value }}</td>
-                    <td>{{ alternative.get_latest_picture().profit }}</td>
+                    <td>{{ alternative.get_invested_capital() }}</td>
+                    <td>{{ alternative.get_value() }}</td>
+                    <td>{{ alternative.get_profit() }}</td>
                     <td>
                         <div class="d-flex">
                             {{ bg.hrefButton("Open", url('alternative:alternative', args=[alternative.pk])) }}
@@ -62,7 +59,5 @@
             </tbody>
         </table>
     {% endif %}
-
-    {% include 'alternative/symbols/calculated.j2' %}
 
 {% endblock %}

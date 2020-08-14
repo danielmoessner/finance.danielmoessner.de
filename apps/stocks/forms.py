@@ -1,13 +1,6 @@
-import json
-import urllib
-from datetime import datetime
-from decimal import Decimal
-
-import requests
 from django import forms
 from django.utils import timezone
 from apps.stocks.models import Depot, Bank, Trade, Stock, Flow, Price, Dividend, PriceFetcher
-from django.conf import settings
 
 
 ###

@@ -1,12 +1,8 @@
-from django.utils import timezone
+from apps.alternative.models import Alternative, Depot
+from apps.alternative.forms import ValueForm, FlowForm
+from apps.users.models import StandardUser as User
 from django.test import TestCase, Client
 from django.urls import reverse_lazy
-
-from apps.users.models import StandardUser as User
-from .models import Alternative, Depot
-from .forms import ValueForm, FlowForm
-
-from datetime import timedelta
 
 
 class ViewsTestCase(TestCase):
@@ -52,15 +48,13 @@ class GeneralTestCase(TestCase):
         self.depot = Depot.objects.create(name="Test Depot", user=self.user)
         self.alternative = Alternative.objects.create(depot=self.depot, name="Test Alternative")
 
-    def create_flow(self, days_before_now, flow_flow, hours_before_now=20):
-        date = (timezone.now().replace(hour=00, minute=00) - timedelta(days=days_before_now, hours=hours_before_now))
-        flow = FlowForm(self.depot, {"alternative": self.alternative.pk, "date": date, "flow": flow_flow})
+    def create_flow(self, date, flow):
+        flow = FlowForm(self.depot, {"alternative": self.alternative.pk, "date": date, "flow": flow})
         flow.save()
         return flow
 
-    def create_value(self, days_before_now, value_value, hours_before_now=4):
-        date = (timezone.now().replace(hour=00, minute=00) - timedelta(days=days_before_now, hours=hours_before_now))
-        value = ValueForm(self.depot, {"alternative": self.alternative.pk, "date": date, "value": value_value})
+    def create_value(self, date, value):
+        value = ValueForm(self.depot, {"alternative": self.alternative.pk, "date": date, "value": value})
         value.save()
         return value
 
@@ -69,27 +63,35 @@ class GeneralTestCase(TestCase):
 
     def test_value_can_not_be_created_without_flow_before(self):
         with self.assertRaises(ValueError):
-            self.create_value(20, 100)
+            self.create_value("2020-05-05T13:30", 100)
 
     def test_value_can_not_be_created_far_away_from_flow(self):
+        self.create_flow('2020-05-05T13:30', 100)
         with self.assertRaises(ValueError):
-            self.create_flow(21, 100)
-            self.create_value(20, 100)
+            self.create_value('2020-05-06T13:31', 100)
 
     def test_flow_can_not_be_followed_by_a_flow(self):
+        self.create_flow('2020-05-05T13:30', 100)
         with self.assertRaises(ValueError):
-            self.create_flow(20, 100)
-            self.create_flow(19, 100)
+            self.create_flow('2020-05-05T13:33', 100)
 
     def test_value_can_not_be_created_before_flow(self):
+        self.create_flow('2020-05-05T13:30', 100)
         with self.assertRaises(ValueError):
-            self.create_flow(20, 100)
-            self.create_value(21, 100)
+            self.create_value('2020-05-04T13:30', 100)
 
     def test_flow_can_not_be_inserted_next_to_flow(self):
-        self.create_flow(20, 100)
-        self.create_value(20, 100)
+        self.create_flow('2020-05-05T13:30', 100)
+        self.create_value('2020-05-05T13:32', 100)
         with self.assertRaises(ValueError):
-            self.create_flow(20, 100, hours_before_now=10)
+            self.create_flow('2020-05-05T13:31', 100)
         with self.assertRaises(ValueError):
-            self.create_flow(21, 100)
+            self.create_flow('2020-05-05T13:29', 100)
+
+    def test_value_or_flow_can_not_be_on_the_same_date(self):
+        self.create_flow('2020-05-05T13:30', 100)
+        with self.assertRaises(ValueError):
+            self.create_value('2020-05-05T13:30', 100)
+        self.create_value('2020-05-05T13:31', 100)
+        with self.assertRaises(ValueError):
+            self.create_flow('2020-05-05T13:31', 100)
