@@ -90,6 +90,12 @@ class ValueForm(forms.ModelForm):
         alternative = self.cleaned_data['alternative']
         date = self.cleaned_data['date']
 
+        # check that no flow or value already exists on this date
+        if (Value.objects.filter(alternative=alternative, date=date).exists() or
+                Flow.objects.filter(alternative=alternative, date=date)
+        ):
+            raise forms.ValidationError('A flow or a value already exists on this date. Choose a different date.')
+
         # a value before a flow occurs makes no sense
         if not Flow.objects.filter(alternative=alternative, date__lt=date).exists():
             message = 'There needs to be at least one flow before a value.'
@@ -132,11 +138,17 @@ class FlowForm(forms.ModelForm):
     def __init__(self, depot, *args, **kwargs):
         super(FlowForm, self).__init__(*args, **kwargs)
         self.fields['alternative'].queryset = depot.alternatives.all()
-        self.fields['date'].initial = timezone.now().date
+        self.fields['date'].initial = timezone.now()
 
     def clean(self):
         date = self.cleaned_data['date']
         alternative = self.cleaned_data['alternative']
+
+        # check that no flow or value already exists on this date
+        if (Value.objects.filter(alternative=alternative, date=date).exists() or
+                Flow.objects.filter(alternative=alternative, date=date)
+        ):
+            raise forms.ValidationError('A flow or a value already exists on this date. Choose a different date.')
 
         # don't allow adding flows if the value is 0
         if Value.objects.filter(alternative=alternative, value__lte=0).exists():
@@ -152,7 +164,7 @@ class FlowForm(forms.ModelForm):
             message = "A flow can not be followed by a flow. There is a flow right before this flow."
             raise forms.ValidationError(message)
         # check that there is no flow right after this flow
-        next_value_or_flow = utils.get_closest_value_or_flow(flow_qs, value_qs, date, direction='previous')
+        next_value_or_flow = utils.get_closest_value_or_flow(flow_qs, value_qs, date, direction='next')
         if next_value_or_flow and type(next_value_or_flow) == Flow:
             message = "A flow can not be followed by a flow. There is a flow right after this flow."
             raise forms.ValidationError(message)

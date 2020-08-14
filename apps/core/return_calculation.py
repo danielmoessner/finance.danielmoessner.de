@@ -122,7 +122,10 @@ def _get_daily_internal_rate_of_return(df, guess=0.000210874):
     if df.iloc[-1, df.columns.get_loc('flow')] == 0:
         return np.nan
     # calculate the internal rate of return
-    internal_rate_of_return = newton(lambda rate: _custom_xnpv(rate, df), guess)
+    try:
+        internal_rate_of_return = newton(lambda rate: _custom_xnpv(rate, df), guess)
+    except RuntimeError:
+        internal_rate_of_return = None
     # return the rate
     return internal_rate_of_return
 
@@ -133,6 +136,9 @@ def get_internal_rate_of_return(df):
         return None
     # get the daily rate
     internal_rate_of_return = _get_daily_internal_rate_of_return(df)
+    # return none if no rate was found
+    if internal_rate_of_return is None:
+        return None
     # turn the daily rate into the rate of the period
     internal_rate_of_return = (1 + internal_rate_of_return) ** (df.iloc[-1, df.columns.get_loc('days')])
     # adjust to represent a percentage value

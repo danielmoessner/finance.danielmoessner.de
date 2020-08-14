@@ -93,7 +93,7 @@ class Alternative(models.Model):
         # standardize the numbers
         df.loc[:, 'value'] = pd.to_numeric(df.loc[:, 'value'])
         # change the time
-        df = utils.change_time_of_date_index_in_df(df, 12)
+        # df = utils.change_time_of_date_index_in_df(df, 13)
         # group by time and sum up the values for the day
         df = df.groupby(df.index, sort=True).tail(1)
         # return the df
@@ -108,7 +108,7 @@ class Alternative(models.Model):
         # standardize the numbers
         df.loc[:, 'flow'] = pd.to_numeric(df.loc[:, 'flow'], downcast='float')
         # change the time
-        df = utils.change_time_of_date_index_in_df(df, 12)
+        # df = utils.change_time_of_date_index_in_df(df, 12)
         # group by time and sum up the values for the day
         df = df.groupby(df.index, sort=True).sum()
         # return the df
@@ -207,6 +207,8 @@ class Movie(models.Model):
 
     def calc_internal_rate_of_return(self):
         # get the value
+        print(self.flow_df)
+        print(self.value_df)
         internal_rate_of_return_df = rc.get_internal_rate_of_return_df(self.flow_df, self.value_df)
         internal_rate_of_return = rc.get_internal_rate_of_return(internal_rate_of_return_df)
         # check to avoid errors with db queries
