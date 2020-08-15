@@ -318,12 +318,21 @@ class TradeForm(forms.ModelForm):
             raise forms.ValidationError('Sell and buy amount must be positive.')
         # check that enough money is available to buy the stocks
         if buy_or_sell == 'BUY':
+            # check that enough money is available right on this date
             bank_balance = bank.get_balance_on_date(date)
-            msg = (
-                'There is not enough money on this bank to support this trade. '
-                'This particular bank has {} € available.'.format(bank_balance)
-            )
-            if bank_balance < 0:
+            if bank_balance - money_amount < 0:
+                msg = (
+                    'There is not enough money on this bank to support this trade. '
+                    'This particular bank has {} € available.'.format(bank_balance)
+                )
+                raise forms.ValidationError(msg)
+            # check that the overall balance does not become negative after this trade is added
+            bank_balance = bank.get_balance(in_decimal=True)
+            if bank_balance - money_amount < 0:
+                msg = (
+                    'After this trade the balance would be {}. That is not possible. '
+                    'You need to change the money_amount.'.format((bank_balance - money_amount))
+                )
                 raise forms.ValidationError(msg)
         # return
         return self.cleaned_data

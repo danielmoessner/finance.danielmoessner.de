@@ -185,8 +185,8 @@ class Bank(models.Model):
             self.save()
         return self.value
 
-    def get_balance(self):
-        if self.balance is None:
+    def get_balance(self, in_decimal=False):
+        if self.balance is None or in_decimal is True:
             self.balance = 0
             flows_amount = self.flows.all().aggregate(Sum('flow'))
             self.balance += flows_amount['flow__sum'] if flows_amount['flow__sum'] else 0
@@ -196,8 +196,9 @@ class Bank(models.Model):
             self.balance += sell_trades_amount['money_amount__sum'] if sell_trades_amount['money_amount__sum'] else 0
             dividends_amount = self.dividends.all().aggregate(Sum('dividend'))
             self.balance += dividends_amount['dividend__sum'] if dividends_amount['dividend__sum'] else 0
-            self.balance = float(self.balance)
-            self.save()
+            if not in_decimal:
+                self.balance = float(self.balance)
+                self.save()
         return self.balance
 
     def get_balance_on_date(self, date):
@@ -215,12 +216,6 @@ class Bank(models.Model):
         dividends_amount = self.dividends.filter(date__lte=date).aggregate(Sum('dividend'))
         balance += dividends_amount['dividend__sum'] if dividends_amount['dividend__sum'] else 0
         return balance
-
-    def get_flow_df(self):
-        pass
-
-    def get_value_df(self):
-        pass
 
 
 class Stock(models.Model):
