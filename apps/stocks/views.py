@@ -1,30 +1,15 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from apps.core.mixins import CustomGetFormUserMixin, AjaxResponseMixin, TabContextMixin, \
-    GetFormWithDepotAndInitialDataMixin, CustomAjaxDeleteMixin
+    GetFormWithDepotAndInitialDataMixin, CustomAjaxDeleteMixin, GetFormWithDepotMixin
 from django.shortcuts import get_object_or_404
 from django.views import generic
 from django.urls import reverse_lazy
 from django.http import HttpResponse, HttpResponseRedirect
 from .models import Depot, Stock, Bank, Flow, Trade, Price, Dividend, PriceFetcher
+from .mixins import GetDepotMixin
 from .forms import DepotForm, DepotActiveForm, DepotSelectForm, BankForm, BankSelectForm, StockSelectForm, StockForm, \
     FlowForm, TradeForm, EditStockForm, DividendForm, PriceFetcherForm, PriceEditForm
 import json
-
-
-###
-# Mixins
-###
-class CustomGetFormMixin:
-    def get_form(self, form_class=None):
-        if form_class is None:
-            form_class = self.get_form_class()
-        depot = self.request.user.stock_depots.get(is_active=True)
-        return form_class(depot, **self.get_form_kwargs())
-
-
-class GetDepotMixin:
-    def get_depot(self):
-        return self.request.user.stock_depots.filter(is_active=True).first()
 
 
 ###
@@ -104,13 +89,13 @@ class StockView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
         return context
 
 
-class AddStockView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.CreateView):
+class AddStockView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.CreateView):
     form_class = StockForm
     model = Stock
     template_name = "modules/form_snippet.njk"
 
 
-class EditStockView(CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
+class EditStockView(GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.UpdateView):
     model = Stock
     form_class = EditStockForm
     template_name = "modules/form_snippet.njk"
@@ -119,7 +104,7 @@ class EditStockView(CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
         return Stock.objects.filter(depot__in=self.request.user.stock_depots.all())
 
 
-class DeleteStockView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.FormView):
+class DeleteStockView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.FormView):
     model = Stock
     template_name = "modules/form_snippet.njk"
     form_class = StockSelectForm
@@ -142,13 +127,13 @@ class EditPriceView(LoginRequiredMixin, AjaxResponseMixin, generic.UpdateView):
 ###
 # StockPriceFetcher: Add, Edit, Delete
 ###
-class AddPriceFetcherView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.CreateView):
+class AddPriceFetcherView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.CreateView):
     form_class = PriceFetcherForm
     model = PriceFetcher
     template_name = "modules/form_snippet.njk"
 
 
-class EditPriceFetcherView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
+class EditPriceFetcherView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.UpdateView):
     model = PriceFetcher
     form_class = PriceFetcherForm
     template_name = "modules/form_snippet.njk"
@@ -180,13 +165,13 @@ class BankView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
         return context
 
 
-class AddBankView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.CreateView):
+class AddBankView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.CreateView):
     form_class = BankForm
     model = Bank
     template_name = "modules/form_snippet.njk"
 
 
-class EditBankView(CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
+class EditBankView(GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.UpdateView):
     model = Bank
     form_class = BankForm
     template_name = "modules/form_snippet.njk"
@@ -195,7 +180,7 @@ class EditBankView(CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
         return Bank.objects.filter(depot__in=self.request.user.stock_depots.all())
 
 
-class DeleteBankView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.FormView):
+class DeleteBankView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.FormView):
     model = Bank
     template_name = "modules/form_snippet.njk"
     form_class = BankSelectForm
@@ -216,7 +201,7 @@ class AddFlowView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAndInitialD
     template_name = "modules/form_snippet.njk"
 
 
-class EditFlowView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
+class EditFlowView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.UpdateView):
     model = Flow
     form_class = FlowForm
     template_name = "modules/form_snippet.njk"
@@ -242,7 +227,7 @@ class AddDividendView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAndInit
     template_name = "modules/form_snippet.njk"
 
 
-class EditDividendView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
+class EditDividendView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.UpdateView):
     model = Dividend
     form_class = DividendForm
     template_name = "modules/form_snippet.njk"
@@ -268,7 +253,7 @@ class AddTradeView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAndInitial
     template_name = "modules/form_snippet.njk"
 
 
-class EditTradeView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
+class EditTradeView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.UpdateView):
     model = Trade
     form_class = TradeForm
     template_name = "modules/form_snippet.njk"
