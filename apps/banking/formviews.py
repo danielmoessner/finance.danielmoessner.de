@@ -1,25 +1,14 @@
 from django.views.generic.detail import SingleObjectMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.edit import FormMixin
+from apps.banking.models import Category, Account, Change, Depot
+from apps.banking.forms import CategorySelectForm, AccountSelectForm, DepotActiveForm, DepotSelectForm, CategoryForm, \
+    AccountForm, ChangeForm, DepotForm
+from apps.core.mixins import CustomAjaxDeleteMixin, CustomGetFormUserMixin, AjaxResponseMixin
 from django.views import generic
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-
-from apps.banking.models import Category
-from apps.banking.models import Account
-from apps.banking.models import Change
-from apps.banking.models import Depot
-from apps.banking.forms import CategorySelectForm
-from apps.banking.forms import AccountSelectForm
-from apps.banking.forms import DepotActiveForm
-from apps.banking.forms import DepotSelectForm
-from apps.banking.forms import CategoryForm
-from apps.banking.forms import AccountForm
-from apps.banking.forms import ChangeForm
-from apps.banking.forms import DepotForm
-from apps.core.views import CustomAjaxDeleteMixin, CustomGetFormUserMixin, AjaxResponseMixin
 from django.http import HttpResponse
-
 import json
 
 

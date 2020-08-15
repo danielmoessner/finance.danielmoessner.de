@@ -6,10 +6,9 @@ from django.contrib import messages
 from django.views import generic
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-
 from apps.users.models import StandardUser
 from apps.users.forms import CreateStandardUserForm
-from apps.core.views import TabContextMixin
+from apps.core.mixins import TabContextMixin
 
 
 class RedirectView(generic.RedirectView):

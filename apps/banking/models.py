@@ -1,14 +1,9 @@
-from django.db import connection
-from django.db import models
-
 from apps.users.models import StandardUser
-from apps.core.models import Timespan as CoreTimespan
 from apps.core.models import Account as CoreAccount
 from apps.core.models import Depot as CoreDepot
 from apps.core.utils import turn_dict_of_dicts_into_list_of_dicts
-
+from django.db import connection, models
 import apps.banking.duplicated_code as banking_duplicated_code
-import apps.core.duplicated_code as dc
 
 
 class Depot(CoreDepot):
@@ -117,9 +112,6 @@ class Account(CoreAccount):
         return {
             'Balance': balance
         }
-
-    def get_latest_picture(self):
-        return dc.get_latest_picture(self)
 
     @staticmethod
     def get_objects_by_user(user):

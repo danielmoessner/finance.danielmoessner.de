@@ -1,16 +1,13 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from apps.crypto.models import Transaction, Flow, Account, Asset, Trade, Depot
+from apps.crypto.forms import FlowForm, AccountSelectForm, TradeForm, DepotForm, AccountForm, AssetSelectForm, \
+    DepotSelectForm, DepotActiveForm, TransactionForm, AssetForm
+from apps.core.mixins import CustomAjaxDeleteMixin, AjaxResponseMixin, CustomGetFormUserMixin, \
+    GetFormWithDepotAndInitialDataMixin, GetFormWithDepotMixin
 from django.shortcuts import get_object_or_404
 from django.views import generic
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse_lazy
-
-from apps.crypto.models import Transaction, Flow, Account, Asset, Trade, Depot
-from apps.crypto.forms import FlowForm, AccountSelectForm, TradeForm, DepotForm, AccountForm
-from apps.crypto.forms import AssetSelectForm, DepotSelectForm, DepotActiveForm, TransactionForm
-from apps.crypto.forms import AssetForm
-from apps.core.views import CustomAjaxDeleteMixin, AjaxResponseMixin, CustomGetFormUserMixin
-from apps.core.views import GetFormWithDepotAndInitialDataMixin, GetFormWithDepotMixin
-
 import json
 
 

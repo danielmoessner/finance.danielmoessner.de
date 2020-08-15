@@ -1,13 +1,10 @@
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.views import PasswordChangeView
-from django.views import generic
-
 from apps.users.models import StandardUser
-from apps.users.forms import UpdateGeneralStandardUserForm
-from apps.users.forms import UpdateCryptoStandardUserForm
-from apps.users.forms import UpdateStandardUserForm
-from apps.core.views import AjaxResponseMixin
+from apps.users.forms import UpdateGeneralStandardUserForm, UpdateCryptoStandardUserForm, UpdateStandardUserForm
+from apps.core.mixins import AjaxResponseMixin
+from django.views import generic
 
 
 class UserIsLoggedIn(UserPassesTestMixin):

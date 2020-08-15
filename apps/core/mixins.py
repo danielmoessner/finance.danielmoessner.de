@@ -1,30 +1,17 @@
 from django.template.loader import render_to_string
 from django.http import HttpResponse
-
 import json
 
 
-# mixins
+###
+# Form Mixins
+###
 class CustomGetFormUserMixin:
     def get_form(self, form_class=None):
         if form_class is None:
             form_class = self.get_form_class()
         user = self.request.user
         return form_class(user, **self.get_form_kwargs())
-
-
-class TabContextMixin:
-    def get_context_data(self, **kwargs):
-        context = super(TabContextMixin, self).get_context_data(**kwargs)
-        context['tab'] = self.request.GET.get('tab', 'stats')
-        return context
-
-
-class CustomAjaxDeleteMixin:
-    def delete(self, request, *args, **kwargs):
-        object = self.get_object()
-        object.delete()
-        return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
 
 
 class AjaxResponseMixin:
@@ -53,3 +40,20 @@ class GetFormWithDepotAndInitialDataMixin:
         if self.request.method == 'GET':
             return form_class(depot, initial=self.request.GET, **self.get_form_kwargs().pop('initial'))
         return form_class(depot, **self.get_form_kwargs())
+
+
+###
+# Other Mixins
+###
+class TabContextMixin:
+    def get_context_data(self, **kwargs):
+        context = super(TabContextMixin, self).get_context_data(**kwargs)
+        context['tab'] = self.request.GET.get('tab', 'stats')
+        return context
+
+
+class CustomAjaxDeleteMixin:
+    def delete(self, request, *args, **kwargs):
+        object = self.get_object()
+        object.delete()
+        return HttpResponse(json.dumps({"valid": True}), content_type="application/json")

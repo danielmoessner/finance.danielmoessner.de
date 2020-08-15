@@ -1,11 +1,11 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy
-from django.views import generic
-from .models import Depot, Stock, Bank, Flow, Trade, Price, Dividend, PriceFetcher
-from apps.core.views import CustomGetFormUserMixin, AjaxResponseMixin, TabContextMixin, \
+from apps.core.mixins import CustomGetFormUserMixin, AjaxResponseMixin, TabContextMixin, \
     GetFormWithDepotAndInitialDataMixin, CustomAjaxDeleteMixin
+from django.shortcuts import get_object_or_404
+from django.views import generic
+from django.urls import reverse_lazy
+from django.http import HttpResponse, HttpResponseRedirect
+from .models import Depot, Stock, Bank, Flow, Trade, Price, Dividend, PriceFetcher
 from .forms import DepotForm, DepotActiveForm, DepotSelectForm, BankForm, BankSelectForm, StockSelectForm, StockForm, \
     FlowForm, TradeForm, EditStockForm, DividendForm, PriceFetcherForm, PriceEditForm
 import json

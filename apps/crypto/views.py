@@ -1,11 +1,10 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from apps.crypto.models import Asset, Account, Depot, Price, Trade, Transaction, Flow
 from django.shortcuts import get_object_or_404
+from apps.core.mixins import TabContextMixin
 from django.views import generic
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-
-from apps.crypto.models import Asset, Account, Depot, Price, Trade, Transaction, Flow
-from apps.core.views import TabContextMixin
 
 
 class IndexView(LoginRequiredMixin, TabContextMixin, generic.DetailView):

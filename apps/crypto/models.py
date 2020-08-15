@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.db import models
 
 from apps.users.models import StandardUser
-from apps.core.models import Timespan as CoreTimespan, Account as CoreAccount, Depot as CoreDepot
+from apps.core.models import Account as CoreAccount, Depot as CoreDepot
 from apps.core.utils import sum_up_columns_in_a_dataframe, get_merged_value_df_from_queryset
 from apps.core.utils import remove_all_nans_at_beginning_and_end, change_time_of_date_index_in_df
 import apps.core.return_calculation as rc

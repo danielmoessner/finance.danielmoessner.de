@@ -3,6 +3,9 @@ import pandas as pd
 from django.db import connection
 
 
+###
+# DataFrame Utils
+###
 def remove_all_nans_at_beginning_and_end(df, column):
     # get the index of the first non nan value
     first_idx = df.loc[:, column].first_valid_index()
@@ -53,14 +56,6 @@ def sum_up_columns_in_a_dataframe(df, column='value'):
     return df
 
 
-def turn_dict_of_dicts_into_list_of_dicts(dict_of_dicts, name_of_key):
-    list_of_dicts = []
-    for key_to_inside_dict, inside_dict in dict_of_dicts.items():
-        inside_dict.update({name_of_key: key_to_inside_dict})
-        list_of_dicts.append(inside_dict)
-    return list_of_dicts
-
-
 def change_time_of_date_index_in_df(df, hours):
     assert 0 <= hours <= 24
     if not df.empty:
@@ -69,12 +64,20 @@ def change_time_of_date_index_in_df(df, hours):
     return df
 
 
-def round_value_if_exists(value, places=2):
-    if value is not None:
-        return round(value, places)
-    return None
+###
+# Python Utils
+###
+def turn_dict_of_dicts_into_list_of_dicts(dict_of_dicts, name_of_key):
+    list_of_dicts = []
+    for key_to_inside_dict, inside_dict in dict_of_dicts.items():
+        inside_dict.update({name_of_key: key_to_inside_dict})
+        list_of_dicts.append(inside_dict)
+    return list_of_dicts
 
 
+###
+# Database Utils
+###
 def get_df_from_database(statement, columns):
     cursor = connection.cursor()
     cursor.execute(statement)

@@ -3,7 +3,6 @@ from django.core.validators import MinValueValidator
 from django.utils import timezone
 from django.db import models
 from apps.users.models import StandardUser
-from apps.core.models import Timespan as CoreTimespan
 from apps.core.models import Depot as CoreDepot
 import apps.core.return_calculation as rc
 import apps.core.utils as utils

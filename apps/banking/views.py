@@ -1,8 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views import generic
-
 from apps.banking.models import Category, Account, Depot
-from apps.core.views import TabContextMixin
+from apps.core.mixins import TabContextMixin
+from django.views import generic
 
 
 # views
