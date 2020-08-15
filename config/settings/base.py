@@ -34,7 +34,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'background_task',
-    # 'apps.core.apps.CoreConfig',
     'apps.users.apps.UsersConfig',
     'apps.banking.apps.BankingConfig',
     'apps.crypto.apps.CryptoConfig',
