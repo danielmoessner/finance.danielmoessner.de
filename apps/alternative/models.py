@@ -72,10 +72,10 @@ class Alternative(models.Model):
         }
 
     def get_value(self):
-        try:
-            return float(Value.objects.filter(alternative=self).order_by('date').last().value)
-        except ObjectDoesNotExist:
-            return None
+        value = Value.objects.filter(alternative=self).order_by('date').last()
+        if value:
+            return float(value.value)
+        return None
 
     def get_profit(self):
         if self.profit is None:

@@ -109,7 +109,7 @@ class FlowValueAmountTestCase(StandardSetUpTestCase):
         Price.objects.create(symbol='LTC', date=(date - timedelta(days=300)), price=100)
         Price.objects.create(symbol='LTC', date=date, price=100)
         df = ltc.get_value_df()
-        assert df.index[-1] == date.replace(hour=12, minute=0, second=0, microsecond=0)
+        assert df.index[-1] == date.replace(hour=12, minute=0, second=0, microsecond=0, tzinfo=None)
 
     def test_price_df_length_equal_to_prices(self):
         btc = Asset.objects.get(depot=self.depot, symbol='BTC')

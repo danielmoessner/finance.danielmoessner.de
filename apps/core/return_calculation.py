@@ -93,7 +93,8 @@ def get_internal_rate_of_return_df(flow_df, value_df):
     # drop the nan rows
     df = df.loc[df.loc[:, 'flow'].notna()]
     # test that the length is equal to the length of the flow df plus the last row of the value df
-    assert len(df.index) == len(flow_df.index) + 1 or len(df.index) == len(flow_df.index) + 2
+    if len(df.index) != len(flow_df.index) + 1 and len(df.index) != len(flow_df.index) + 2:
+        return None
     # drop the value column
     df = df.loc[:, ['flow']]
     # add the days column
