@@ -27,4 +27,5 @@ urlpatterns = [
     path('users/<int:pk>/generate-banking/', views.init_banking, name='init_banking'),
     path('users/<int:pk>/generate-crypto/', views.init_crypto, name='init_crypto'),
     path('users/<int:pk>/generate-alternative/', views.init_alternative, name='init_alternative'),
+    path('users/<int:pk>/generate-stocks/', views.init_stocks, name='init_stocks')
 ]

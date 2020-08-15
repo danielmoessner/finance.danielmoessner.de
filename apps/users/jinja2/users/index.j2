@@ -74,7 +74,7 @@
                         {{ bg.modalButton("Add Depot", "#addBankingDepot") }}
                         {{ mg.djangoModal("Delete Depot", "deleteBankingDepot", url("banking:delete_depot")) }}
                         {{ bg.modalButton("Delete Depot", "#deleteBankingDepot") }}
-                        {{ bg.hrefButton("Generate example depot", url("users:init_banking", args=[object.pk])) }}
+                        {{ bg.hrefButton("Generate Example Depot", url("users:init_banking", args=[object.pk])) }}
                     </div>
                 </td>
             </tr>
@@ -110,7 +110,7 @@
                         {{ bg.modalButton("Add Depot", "#addCryptoDepot") }}
                         {{ mg.djangoModal("Delete Depot", "deleteCryptoDepot", url("crypto:delete_depot")) }}
                         {{ bg.modalButton("Delete Depot", "#deleteCryptoDepot") }}
-                        {{ bg.hrefButton("Generate example depot", url("users:init_crypto", args=[object.pk])) }}
+                        {{ bg.hrefButton("Generate Example Depot", url("users:init_crypto", args=[object.pk])) }}
                     </div>
                 </td>
             </tr>
@@ -146,7 +146,7 @@
                         {{ bg.modalButton("Add Depot", "#addAlternativeDepot") }}
                         {{ mg.djangoModal("Delete Depot", "deleteAlternativeDepot", url("alternative:delete_depot")) }}
                         {{ bg.modalButton("Delete Depot", "#deleteAlternativeDepot") }}
-                        {{ bg.hrefButton("Generate example depot", url("users:init_alternative", args=[object.pk])) }}
+                        {{ bg.hrefButton("Generate Example Depot", url("users:init_alternative", args=[object.pk])) }}
                     </div>
                 </td>
             </tr>
@@ -182,6 +182,7 @@
                         {{ bg.modalButton("Add Depot", "#addStocksDepot") }}
                         {{ mg.djangoModal("Delete Depot", "deleteStocksDepot", url("stocks:delete_depot")) }}
                         {{ bg.modalButton("Delete Depot", "#deleteStocksDepot") }}
+                        {{ bg.hrefButton("Generate Example Depot", url("users:init_stocks", args=[object.pk])) }}
                     </div>
                 </td>
             </tr>

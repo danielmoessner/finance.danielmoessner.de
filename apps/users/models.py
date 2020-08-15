@@ -204,3 +204,34 @@ class StandardUser(AbstractUser):
         create_transaction(depot, 20, 5, 1, ltc, account2, account1)
         # return the depot with the generated data
         return depot
+
+    def create_random_stocks_data(self):
+        from apps.stocks.models import Depot, Bank, Stock
+        from apps.stocks.forms import TradeForm, FlowForm
+
+        # helpers
+        def create_trade(depot, date, bank, money_amount, stock_amount, stock, buy_or_sell):
+            trade = TradeForm(depot, {'bank': bank, 'date': date, 'money_amount': money_amount,
+                                      'stock_amount': stock_amount, 'stock': stock,
+                                      'buy_or_sell': buy_or_sell})
+            trade = trade.save()
+            return trade
+
+        def create_flow(depot, date, flow, bank):
+            flow = FlowForm(depot, {'date': date, 'flow': flow, 'bank': bank})
+            flow = flow.save()
+            return flow
+
+        # depot
+        name = 'Depot {}'.format(random.randrange(100, 999))
+        depot = Depot.objects.create(name=name, user=self, is_active=True)
+        # bank
+        bank = Bank.objects.create(name='Big Bank', depot=depot)
+        # stock
+        stock = Stock.objects.create(depot=depot, name='Varta AG', ticker='VAR1', exchange='XETRA')
+        # flow
+        create_flow(depot, '2020-03-03T13:45', 10000, bank)
+        # trade
+        create_trade(depot, '2020-07-22T09:22', bank, 10000, 100, stock, 'BUY')
+        # return
+        return depot

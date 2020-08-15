@@ -86,3 +86,12 @@ def init_alternative(request, pk):
     messages.success(request, message)
     url = '{}?tab=alternative'.format(reverse_lazy("users:settings", args=[user.pk]))
     return HttpResponseRedirect(url)
+
+
+def init_stocks(request, pk):
+    user = request.user
+    depot = user.create_random_stocks_data()
+    message = '{} was created.'.format(depot.name)
+    messages.success(request, message)
+    url = '{}?tab=stocks'.format(reverse_lazy('users:settings', args=[user.pk]))
+    return HttpResponseRedirect(url)
