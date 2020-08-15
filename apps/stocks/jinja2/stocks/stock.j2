@@ -67,9 +67,9 @@
     {% include 'stocks/symbols/dividends.j2' %}
 
     {% with price_and_amount=True %}
-        {% include 'symbols2/values.j2' %}
+        {% include 'symbols/values.j2' %}
     {% endwith %}
 
-    {% include 'symbols2/flows.j2' %}
+    {% include 'symbols/flows.j2' %}
 
 {% endblock %}
