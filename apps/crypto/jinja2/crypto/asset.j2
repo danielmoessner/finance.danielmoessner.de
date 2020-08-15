@@ -6,8 +6,8 @@
 
 {% block main %}
 
-    {% import "modules/button.njk" as bg %}
-    {% import "modules/modal.njk" as mg %}
+    {% import "symbols/button.njk" as bg %}
+    {% import "symbols/modal.njk" as mg %}
 
     {%- set addTransactionButton=bg.modalButton("Send/Receive Asset", "#addTransaction") -%}
 
@@ -20,7 +20,7 @@
         </div>
     </div>
 
-    {% include "modules/stats.j2" %}
+    {% include "symbols/stats.j2" %}
 
     {% if tab=="prices" %}
         <table class="table table-dark table-responsive-md rounded mb-5">

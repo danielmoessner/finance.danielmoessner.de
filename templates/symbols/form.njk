@@ -1,4 +1,4 @@
-{% import 'modules/button.njk' as buttons %}
+{% import 'symbols/button.njk' as buttons %}
 
 {% macro formGenerator(form, url, csrf_token, form_classes='', submit_button_text='', submit_button_classes='') %}
     <form method="post" action="{{ url }}" class="djangoform {{ form_classes }}">

@@ -6,8 +6,8 @@
 
 {% block main %}
 
-    {% import "modules/button.njk" as bg %}
-    {% import "modules/modal.njk" as mg %}
+    {% import "symbols/button.njk" as bg %}
+    {% import "symbols/modal.njk" as mg %}
 
     <div class="d-flex justify-content-center mt-2 mb-5">
         <div class="btn-group" role="group" aria-label="Console">
@@ -24,7 +24,7 @@
         </div>
     </div>
 
-    {% include 'modules/stats.j2' %}
+    {% include 'symbols/stats.j2' %}
 
     {% if tab=="assets" %}
         <table class="table rounded table-responsive-md table-dark">

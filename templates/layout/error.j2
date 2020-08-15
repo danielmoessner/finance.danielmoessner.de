@@ -1,7 +1,7 @@
 {% if request and request.user.is_authenticated %}
     {% extends "layout/lm.njk" %}
 {% else %}
-    {% import "modules/button.njk" as buttons %}
+    {% import "symbols/button.njk" as buttons %}
     {% extends "layout/m.njk" %}
 {% endif %}
 

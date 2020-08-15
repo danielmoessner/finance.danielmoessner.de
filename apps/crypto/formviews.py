@@ -29,18 +29,18 @@ class GetDepotMixin:
 class AddDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.CreateView):
     form_class = DepotForm
     model = Depot
-    template_name = "modules/form_snippet.njk"
+    template_name = "symbols/form_snippet.njk"
 
 
 class EditDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.UpdateView):
     model = Depot
     form_class = DepotForm
-    template_name = "modules/form_snippet.njk"
+    template_name = "symbols/form_snippet.njk"
 
 
 class DeleteDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.FormView):
     model = Depot
-    template_name = "modules/form_snippet.njk"
+    template_name = "symbols/form_snippet.njk"
     form_class = DepotSelectForm
 
     def form_valid(self, form):
@@ -68,18 +68,18 @@ class SetActiveDepotView(LoginRequiredMixin, generic.View):
 class AddAccountView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.CreateView):
     form_class = AccountForm
     model = Account
-    template_name = "modules/form_snippet.njk"
+    template_name = "symbols/form_snippet.njk"
 
 
 class EditAccountView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
     model = Account
     form_class = AccountForm
-    template_name = "modules/form_snippet.njk"
+    template_name = "symbols/form_snippet.njk"
 
 
 class DeleteAccountView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.FormView):
     model = Account
-    template_name = "modules/form_snippet.njk"
+    template_name = "symbols/form_snippet.njk"
     form_class = AccountSelectForm
 
     def form_valid(self, form):
@@ -91,19 +91,19 @@ class DeleteAccountView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixi
 # asset
 class AddAssetView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.CreateView):
     model = Asset
-    template_name = "modules/form_snippet.njk"
+    template_name = "symbols/form_snippet.njk"
     form_class = AssetForm
 
 
 class EditAssetView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
     model = Asset
-    template_name = "modules/form_snippet.njk"
+    template_name = "symbols/form_snippet.njk"
     form_class = AssetForm
 
 
 class DeleteAssetView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.FormView):
     model = Asset
-    template_name = "modules/form_snippet.njk"
+    template_name = "symbols/form_snippet.njk"
     form_class = AssetSelectForm
 
     def form_valid(self, form):
@@ -117,18 +117,18 @@ class AddTradeView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAndInitial
                    generic.CreateView):
     model = Trade
     form_class = TradeForm
-    template_name = "modules/form_snippet.njk"
+    template_name = "symbols/form_snippet.njk"
 
 
 class EditTradeView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
     model = Trade
     form_class = TradeForm
-    template_name = "modules/form_snippet.njk"
+    template_name = "symbols/form_snippet.njk"
 
 
 class DeleteTradeView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
     model = Trade
-    template_name = "modules/delete_snippet.njk"
+    template_name = "symbols/delete_snippet.njk"
 
 
 # transaction
@@ -136,18 +136,18 @@ class AddTransactionView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAndI
                          generic.CreateView):
     model = Transaction
     form_class = TransactionForm
-    template_name = "modules/form_snippet.njk"
+    template_name = "symbols/form_snippet.njk"
 
 
 class EditTransactionView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
     model = Transaction
     form_class = TransactionForm
-    template_name = "modules/form_snippet.njk"
+    template_name = "symbols/form_snippet.njk"
 
 
 class DeleteTransactionView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
     model = Transaction
-    template_name = "modules/delete_snippet.njk"
+    template_name = "symbols/delete_snippet.njk"
 
 
 # flow
@@ -155,15 +155,15 @@ class AddFlowView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAndInitialD
                   generic.CreateView):
     model = Flow
     form_class = FlowForm
-    template_name = "modules/form_snippet.njk"
+    template_name = "symbols/form_snippet.njk"
 
 
 class EditFlowView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
     model = Flow
     form_class = FlowForm
-    template_name = "modules/form_snippet.njk"
+    template_name = "symbols/form_snippet.njk"
 
 
 class DeleteFlowView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
     model = Flow
-    template_name = "modules/delete_snippet.njk"
+    template_name = "symbols/delete_snippet.njk"
