@@ -4,9 +4,9 @@ from django.views import generic
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse_lazy
 
-from apps.crypto.models import Transaction, Flow, Timespan, Account, Asset, Trade, Depot
-from apps.crypto.forms import TimespanActiveForm, FlowForm, AccountSelectForm, TradeForm, DepotForm, AccountForm
-from apps.crypto.forms import AssetSelectForm, DepotSelectForm, DepotActiveForm, TransactionForm, TimespanForm
+from apps.crypto.models import Transaction, Flow, Account, Asset, Trade, Depot
+from apps.crypto.forms import FlowForm, AccountSelectForm, TradeForm, DepotForm, AccountForm
+from apps.crypto.forms import AssetSelectForm, DepotSelectForm, DepotActiveForm, TransactionForm
 from apps.crypto.forms import AssetForm
 from apps.core.views import CustomAjaxDeleteMixin, AjaxResponseMixin, CustomGetFormUserMixin
 from apps.core.views import GetFormWithDepotAndInitialDataMixin, GetFormWithDepotMixin
@@ -170,23 +170,3 @@ class EditFlowView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, ge
 class DeleteFlowView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
     model = Flow
     template_name = "modules/delete_snippet.njk"
-
-
-# timespan
-class AddTimespanView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.CreateView):
-    form_class = TimespanForm
-    model = Timespan
-    template_name = "modules/form_snippet.njk"
-
-
-class SetActiveTimespanView(LoginRequiredMixin, CustomGetFormMixin, generic.UpdateView):
-    model = Timespan
-    form_class = TimespanActiveForm
-    template_name = "modules/form_snippet.njk"
-    success_url = reverse_lazy("crypto:index")
-
-
-class DeleteTimespanView(LoginRequiredMixin, CustomGetFormMixin, CustomAjaxDeleteMixin, generic.DeleteView):
-    model = Timespan
-    template_name = "modules/delete_snippet.njk"
-    form_class = TimespanForm

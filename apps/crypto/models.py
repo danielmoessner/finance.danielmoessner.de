@@ -16,11 +16,11 @@ import numpy as np
 class Depot(CoreDepot):
     user = models.ForeignKey(StandardUser, editable=False, related_name="crypto_depots", on_delete=models.CASCADE)
     # query optimization
-    value = models.DecimalField(max_digits=20, decimal_places=2, blank=True, null=True)
-    current_return = models.DecimalField(max_digits=20, decimal_places=2, blank=True, null=True)
-    invested_capital = models.DecimalField(max_digits=20, decimal_places=2, blank=True, null=True)
-    time_weighted_return = models.DecimalField(max_digits=20, decimal_places=2, blank=True, null=True)
-    internal_rate_of_return = models.DecimalField(max_digits=20, decimal_places=2, blank=True, null=True)
+    value = models.FloatField(null=True)
+    current_return = models.FloatField(null=True)
+    invested_capital = models.FloatField(null=True)
+    time_weighted_return = models.FloatField(null=True)
+    internal_rate_of_return = models.FloatField(null=True)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
@@ -62,7 +62,7 @@ class Depot(CoreDepot):
         if self.value is None:
             self.value = 0
             for asset in list(self.assets.all()):
-                self.value += asset.get_value()
+                self.value += float(asset.get_value())
             self.save()
         return self.value
 
@@ -115,7 +115,7 @@ class Depot(CoreDepot):
 class Account(CoreAccount):
     depot = models.ForeignKey(Depot, on_delete=models.CASCADE, related_name="accounts")
     # query optimization
-    value = models.DecimalField(max_digits=20, decimal_places=2, blank=True, null=True)
+    value = models.FloatField(null=True)
 
     # getters
     def get_stats(self):
@@ -157,9 +157,9 @@ class Asset(models.Model):
     symbol = models.CharField(max_length=5)
     depot = models.ForeignKey(Depot, related_name='assets', on_delete=models.CASCADE)
     # query optimization
-    value = models.DecimalField(max_digits=20, decimal_places=2, blank=True, null=True)
-    amount = models.DecimalField(max_digits=20, decimal_places=8, blank=True, null=True)
-    price = models.DecimalField(max_digits=20, decimal_places=2, blank=True, null=True)
+    value = models.FloatField(null=True)
+    amount = models.FloatField(null=True)
+    price = models.FloatField(null=True)
 
     def __str__(self):
         return '{}'.format(self.symbol)
@@ -315,8 +315,9 @@ class Asset(models.Model):
 class AccountAssetStats(models.Model):
     account = models.ForeignKey(Account, related_name='asset_stats', on_delete=models.CASCADE)
     asset = models.ForeignKey(Asset, related_name='account_stats', on_delete=models.CASCADE)
-    amount = models.DecimalField(max_digits=20, decimal_places=8, blank=True, null=True)
-    value = models.DecimalField(max_digits=20, decimal_places=2, blank=True, null=True)
+    # query optimization
+    amount = models.DecimalField(max_digits=20, decimal_places=8, null=True)
+    value = models.FloatField(null=True)
 
     # getters
     def get_amount(self):
@@ -369,8 +370,8 @@ class AccountAssetStats(models.Model):
 
     def get_value(self):
         if self.value is None:
-            amount = self.get_amount()
-            price = self.asset.get_price()
+            amount = float(self.get_amount())
+            price = float(self.asset.get_price())
             self.value = amount * price
             self.save()
         return self.value
@@ -488,17 +489,6 @@ class Flow(models.Model):
     # getters
     def get_date(self):
         return timezone.localtime(self.date).strftime('%d.%m.%Y %H:%M')
-
-
-class Timespan(CoreTimespan):
-    depot = models.ForeignKey(Depot, editable=False, related_name="timespans", on_delete=models.CASCADE)
-
-    # getters
-    def get_start_date(self):
-        return timezone.localtime(self.start_date).strftime("%d.%m.%Y %H:%M") if self.start_date else None
-
-    def get_end_date(self):
-        return timezone.localtime(self.end_date).strftime("%d.%m.%Y %H:%M") if self.end_date else None
 
 
 class CoinGeckoAsset(models.Model):

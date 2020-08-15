@@ -37,7 +37,7 @@
                     <td>{{ asset.symbol }}</td>
                     <td>{{ asset.get_price() }}</td>
                     <td>{{ asset.get_amount_account(object) }}</td>
-                    <td>{{ asset.get_value_account(object) }}</td>
+                    <td>{{ "%.2f"|format(asset.get_value_account(object)) }}</td>
                 </tr>
             {% endfor %}
             </tbody>

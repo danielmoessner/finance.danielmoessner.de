@@ -2,7 +2,7 @@ from django.db.models import Q
 from django.utils import timezone
 from django import forms
 
-from .models import Account, Flow, Transaction, Timespan, Trade, Depot, Asset
+from .models import Account, Flow, Transaction, Trade, Depot, Asset
 
 from datetime import datetime
 
@@ -213,35 +213,3 @@ class FlowForm(forms.ModelForm):
         # check that enough asset is available if asset is withdrawn
         if flow < 0 and account.get_amount_asset_before_date(asset, date) < abs(flow):
             raise forms.ValidationError('There is not enough asset on this account to support this flow.')
-
-
-# timespan
-class TimespanForm(forms.ModelForm):
-    start_date = forms.DateTimeField(widget=forms.DateTimeInput(
-        attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
-        input_formats=["%Y-%m-%dT%H:%M"], label="Start Date (not required)", required=False)
-    end_date = forms.DateTimeField(widget=forms.DateTimeInput(
-        attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
-        input_formats=["%Y-%m-%dT%H:%M"], label="End Date (not required)", required=False)
-
-    class Meta:
-        model = Timespan
-        fields = (
-            "name",
-            "start_date",
-            "end_date"
-        )
-
-    def __init__(self, depot, *args, **kwargs):
-        super(TimespanForm, self).__init__(*args, **kwargs)
-        self.instance.depot = depot
-
-
-class TimespanActiveForm(forms.ModelForm):
-    class Meta:
-        model = Timespan
-        fields = ("is_active",)
-
-    def __init__(self, depot, *args, **kwargs):
-        super(TimespanActiveForm, self).__init__(*args, **kwargs)
-        depot.timespans.update(is_active=False)

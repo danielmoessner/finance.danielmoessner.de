@@ -43,7 +43,7 @@
                     <td>{{ asset.symbol }}</td>
                     <td>{{ asset.get_price() }}</td>
                     <td>{{ asset.get_amount() }}</td>
-                    <td>{{ asset.get_value() }}</td>
+                    <td>{{ "%.2f"|format(asset.get_value()) }}</td>
                     <td>
                         <div class="d-flex">
                             {{ mg.djangoModal("Add Trade", "addTrade", url("crypto:add_trade")+"?buy_asset="+asset.pk|string+"&sell_asset="+asset.pk|string) }}
@@ -84,7 +84,7 @@
             {% for account in accounts %}
                 <tr>
                     <td>{{ account.name }}</td>
-                    <td>{{ account.get_value() }}</td>
+                    <td>{{ "%.2f"|format(account.get_value()) }}</td>
                     <td>
                         <div class="d-flex">
                             {{ mg.djangoModal("Deposit / Withdraw", "addFlow"+account.pk|string, url("crypto:add_flow")+"?account="+account.pk|string) }}
