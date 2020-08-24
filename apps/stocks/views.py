@@ -62,10 +62,11 @@ class SetActiveDepotView(LoginRequiredMixin, generic.View):
     http_method_names = ['get', 'head', 'options']
 
     def get(self, request, pk, *args, **kwargs):
+        self.request.user.stock_depots.update(is_active=False)
         depot = get_object_or_404(self.request.user.stock_depots.all(), pk=pk)
         form = DepotActiveForm(data={'is_active': True}, instance=depot)
         if form.is_valid():
-            form.save()
+            depot = form.save()
         url = '{}?tab=stocks'.format(reverse_lazy('users:settings', args=[self.request.user.pk]))
         return HttpResponseRedirect(url)
 
