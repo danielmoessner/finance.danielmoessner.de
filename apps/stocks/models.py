@@ -28,6 +28,7 @@ class Depot(models.Model):
     class Meta:
         verbose_name = 'Depot'
         verbose_name_plural = 'Depots'
+        ordering = ['name']
 
     def __str__(self):
         return '{}'.format(self.name)
@@ -160,6 +161,7 @@ class Bank(models.Model):
     class Meta:
         verbose_name = 'Bank'
         verbose_name_plural = 'Banks'
+        ordering = ['name']
 
     def __str__(self):
         return '{}'.format(self.name)
