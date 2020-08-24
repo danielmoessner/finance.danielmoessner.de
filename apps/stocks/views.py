@@ -128,7 +128,8 @@ class EditPriceView(LoginRequiredMixin, AjaxResponseMixin, generic.UpdateView):
 ###
 # StockPriceFetcher: Add, Edit, Delete
 ###
-class AddPriceFetcherView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.CreateView):
+class AddPriceFetcherView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAndInitialDataMixin,
+                          AjaxResponseMixin, generic.CreateView):
     form_class = PriceFetcherForm
     model = PriceFetcher
     template_name = "symbols/form_snippet.njk"

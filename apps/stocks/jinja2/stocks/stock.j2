@@ -55,7 +55,7 @@
                         {{ mg.djangoModal("Delete Price Fetcher", "deletePriceFetcher", url("stocks:delete_price_fetcher", args=[price_fetcher.pk])) }}
                         {{ bg.modalButton("Delete Price Fetcher", "#deletePriceFetcher") }}
                     {% else %}
-                        {{ mg.djangoModal("Add Price Fetcher", "addPriceFetcher", url("stocks:add_price_fetcher")) }}
+                        {{ mg.djangoModal("Add Price Fetcher", "addPriceFetcher", url("stocks:add_price_fetcher")+"?stock="+object.pk|string) }}
                         {{ bg.modalButton("Add Price Fetcher", "#addPriceFetcher") }}
                     {% endif %}
                 </td>

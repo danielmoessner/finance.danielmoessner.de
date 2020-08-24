@@ -27,7 +27,12 @@
         <tr>
             <td colspan="5">
                 <div class="d-flex">
-                    {{ mg.djangoModal("Add Dividend", "addDividend", url("stocks:add_dividend")) }}
+                    {% if object.ticker %} {# this tests if the object is of type stock or a bank #}
+                        {%- set dividendUrl="?stock="+object.pk|string -%}
+                    {% else %}
+                        {%- set dividendUrl="?bank="+object.pk|string -%}
+                    {% endif %}
+                    {{ mg.djangoModal("Add Dividend", "addDividend", url("stocks:add_dividend")+dividendUrl) }}
                     {{ bg.modalButton("Add Dividend", "#addDividend") }}
                 </div>
             </td>

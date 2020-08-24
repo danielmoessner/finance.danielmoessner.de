@@ -29,7 +29,7 @@
         <tr>
             <td colspan="5">
                 <div class="d-flex">
-                    {{ mg.djangoModal("Add Flow", "addFlow", url("stocks:add_flow")) }}
+                    {{ mg.djangoModal("Add Flow", "addFlow", url("stocks:add_flow")+"?bank="+object.pk|string) }}
                     {{ bg.modalButton("Add Flow", "#addFlow") }}
                 </div>
             </td>

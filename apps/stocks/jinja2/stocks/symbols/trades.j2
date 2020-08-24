@@ -33,7 +33,12 @@
         <tr>
             <td colspan="7">
                 <div class="f-flex">
-                    {{ mg.djangoModal("Add Trade", "addTrade", url("stocks:add_trade")) }}
+                    {% if object.ticker %} {# this tests if the object is of type stock or a bank #}
+                        {%- set tradeUrl="?stock="+object.pk|string -%}
+                    {% else %}
+                        {%- set tradeUrl="?bank="+object.pk|string -%}
+                    {% endif %}
+                    {{ mg.djangoModal("Add Trade", "addTrade", url("stocks:add_trade")+tradeUrl) }}
                     {{ bg.modalButton("Add Trade", "#addTrade") }}
                 </div>
             </td>
