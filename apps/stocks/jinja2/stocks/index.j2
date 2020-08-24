@@ -84,9 +84,17 @@
                     <td>{{ stock.ticker }}</td>
                     <td>{{ stock.exchange }}</td>
                     {% with stats=stock.get_stats() %}
-                        <td>{{ "%.2f"|format(stats['Price']) }}</td>
+                        {% if stats['Price'] %}
+                            <td>{{ "%.2f"|format(stats['Price']) }}</td>
+                        {% else %}
+                            <td>{{ stats['Price'] }}</td>
+                        {% endif %}
                         <td>{{ stats['Amount'] }}</td>
-                        <td>{{ "%.2f"|format(stats['Value']) }}</td>
+                        {% if stats['Value'] %}
+                            <td>{{ "%.2f"|format(stats['Value']) }}</td>
+                        {% else %}
+                            <td>{{ stats['Value'] }}</td>
+                        {% endif %}
                     {% endwith %}
                     <td>
                         <div class="d-flex align-items-center">

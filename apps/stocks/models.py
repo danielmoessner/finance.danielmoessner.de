@@ -87,7 +87,9 @@ class Depot(models.Model):
         if self.value is None:
             self.value = 0
             for stock in self.stocks.all():
-                self.value += stock.get_value()
+                value = stock.get_value()
+                if value:
+                    self.value += value
             self.save()
         return self.value
 
@@ -337,9 +339,8 @@ class Stock(models.Model):
         return self.amount
 
     def get_value(self):
-        if self.value is None:
-            value = self.get_price() * self.get_amount()
-            self.value = float(value) if value else 0
+        if self.value is None and self.get_price() is not None and self.get_amount() is not None:
+            self.value = float(self.get_price()) * float(self.get_amount())
             self.save()
         return self.value
 
