@@ -203,20 +203,46 @@ class Bank(models.Model):
                 self.save()
         return self.balance
 
-    def get_balance_on_date(self, date):
+    def get_balance_on_date(self, date, exclude_flow=None, exclude_trade=None, exclude_dividend=None):
+        # set default values so that we do not get field errors in the queries
+        exclude_flow_pk = exclude_flow.pk if exclude_flow else 0
+        exclude_trade_pk = exclude_trade.pk if exclude_trade else 0
+        exclude_dividend_pk = exclude_dividend.pk if exclude_dividend else 0
+        # calculate the balance
         balance = 0
-        flows_amount = self.flows.filter(date__lte=date).aggregate(Sum('flow'))['flow__sum']
+        # flows can have a negative or positive impace
+        flows_amount = (
+            self.flows
+                .filter(date__lte=date)
+                .exclude(pk=exclude_flow_pk)
+                .aggregate(Sum('flow'))['flow__sum']
+        )
         balance += flows_amount if flows_amount else 0
+        # buy trades have a negative impact regarding the balance
         buy_trades_amount = (
-            self.trades.filter(date__lte=date, buy_or_sell='BUY').aggregate(Sum('money_amount'))['money_amount__sum']
+            self.trades
+                .filter(date__lte=date, buy_or_sell='BUY')
+                .exclude(pk=exclude_trade_pk)
+                .aggregate(Sum('money_amount'))['money_amount__sum']
         )
         balance -= buy_trades_amount if buy_trades_amount else 0
+        # sell trades have a positive impact regarding the balance
         sell_trades_amount = (
-            self.trades.filter(date__lte=date, buy_or_sell='SELL').aggregate(Sum('money_amount'))['money_amount__sum']
+            self.trades
+                .filter(date__lte=date, buy_or_sell='SELL')
+                .exclude(pk=exclude_trade_pk)
+                .aggregate(Sum('money_amount'))['money_amount__sum']
         )
         balance += sell_trades_amount if sell_trades_amount else 0
-        dividends_amount = self.dividends.filter(date__lte=date).aggregate(Sum('dividend'))
+        # dividends have a positive impace regarding the balance
+        dividends_amount = (
+            self.dividends
+                .filter(date__lte=date)
+                .exclude(pk=exclude_dividend_pk)
+                .aggregate(Sum('dividend'))
+        )
         balance += dividends_amount['dividend__sum'] if dividends_amount['dividend__sum'] else 0
+        # return the available balance
         return balance
 
 
@@ -485,6 +511,7 @@ class Flow(models.Model):
     class Meta:
         verbose_name = 'Depot'
         verbose_name_plural = 'Depots'
+        ordering = ['date']
 
     def __str__(self):
         return '{} - {} - {}'.format(self.get_date(), self.bank, self.flow)
@@ -543,6 +570,7 @@ class Trade(models.Model):
     class Meta:
         verbose_name = 'Trade'
         verbose_name_plural = 'Trades'
+        ordering = ['date']
 
     def __str__(self):
         return '{} - {} - {}'.format(self.get_date(), self.bank, self.stock)

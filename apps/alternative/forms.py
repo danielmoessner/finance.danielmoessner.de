@@ -5,7 +5,7 @@ from apps.alternative.models import Alternative
 from apps.alternative.models import Value
 from apps.alternative.models import Depot
 from apps.alternative.models import Flow
-import apps.alternative.utils as utils
+import apps.core.utils as utils
 
 
 # depot
@@ -109,7 +109,7 @@ class ValueForm(forms.ModelForm):
         # check that, if the previous value or flow is a flow, the date is close to the flow
         flow_qs = Flow.objects.filter(alternative=alternative)
         value_qs = Value.objects.filter(alternative=alternative).exclude(pk=self.instance.pk)
-        previous_value_or_flow = utils.get_closest_value_or_flow(flow_qs, value_qs, date, direction='previous')
+        previous_value_or_flow = utils.get_closest_object_in_two_querysets(flow_qs, value_qs, date, direction='previous')
         if (
                 previous_value_or_flow and type(previous_value_or_flow) == Flow and
                 previous_value_or_flow.date.day != date.day
@@ -159,12 +159,12 @@ class FlowForm(forms.ModelForm):
         flow_qs = Flow.objects.filter(alternative=alternative).exclude(pk=self.instance.pk)
         value_qs = Value.objects.filter(alternative=alternative)
         # check that there is no flow right before this flow
-        previous_value_or_flow = utils.get_closest_value_or_flow(flow_qs, value_qs, date, direction='previous')
+        previous_value_or_flow = utils.get_closest_object_in_two_querysets(flow_qs, value_qs, date, direction='previous')
         if previous_value_or_flow and type(previous_value_or_flow) == Flow:
             message = "A flow can not be followed by a flow. There is a flow right before this flow."
             raise forms.ValidationError(message)
         # check that there is no flow right after this flow
-        next_value_or_flow = utils.get_closest_value_or_flow(flow_qs, value_qs, date, direction='next')
+        next_value_or_flow = utils.get_closest_object_in_two_querysets(flow_qs, value_qs, date, direction='next')
         if next_value_or_flow and type(next_value_or_flow) == Flow:
             message = "A flow can not be followed by a flow. There is a flow right after this flow."
             raise forms.ValidationError(message)

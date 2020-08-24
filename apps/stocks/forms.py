@@ -1,6 +1,7 @@
 from django import forms
 from django.utils import timezone
 from apps.stocks.models import Depot, Bank, Trade, Stock, Flow, Price, Dividend, PriceFetcher
+from apps.core import utils
 
 
 ###
@@ -205,13 +206,35 @@ class FlowForm(forms.ModelForm):
                 'There exists already a flow, trade or dividend on this particular date and time. '
                 'Choose a different date.'
             )
-        # check that enough money is available if money is withdrawn
         if flow < 0:
-            bank_balance = bank.get_balance_on_date(date)
+            # check that enough money is available if money is withdrawn
+            if self.instance:
+                bank_balance = bank.get_balance_on_date(date, exclude_flow=self.instance)
+            else:
+                bank_balance = bank.get_balance_on_date(date)
             if (bank_balance + flow) < 0:
                 msg = (
                     'There is not enough money on this bank to support this flow. '
                     'There are only {} € available.'.format(bank_balance)
+                )
+                raise forms.ValidationError(msg)
+            # check that enough money is available after the money was withdrawn
+            flow_or_trade = utils.get_closest_object_in_two_querysets(
+                bank.flows.all(),
+                bank.trades.all(),
+                date,
+                direction='next'
+            )
+            date = flow_or_trade.date if flow_or_trade else timezone.now()
+            if self.instance:
+                bank_balance = bank.get_balance_on_date(date, exclude_trade=self.instance)
+            else:
+                bank_balance = bank.get_balance_on_date(date)
+            if bank_balance + flow < 0:
+                msg = (
+                    'After this flow the balance would be {} on date {}. That is not possible. '
+                    'You need to change the money amount.'.format((bank_balance + flow),
+                                                                  date.strftime('%d.%m.%Y'))
                 )
                 raise forms.ValidationError(msg)
         # return
@@ -319,19 +342,34 @@ class TradeForm(forms.ModelForm):
         # check that enough money is available to buy the stocks
         if buy_or_sell == 'BUY':
             # check that enough money is available right on this date
-            bank_balance = bank.get_balance_on_date(date)
+            if self.instance:
+                bank_balance = bank.get_balance_on_date(date, exclude_trade=self.instance)
+            else:
+                bank_balance = bank.get_balance_on_date(date)
             if bank_balance - money_amount < 0:
                 msg = (
                     'There is not enough money on this bank to support this trade. '
                     'This particular bank has {} € available.'.format(bank_balance)
                 )
                 raise forms.ValidationError(msg)
-            # check that the overall balance does not become negative after this trade is added
-            bank_balance = bank.get_balance(in_decimal=True)
+            # check that the overall balance does not become negative after this trade is added. this code checks the
+            # balance after the next flow or trade and assures that it is not negative. If no
+            flow_or_trade = utils.get_closest_object_in_two_querysets(
+                bank.flows.all(),
+                bank.trades.all(),
+                date,
+                direction='next'
+            )
+            date = flow_or_trade.date if flow_or_trade else timezone.now()
+            if self.instance:
+                bank_balance = bank.get_balance_on_date(date, exclude_trade=self.instance)
+            else:
+                bank_balance = bank.get_balance_on_date(date)
             if bank_balance - money_amount < 0:
                 msg = (
-                    'After this trade the balance would be {}. That is not possible. '
-                    'You need to change the money_amount.'.format((bank_balance - money_amount))
+                    'After this trade the balance would be {} on date {}. That is not possible. '
+                    'You need to change the money amount.'.format((bank_balance - money_amount),
+                                                                  date.strftime('%d.%m.%Y'))
                 )
                 raise forms.ValidationError(msg)
         # return

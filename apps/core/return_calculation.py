@@ -14,6 +14,7 @@ def _get_merged_flow_and_value_df(flow_df, value_df):
     assert 'flow' in flow_df.columns and 'value' in value_df.columns
     # merge the dfs and sort by date
     df = flow_df.merge(value_df, how='outer', sort=True, on='date')
+    print(df)
     # stop calculation if there is not a flow in the first row
     if np.isnan(df.iloc[0, df.columns.get_loc('flow')]):
         return None

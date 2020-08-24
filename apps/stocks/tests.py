@@ -71,11 +71,16 @@ class FormValidationTestCase(StandardSetUpTestCase):
         with self.assertRaises(ValueError):
             self.create_trade('2020-05-06T14:23', self.bank, 1, 1, self.stock, 'BUY')
 
-    def test_this_test_shows_a_problem_to_which_we_have_no_solution(self):
+    def test_trade_can_not_be_inserted_before_trade_with_enough_balance_after_certain_amount_of_time(self):
         self.create_flow('2020-05-05T12:40', 1, self.bank)
         self.create_trade('2020-05-07T12:23', self.bank, 1, 1, self.stock, 'BUY')
         self.create_flow('2020-05-08T12:40', 1, self.bank)
         with self.assertRaises(ValueError):
-            raise ValueError()
-        # this should raise Value error
-        self.create_trade('2020-05-06T12:23', self.bank, 1, 1, self.stock, 'BUY')
+            self.create_trade('2020-05-06T12:23', self.bank, 1, 1, self.stock, 'BUY')
+
+    def test_flow_can_not_be_inserted_before_flow_and_turn_balance_negative(self):
+        self.create_flow('2020-05-05T12:40', 1, self.bank)
+        self.create_flow('2020-05-07T12:40', -1, self.bank)
+        self.create_flow('2020-05-09T12:40', 1, self.bank)
+        with self.assertRaises(ValueError):
+            self.create_flow('2020-05-06T12:40', -1, self.bank)

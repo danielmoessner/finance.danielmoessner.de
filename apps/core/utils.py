@@ -97,3 +97,32 @@ def get_number_from_database(statement):
         return None
     data = data[0][0]
     return data
+
+
+###
+# Django Queryset Utils
+###
+def get_closest_object_in_two_querysets(qs1, qs2, date, direction='previous'):
+    """
+    Return the closest object of two querysets. If a object in qs1 is closer it
+    returns the object from qs1. If a object in qs2 is closer it returns the object from qs2.
+    direction: previous | next
+    """
+    if direction == 'next':
+        object_from_qs_1 = qs1.filter(date__gte=date).order_by("date").first()
+        object_from_qs_2 = qs2.filter(date__gte=date).order_by("date").first()
+    elif direction == 'previous':
+        object_from_qs_1 = qs1.filter(date__lte=date).order_by("-date").first()
+        object_from_qs_2 = qs2.filter(date__lte=date).order_by("-date").first()
+    else:
+        return None
+
+    if object_from_qs_1 and object_from_qs_2:
+        if abs(object_from_qs_1.date - date) < abs(object_from_qs_2.date - date):
+            return object_from_qs_1
+        else:
+            return object_from_qs_2
+    elif object_from_qs_1 or object_from_qs_2:
+        return object_from_qs_1 or object_from_qs_2
+    else:
+        return None
