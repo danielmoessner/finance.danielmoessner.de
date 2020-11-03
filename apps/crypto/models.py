@@ -82,7 +82,7 @@ class Depot(CoreDepot):
 
     def get_current_return(self):
         if self.current_return is None:
-            df = rc .get_current_return_df(self.get_flow_df(), self.get_value_df())
+            df = rc.get_current_return_df(self.get_flow_df(), self.get_value_df())
             self.current_return = rc.get_current_return(df)
             self.save()
         return self.current_return
@@ -148,9 +148,11 @@ class Account(CoreAccount):
         stats = self.get_asset_stats(asset)
         return stats.get_amount()
 
-    def get_amount_asset_before_date(self, asset, date):
+    def get_amount_asset_before_date(self, asset, date, exclude_transactions=None, exclude_trades=None,
+                                     exclude_flows=None):
         stats = self.get_asset_stats(asset)
-        return stats.get_amount_before_date(date)
+        return stats.get_amount_before_date(date, exclude_trades=exclude_trades, exclude_flows=exclude_flows,
+                                            exclude_transactions=exclude_transactions)
 
 
 class Asset(models.Model):
@@ -277,7 +279,7 @@ class Asset(models.Model):
         if self.value is None:
             amount = self.get_amount()
             price = self.get_price()
-            self.value = amount * price
+            self.value = float(amount) * float(price)
             self.save()
         return self.value
 
@@ -345,21 +347,33 @@ class AccountAssetStats(models.Model):
             self.save()
         return self.amount
 
-    def get_amount_before_date(self, date):
+    def get_amount_before_date(self, date, exclude_transactions=None, exclude_trades=None, exclude_flows=None):
+        if exclude_trades is None:
+            exclude_trades = []
+        if exclude_transactions is None:
+            exclude_transactions = []
+        if exclude_flows is None:
+            exclude_flows = []
+
         trade_buy_amount = (Trade.objects
                             .filter(buy_asset=self.asset, account=self.account, date__lt=date)
+                            .exclude(pk__in=exclude_trades)
                             .aggregate(Sum('buy_amount'))['buy_amount__sum'] or 0)
         trade_sell_amount = (Trade.objects
                              .filter(sell_asset=self.asset, account=self.account, date__lt=date)
+                             .exclude(pk__in=exclude_trades)
                              .aggregate(Sum('sell_amount'))['sell_amount__sum'] or 0)
         transaction_to_amount = (Transaction.objects
                                  .filter(asset=self.asset, to_account=self.account, date__lt=date)
+                                 .exclude(pk__in=exclude_transactions)
                                  .aggregate(Sum('amount'))['amount__sum'] or 0)
         transaction_from_and_fees_amount = (Transaction.objects
                                             .filter(asset=self.asset, from_account=self.account, date__lt=date)
+                                            .exclude(pk__in=exclude_transactions)
                                             .aggregate(Sum('fees'), Sum('amount')))
         flow_amount = (Flow.objects
                        .filter(asset=self.asset, account=self.account, date__lt=date)
+                       .exclude(pk__in=exclude_flows)
                        .aggregate(Sum('flow'))['flow__sum'] or 0)
         transaction_from_amount = transaction_from_and_fees_amount['amount__sum'] or 0
         transaction_fees_amount = transaction_from_and_fees_amount['fees__sum'] or 0

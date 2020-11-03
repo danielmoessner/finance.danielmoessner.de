@@ -132,8 +132,14 @@ class TradeForm(forms.ModelForm):
         if sell_amount < 0 or buy_amount < 0:
             raise forms.ValidationError('Sell and buy amount must be positive.')
         # check that enough asset is available of the asset that is sold
-        if account.get_amount_asset_before_date(sell_asset, date) < sell_amount:
-            raise forms.ValidationError('There is not enough asset on this account to support this trade.')
+        # TODO exclude the own instance from the available calculation
+        available_amount = account.get_amount_asset_before_date(sell_asset, date)
+        if available_amount < sell_amount:
+            message = (
+                'There is not enough asset on this account to support this trade. '
+                'There is {} available.'.format(available_amount)
+            )
+            raise forms.ValidationError(message)
 
 
 # transaction
@@ -176,8 +182,14 @@ class TransactionForm(forms.ModelForm):
         if amount < 0:
             raise forms.ValidationError('The amount must be positive.')
         # check that enough asset is available of the asset that is sold
-        if from_account.get_amount_asset_before_date(asset, date) < (amount + fees):
-            raise forms.ValidationError('There is not enough asset on this account to support this transaction.')
+        exclude = [self.instance.pk] if self.instance.pk else None
+        available_amount = from_account.get_amount_asset_before_date(asset, date, exclude_transactions=exclude)
+        if available_amount < (amount + fees):
+            message = (
+                'There is not enough asset on this account to support this transaction. '
+                'There is {} available'.format(available_amount)
+            )
+            raise forms.ValidationError(message)
 
 
 # flow
@@ -211,5 +223,6 @@ class FlowForm(forms.ModelForm):
         if Trade.objects.filter(date=date, account=account).exists():
             raise forms.ValidationError('There is already a trade at this date and account.')
         # check that enough asset is available if asset is withdrawn
+        # TODO exclude the own instance from the available calculation
         if flow < 0 and account.get_amount_asset_before_date(asset, date) < abs(flow):
             raise forms.ValidationError('There is not enough asset on this account to support this flow.')
