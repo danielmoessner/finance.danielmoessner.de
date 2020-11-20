@@ -60,7 +60,7 @@ def fetch_prices_from_marketstack(stocks):
                 price = PriceForm({'ticker': price['symbol'],
                                    'exchange': price['exchange'],
                                    'date': price['date'],
-                                   'price': price['close']
+                                   'price': round(price['close'], 2)
                                    })
                 # returns false if there is already a price on this particular date
                 if price.is_valid():
