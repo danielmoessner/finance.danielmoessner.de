@@ -1,14 +1,12 @@
-static/node_modules/**
+node_modules/**
 static/app/js/**
 static/app/css/**
 static/app/libs/**
 
+tmp/*
+
 *.sqlite3
 *.pyc
 
-**/package-lock.json
-
 **/.idea
 **/__pycache__
-**/migrations
-

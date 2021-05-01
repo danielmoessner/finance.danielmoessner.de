@@ -1,0 +1,31 @@
+{
+  "name": "static",
+  "version": "1.0.0",
+  "description": "The static files of my finance project.",
+  "private": true,
+  "author": "Daniel Moessner",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@babel/core": "^7.14.0",
+    "@babel/preset-env": "^7.14.0",
+    "babelify": "^10.0.0",
+    "bootstrap": "^4.6.0",
+    "browserify": "^16.5.2",
+    "jquery": "^3.6.0",
+    "popper.js": "^1.16.1",
+    "purgecss": "^2.3.0",
+    "sass": "^1.32.12",
+    "uglify-es": "^3.3.9",
+    "watchify": "^4.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "css": "sass static/scss/main.scss static/app/css/main.css --load-path=node_modules",
+    "js:charts": "browserify static/javascript/charts.js -t [ babelify --presets [ @babel/preset-env ] ] > static/app/js/charts.js",
+    "js": "browserify static/javascript/index.js -t [ babelify --presets [ @babel/preset-env ] ] > static/app/js/app.js",
+    "build:css": "npm run css",
+    "build:js": "browserify static/javascript/index.js -t [ babelify --presets [ @babel/preset-env ] --minified ] | uglifyjs > static/app/js/app.js",
+    "build:js:charts": "browserify static/javascript/charts.js -t [ babelify --presets [ @babel/preset-env ] --minified ] | uglifyjs > static/app/js/charts.js",
+    "build": "npm run build:css && npm run build:js && npm run build:js:charts"
+  }
+}
