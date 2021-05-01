@@ -32,16 +32,16 @@
             <thead>
             <tr>
                 <th class="border-0" scope="col">Date</th>
-                <th class="border-0" scope="col">Price</th>
-                <th class="border-0" scope="col">Action</th>
+                <th class="border-0 text-right" scope="col">Price</th>
+                <th class="border-0" scope="col"></th>
             </tr>
             </thead>
             <tbody>
             {% for price in prices %}
                 <tr>
                     <td>{{ localtime(price.date).strftime('%d.%m.%Y %H:%M') }}</td>
-                    <td>{{ price.price }}</td>
-                    <td>
+                    <td class="text-right">{{ price.price }}</td>
+                    <td class="text-right">
                         {{ mg.djangoModal("Edit Price", "editPrice", url("stocks:edit_price", args=[price.pk])) }}
                         {{ bg.modalButton("Edit Price", "#editPrice") }}
                     </td>

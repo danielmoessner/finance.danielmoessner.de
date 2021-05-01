@@ -25,19 +25,19 @@
         <thead>
         <tr>
             <th class="border-0" scope="col">Account</th>
-            <th class="border-0" scope="col">Balance</th>
-            <th class="border-0" scope="col">Action</th>
+            <th class="border-0 text-right" scope="col">Balance</th>
+            <th class="border-0 text-right" scope="col"></th>
         </tr>
         </thead>
         <tbody>
         {% for account in accounts %}
             <tr>
                 <td>{{ account.name }}</td>
-                <td>{{ account.get_stats()['Balance'] }}</td>
+                <td class="text-right">{{ account.get_stats()['Balance'] }}</td>
                 <td>
-                    <div class="d-flex align-items-center">
-                        {{ mg.djangoModal("Deposit / Withdraw", "addChange"+account.pk|string, url("banking:add_change")+"?account="+account.pk|string) }}
-                        {{ bg.modalButton("Deposit / Withdraw", "#addChange"+account.pk|string) }}
+                    <div class="d-flex align-items-center justify-content-end">
+                        {{ mg.djangoModal("Add Change", "addChange"+account.pk|string, url("banking:add_change")+"?account="+account.pk|string) }}
+                        {{ bg.modalButton("Add Change", "#addChange"+account.pk|string) }}
                         {{ mg.djangoModal("Edit Account", "editAccount"+account.pk|string, url("banking:edit_account", args=[account.pk])) }}
                         {{ bg.modalButton("Edit", "#editAccount"+account.pk|string) }}
                         {{ bg.hrefButton("Open", url("banking:account", args=[account.pk])) }}
@@ -64,17 +64,17 @@
         <thead>
         <tr>
             <th class="border-0" scope="col">Category</th>
-            <th class="border-0" scope="col">Change</th>
-            <th class="border-0" scope="col">Action</th>
+            <th class="border-0 text-right" scope="col">Change</th>
+            <th class="border-0" scope="col"></th>
         </tr>
         </thead>
         <tbody>
         {% for category in categories %}
             <tr>
                 <td>{{ category.name }}</td>
-                <td>{{ category.get_stats()['Change'] }}</td>
+                <td class="text-right">{{ category.get_stats()['Change'] }}</td>
                 <td>
-                    <div class="d-flex">
+                    <div class="d-flex justify-content-end">
                         {{ bg.modalButton("Edit", "#editCategory"+category.pk|string) }}
                         {{ mg.djangoModal("Edit Category", "editCategory"+category.pk|string, url("banking:edit_category", args=[category.pk])) }}
                         {{ bg.hrefButton("Open", url("banking:category", args=[category.pk])) }}

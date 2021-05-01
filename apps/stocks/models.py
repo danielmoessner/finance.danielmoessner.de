@@ -512,7 +512,7 @@ class Flow(models.Model):
     class Meta:
         verbose_name = 'Depot'
         verbose_name_plural = 'Depots'
-        ordering = ['date']
+        ordering = ['-date']
 
     def __str__(self):
         return '{} - {} - {}'.format(self.get_date(), self.bank, self.flow)
@@ -540,6 +540,7 @@ class Dividend(models.Model):
     class Meta:
         verbose_name = 'Dividend'
         verbose_name_plural = 'Dividends'
+        ordering = ['-date']
 
     def __str__(self):
         return '{} - {} - {}'.format(self.stock, self.get_date(), self.dividend)
@@ -571,7 +572,7 @@ class Trade(models.Model):
     class Meta:
         verbose_name = 'Trade'
         verbose_name_plural = 'Trades'
-        ordering = ['date']
+        ordering = ['-date']
 
     def __str__(self):
         return '{} - {} - {}'.format(self.get_date(), self.bank, self.stock)
@@ -599,6 +600,11 @@ class Price(models.Model):
     ticker = models.CharField(max_length=20)
     price = models.DecimalField(max_digits=20, decimal_places=2)
     exchange = models.CharField(max_length=20)
+
+    class Meta:
+        verbose_name = 'Price'
+        verbose_name_plural = 'Prices'
+        ordering = ['-date']
 
     def __str__(self):
         return '{} - {} - {}'.format(self.ticker, self.get_date(), self.price)

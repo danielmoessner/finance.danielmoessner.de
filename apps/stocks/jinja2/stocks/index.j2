@@ -30,19 +30,19 @@
             <thead>
             <tr>
                 <th class="border-0" scope="col">Bank</th>
-                <th class="border-0" scope="col">Balance</th>
-                <th class="border-0" scope="col">Value</th>
-                <th class="border-0" scope="col">Action</th>
+                <th class="border-0 text-right" scope="col">Balance</th>
+                <th class="border-0 text-right" scope="col">Value</th>
+                <th class="border-0" scope="col"></th>
             </tr>
             </thead>
             <tbody>
             {% for bank in banks %}
                 <tr>
                     <td>{{ bank.name }}</td>
-                    <td>{{ "%.2f"|format(bank.get_stats()['Balance']) }}</td>
-                    <td>{{ "%.2f"|format(bank.get_stats()['Value']) }}</td>
+                    <td class="text-right">{{ "%.2f"|format(bank.get_stats()['Balance']) }}</td>
+                    <td class="text-right">{{ "%.2f"|format(bank.get_stats()['Value']) }}</td>
                     <td>
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center justify-content-end">
                             {{ mg.djangoModal("Edit Bank", "editBank"+bank.pk|string, url("stocks:edit_bank", args=[bank.pk])) }}
                             {{ bg.modalButton("Edit", "#editBank"+bank.pk|string) }}
                             {{ bg.hrefButton("Open", url("stocks:banks", args=[bank.pk])) }}
@@ -71,10 +71,10 @@
                 <th class="border-0" scope="col">Name</th>
                 <th class="border-0" scope="col">Ticker</th>
                 <th class="border-0" scope="col">Exchange</th>
-                <th class="border-0" scope="col">Price</th>
-                <th class="border-0" scope="col">Amount</th>
-                <th class="border-0" scope="col">Value</th>
-                <th class="border-0" scope="col">Action</th>
+                <th class="border-0 text-right" scope="col">Price</th>
+                <th class="border-0 text-right" scope="col">Amount</th>
+                <th class="border-0 text-right" scope="col">Value</th>
+                <th class="border-0" scope="col"></th>
             </tr>
             </thead>
             <tbody>
@@ -85,15 +85,15 @@
                     <td>{{ stock.exchange }}</td>
                     {% with stats=stock.get_stats() %}
                         {% if stats['Price'] %}
-                            <td>{{ "%.2f"|format(stats['Price']) }}</td>
+                            <td class="text-right">{{ "%.2f"|format(stats['Price']) }}</td>
                         {% else %}
-                            <td>{{ stats['Price'] }}</td>
+                            <td class="text-right">{{ stats['Price'] }}</td>
                         {% endif %}
-                        <td>{{ stats['Amount'] }}</td>
+                        <td class="text-right">{{ stats['Amount'] }}</td>
                         {% if stats['Value'] %}
-                            <td>{{ "%.2f"|format(stats['Value']) }}</td>
+                            <td class="text-right">{{ "%.2f"|format(stats['Value']) }}</td>
                         {% else %}
-                            <td>{{ stats['Value'] }}</td>
+                            <td class="text-right">{{ stats['Value'] }}</td>
                         {% endif %}
                     {% endwith %}
                     <td>

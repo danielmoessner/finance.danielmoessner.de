@@ -25,9 +25,11 @@
                     <th class="border-0" scope="col">Date</th>
                     <th class="border-0" scope="col">Category</th>
                     <th class="border-0" scope="col">Description</th>
-                    <th class="border-0" scope="col">Change</th>
-                    <th class="border-0" scope="col">Balance</th>
-                    <th class="border-0" scope="col">Action</th>
+                    <th class="border-0 text-right" scope="col">Change</th>
+                    <th class="border-0 text-right" scope="col">Balance</th>
+                    <th class="border-0 text-right" scope="col">
+                        {{ bg.modalButton("Add Change", "#addChange") }}
+                    </th>
                 </tr>
                 </thead>
                 <tbody>
@@ -36,8 +38,8 @@
                     <td>{{ localtime(change.date).strftime('%d.%m.%Y %H:%M') }}</td>
                     <td>{{ change.category }}</td>
                     <td>{{ change.get_description() }}</td>
-                    <td>{{ change.change }}</td>
-                    <td>{{ change.get_stats()['Balance'] }}</td>
+                    <td class="text-right">{{ change.change }}</td>
+                    <td class="text-right">{{ change.get_stats()['Balance'] }}</td>
                     <td>
                         <div class="d-flex">
                             {{ mg.djangoModal("Edit Change", "editChange"+change.pk|string, url("banking:edit_change", args=[change.pk])) }}
@@ -50,8 +52,8 @@
                 {% endfor %}
                 <tr>
                     <td colspan="6">
-                        {{ mg.djangoModal("Deposit / Withdraw", "addChange", url("banking:add_change")+"?account="+account.pk|string) }}
-                        {{ bg.modalButton("Deposit / Withdraw", "#addChange") }}
+                        {{ mg.djangoModal("Add Change", "addChange", url("banking:add_change")+"?account="+account.pk|string) }}
+                        {{ bg.modalButton("Add Change", "#addChange") }}
                     </td>
                 </tr>
                 </tbody>

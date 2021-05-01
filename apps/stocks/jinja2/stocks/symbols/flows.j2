@@ -5,8 +5,10 @@
             <th class="border-0" scope="col">Date</th>
             <th class="border-0" scope="col">Description</th>
             <th class="border-0" scope="col">Bank</th>
-            <th class="border-0" scope="col">Flow</th>
-            <th class="border-0" scope="col">Action</th>
+            <th class="border-0 text-right" scope="col">Flow</th>
+            <th class="border-0 text-right" scope="col">
+                {{ bg.modalButton("Add Flow", "#addFlow") }}
+            </th>
         </tr>
         </thead>
         <tbody>
@@ -15,9 +17,9 @@
                 <td>{{ localtime(flow.date).strftime('%d.%m.%Y %H:%M') }}</td>
                 <td>{{ flow.short_description }}</td>
                 <td>{{ flow.bank }}</td>
-                <td>{{ flow.flow }}</td>
+                <td class="text-right">{{ flow.flow }}</td>
                 <td>
-                    <div class="d-flex">
+                    <div class="d-flex justify-content-end">
                         {{ mg.djangoModal("Edit Flow", "editFlow"+flow.pk|string, url("stocks:edit_flow", args=[flow.pk])) }}
                         {{ bg.modalButton("Edit", "#editFlow"+flow.pk|string) }}
                         {{ mg.djangoModal("Delete Flow", "deleteFlow"+flow.pk|string, url("stocks:delete_flow", args=[flow.pk])) }}
