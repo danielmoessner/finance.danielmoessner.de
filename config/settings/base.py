@@ -4,8 +4,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 # Paths
 
-PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-BASE_DIR = os.path.join(PROJECT_DIR, 'finance')
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Secret settings
 
