@@ -9,7 +9,7 @@ BASE_DIR = os.path.join(PROJECT_DIR, 'finance')
 
 # Secret settings
 
-with open(os.path.join(PROJECT_DIR, 'secrets.json')) as f:
+with open(os.path.join(BASE_DIR, 'tmp/secrets.json')) as f:
     secrets_json = json.loads(f.read())
 
 
