@@ -90,7 +90,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': os.path.join(BASE_DIR, 'tmp/db.sqlite3'),
     }
 }
 
@@ -145,6 +145,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'tmp/static')
 
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
+MEDIA_URL = '/media/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'tmp/media')
+
 # E-Mail
 
 EMAIL_USE_TLS = True
@@ -167,3 +171,6 @@ ALPHAVANTAGE_API_KEY = 'DCVHUFGLL4SL14LP'
 # Marketstack API
 
 MARKETSTACK_API_KEY = get_secret('MARKETSTACK_API_KEY')
+
+# django 3.2
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'

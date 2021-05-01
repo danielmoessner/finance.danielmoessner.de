@@ -26,6 +26,6 @@
     "build:css": "npm run css",
     "build:js": "browserify static/javascript/index.js -t [ babelify --presets [ @babel/preset-env ] --minified ] | uglifyjs > static/app/js/app.js",
     "build:js:charts": "browserify static/javascript/charts.js -t [ babelify --presets [ @babel/preset-env ] --minified ] | uglifyjs > static/app/js/charts.js",
-    "build": "npm run build:css && npm run build:js && npm run build:js:charts"
+    "build": "npm run build:css && npm run build:js && npm run build:js:charts && tmp/venv/bin/python manage.py collectstatic --noinput"
   }
 }
