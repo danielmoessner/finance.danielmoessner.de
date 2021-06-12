@@ -98,6 +98,7 @@ class ChangeForm(forms.ModelForm):
     date = forms.DateTimeField(widget=forms.DateTimeInput(attrs={"type": "datetime-local"},
                                                           format="%Y-%m-%dT%H:%M"),
                                input_formats=["%Y-%m-%dT%H:%M"], label="Date")
+    change = forms.DecimalField(widget=forms.TextInput())
 
     class Meta:
         model = Change
@@ -115,3 +116,7 @@ class ChangeForm(forms.ModelForm):
         self.fields["category"].queryset = depot.categories.all()
         self.fields["date"].initial = datetime.now()
         self.fields['description'].widget.attrs.update({'class': 'small'})
+        self.fields['change'].widget.attrs.update({
+            'pattern': "[0-9]+?((.|,)[0-9]{0,1,2})",
+            'title': "A number with 2 decimal places.",
+        })
