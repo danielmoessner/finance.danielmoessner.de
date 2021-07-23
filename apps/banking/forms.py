@@ -94,20 +94,34 @@ class CategorySelectForm(forms.Form):
 
 
 # change
+class ChangeField(forms.DecimalField):
+    def __init__(self, *args, **kwargs):
+        attrs = {
+            'pattern': r"-?\d+(.|,)?\d{0,2}",
+            'title': "A number with 2 decimal places.",
+        }
+        super().__init__(widget=forms.TextInput(attrs=attrs), *args, **kwargs)
+
+    def to_python(self, value):
+        value = value.replace(',', '.')
+        return super().to_python(value)
+
+
 class ChangeForm(forms.ModelForm):
     date = forms.DateTimeField(widget=forms.DateTimeInput(attrs={"type": "datetime-local"},
                                                           format="%Y-%m-%dT%H:%M"),
                                input_formats=["%Y-%m-%dT%H:%M"], label="Date")
-    change = forms.DecimalField(widget=forms.TextInput(), localize=True)
+    change = ChangeField()
 
     class Meta:
         model = Change
         fields = (
             "account",
             "date",
+            "change",
             "category",
             "description",
-            "change"
+
         )
 
     def __init__(self, depot, *args, **kwargs):
@@ -116,7 +130,3 @@ class ChangeForm(forms.ModelForm):
         self.fields["category"].queryset = depot.categories.all()
         self.fields["date"].initial = datetime.now()
         self.fields['description'].widget.attrs.update({'class': 'small'})
-        self.fields['change'].widget.attrs.update({
-            'pattern': r"-?\d+(.|,)?\d{0,2}",
-            'title': "A number with 2 decimal places.",
-        })
