@@ -13,7 +13,7 @@
     "browserify": "^16.5.2",
     "jquery": "^3.6.0",
     "popper.js": "^1.16.1",
-    "purgecss": "^2.3.0",
+    "purgecss": "^4.0.3",
     "sass": "^1.32.12",
     "uglify-es": "^3.3.9",
     "watchify": "^4.0.0"
