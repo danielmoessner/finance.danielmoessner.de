@@ -24,41 +24,57 @@ class StandardUser(AbstractUser):
     rounded_numbers = models.BooleanField(default=True)
 
     # getters
-    def get_active_crypto_depot_pk(self):
+    def get_active_crypto_depot(self):
         try:
-            return self.crypto_depots.get(is_active=True).pk
+            return self.crypto_depots.get(is_active=True)
         except ObjectDoesNotExist:
             return None
         except MultipleObjectsReturned:
             self.crypto_depots.update(is_active=False)
         return None
 
-    def get_active_stocks_depot_pk(self):
+    def get_active_stocks_depot(self):
         try:
-            return self.stock_depots.get(is_active=True).pk
+            return self.stock_depots.get(is_active=True)
         except ObjectDoesNotExist:
             return None
         except MultipleObjectsReturned:
             self.stock_depots.update(is_active=False)
         return None
 
-    def get_active_banking_depot_pk(self):
+    def get_active_banking_depot(self):
         try:
-            return self.banking_depots.get(is_active=True).pk
+            return self.banking_depots.get(is_active=True)
         except ObjectDoesNotExist:
             return None
         except MultipleObjectsReturned:
             self.banking_depots.update(is_active=False)
         return None
 
-    def get_active_alternative_depot_pk(self):
+    def get_active_alternative_depot(self):
         try:
-            return self.alternative_depots.get(is_active=True).pk
+            return self.alternative_depots.get(is_active=True)
         except ObjectDoesNotExist:
             return None
         except MultipleObjectsReturned:
             self.alternative_depots.update(is_active=False)
         return None
+
+    def get_all_active_depots(self):
+        depots = []
+        depot = self.get_active_banking_depot()
+        if depot:
+            depots.append(depot)
+        depot = self.get_active_alternative_depot()
+        if depot:
+            depots.append(depot)
+        depot = self.get_active_crypto_depot()
+        if depot:
+            depots.append(depot)
+        depot = self.get_active_stocks_depot()
+        if depot:
+            depots.append(depot)
+        return depots
 
     # create
     def create_random_banking_data(self):

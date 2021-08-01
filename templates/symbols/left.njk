@@ -14,31 +14,34 @@
                 <li class="nav-item">
                     <p class="font-weight-bold m-0 mb-2">Dashboards</p>
                 </li>
-                {% with pk=request.user.get_active_banking_depot_pk() %}
-                    {% if pk != None %}
+                <li class="nav-item">
+                    {{ buttons.navigationButton("Overview", url("overview:index"), active=("overview" in request.path)) }}
+                </li>
+                {% with depot=request.user.get_active_banking_depot() %}
+                    {% if depot != None %}
                         <li class="nav-item">
-                            {{ buttons.navigationButton("Banking", url("banking:index", args=[pk]), active=("banking" in request.path)) }}
+                            {{ buttons.navigationButton("Banking", url("banking:index", args=[depot.pk]), active=("banking" in request.path)) }}
                         </li>
                     {% endif %}
                 {% endwith %}
-                {% with pk=request.user.get_active_crypto_depot_pk() %}
-                    {% if pk != None %}
+                {% with depot=request.user.get_active_crypto_depot() %}
+                    {% if depot != None %}
                         <li class="nav-item">
-                            {{ buttons.navigationButton("Crypto", url('crypto:index', args=[pk]), active=("crypto" in request.path)) }}
+                            {{ buttons.navigationButton("Crypto", url('crypto:index', args=[depot.pk]), active=("crypto" in request.path)) }}
                         </li>
                     {% endif %}
                 {% endwith %}
-                {% with pk=request.user.get_active_alternative_depot_pk() %}
-                    {% if pk != None %}
+                {% with depot=request.user.get_active_alternative_depot() %}
+                    {% if depot != None %}
                         <li class="nav-item">
-                            {{ buttons.navigationButton("Alternative", url('alternative:index', args=[pk]), active=("alternative" in request.path)) }}
+                            {{ buttons.navigationButton("Alternative", url('alternative:index', args=[depot.pk]), active=("alternative" in request.path)) }}
                         </li>
                     {% endif %}
                 {% endwith %}
-                {% with pk=request.user.get_active_stocks_depot_pk() %}
-                    {% if pk != None %}
+                {% with depot=request.user.get_active_stocks_depot() %}
+                    {% if depot != None %}
                         <li class="nav-item">
-                            {{ buttons.navigationButton("Stocks", url('stocks:index', args=[pk]), active=("stocks" in request.path)) }}
+                            {{ buttons.navigationButton("Stocks", url('stocks:index', args=[depot.pk]), active=("stocks" in request.path)) }}
                         </li>
                     {% endif %}
                 {% endwith %}

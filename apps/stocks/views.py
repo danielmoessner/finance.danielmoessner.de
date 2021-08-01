@@ -148,7 +148,7 @@ class DeletePriceFetcherView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.
     def get_queryset(self):
         return PriceFetcher.objects.filter(
             stock__in=Stock.objects.filter(
-                depot__pk=self.request.user.get_active_stocks_depot_pk()))
+                depot=self.request.user.get_active_stocks_depot()))
 
 
 ###
@@ -216,7 +216,7 @@ class DeleteFlowView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteVi
     def get_queryset(self):
         return Flow.objects.filter(
             bank__in=Bank.objects.filter(
-                depot__pk=self.request.user.get_active_stocks_depot_pk()))
+                depot=self.request.user.get_active_stocks_depot()))
 
 
 ###
@@ -242,7 +242,7 @@ class DeleteDividendView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.Dele
     def get_queryset(self):
         return Dividend.objects.filter(
             bank__in=Bank.objects.filter(
-                depot__pk=self.request.user.get_active_stocks_depot_pk()))
+                depot=self.request.user.get_active_stocks_depot()))
 
 
 ###
@@ -268,4 +268,4 @@ class DeleteTradeView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteV
     def get_queryset(self):
         return Trade.objects.filter(
             bank__in=Bank.objects.filter(
-                depot__pk=self.request.user.get_active_stocks_depot_pk()))
+                depot=self.request.user.get_active_stocks_depot()))

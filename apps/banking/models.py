@@ -66,6 +66,9 @@ class Depot(CoreDepot):
             banking_duplicated_code.set_balance(self, changes)
         return round(self.balance, 2)
 
+    def get_value(self):
+        return self.get_balance()
+
     @staticmethod
     def get_objects_by_user(user):
         return Depot.objects.filter(user=user)

@@ -59,7 +59,7 @@ class AssetView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
         context = super().get_context_data(**kwargs)
         context["stats"] = self.object.get_stats()
         context["prices"] = Price.objects.filter(symbol=self.object.symbol).order_by("-date")
-        accounts = Account.objects.filter(depot=self.request.user.get_active_crypto_depot_pk())
+        accounts = Account.objects.filter(depot=self.request.user.get_active_crypto_depot())
         buy_trades = self.object.buy_trades.filter(account__in=accounts)
         sell_trades = self.object.sell_trades.filter(account__in=accounts)
         context["trades"] = (buy_trades | sell_trades).order_by("-date") \

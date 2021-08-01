@@ -1,0 +1,19 @@
+{% extends "layout/lm.njk" %}
+
+{% set headingCategory="Dashboard" %}
+{% set headingHeading="Overview" %}
+{% set title="Overview" %}
+
+{% block main %}
+
+{% import "symbols/button.njk" as bg %}
+
+<div class="d-flex justify-content-center mt-2 mb-5">
+    <div class="btn-group" role="group" aria-label="Console">
+        {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
+    </div>
+</div>
+
+{% include 'symbols/stats.j2' %}
+
+{% endblock %}
