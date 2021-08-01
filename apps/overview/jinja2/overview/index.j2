@@ -11,9 +11,33 @@
 <div class="d-flex justify-content-center mt-2 mb-5">
     <div class="btn-group" role="group" aria-label="Console">
         {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
+        {{ bg.dropdownButton("Calculations", active=(tab=="values" or tab=="flows")) }}
+        <div class="dropdown-menu bg-secondary py-1">
+            <a class="dropdown-item bg-secondary text-white btn-sm" href="?tab=values">Values</a>
+        </div>
     </div>
 </div>
 
 {% include 'symbols/stats.j2' %}
+
+{% if tab=='values' %}
+    <table class="table table-dark table-responsive-md rounded">
+        <thead>
+        <tr>
+            <th class="border-0" scope="col">Date</th>
+
+            <th class="border-0 text-right" scope="col">Value</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for index, row in value_df.iterrows() %}
+            <tr>
+                <td>{{ index.strftime('%d.%m.%Y') }}</td>
+                <td class="text-right">{{ "%.2f"|format(row.value) }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
 
 {% endblock %}

@@ -43,6 +43,21 @@ class Depot(CoreDepot):
         assert str(self.pk) in statement
         return utils.get_number_from_database(statement)
 
+    def get_value_df(self):
+        if not hasattr(self, 'value_df'):
+            # get the df with all values
+            df = utils.get_merged_value_df_from_queryset(self.alternatives.all())
+            # fill the nan values so that the value sum is correct
+            # note that this is not really correct because an alternative asses usually raises in value smoothly
+            df = df.fillna(method='ffill').fillna(0)
+            # sums up all the values of the assets and interpolates
+            df = utils.sum_up_columns_in_a_dataframe(df)
+            # remove all the rows where the value is 0 as it doesn't make sense in the calculations
+            df = df.loc[df.loc[:, 'value'] != 0]
+            # set the df
+            self.value_df = df
+        return self.value_df
+
 
 class Alternative(models.Model):
     name = models.CharField(max_length=200)

@@ -32,26 +32,30 @@ def get_merged_value_df_from_queryset(queryset):
     df = pd.DataFrame(columns=['date', 'value'])
     df.set_index('date', inplace=True)
     # merge the dataframe with all items
-    for item in list(queryset):
+    for index, item in enumerate(list(queryset)):
         item_df = item.get_value_df()
         if item_df is None:
             continue
-        item_df.rename(columns={'value': 'value__' + str(item.pk)}, inplace=True)
+        item_df.rename(columns={'value': 'value__{}-{}'.format(index, item.pk)}, inplace=True)
         df = df.merge(item_df, how='outer', sort=True, on='date')
     # return the df
     return df
 
 
-def sum_up_columns_in_a_dataframe(df, column='value'):
+def sum_up_columns_in_a_dataframe(df, column='value', drop=True):
     # return none if the df is empty
     if df.empty:
         return None
+    # safety check sum probably returns wrong values if that's the case
+    if df.isnull().values.any():
+        raise ValueError('The df should not contain nan values.')
     # get all the value columns as list
     value_columns = df.columns.str.contains(column + '__')
     # sum the alternative values in the value column
     df.loc[:, column] = df.iloc[:, value_columns].sum(axis=1)
     # drop all unnecessary columns
-    df = df.loc[:, [column]]
+    if drop:
+        df = df.loc[:, [column]]
     # return the new df
     return df
 
