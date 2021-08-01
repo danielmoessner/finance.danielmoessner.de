@@ -103,7 +103,8 @@ class ChangeField(forms.DecimalField):
         super().__init__(widget=forms.TextInput(attrs=attrs), *args, **kwargs)
 
     def to_python(self, value):
-        value = value.replace(',', '.')
+        if type(value) == str:
+            value = value.replace(',', '.')
         return super().to_python(value)
 
 
