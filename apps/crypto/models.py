@@ -50,8 +50,8 @@ class Depot(CoreDepot):
         if not hasattr(self, 'value_df'):
             # get the df with all values
             df = get_merged_value_df_from_queryset(self.assets.all())
-            # replace nan with 0 this works because there is every date within the index from beginning to end
-            df = df.fillna(0)
+            # replace nan with 0 this might not work because i haven't tested it
+            df = df.fillna(method='ffill').fillna(0)
             # sums up all the values of the assets
             df = sum_up_columns_in_a_dataframe(df)
             # remove all the rows where the value is 0 as it doesn't make sense in the calculations
