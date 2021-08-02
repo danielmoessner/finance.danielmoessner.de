@@ -145,7 +145,7 @@ class Depot(models.Model):
             # get the df with all values
             df = get_merged_value_df_from_queryset(self.stocks.all())
             # fill na values for sum to work correctly
-            # note that this is not perfect because i have not testet what happens when an asset is sold
+            # note that this is not perfect because i have not tested it
             df = df.fillna(method='ffill').fillna(0)
             # sums up all the values of the assets and interpolates
             df = sum_up_columns_in_a_dataframe(df)
@@ -465,12 +465,16 @@ class Stock(models.Model):
         df.loc[:, 'price'] = df.loc[:, 'price'].interpolate(method='time', limit_direction='both')
         # calculate the value
         df.loc[:, 'value'] = df.loc[:, 'amount'] * df.loc[:, 'price']
+
+        # comment out this stuff because it makes no sense in my mind it seems like it was only here because
+        # i thought that the calculations might be faster
         # replace 0 with nan as it makes further manipulations easier
-        df.loc[:, 'value'] = df.loc[:, 'value'].replace(0, np.nan)
+        # df.loc[:, 'value'] = df.loc[:, 'value'].replace(0, np.nan)
         # slice the dataframe only keep the important values
-        df = df.loc[df.loc[:, 'value'].notna()]
+        # df = df.loc[df.loc[:, 'value'].notna()]
         # fill nan with 0 as that is the true value
-        df = df.fillna(0)
+        # df = df.fillna(0)
+
         # remove unnecessary columns
         df = df.loc[:, ['value']]
         # return the df

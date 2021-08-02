@@ -1,8 +1,7 @@
+import pandas as pd
 from django.contrib.auth.mixins import LoginRequiredMixin
-from apps.stocks.models import Depot
 from apps.core.mixins import TabContextMixin
 from django.views import generic
-import pandas as pd
 
 
 # views
@@ -22,6 +21,7 @@ class IndexView(LoginRequiredMixin, TabContextMixin, generic.TemplateView):
         }
 
     def get_value_df(self):
+        pd.set_option('max_columns', None)
         # get the df with all values
         df = get_merged_value_df_from_queryset(self.request.user.get_all_active_depots())
         # make the date normal
