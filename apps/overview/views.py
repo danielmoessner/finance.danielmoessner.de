@@ -1,5 +1,9 @@
-import pandas as pd
+import json
+
 from django.contrib.auth.mixins import LoginRequiredMixin
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from apps.core.mixins import TabContextMixin
 from django.views import generic
 
@@ -21,9 +25,9 @@ class IndexView(LoginRequiredMixin, TabContextMixin, generic.TemplateView):
         }
 
     def get_value_df(self):
-        pd.set_option('max_columns', None)
+        active_depots = self.request.user.get_all_active_depots()
         # get the df with all values
-        df = get_merged_value_df_from_queryset(self.request.user.get_all_active_depots())
+        df = get_merged_value_df_from_queryset(active_depots)
         # make the date normal
         df = change_time_of_date_index_in_df(df, 12)
         # sums up all the values
@@ -33,6 +37,12 @@ class IndexView(LoginRequiredMixin, TabContextMixin, generic.TemplateView):
         df = df.loc[df.loc[:, 'value'] != 0]
         # remove duplicate dates and keep the last
         df = df.loc[~df.index.duplicated(keep='last')]
+        # rename the columns
+        column_names = dict(zip(df.columns, ['Total', *[depot.name for depot in active_depots]]))
+        df = df.rename(columns=column_names)
+        # reorder the df
+        new_column_order = list(df.columns[1:]) + list([df.columns[0]])
+        df = df.loc[:, new_column_order]
         # set the df
         return df
 
@@ -47,5 +57,35 @@ class IndexView(LoginRequiredMixin, TabContextMixin, generic.TemplateView):
         context['stats'] = self.get_stats()
         if context['tab'] == 'values':
             context['value_df'] = self.get_value_df()
+        if context['tab'] == 'charts':
+            context['active_depots'] = self.request.user.get_all_active_depots()
         # return
         return context
+
+
+class DataApiView(APIView):
+    def get(self, *args, **kwargs):
+        active_depots = self.request.user.get_all_active_depots()
+        # get the df with all values
+        df = get_merged_value_df_from_queryset(active_depots)
+        # make the date normal
+        df = change_time_of_date_index_in_df(df, 12)
+        # sums up all the values
+        df = df.fillna(method="ffill").fillna(0)
+        df = sum_up_columns_in_a_dataframe(df, drop=False)
+        # remove all the rows where the value is 0 as it doesn't make sense in the calculations
+        df = df.loc[df.loc[:, 'value'] != 0]
+        # remove duplicate dates and keep the last
+        df = df.loc[~df.index.duplicated(keep='last')]
+        # rename the columns
+        column_names = dict(zip(df.columns, ['Total', *[depot.name for depot in active_depots]]))
+        df = df.rename(columns=column_names)
+        # reorder the df
+        new_column_order = list(df.columns[1:]) + list([df.columns[0]])
+        df = df.loc[:, new_column_order]
+        # reset the index for json
+        df.reset_index(inplace=True)
+        # make a json object
+        json_df = json.loads(df.to_json(orient='records'))
+        # return the df
+        return Response(json_df)
