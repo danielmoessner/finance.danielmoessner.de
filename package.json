@@ -8,6 +8,7 @@
   "dependencies": {
     "@amcharts/amcharts4": "^4.10.20",
     "bootstrap": "^4.6.0",
+    "cross-env": "^7.0.3",
     "jquery": "^3.6.0",
     "popper.js": "^1.16.1",
     "purgecss": "^4.0.3",
@@ -20,7 +21,7 @@
   "scripts": {
     "css": "sass static/scss/main.scss static/app/css/main.css --load-path=node_modules",
     "js:app": "rollup static/javascript/app.js --file static/app/js/app.js --format umd --plugin node-resolve --plugin commonjs --plugin terser",
-    "js:charts": "rollup static/javascript/charts.js --file static/app/js/charts.js --format umd --inlineDynamicImports --plugin node-resolve --plugin commonjs --plugin terser",
+    "js:charts": "cross-env NODE_OPTIONS='--max-old-space-size=8192' rollup static/javascript/charts.js --file static/app/js/charts.js --format umd --inlineDynamicImports --plugin node-resolve --plugin commonjs --plugin terser",
     "build": "npm run css && npm run js:app && npm run js:charts && tmp/venv/bin/python manage.py collectstatic --noinput"
   }
 }
