@@ -5,13 +5,7 @@
 <script src="{{ static('js/charts.js') }}"></script>
 <script>
 
-    {#import * as _ from "/static/js/charts.js";#}
-
     am4core.ready(function () {
-
-        // use a theme
-        am4core.useTheme(am4themes_animated);
-        am4core.useTheme(am4themes_dark);
 
         // create the chart and set default settings
         const chart = am4core.create("balanceChart", am4charts.XYChart);

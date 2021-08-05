@@ -1,31 +1,26 @@
 {
-  "name": "static",
-  "version": "1.0.0",
-  "description": "The static files of my finance project.",
+  "name": "finance.danielmoessner.de",
+  "version": "0.0.0",
+  "description": "finance.danielmoessner.de",
   "private": true,
-  "author": "Daniel Moessner",
+  "author": "Daniel Mössner",
   "license": "UNLICENSED",
   "dependencies": {
-    "@babel/core": "^7.14.0",
-    "@babel/preset-env": "^7.14.0",
-    "babelify": "^10.0.0",
+    "@amcharts/amcharts4": "^4.10.20",
     "bootstrap": "^4.6.0",
-    "browserify": "^16.5.2",
     "jquery": "^3.6.0",
     "popper.js": "^1.16.1",
     "purgecss": "^4.0.3",
-    "sass": "^1.32.12",
-    "uglify-es": "^3.3.9",
-    "watchify": "^4.0.0"
+    "rollup": "^2.56.0",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "sass": "^1.32.12"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "css": "sass static/scss/main.scss static/app/css/main.css --load-path=node_modules",
-    "js:charts": "browserify static/javascript/charts.js -t [ babelify --presets [ @babel/preset-env ] ] > static/app/js/charts.js",
-    "js": "browserify static/javascript/index.js -t [ babelify --presets [ @babel/preset-env ] ] > static/app/js/app.js",
-    "build:css": "npm run css",
-    "build:js": "browserify static/javascript/index.js -t [ babelify --presets [ @babel/preset-env ] --minified ] | uglifyjs > static/app/js/app.js",
-    "build:js:charts": "browserify static/javascript/charts.js -t [ babelify --presets [ @babel/preset-env ] --minified ] | uglifyjs > static/app/js/charts.js",
-    "build": "npm run build:css && npm run build:js && npm run build:js:charts && tmp/venv/bin/python manage.py collectstatic --noinput"
+    "js:app": "rollup static/javascript/app.js --file static/app/js/app.js --format umd --plugin node-resolve --plugin commonjs --plugin terser",
+    "js:charts": "rollup static/javascript/charts.js --file static/app/js/charts.js --format umd --inlineDynamicImports --plugin node-resolve --plugin commonjs --plugin terser",
+    "build": "npm run css && npm run js:app && npm run js:charts && tmp/venv/bin/python manage.py collectstatic --noinput"
   }
 }
