@@ -10,11 +10,11 @@
         <div class="col-12 col-lg-4 offset-lg-4">
             <div class="min-vh-100 d-flex flex-column align-items-stretch justify-content-center">
                 <div class="d-flex mt-4 mb-5 align-items-center">
-                    <img class="mr-2" src="{{ static('img/owl.svg') }}" width="42" height="42" alt="Owl">
+                    <img class="me-2" src="{{ static('img/owl.svg') }}" width="42" height="42" alt="Owl">
                     <h1 class="m-0">Sign up</h1>
                 </div>
                 <div class="mb-5">
-                    {{ forms.formGenerator(form, url('users:signup'), csrf_token, submit_button_text='Sign up', submit_button_classes='ml-auto', form_classes='djangoform-dark') }}
+                    {{ forms.formGenerator(form, url('users:signup'), csrf_token, submit_button_text='Sign up', submit_button_classes='ms-auto', form_classes='djangoform-dark') }}
                 </div>
                 <div>
                     {{ buttons.hrefButton(text='Go to the login page', url=url('users:signin'), classes='mb-4') }}

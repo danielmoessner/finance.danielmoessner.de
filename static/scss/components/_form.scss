@@ -1,6 +1,6 @@
 .djangoform {
   p {
-    @extend .form-group;
+    //@extend .form-group;
 
     input {
       @extend .form-control;
@@ -8,8 +8,7 @@
     }
 
     select {
-      @extend .form-control;
-      @extend .custom-select;
+      @extend .form-select;
       display: block;
       font-size: 16px;
     }

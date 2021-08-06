@@ -7,10 +7,8 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@amcharts/amcharts4": "^4.10.20",
-    "bootstrap": "^4.6.0",
+    "bootstrap": "^5.1.0",
     "cross-env": "^7.0.3",
-    "jquery": "^3.6.0",
-    "popper.js": "^1.16.1",
     "purgecss": "^4.0.3",
     "rollup": "^2.56.0",
     "rollup-plugin-commonjs": "^10.1.0",
