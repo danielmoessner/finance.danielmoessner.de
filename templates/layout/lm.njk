@@ -5,19 +5,21 @@
 {% import "symbols/messages.njk" as messages %}
 
 {% block body %}
-    <body class="container bg-darker">
-    <div class="d-flex flex-column flex-lg-row">
-        <div class="row flex-grow-1 pt-4">
-            <aside class="col-12 col-lg-3">
-                {{ lg.left(request) }}
-            </aside>
-            <main class="col-12 col-lg-9 mt-5 mt-lg-0">
-                {{ hg.bigLmHeading(headingCategory, headingHeading) }}
-                {{ messages.lmMessages(request) }}
-                {% block main %}
+    <body class="bg-darker">
+    <div class="container">
+        <div class="d-flex flex-column flex-lg-row">
+            <div class="row flex-grow-1 pt-4">
+                <aside class="col-12 col-lg-3">
+                    {{ lg.left(request) }}
+                </aside>
+                <main class="col-12 col-lg-9 mt-5 mt-lg-0">
+                    {{ hg.bigLmHeading(headingCategory, headingHeading) }}
+                    {{ messages.lmMessages(request) }}
+                    {% block main %}
 
-                {% endblock %}
-            </main>
+                    {% endblock %}
+                </main>
+            </div>
         </div>
     </div>
     </body>

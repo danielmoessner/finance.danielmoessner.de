@@ -16,9 +16,9 @@
             {{ bg.hrefButton("Trades", request.path + '?tab=trades', active=(tab=='trades')) }}
             {{ bg.hrefButton("Dividends", request.path + "?tab=dividends", active=(tab=="dividends")) }}
             {{ bg.dropdownButton("Calculations", active=(tab=="values" or tab=="flows")) }}
-            <div class="dropdown-menu bg-secondary py-1">
-                <a class="dropdown-item bg-secondary text-white btn-sm" href="?tab=flows">Flows</a>
-                <a class="dropdown-item bg-secondary text-white btn-sm" href="?tab=values">Values</a>
+            <div class="dropdown-menu dropdown-menu-dark py-1">
+                <a class="dropdown-item btn-sm" href="?tab=flows">Flows</a>
+                <a class="dropdown-item btn-sm" href="?tab=values">Values</a>
             </div>
         </div>
     </div>
@@ -31,17 +31,17 @@
         <table class="table table-dark table-responsive-md rounded mb-5">
             <thead>
             <tr>
-                <th class="border-0" scope="col">Date</th>
-                <th class="border-0 text-right" scope="col">Price</th>
-                <th class="border-0" scope="col"></th>
+               <th scope="col">Date</th>
+                <th class="text-end" scope="col">Price</th>
+               <th scope="col"></th>
             </tr>
             </thead>
             <tbody>
             {% for price in prices %}
                 <tr>
                     <td>{{ localtime(price.date).strftime('%d.%m.%Y %H:%M') }}</td>
-                    <td class="text-right">{{ price.price }}</td>
-                    <td class="text-right">
+                    <td class="text-end">{{ price.price }}</td>
+                    <td class="text-end">
                         {{ mg.djangoModal("Edit Price", "editPrice", url("stocks:edit_price", args=[price.pk])) }}
                         {{ bg.modalButton("Edit Price", "#editPrice") }}
                     </td>

@@ -2,11 +2,11 @@
     <table class="table table-dark table-responsive-md rounded">
         <thead>
         <tr>
-            <th class="border-0" scope="col">Date</th>
-            <th class="border-0" scope="col">Description</th>
-            <th class="border-0" scope="col">Bank</th>
-            <th class="border-0 text-right" scope="col">Flow</th>
-            <th class="border-0 text-right" scope="col">
+           <th scope="col">Date</th>
+           <th scope="col">Description</th>
+           <th scope="col">Bank</th>
+            <th class="text-end" scope="col">Flow</th>
+            <th class="text-end" scope="col">
                 {{ bg.modalButton("Add Flow", "#addFlow") }}
             </th>
         </tr>
@@ -17,7 +17,7 @@
                 <td>{{ localtime(flow.date).strftime('%d.%m.%Y %H:%M') }}</td>
                 <td>{{ flow.short_description }}</td>
                 <td>{{ flow.bank }}</td>
-                <td class="text-right">{{ flow.flow }}</td>
+                <td class="text-end">{{ flow.flow }}</td>
                 <td>
                     <div class="d-flex justify-content-end">
                         {{ mg.djangoModal("Edit Flow", "editFlow"+flow.pk|string, url("stocks:edit_flow", args=[flow.pk])) }}

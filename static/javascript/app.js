@@ -1,4 +1,7 @@
-import 'bootstrap';
+// import '@popperjs/core/dist/umd/popper.min.js';
+// import 'bootstrap/dist/js/bootstrap.min.js';
+// import "@popperjs/core"
+// import "bootstrap"
 
 // wrapper function that calls the submitted function as soon as the document is loaded
 function ready(f) {

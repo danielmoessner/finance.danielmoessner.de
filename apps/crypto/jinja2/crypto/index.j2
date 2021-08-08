@@ -29,22 +29,22 @@
         <table class="table rounded table-responsive-md table-dark">
             <thead>
             <tr>
-                <th class="border-0" scope="col">Asset</th>
-                <th class="border-0" scope="col">Price</th>
-                <th class="border-0" scope="col">Amount</th>
-                <th class="border-0" scope="col">Value</th>
-                <th class="border-0" scope="col">Action</th>
+               <th scope="col">Asset</th>
+               <th class="text-end" scope="col">Price</th>
+               <th class="text-end" scope="col">Amount</th>
+               <th class="text-end" scope="col">Value</th>
+               <th scope="col"></th>
             </tr>
             </thead>
             <tbody>
             {% for asset in assets %}
                 <tr>
                     <td>{{ asset.symbol }}</td>
-                    <td>{{ asset.get_price() }}</td>
-                    <td>{{ asset.get_amount() }}</td>
-                    <td>{{ "%.2f"|format(asset.get_value()) }}</td>
+                    <td class="text-end">{{ asset.get_price() }}</td>
+                    <td class="text-end">{{ asset.get_amount() }}</td>
+                    <td class="text-end">{{ "%.2f"|format(asset.get_value()) }}</td>
                     <td>
-                        <div class="d-flex">
+                        <div class="d-flex justify-content-end">
                             {{ mg.djangoModal("Add Trade", "addTrade", url("crypto:add_trade")+"?buy_asset="+asset.pk|string+"&sell_asset="+asset.pk|string) }}
                             {{ bg.modalButton("Buy / Sell", "#addTrade") }}
                             {{ mg.djangoModal("Add Transaction", "addTransaction", url("crypto:add_transaction")+"?asset="+asset.pk|string) }}
@@ -74,18 +74,18 @@
         <table class="table table-dark table-responsive-md rounded">
             <thead>
             <tr>
-                <th class="border-0" scope="col">Account</th>
-                <th class="border-0" scope="col">Value</th>
-                <th class="border-0" scope="col">Action</th>
+               <th scope="col">Account</th>
+               <th class="text-end" scope="col">Value</th>
+               <th scope="col"></th>
             </tr>
             </thead>
             <tbody>
             {% for account in accounts %}
                 <tr>
                     <td>{{ account.name }}</td>
-                    <td>{{ "%.2f"|format(account.get_value()) }}</td>
+                    <td class="text-end">{{ "%.2f"|format(account.get_value()) }}</td>
                     <td>
-                        <div class="d-flex">
+                        <div class="d-flex justify-content-end">
                             {{ mg.djangoModal("Deposit / Withdraw", "addFlow"+account.pk|string, url("crypto:add_flow")+"?account="+account.pk|string) }}
                             {{ bg.modalButton("Deposit / Withdraw", "#addFlow"+account.pk|string) }}
                             {{ bg.modalButton("Edit", "#editAccount"+account.pk|string) }}

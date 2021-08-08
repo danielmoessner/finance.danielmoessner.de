@@ -50,8 +50,8 @@
         <table class="table table-dark table-responsive-md rounded mb-5">
             <thead>
             <tr>
-                <th class="border-0" scope="col">Depot</th>
-                <th class="border-0" scope="col">Action</th>
+               <th scope="col">Depot</th>
+               <th scope="col"></th>
             </tr>
             </thead>
             <tbody>
@@ -59,7 +59,7 @@
                 <tr>
                     <td>{{ depot.name }}</td>
                     <td>
-                        <div class="d-flex">
+                        <div class="d-flex justify-content-end">
                             {{ bg.hrefButton(text="Set Active", url=url("banking:set_depot", args=[depot.pk]), disabled=(depot.is_active)) }}
                             {{ mg.djangoModal("Edit Depot", "editBankingDepot"+depot.pk|string, url("banking:edit_depot", args=[depot.pk])) }}
                             {{ bg.modalButton("Edit", "#editBankingDepot"+depot.pk|string) }}
@@ -86,8 +86,8 @@
         <table class="table table-dark table-responsive-md rounded mb-5">
             <thead>
             <tr>
-                <th class="border-0" scope="col">Depot</th>
-                <th class="border-0" scope="col">Action</th>
+               <th scope="col">Depot</th>
+               <th scope="col"></th>
             </tr>
             </thead>
             <tbody>
@@ -95,7 +95,7 @@
                 <tr>
                     <td>{{ depot.name }}</td>
                     <td>
-                        <div class="d-flex">
+                        <div class="d-flex justify-content-end">
                             {{ bg.hrefButton(text="Set Active", url=url("crypto:set_depot", args=[depot.pk]), disabled=(depot.is_active)) }}
                             {{ mg.djangoModal("Edit Depot", "editCryptoDepot"+depot.pk|string, url("crypto:edit_depot", args=[depot.pk])) }}
                             {{ bg.modalButton("Edit", "#editCryptoDepot"+depot.pk|string) }}
@@ -122,8 +122,8 @@
         <table class="table table-dark table-responsive-md rounded mb-5">
             <thead>
             <tr>
-                <th class="border-0" scope="col">Depot</th>
-                <th class="border-0" scope="col">Action</th>
+               <th scope="col">Depot</th>
+               <th scope="col"></th>
             </tr>
             </thead>
             <tbody>
@@ -131,7 +131,7 @@
                 <tr>
                     <td>{{ depot.name }}</td>
                     <td>
-                        <div class="d-flex">
+                        <div class="d-flex justify-content-end">
                             {{ bg.hrefButton(text="Set Active", url=url("alternative:set_depot", args=[depot.pk]), disabled=(depot.is_active)) }}
                             {{ mg.djangoModal("Edit Depot", "editAlternativeDepot"+depot.pk|string, url("alternative:edit_depot", args=[depot.pk])) }}
                             {{ bg.modalButton("Edit", "#editAlternativeDepot"+depot.pk|string) }}
@@ -158,8 +158,8 @@
         <table class="table table-dark table-responsive-md rounded mb-5">
             <thead>
             <tr>
-                <th class="border-0" scope="col">Depot</th>
-                <th class="border-0" scope="col">Action</th>
+               <th scope="col">Depot</th>
+               <th scope="col"></th>
             </tr>
             </thead>
             <tbody>
@@ -167,7 +167,7 @@
                 <tr>
                     <td>{{ depot.name }}</td>
                     <td>
-                        <div class="d-flex">
+                        <div class="d-flex justify-content-end">
                             {{ bg.hrefButton(text="Set Active", url=url("stocks:set_depot", args=[depot.pk]), disabled=(depot.is_active)) }}
                             {{ mg.djangoModal("Edit Depot", "editStocksDepot"+depot.pk|string, url("stocks:edit_depot", args=[depot.pk])) }}
                             {{ bg.modalButton("Edit", "#editStocksDepot"+depot.pk|string) }}

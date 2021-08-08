@@ -476,7 +476,7 @@ class Stock(models.Model):
         # df = df.fillna(0)
 
         # remove unnecessary columns
-        df = df.loc[:, ['value']]
+        # df = df.loc[:, ['value']]
         # return the df
         return df
 

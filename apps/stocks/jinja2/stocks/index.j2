@@ -16,9 +16,9 @@
             {{ bg.hrefButton("Stocks", request.path + '?tab=stocks', active=(tab=='stocks')) }}
             {{ bg.hrefButton("Charts", request.path + '?tab=charts', active=(tab=='charts')) }}
             {{ bg.dropdownButton("Calculations", active=(tab=="values" or tab=="flows")) }}
-            <div class="dropdown-menu bg-secondary py-1">
-                <a class="dropdown-item bg-secondary text-white btn-sm" href="?tab=flows">Flows</a>
-                <a class="dropdown-item bg-secondary text-white btn-sm" href="?tab=values">Values</a>
+            <div class="dropdown-menu dropdown-menu-dark py-1">
+                <a class="dropdown-item btn-sm" href="?tab=flows">Flows</a>
+                <a class="dropdown-item btn-sm" href="?tab=values">Values</a>
             </div>
         </div>
     </div>
@@ -29,18 +29,18 @@
         <table class="table rounded table-responsive-md table-dark mb-5">
             <thead>
             <tr>
-                <th class="border-0" scope="col">Bank</th>
-                <th class="border-0 text-right" scope="col">Balance</th>
-                <th class="border-0 text-right" scope="col">Value</th>
-                <th class="border-0" scope="col"></th>
+               <th scope="col">Bank</th>
+                <th class="text-end" scope="col">Balance</th>
+                <th class="text-end" scope="col">Value</th>
+               <th scope="col"></th>
             </tr>
             </thead>
             <tbody>
             {% for bank in banks %}
                 <tr>
                     <td>{{ bank.name }}</td>
-                    <td class="text-right">{{ "%.2f"|format(bank.get_stats()['Balance']) }}</td>
-                    <td class="text-right">{{ "%.2f"|format(bank.get_stats()['Value']) }}</td>
+                    <td class="text-end">{{ "%.2f"|format(bank.get_stats()['Balance']) }}</td>
+                    <td class="text-end">{{ "%.2f"|format(bank.get_stats()['Value']) }}</td>
                     <td>
                         <div class="d-flex align-items-center justify-content-end">
                             {{ mg.djangoModal("Edit Bank", "editBank"+bank.pk|string, url("stocks:edit_bank", args=[bank.pk])) }}
@@ -68,13 +68,13 @@
         <table class="table rounded table-responsive-md table-dark mb-5">
             <thead>
             <tr>
-                <th class="border-0" scope="col">Name</th>
-                <th class="border-0" scope="col">Ticker</th>
-                <th class="border-0" scope="col">Exchange</th>
-                <th class="border-0 text-right" scope="col">Price</th>
-                <th class="border-0 text-right" scope="col">Amount</th>
-                <th class="border-0 text-right" scope="col">Value</th>
-                <th class="border-0" scope="col"></th>
+               <th scope="col">Name</th>
+               <th scope="col">Ticker</th>
+               <th scope="col">Exchange</th>
+                <th class="text-end" scope="col">Price</th>
+                <th class="text-end" scope="col">Amount</th>
+                <th class="text-end" scope="col">Value</th>
+               <th scope="col"></th>
             </tr>
             </thead>
             <tbody>
@@ -85,15 +85,15 @@
                     <td>{{ stock.exchange }}</td>
                     {% with stats=stock.get_stats() %}
                         {% if stats['Price'] %}
-                            <td class="text-right">{{ "%.2f"|format(stats['Price']) }}</td>
+                            <td class="text-end">{{ "%.2f"|format(stats['Price']) }}</td>
                         {% else %}
-                            <td class="text-right">{{ stats['Price'] }}</td>
+                            <td class="text-end">{{ stats['Price'] }}</td>
                         {% endif %}
-                        <td class="text-right">{{ stats['Amount'] }}</td>
+                        <td class="text-end">{{ stats['Amount'] }}</td>
                         {% if stats['Value'] %}
-                            <td class="text-right">{{ "%.2f"|format(stats['Value']) }}</td>
+                            <td class="text-end">{{ "%.2f"|format(stats['Value']) }}</td>
                         {% else %}
-                            <td class="text-right">{{ stats['Value'] }}</td>
+                            <td class="text-end">{{ stats['Value'] }}</td>
                         {% endif %}
                     {% endwith %}
                     <td>

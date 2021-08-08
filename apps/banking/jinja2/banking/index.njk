@@ -24,16 +24,16 @@
     <table class="table rounded table-responsive-md table-dark mb-5">
         <thead>
         <tr>
-            <th class="border-0" scope="col">Account</th>
-            <th class="border-0 text-right" scope="col">Balance</th>
-            <th class="border-0 text-right" scope="col"></th>
+           <th scope="col">Account</th>
+            <th class="text-end" scope="col">Balance</th>
+            <th class="text-end" scope="col"></th>
         </tr>
         </thead>
         <tbody>
         {% for account in accounts %}
             <tr>
                 <td>{{ account.name }}</td>
-                <td class="text-right">{{ account.get_stats()['Balance'] }}</td>
+                <td class="text-end">{{ account.get_stats()['Balance'] }}</td>
                 <td>
                     <div class="d-flex align-items-center justify-content-end">
                         {{ mg.djangoModal("Add Change", "addChange"+account.pk|string, url("banking:add_change")+"?account="+account.pk|string) }}
@@ -63,16 +63,16 @@
     <table class="table rounded table-responsive-md table-dark mb-5">
         <thead>
         <tr>
-            <th class="border-0" scope="col">Category</th>
-            <th class="border-0 text-right" scope="col">Change</th>
-            <th class="border-0" scope="col"></th>
+           <th scope="col">Category</th>
+            <th class="text-end" scope="col">Change</th>
+           <th scope="col"></th>
         </tr>
         </thead>
         <tbody>
         {% for category in categories %}
             <tr>
                 <td>{{ category.name }}</td>
-                <td class="text-right">{{ category.get_stats()['Change'] }}</td>
+                <td class="text-end">{{ category.get_stats()['Change'] }}</td>
                 <td>
                     <div class="d-flex justify-content-end">
                         {{ bg.modalButton("Edit", "#editCategory"+category.pk|string) }}

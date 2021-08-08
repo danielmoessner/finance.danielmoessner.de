@@ -2,15 +2,15 @@
     <table class="table table-dark table-responsive-md rounded">
         <thead>
         <tr>
-            <th class="border-0" scope="col">Date</th>
-            <th class="border-0 text-right" scope="col">Flow</th>
+           <th scope="col">Date</th>
+            <th class="text-end" scope="col">Flow</th>
         </tr>
         </thead>
         <tbody>
         {% for flow in flows() %}
             <tr>
                 <td>{{ flow[0].strftime('%d.%m.%Y') }}</td>
-                <td class="text-right">{{ "%.2f"|format(flow[1]) }}</td>
+                <td class="text-end">{{ "%.2f"|format(flow[1]) }}</td>
             </tr>
         {% endfor %}
         </tbody>

@@ -22,12 +22,12 @@
             <table class="table rounded table-responsive-md table-dark mb-5">
                 <thead>
                 <tr>
-                    <th class="border-0" scope="col">Date</th>
-                    <th class="border-0" scope="col">Category</th>
-                    <th class="border-0" scope="col">Description</th>
-                    <th class="border-0 text-right" scope="col">Change</th>
-                    <th class="border-0 text-right" scope="col">Balance</th>
-                    <th class="border-0 text-right" scope="col">
+                   <th scope="col">Date</th>
+                   <th scope="col">Category</th>
+                   <th scope="col">Description</th>
+                    <th class="text-end" scope="col">Change</th>
+                    <th class="text-end" scope="col">Balance</th>
+                    <th class="text-end" scope="col">
                         {{ bg.modalButton("Add Change", "#addChange") }}
                     </th>
                 </tr>
@@ -38,10 +38,10 @@
                     <td>{{ localtime(change.date).strftime('%d.%m.%Y %H:%M') }}</td>
                     <td>{{ change.category }}</td>
                     <td>{{ change.get_description() }}</td>
-                    <td class="text-right">{{ change.change }}</td>
-                    <td class="text-right">{{ change.get_stats()['Balance'] }}</td>
+                    <td class="text-end">{{ change.change }}</td>
+                    <td class="text-end">{{ change.get_stats()['Balance'] }}</td>
                     <td>
-                        <div class="d-flex">
+                        <div class="d-flex justify-content-end">
                             {{ mg.djangoModal("Edit Change", "editChange"+change.pk|string, url("banking:edit_change", args=[change.pk])) }}
                             {{ bg.modalButton("Edit", "#editChange"+change.pk|string) }}
                             {{ mg.djangoModal("Delete Change", "deleteChange"+change.pk|string, url("banking:delete_change", args=[change.pk])) }}

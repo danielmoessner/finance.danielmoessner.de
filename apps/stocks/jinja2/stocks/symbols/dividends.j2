@@ -2,11 +2,11 @@
     <table class="table table-dark table-responsive-md rounded mb-5">
         <thead>
         <tr>
-            <th class="border-0" scope="col">Date</th>
-            <th class="border-0" scope="col">Bank</th>
-            <th class="border-0" scope="col">Stock</th>
-            <th class="border-0 text-right" scope="col">Dividend</th>
-            <th class="border-0 text-right" scope="col">
+           <th scope="col">Date</th>
+           <th scope="col">Bank</th>
+           <th scope="col">Stock</th>
+            <th class="text-end" scope="col">Dividend</th>
+            <th class="text-end" scope="col">
                 {{ bg.modalButton("Add Dividend", "#addDividend") }}
             </th>
         </tr>
@@ -17,7 +17,7 @@
                 <td>{{ localtime(dividend.date).strftime('%d.%m.%Y %H:%M') }}</td>
                 <td>{{ dividend.bank }}</td>
                 <td>{{ dividend.stock }}</td>
-                <td class="text-right">{{ dividend.dividend }}</td>
+                <td class="text-end">{{ dividend.dividend }}</td>
                 <td class="d-flex justify-content-end">
                     {{ mg.djangoModal("Edit Dividend", "editDividend"+dividend.pk|string, url("stocks:edit_dividend", args=[dividend.pk])) }}
                     {{ bg.modalButton("Edit", "#editDividend"+dividend.pk|string) }}

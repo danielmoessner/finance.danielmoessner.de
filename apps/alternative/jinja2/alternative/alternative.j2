@@ -23,20 +23,20 @@
         <table class="table rounded table-dark mb-5">
             <thead>
             <tr>
-                <th class="border-0" scope="col">Date</th>
-                <th class="border-0" scope="col">Flow</th>
-                <th class="border-0" scope="col">Value</th>
-                <th class="border-0" scope="col">Action</th>
+               <th scope="col">Date</th>
+               <th class="text-end" scope="col">Flow</th>
+               <th class="text-end" scope="col">Value</th>
+               <th scope="col"></th>
             </tr>
             </thead>
             <tbody>
             {% for data in flows_and_values %}
                 <tr>
                     <td>{{ localtime(data.date).strftime('%d.%m.%Y %H:%M') }}</td>
-                    <td>{{ data.flow or "" }}</td>
-                    <td>{{ data.value or "" }}</td>
+                    <td class="text-end">{{ data.flow or "" }}</td>
+                    <td class="text-end">{{ data.value or "" }}</td>
                     <td>
-                        <div class="d-flex">
+                        <div class="d-flex justify-content-end">
                             {% if data.flow %}
                                 {{ bg.modalButton("Edit", "#editFlow"+data.pk|string) }}
                                 {{ bg.modalButton("Delete", "#deleteFlow"+data.pk|string) }}

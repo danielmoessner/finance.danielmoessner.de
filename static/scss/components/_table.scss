@@ -1,0 +1,15 @@
+.table.rounded {
+  //overflow: hidden;
+}
+
+@include media-breakpoint-down(md) {
+  .table-responsive-md {
+    width: 100%;
+    overflow-x: auto;
+    display: block;
+  }
+}
+
+tbody > tr:last-child td {
+  border: 0 !important;
+}

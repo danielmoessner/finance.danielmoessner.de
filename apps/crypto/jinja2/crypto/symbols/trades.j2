@@ -2,11 +2,11 @@
     <table class="table table-dark table-responsive-md rounded mb-5">
         <thead>
         <tr>
-            <th class="border-0" scope="col">Date</th>
-            <th class="border-0" scope="col">Account</th>
-            <th class="border-0" scope="col">Buy</th>
-            <th class="border-0" scope="col">Sell</th>
-            <th class="border-0" scope="col">Action</th>
+           <th scope="col">Date</th>
+           <th scope="col">Account</th>
+           <th class="text-end" scope="col">Buy</th>
+           <th class="text-end" scope="col">Sell</th>
+           <th scope="col"></th>
         </tr>
         </thead>
         <tbody>
@@ -14,10 +14,10 @@
             <tr>
                 <td>{{ localtime(trade.date).strftime('%d.%m.%Y %H:%M') }}</td>
                 <td>{{ trade.account }}</td>
-                <td>{{ trade.buy_amount }} {{ trade.buy_asset.symbol }}</td>
-                <td>{{ trade.sell_amount }} {{ trade.sell_asset.symbol }}</td>
+                <td class="text-end">{{ trade.buy_amount }} {{ trade.buy_asset.symbol }}</td>
+                <td class="text-end">{{ trade.sell_amount }} {{ trade.sell_asset.symbol }}</td>
                 <td>
-                    <div class="d-flex">
+                    <div class="d-flex justify-content-end">
                         {{ mg.djangoModal("Edit Trade", "editTrade"+trade.pk|string, url("crypto:edit_trade", args=[trade.pk])) }}
                         {{ bg.modalButton("Edit", "#editTrade"+trade.pk|string) }}
                         {{ mg.djangoModal("Delete Trade", "deleteTrade"+trade.pk|string, url("crypto:delete_trade", args=[trade.pk])) }}

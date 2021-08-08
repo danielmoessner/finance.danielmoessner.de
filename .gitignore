@@ -7,3 +7,6 @@ tmp/*
 
 **/.idea
 **/__pycache__
+
+static/app/css/*
+static/app/js/*
