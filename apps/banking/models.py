@@ -1,12 +1,11 @@
-import pandas as pd
-
 from apps.users.models import StandardUser
 from apps.core.models import Account as CoreAccount
 from apps.core.models import Depot as CoreDepot
-from apps.core.utils import turn_dict_of_dicts_into_list_of_dicts, get_merged_value_df_from_queryset, \
-    sum_up_columns_in_a_dataframe, change_time_of_date_index_in_df
+from apps.core.utils import turn_dict_of_dicts_into_list_of_dicts, change_time_of_date_index_in_df
 from django.db import connection, models
+from apps.core import utils
 import apps.banking.duplicated_code as banking_duplicated_code
+import pandas as pd
 
 
 class Depot(CoreDepot):
@@ -74,20 +73,7 @@ class Depot(CoreDepot):
 
     def get_value_df(self):
         if not hasattr(self, 'value_df'):
-            # get the df with all values
-            df = get_merged_value_df_from_queryset(self.accounts.all())
-            # fill the nan values so that the sum is correct
-            df = df.fillna(method='ffill').fillna(0)
-            # sums up all the values of the assets and interpolates
-            df = sum_up_columns_in_a_dataframe(df)
-            # remove all the rows where the value is 0 as it doesn't make sense in the calculations
-            df = df.loc[df.loc[:, 'value'] != 0]
-            # make the date normal
-            df = change_time_of_date_index_in_df(df, 12)
-            # remove duplicate dates and keep the last
-            df = df.loc[~df.index.duplicated(keep='last')]
-            # set the df
-            self.value_df = df
+            self.value_df = utils.sum_up_value_dfs_from_items(self.accounts.all())
         return self.value_df
 
     @staticmethod
@@ -144,6 +130,10 @@ class Account(CoreAccount):
             df = pd.DataFrame(list(changes))
             df.set_index('date', inplace=True)
             df.loc[:, 'value'] = df.loc[:, 'change'].cumsum()
+            # make the date normal
+            df = change_time_of_date_index_in_df(df, 12)
+            # remove duplicate dates and keep the last
+            df = df.loc[~df.index.duplicated(keep='last')]
             # remove change column
             df = df.loc[:, ['value']]
             # set the df

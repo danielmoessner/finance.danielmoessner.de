@@ -1,14 +1,13 @@
 from apps.users.models import StandardUser
 from apps.core.models import Account as CoreAccount, Depot as CoreDepot
 from django.db.models import Sum
-from apps.core.utils import remove_all_nans_at_beginning_and_end, change_time_of_date_index_in_df
-from apps.core.utils import sum_up_columns_in_a_dataframe, get_merged_value_df_from_queryset
+from apps.core.utils import change_time_of_date_index_in_df
 from django.utils import timezone
 from django.db import models
+from apps.core import utils
 from datetime import timedelta
 import apps.core.return_calculation as rc
 import pandas as pd
-import numpy as np
 
 
 class Depot(CoreDepot):
@@ -46,16 +45,7 @@ class Depot(CoreDepot):
 
     def get_value_df(self):
         if not hasattr(self, 'value_df'):
-            # get the df with all values
-            df = get_merged_value_df_from_queryset(self.assets.all())
-            # replace nan with 0 this might not work because i haven't tested it
-            df = df.fillna(method='ffill').fillna(0)
-            # sums up all the values of the assets
-            df = sum_up_columns_in_a_dataframe(df)
-            # remove all the rows where the value is 0 as it doesn't make sense in the calculations
-            df = df.loc[df.loc[:, 'value'] != 0]
-            # set the df
-            self.value_df = df
+            self.value_df = utils.sum_up_value_dfs_from_items(self.assets.all())
         return self.value_df
 
     def get_value(self):
@@ -195,34 +185,7 @@ class Asset(models.Model):
         return df
 
     def get_value_df(self):
-        # get price and amount df
-        price_df = self.get_price_df()
-        amount_df = self.get_amount_df()
-        # return none if there is nothing to be calculated
-        if price_df is None or amount_df is None:
-            return None
-        # merge dfs into on df
-        df = pd.merge(price_df, amount_df, on='date', how='outer', sort=True)
-        # set the date column to a daily frequency
-        idx = pd.date_range(start=df.index[0], end=df.index[-1], freq='D')
-        df = df.reindex(idx, fill_value=np.nan)
-        df.index.rename('date', inplace=True)
-        # forward fill the amount
-        df.loc[:, 'amount'] = df.loc[:, 'amount'].fillna(method='ffill')
-        # interpolate the price
-        df.loc[:, 'price'] = df.loc[:, 'price'].interpolate(method='time', limit_direction='both')
-        # calculate the value
-        df.loc[:, 'value'] = df.loc[:, 'amount'] * df.loc[:, 'price']
-        # make the df smaller
-        df = df.loc[:, ['value']]
-        # replace 0 with nan as it makes further manipulations easier
-        df = df.replace(0, np.nan)
-        # slice the dataframe only keep the important values
-        df = remove_all_nans_at_beginning_and_end(df, 'value')
-        # fill nan with 0 as that is the true value
-        df = df.fillna(0)
-        # return the df
-        return df
+        return utils.create_value_df_from_amount_and_price(self)
 
     def get_amount_df(self):
         # get all possible amount changing objects

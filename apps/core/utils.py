@@ -1,6 +1,6 @@
+from django.db import connection
 from datetime import timedelta
 import pandas as pd
-from django.db import connection
 
 
 ###
@@ -38,6 +38,43 @@ def get_merged_value_df_from_queryset(queryset):
             continue
         item_df.rename(columns={'value': 'value__{}-{}'.format(index, item.pk)}, inplace=True)
         df = df.merge(item_df, how='outer', sort=True, on='date')
+    # return the df
+    return df
+
+
+def sum_up_value_dfs_from_items(items):
+    # get the df with all values
+    df = get_merged_value_df_from_queryset(items)
+    # fill na values for sum to work correctly
+    df = df.fillna(method='ffill').fillna(0)
+    # sums up all the values of the assets and interpolates
+    df = sum_up_columns_in_a_dataframe(df)
+    # remove all the rows where the value is 0 as it doesn't make sense in the calculations
+    df = df.loc[df.loc[:, 'value'] != 0]
+    # return the df
+    return df
+
+
+def create_value_df_from_amount_and_price(item):
+    price_df = item.get_price_df()
+    amount_df = item.get_amount_df()
+    # return none if there is nothing to be calculated
+    if price_df is None or amount_df is None or price_df.empty or amount_df.empty:
+        return None
+    # merge dfs into on df
+    df = pd.merge(price_df, amount_df, on='date', how='outer', sort=True)
+    # set the date column to a daily frequency
+    idx = pd.date_range(start=df.index[0], end=df.index[-1], freq='D')
+    df = df.reindex(idx, fill_value=np.nan)
+    df.index.rename('date', inplace=True)
+    # forward fill the amount
+    df.loc[:, 'amount'] = df.loc[:, 'amount'].fillna(method='ffill')
+    # interpolate the price
+    df.loc[:, 'price'] = df.loc[:, 'price'].interpolate(method='time', limit_direction='both')
+    # calculate the value
+    df.loc[:, 'value'] = df.loc[:, 'amount'] * df.loc[:, 'price']
+    # remove unnecessary columns
+    df = df.loc[:, ['value']]
     # return the df
     return df
 

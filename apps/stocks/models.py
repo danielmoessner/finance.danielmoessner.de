@@ -3,6 +3,8 @@ import time
 from django.conf import settings
 from django.db import models
 from django.db.models import Sum
+
+from apps.core import utils
 from apps.core.utils import get_merged_value_df_from_queryset, sum_up_columns_in_a_dataframe, \
     get_df_from_database
 from apps.users.models import StandardUser
@@ -142,17 +144,7 @@ class Depot(models.Model):
 
     def get_value_df(self):
         if not hasattr(self, 'value_df'):
-            # get the df with all values
-            df = get_merged_value_df_from_queryset(self.stocks.all())
-            # fill na values for sum to work correctly
-            # note that this is not perfect because i have not tested it
-            df = df.fillna(method='ffill').fillna(0)
-            # sums up all the values of the assets and interpolates
-            df = sum_up_columns_in_a_dataframe(df)
-            # remove all the rows where the value is 0 as it doesn't make sense in the calculations
-            df = df.loc[df.loc[:, 'value'] != 0]
-            # set the df
-            self.value_df = df
+            self.value_df = utils.sum_up_value_dfs_from_items(self.stocks.all())
         return self.value_df
 
 
@@ -447,38 +439,7 @@ class Stock(models.Model):
         return df
 
     def get_value_df(self):
-        # get price and amount df
-        price_df = self.get_price_df()
-        amount_df = self.get_amount_df()
-        # return none if there is nothing to be calculated
-        if price_df is None or amount_df is None or price_df.empty or amount_df.empty:
-            return None
-        # merge dfs into on df
-        df = pd.merge(price_df, amount_df, on='date', how='outer', sort=True)
-        # set the date column to a daily frequency
-        idx = pd.date_range(start=df.index[0], end=df.index[-1], freq='D')
-        df = df.reindex(idx, fill_value=np.nan)
-        df.index.rename('date', inplace=True)
-        # forward fill the amount
-        df.loc[:, 'amount'] = df.loc[:, 'amount'].fillna(method='ffill')
-        # interpolate the price
-        df.loc[:, 'price'] = df.loc[:, 'price'].interpolate(method='time', limit_direction='both')
-        # calculate the value
-        df.loc[:, 'value'] = df.loc[:, 'amount'] * df.loc[:, 'price']
-
-        # comment out this stuff because it makes no sense in my mind it seems like it was only here because
-        # i thought that the calculations might be faster
-        # replace 0 with nan as it makes further manipulations easier
-        # df.loc[:, 'value'] = df.loc[:, 'value'].replace(0, np.nan)
-        # slice the dataframe only keep the important values
-        # df = df.loc[df.loc[:, 'value'].notna()]
-        # fill nan with 0 as that is the true value
-        # df = df.fillna(0)
-
-        # remove unnecessary columns
-        # df = df.loc[:, ['value']]
-        # return the df
-        return df
+        return utils.create_value_df_from_amount_and_price(self)
 
 
 class PriceFetcher(models.Model):
