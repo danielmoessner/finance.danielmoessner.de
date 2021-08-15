@@ -123,20 +123,29 @@ class Account(CoreAccount):
             'Balance': balance
         }
 
+    def get_df_from_database(self, statement, columns):
+        assert str(self.pk) in statement
+        return utils.get_df_from_database(statement, columns)
+
     def get_value_df(self):
         if not hasattr(self, 'value_df'):
-            # get the df with all values
-            changes = self.changes.order_by('date').values('date', 'change')
-            df = pd.DataFrame(list(changes))
-            df.set_index('date', inplace=True)
-            df.loc[:, 'value'] = df.loc[:, 'change'].cumsum()
-            # make the date normal
-            df = change_time_of_date_index_in_df(df, 12)
-            # remove duplicate dates and keep the last
-            df = df.loc[~df.index.duplicated(keep='last')]
-            # remove change column
-            df = df.loc[:, ['value']]
-            # set the df
+            # this statement gets the cumulutaive sum of the changes
+            statement = """
+                select
+                    date,
+                    sum(change) over (order by date rows between unbounded preceding and current row) as amount
+                from (
+                    select
+                        date(date) as date,
+                        sum(change) as change
+                    from banking_change
+                    where account_id={}
+                    group by date(date)
+                    order by date
+                );
+            """.format(self.pk)
+            # get and return the df
+            df = self.get_df_from_database(statement, ['date', 'value'])
             self.value_df = df
         return self.value_df
 

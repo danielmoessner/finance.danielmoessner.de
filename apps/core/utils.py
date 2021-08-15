@@ -1,6 +1,7 @@
 from django.db import connection
 from datetime import timedelta
 import pandas as pd
+import numpy as np
 
 
 ###
@@ -101,6 +102,13 @@ def change_time_of_date_index_in_df(df, hours):
     assert 0 <= hours <= 24
     if not df.empty:
         df.index = df.index.normalize() + timedelta(hours=hours)
+        df = df.tz_localize(None)
+    return df
+
+
+def remove_time_of_date_index_in_df(df):
+    if not df.empty:
+        df.index = df.index.normalize()
         df = df.tz_localize(None)
     return df
 

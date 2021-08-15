@@ -166,22 +166,23 @@ class Asset(models.Model):
             Price.objects.create(symbol='EUR', price=1, date=timezone.now())
 
     # getters
+    def get_df_from_database(self, statement, columns):
+        assert str(self.pk) in statement or (self.symbol in statement)
+        return utils.get_df_from_database(statement, columns)
+
     def get_price_df(self):
-        # get all prices
-        df = pd.DataFrame(data=list(Price.objects.filter(symbol=self.symbol).values('date', 'price')),
-                          columns=['date', 'price'])
-        df.set_index('date', inplace=True)
-        # print(df)
-        # return none if there is nothing to be calculated
-        if df.empty:
-            return None
-        # make it float so that everything with pandas work, for example interpolate doesn't work with decimal
-        df.loc[:, 'price'] = df.loc[:, 'price'].apply(pd.to_numeric, downcast='float')
-        # remove the time; we need this because of the merging of the value dfs in the depot get_value_df function
-        df = change_time_of_date_index_in_df(df, 12)
-        # drop duplicates as asfreq will throw an error if duplicates exist and sort
-        df = df.groupby(df.index, sort=True).tail(1)
-        # return the df
+        # this statement retreives all prices and groups them by date.
+        statement = """
+            select
+                date(date) as date,
+                max(price) as price
+            from crypto_price
+            where symbol='{}'
+            group by date(date)
+            order by date asc
+        """.format(self.symbol)
+        # get and return the df
+        df = self.get_df_from_database(statement, ['date', 'price'])
         return df
 
     def get_value_df(self):
@@ -217,7 +218,7 @@ class Asset(models.Model):
         # cast to float otherwise pandas can not reliably use all methods for example interpolate wouldn't work
         df.loc[:, 'amount'] = df.loc[:, 'amount'].apply(pd.to_numeric, downcast='float')
         # set a standard time for easir calculations and group by date
-        df = change_time_of_date_index_in_df(df, 12)
+        df = utils.remove_time_of_date_index_in_df(df)
         df = df.groupby(df.index, sort=True).tail(1)
         # return the df
         return df

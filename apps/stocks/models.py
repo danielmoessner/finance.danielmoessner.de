@@ -427,12 +427,12 @@ class Stock(models.Model):
     def get_price_df(self):
         # this statement retreives all prices and groups them by date.
         statement = """
-        select 
-            date(date) as date, 
-            max(price) as price 
-        from stocks_price
-        where exchange='{}' and ticker='{}'
-        group by date(date)
+            select 
+                date(date) as date, 
+                max(price) as price 
+            from stocks_price
+            where exchange='{}' and ticker='{}'
+            group by date(date)
         """.format(self.exchange, self.ticker)
         # get and return the df
         df = self.get_df_from_database(statement, ['date', 'price'])
