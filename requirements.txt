@@ -2,7 +2,7 @@ asgiref==3.3.4
 beautifulsoup4==4.9.3
 certifi==2020.12.5
 chardet==4.0.0
-Django==3.2.4
+Django==3.2.13
 django-background-tasks==1.2.5
 django-compat==1.0.15
 django-debug-toolbar==3.2.1
