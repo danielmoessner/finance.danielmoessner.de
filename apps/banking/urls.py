@@ -1,5 +1,4 @@
-from rest_framework import routers
-from django.urls import path, include
+from django.urls import path
 
 from apps.banking import formviews
 from apps.banking import views
@@ -7,17 +6,8 @@ from apps.banking import api
 
 app_name = "banking"
 
-router = routers.DefaultRouter()
-router.register(r'categories', api.CategoryViewSet)
-router.register(r'accounts', api.AccountViewSet)
-router.register(r'changes', api.ChangeViewSet)
-router.register(r'depots', api.DepotViewSet)
 
 urlpatterns = [
-    # api
-    path('api/', include(router.urls)),
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-
     # charts
     path('api/depots/<int:pk>/income-and-expenditure-data/', api.IncomeAndExpenditureData.as_view(),
          name='api_depot_income_and_expenditure_data'),

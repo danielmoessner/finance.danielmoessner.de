@@ -10,3 +10,4 @@ tmp/*
 
 static/app/css/*
 static/app/js/*
+.pdm-python

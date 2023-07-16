@@ -1,7 +1,5 @@
 .djangoform {
   p {
-    //@extend .form-group;
-
     input {
       @extend .form-control;
       font-size: 16px;

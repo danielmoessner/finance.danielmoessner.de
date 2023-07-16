@@ -1,11 +1,10 @@
 import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from django.http import JsonResponse
 
 from apps.core.mixins import TabContextMixin
-from django.views import generic
+from django.views import View, generic
 
 
 # views
@@ -63,7 +62,7 @@ class IndexView(LoginRequiredMixin, TabContextMixin, generic.TemplateView):
         return context
 
 
-class DataApiView(APIView):
+class DataApiView(View):
     def get(self, *args, **kwargs):
         active_depots = self.request.user.get_all_active_depots()
         # get the df with all values
@@ -88,4 +87,4 @@ class DataApiView(APIView):
         # make a json object
         json_df = json.loads(df.to_json(orient='records'))
         # return the df
-        return Response(json_df)
+        return JsonResponse(json_df)

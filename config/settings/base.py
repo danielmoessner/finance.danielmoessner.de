@@ -31,8 +31,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
-    'background_task',
+    # 'rest_framework',
+    # 'background_task',
     'apps.users.apps.UsersConfig',
     'apps.banking.apps.BankingConfig',
     'apps.crypto.apps.CryptoConfig',
@@ -159,10 +159,10 @@ EMAIL_PORT = 587
 
 # Rest Framework
 
-REST_FRAMEWORK = {
-    'DATETIME_FORMAT': '%Y-%m-%dT%H:%M',
-    'DATETIME_INPUT_FORMATS': ['%Y-%m-%dT%H:%M']
-}
+# REST_FRAMEWORK = {
+#     'DATETIME_FORMAT': '%Y-%m-%dT%H:%M',
+#     'DATETIME_INPUT_FORMATS': ['%Y-%m-%dT%H:%M']
+# }
 
 # Alphavantage API
 

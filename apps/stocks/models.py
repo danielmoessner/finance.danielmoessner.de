@@ -5,13 +5,10 @@ from django.db import models
 from django.db.models import Sum
 
 from apps.core import utils
-from apps.core.utils import get_merged_value_df_from_queryset, sum_up_columns_in_a_dataframe, \
-    get_df_from_database
+from apps.core.utils import get_df_from_database
 from apps.users.models import StandardUser
 from django.utils import timezone
 import apps.core.return_calculation as rc
-import pandas as pd
-import numpy as np
 from bs4 import BeautifulSoup
 import requests
 
