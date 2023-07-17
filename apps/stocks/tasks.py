@@ -1,8 +1,8 @@
-from background_task import background
+from datetime import timedelta
 from django.conf import settings
 from django.utils import timezone
 
-from .models import Stock
+from .models import Price, Stock
 from .forms import PriceForm
 import requests
 import logging
@@ -11,11 +11,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-@background()
 def fetch_prices():
     price_fetcher_stocks = []
     marketstack_stocks = []
     for stock in list(Stock.objects.all()):
+        if Price.objects.filter(ticker=stock.ticker, date__gt=timezone.now() - timedelta(days=1)).exists():
+            continue
         if hasattr(stock, 'price_fetcher'):
             price_fetcher_stocks.append(stock)
         else:

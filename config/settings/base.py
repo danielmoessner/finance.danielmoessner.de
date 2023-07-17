@@ -31,8 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 'rest_framework',
-    # 'background_task',
+    'apps.core.apps.CoreConfig',
     'apps.users.apps.UsersConfig',
     'apps.banking.apps.BankingConfig',
     'apps.crypto.apps.CryptoConfig',
@@ -157,20 +156,14 @@ EMAIL_HOST_USER = 'projekte@tortuga-webdesign.de'
 EMAIL_HOST_PASSWORD = get_secret('EMAIL_PWD')
 EMAIL_PORT = 587
 
-# Rest Framework
-
-# REST_FRAMEWORK = {
-#     'DATETIME_FORMAT': '%Y-%m-%dT%H:%M',
-#     'DATETIME_INPUT_FORMATS': ['%Y-%m-%dT%H:%M']
-# }
-
-# Alphavantage API
-
-ALPHAVANTAGE_API_KEY = 'DCVHUFGLL4SL14LP'
-
 # Marketstack API
-
 MARKETSTACK_API_KEY = get_secret('MARKETSTACK_API_KEY')
 
 # django 3.2
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+
+# crons
+CRONJOBS = [
+    "apps.stocks.tasks.fetch_prices",
+]
