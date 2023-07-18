@@ -179,6 +179,7 @@ def get_current_return_df(flow_df, value_df):
         df.iloc[i, df.columns.get_loc('invested_capital')] = invested_capital
     # calculate the current return
     df.loc[:, 'invested_capital'] = df.loc[:, 'invested_capital'].apply(pd.to_numeric, downcast='float')
+    df.loc[:, 'invested_capital'] = df.loc[:, 'invested_capital'].replace(0, np.nan)
     df.loc[:, 'current_return'] = df.loc[:, 'value'] / df.loc[:, 'invested_capital']
     # return the df
     return df
