@@ -3,6 +3,7 @@ import time
 from django.conf import settings
 from django.db import models
 from django.db.models import Sum
+from pydantic import BaseModel, HttpUrl
 
 from apps.core import utils
 from apps.core.utils import get_df_from_database
@@ -439,13 +440,28 @@ class Stock(models.Model):
         return utils.create_value_df_from_amount_and_price(self)
 
 
+class PriceFetcherDataMarketstack(BaseModel):
+    symbol: str
+
+
+class PriceFetcherDataWebsite(BaseModel):
+    website: HttpUrl
+    target: str
+
+
 class PriceFetcher(models.Model):
-    stock = models.OneToOneField(Stock, on_delete=models.CASCADE, related_name='price_fetcher')
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='price_fetchers')
+    PRICE_FETCHER_TYPES = (
+        ('WEBSITE', 'Website'),
+        ('MARKETSTACK', 'Marketstack'),
+    )
+    type = models.CharField(max_length=250, choices=PRICE_FETCHER_TYPES)
+    data = models.JSONField(default=dict)
     website = models.URLField()
     target = models.CharField(max_length=250)
 
     def __str__(self):
-        return '{} - {}'.format(self.stock, self.website)
+        return '{} - {}'.format(self.stock, self.type)
 
     # getters
     @staticmethod

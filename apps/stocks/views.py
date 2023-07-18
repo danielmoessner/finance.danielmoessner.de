@@ -86,7 +86,7 @@ class StockView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
         context['dividends'] = self.object.dividends.all()
         context['values'] = self.object.get_values()
         context['flows'] = self.object.get_flows()
-        context['price_fetcher'] = self.object.price_fetcher if hasattr(self.object, 'price_fetcher') else None
+        context['fetchers'] = self.object.price_fetchers.all()
         return context
 
 

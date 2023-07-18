@@ -1,6 +1,7 @@
 from django import forms
 from django.utils import timezone
-from apps.stocks.models import Depot, Bank, Trade, Stock, Flow, Price, Dividend, PriceFetcher
+from pydantic import ValidationError
+from apps.stocks.models import Depot, Bank, PriceFetcherDataMarketstack, PriceFetcherDataWebsite, Trade, Stock, Flow, Price, Dividend, PriceFetcher
 from apps.core import utils
 
 
@@ -82,48 +83,14 @@ class StockForm(forms.ModelForm):
         super(StockForm, self).__init__(*args, **kwargs)
         self.instance.depot = depot
 
-    def clean(self):
-        cleaned_data = super().clean()
-        ticker = cleaned_data['ticker']
-        exchange = cleaned_data['exchange']
-        # check if we can fetch prices for this particular stock
-        # deactivated because we can not get it to work with etf who exist on marketstack
-        # symbol = '{}.{}'.format(ticker, exchange)
-        # url = 'http://api.marketstack.com/v1/eod/latest?symbols={}'.format(symbol)
-        # params = {
-        #     'access_key': settings.MARKETSTACK_API_KEY
-        # }
-        # try:
-        #     api_result = requests.get(url, params)
-        #     api_response = api_result.json()
-        #     for price in api_response['data']:
-        #         if price is not None and price != []:
-        #             price = PriceForm({'ticker': price['symbol'],
-        #                                'exchange': price['exchange'],
-        #                                'date': price['date'],
-        #                                'price': price['close']
-        #                                })
-        #             if price.is_valid():
-        #                 price.save()
-        #         else:
-        #             raise forms.ValidationError(
-        #                 'We could not find {} on Marketstack. '
-        #                 'Take a look yourself: https://marketstack.com/search.'.format(symbol)
-        #             )
-        # except forms.ValidationError as validation_error:
-        #     raise validation_error
-        # except Exception as err:
-        #     raise forms.ValidationError(
-        #         'There was an error with Marketstack. We could not find out if the stock exists.')
-        # return
-        return cleaned_data
-
 
 class EditStockForm(forms.ModelForm):
     class Meta:
         model = Stock
         fields = (
             'name',
+            'ticker',
+            'exchange'
         )
 
     def __init__(self, depot, *args, **kwargs):
@@ -150,22 +117,40 @@ class StockSelectForm(forms.Form):
 class PriceFetcherForm(forms.ModelForm):
     class Meta:
         model = PriceFetcher
-        fields = '__all__'
+        fields = ["stock", "type", "data"]
 
     def __init__(self, depot, *args, **kwargs):
         super(PriceFetcherForm, self).__init__(*args, **kwargs)
         self.fields['stock'].queryset = depot.stocks.all()
 
-    def clean(self):
-        cleaned_data = super().clean()
-        # test this fetcher is actually pulling prices
-        website = cleaned_data['website']
-        target = cleaned_data['target']
-        if PriceFetcher.get_price_static(website, target, sleep=0) is None:
-            raise forms.ValidationError('This fetcher could not pull a correct price. '
-                                        'Please check if the website and the target ist correct.')
-        # return
-        return cleaned_data
+    def _create_human_error(self, error: ValidationError) -> str:
+        error_string = ""
+        for e in error.errors():
+            error_string += f"{e['loc'][0]}: {e['msg']}\n"
+        return error_string
+
+    def clean_data(self):
+        data = self.cleaned_data["data"]
+        if self.cleaned_data["type"] == "MARKETSTACK":
+            try:
+                PriceFetcherDataMarketstack(**data)
+            except ValidationError as e:
+                print(str(e))
+                raise forms.ValidationError(self._create_human_error(e))
+        elif self.cleaned_data["type"] == "WEBSITE":
+            try:
+                PriceFetcherDataWebsite(**data)
+            except ValidationError as e:
+                raise forms.ValidationError(self._create_human_error(e))
+        else:
+            raise forms.ValidationError({"type": "This type is not supported."})
+        return data
+
+    def clean_type(self):
+        type = self.cleaned_data["type"]
+        if type not in map(lambda x: x[0], PriceFetcher.PRICE_FETCHER_TYPES):
+            raise forms.ValidationError('This type is not supported.')
+        return type
 
 
 ###

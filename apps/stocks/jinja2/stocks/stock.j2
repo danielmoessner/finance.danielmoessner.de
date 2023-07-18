@@ -31,6 +31,35 @@
         <table class="table table-dark table-responsive-md rounded mb-5">
             <thead>
             <tr>
+               <th scope="col">Fetcher</th>
+               <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for fetcher in fetchers %}
+                <tr>
+                    <td>{{ fetcher }}</td>
+                    <td class="text-end">
+                        {{ bg.modalButton("Edit Fetcher", "#editFetcher") }}
+                        {{ mg.djangoModal("Edit Fetcher", "editFetcher", url("stocks:edit_price_fetcher", args=[fetcher.pk])) }}
+                        {{ bg.modalButton("Delete Fetcher", "#deleteFetcher") }}
+                        {{ mg.djangoModal("Delete Fetcher", "deleteFetcher", url("stocks:delete_price_fetcher", args=[fetcher.pk])) }}
+                    </td>
+                </tr>
+            {% endfor %}
+            <tr>
+                <td colspan="2">
+                    <div class="d-flex">
+                        {{ mg.djangoModal("Add Fetcher", "addFetcher", url("stocks:add_price_fetcher")+"?stock="+object.pk|string) }}
+                        {{ bg.modalButton("Add Fetcher", "#addFetcher") }}
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <table class="table table-dark table-responsive-md rounded mb-5">
+            <thead>
+            <tr>
                <th scope="col">Date</th>
                 <th class="text-end" scope="col">Price</th>
                <th scope="col"></th>

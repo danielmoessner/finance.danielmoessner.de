@@ -53,7 +53,7 @@ class TabContextMixin:
 
 
 class CustomAjaxDeleteMixin:
-    def delete(self, request, *args, **kwargs):
+    def form_valid(self, form):
         object = self.get_object()
         object.delete()
         return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
