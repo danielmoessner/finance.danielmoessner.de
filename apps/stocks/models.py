@@ -279,6 +279,7 @@ class Stock(models.Model):
 
     def get_stats(self):
         return {
+            'Symbol': f"{self.ticker}.{self.exchange}",
             'Price': self.get_price(),
             'Value': self.get_value(),
             'Amount': self.get_amount(),
@@ -462,28 +463,6 @@ class PriceFetcher(models.Model):
 
     def __str__(self):
         return '{} - {}'.format(self.stock, self.type)
-
-    # getters
-    @staticmethod
-    def get_price_static(website, target, sleep=10):
-        try:
-            r = requests.get(website)
-        except requests.exceptions.ConnectionError as err:
-            return None
-        if not settings.DEBUG:
-            time.sleep(sleep)
-        text = r.text
-        soup = BeautifulSoup(text, features='html.parser')
-        selection = soup.select_one(target)
-        if selection:
-            price = re.search('[0-9]+,[0-9]+', str(selection)).group()
-            price = price.replace(',', '.')
-            price = float(price)
-            return price
-        return None
-
-    def get_price(self):
-        return PriceFetcher.get_price_static(self.website, self.target)
 
 
 class Flow(models.Model):

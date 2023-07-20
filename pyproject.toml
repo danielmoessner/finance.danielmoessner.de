@@ -1,6 +1,6 @@
 [project]
-name = ""
-version = ""
+name = "finance.danielmoessner.de"
+version = "0.0.0"
 description = ""
 authors = [
     {name = "danielmoessner", email = "github@danielmoessner.de"},

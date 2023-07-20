@@ -40,6 +40,7 @@
                 <tr>
                     <td>{{ fetcher }}</td>
                     <td class="text-end">
+                        {{ bg.hrefButton("Run", url("stocks:run_price_fetcher", args=[fetcher.pk])) }}
                         {{ bg.modalButton("Edit Fetcher", "#editFetcher") }}
                         {{ mg.djangoModal("Edit Fetcher", "editFetcher", url("stocks:edit_price_fetcher", args=[fetcher.pk])) }}
                         {{ bg.modalButton("Delete Fetcher", "#deleteFetcher") }}

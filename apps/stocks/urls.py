@@ -44,6 +44,7 @@ urlpatterns = [
     path("price-fetcher/add/", views.AddPriceFetcherView.as_view(), name="add_price_fetcher"),
     path("price-fetcher/<int:pk>/edit/", views.EditPriceFetcherView.as_view(), name="edit_price_fetcher"),
     path("price-fetcher/<int:pk>/delete/", views.DeletePriceFetcherView.as_view(), name="delete_price_fetcher"),
+    path("price-fetcher/<int:pk>/run/", views.RunPriceFetcherView.as_view(), name="run_price_fetcher"),
 
     # views
     path("depots/<int:pk>/", views.IndexView.as_view(), name="index"),

@@ -5,12 +5,14 @@ from django.shortcuts import get_object_or_404
 from django.views import generic
 from django.urls import reverse_lazy
 from django.http import HttpResponse, HttpResponseRedirect
+
+from apps.stocks.tasks import FETCHERS
 from .models import Depot, Stock, Bank, Flow, Trade, Price, Dividend, PriceFetcher
 from .mixins import GetDepotMixin
 from .forms import DepotForm, DepotActiveForm, DepotSelectForm, BankForm, BankSelectForm, StockSelectForm, StockForm, \
     FlowForm, TradeForm, EditStockForm, DividendForm, PriceFetcherForm, PriceEditForm
 import json
-
+from django.contrib import messages
 
 ###
 # Depot: Detail, Create, Edit, Delete, SetActive
@@ -126,7 +128,7 @@ class EditPriceView(LoginRequiredMixin, AjaxResponseMixin, generic.UpdateView):
 
 
 ###
-# StockPriceFetcher: Add, Edit, Delete
+# StockPriceFetcher: Add, Edit, Delete, Run
 ###
 class AddPriceFetcherView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAndInitialDataMixin,
                           AjaxResponseMixin, generic.CreateView):
@@ -149,6 +151,19 @@ class DeletePriceFetcherView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.
         return PriceFetcher.objects.filter(
             stock__in=Stock.objects.filter(
                 depot=self.request.user.get_active_stocks_depot()))
+
+
+class RunPriceFetcherView(LoginRequiredMixin, generic.View):
+    http_method_names = ['get', 'head', 'options']
+
+    def get(self, request, pk, *args, **kwargs):
+        fetcher = get_object_or_404(PriceFetcher, pk=pk)
+        errors = []
+        FETCHERS[fetcher.type]([fetcher.stock], errors)
+        print(errors)
+        messages.error(request, " ".join(errors))
+        url = '{}?tab=prices'.format(reverse_lazy('stocks:stocks', args=[fetcher.stock.pk]))
+        return HttpResponseRedirect(url)
 
 
 ###
