@@ -1,4 +1,4 @@
-cd /home/finance.danielmmoessner.de/ || exit
+cd /home/finance.danielmoessner.de/ || exit
 git reset --hard HEAD
 git pull
 tmp/venv/bin/pip install -r requirements.txt
