@@ -2,6 +2,7 @@
 // import 'bootstrap/dist/js/bootstrap.min.js';
 // import "@popperjs/core"
 // import "bootstrap"
+import { Modal } from "bootstrap";
 
 // wrapper function that calls the submitted function as soon as the document is loaded
 function ready(f) {
