@@ -1,5 +1,6 @@
 from datetime import timedelta
 import re
+import time
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.utils import timezone
@@ -50,6 +51,7 @@ def fetch_prices():
 
 
 def fetch_prices_with_website(stocks, messages: list[str] | None=None):
+    i = 0
     for stock in stocks:
         fetcher = stock.price_fetchers.filter(type="WEBSITE").first()
         if fetcher is None:
@@ -83,7 +85,9 @@ def fetch_prices_with_website(stocks, messages: list[str] | None=None):
         price = re.search('[0-9]+,[0-9]+', str(selection)).group()
         price = price.replace(',', '.')
         price = float(price)
-        save_price(price, stock)  
+        save_price(price, stock)
+        i += 1
+        time.sleep(i)
 
 
 def fetch_prices_with_marketstack(stocks: list[Stock], messages: list[str] | None=None):
