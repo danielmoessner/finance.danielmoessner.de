@@ -38,7 +38,7 @@ ready(function () {
                 const url = event.target.dataset.action;
                 const modal = document.querySelector(event.target.dataset.bsTarget);
                 const form = modal.querySelector("form");
-                if (url === undefined) return;
+                if (url === undefined || url === "") return;
                 form.action = url;
                 const body = modal.querySelector(".modal-body");
                 fetchAndInsert(url, body);
