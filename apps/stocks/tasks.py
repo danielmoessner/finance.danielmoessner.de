@@ -65,6 +65,11 @@ def fetch_prices_with_website(stocks, messages: list[str] | None=None):
             if messages is not None:
                 messages.append(f"Could not connect to {website}.")
             continue
+
+        if r.status_code != 200:
+            if messages is not None:
+                messages.append(f"Could not connect to {website}. The status code is {r.status_code}.")
+            continue
         
         text = r.text
         soup = BeautifulSoup(text, features='html.parser')
