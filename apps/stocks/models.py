@@ -1,3 +1,4 @@
+from datetime import timedelta
 import re
 import time
 from django.conf import settings
@@ -280,7 +281,7 @@ class Stock(models.Model):
     def get_stats(self):
         return {
             'Symbol': f"{self.ticker}.{self.exchange}",
-            'Price': self.get_price(),
+            'Price': self.get_price_with_date(),
             'Value': self.get_value(),
             'Amount': self.get_amount(),
             'Divdends': self.get_dividends(),
@@ -357,14 +358,27 @@ class Stock(models.Model):
             return self.get_flow_df().reset_index().values.tolist()
         return get_flows_lazy
 
+    def get_price_obj(self) -> "Price":
+        prices = Price.objects.filter(ticker=self.ticker, exchange=self.exchange)
+        if prices.exists():
+            return prices.order_by('date').last()
+        return None
+
+    def get_price_with_date(self) -> str:
+        price = self.get_price_obj()
+        if price is None:
+            return "404"
+        if price.date.date() <= timezone.now().date() - timedelta(days=7):
+            return "OLD"
+        return "{:.2f}".format(price.price)
+
     def get_price(self):
         if self.price is None:
-            # every stock always has a price, because a price is fetched every time a stock is added
-            prices = Price.objects.filter(ticker=self.ticker, exchange=self.exchange)
-            if prices.exists():
-                self.price = prices.order_by('date').last().price
-            else:
+            price = self.get_price_obj()
+            if price is None:
                 self.price = 0
+            else: 
+                self.price = price.price
             self.save()
         return self.price
 
