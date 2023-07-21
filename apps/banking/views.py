@@ -6,7 +6,7 @@ from django.views import generic
 
 # views
 class IndexView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
-    template_name = "banking/index.njk"
+    template_name = "banking/index.j2"
     model = Depot
 
     def get_queryset(self):
@@ -27,7 +27,7 @@ class IndexView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
 
 
 class AccountView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
-    template_name = "banking/account.njk"
+    template_name = "banking/account.j2"
     model = Account
 
     def get_queryset(self):
@@ -45,7 +45,7 @@ class AccountView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
 
 
 class CategoryView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
-    template_name = "banking/category.njk"
+    template_name = "banking/category.j2"
     model = Category
 
     def get_queryset(self):

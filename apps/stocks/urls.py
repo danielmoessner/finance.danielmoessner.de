@@ -39,6 +39,7 @@ urlpatterns = [
 
     # price
     path('price/<int:pk>/edit/', views.EditPriceView.as_view(), name='edit_price'),
+    path('price/<int:pk>/delete/', views.DeletePriceView.as_view(), name='delete_price'),
 
     # price fetcher
     path("price-fetcher/add/", views.AddPriceFetcherView.as_view(), name="add_price_fetcher"),

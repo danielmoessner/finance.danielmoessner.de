@@ -1,4 +1,4 @@
-{% extends "layout/lm.njk" %}
+{% extends "layout/lm.j2" %}
 
 {% set headingCategory="Asset" %}
 {% set headingHeading=object.symbol %}
@@ -6,8 +6,8 @@
 
 {% block main %}
 
-    {% import "symbols/button.njk" as bg %}
-    {% import "symbols/modal.njk" as mg %}
+    {% import "symbols/button.j2" as bg %}
+    {% import "symbols/modal.j2" as mg %}
 
     {%- set addTransactionButton=bg.modalButton("Send/Receive Asset", "#addTransaction") -%}
 

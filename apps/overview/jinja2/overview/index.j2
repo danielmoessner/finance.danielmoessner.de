@@ -1,4 +1,4 @@
-{% extends "layout/lm.njk" %}
+{% extends "layout/lm.j2" %}
 
 {% set headingCategory="Dashboard" %}
 {% set headingHeading="Overview" %}
@@ -6,7 +6,7 @@
 
 {% block main %}
 
-    {% import "symbols/button.njk" as bg %}
+    {% import "symbols/button.j2" as bg %}
 
     <div class="d-flex justify-content-center mt-2 mb-5">
         <div class="btn-group" role="group" aria-label="Console">

@@ -1,4 +1,4 @@
-{% extends "layout/lm.njk" %}
+{% extends "layout/lm.j2" %}
 
 {% set headingCategory="Stock" %}
 {% set headingHeading=stock.name %}
@@ -6,8 +6,8 @@
 
 {% block main %}
 
-    {% import "symbols/button.njk" as bg %}
-    {% import "symbols/modal.njk" as mg %}
+    {% import "symbols/button.j2" as bg %}
+    {% import "symbols/modal.j2" as mg %}
 
     <div class="d-flex justify-content-center mt-2 mb-5">
         <div class="btn-group" role="group" aria-label="Console">
@@ -28,6 +28,12 @@
     {% include 'stocks/symbols/trades.j2' %}
 
     {% if tab=='prices' %}
+        {{ mg.djangoModal("Add Fetcher", "addFetcher") }}
+        {{ mg.djangoModal("Edit Fetcher", "editFetcher") }}
+        {{ mg.djangoModal("Delete Fetcher", "deleteFetcher") }}
+        {{ mg.djangoModal("Edit Price", "editPrice") }}
+        {{ mg.djangoModal("Delete Price", "deletePrice") }}
+
         <table class="table table-dark table-responsive-md rounded mb-5">
             <thead>
             <tr>
@@ -41,18 +47,15 @@
                     <td>{{ fetcher }}</td>
                     <td class="text-end">
                         {{ bg.hrefButton("Run", url("stocks:run_price_fetcher", args=[fetcher.pk])) }}
-                        {{ bg.modalButton("Edit Fetcher", "#editFetcher") }}
-                        {{ mg.djangoModal("Edit Fetcher", "editFetcher", url("stocks:edit_price_fetcher", args=[fetcher.pk])) }}
-                        {{ bg.modalButton("Delete Fetcher", "#deleteFetcher") }}
-                        {{ mg.djangoModal("Delete Fetcher", "deleteFetcher", url("stocks:delete_price_fetcher", args=[fetcher.pk])) }}
+                        {{ bg.modalButton("Edit", "#editFetcher", action=url("stocks:edit_price_fetcher", args=[fetcher.pk])) }}
+                        {{ bg.modalButton("Delete", "#deleteFetcher", action=url("stocks:delete_price_fetcher", args=[fetcher.pk])) }}
                     </td>
                 </tr>
             {% endfor %}
             <tr>
                 <td colspan="2">
                     <div class="d-flex">
-                        {{ mg.djangoModal("Add Fetcher", "addFetcher", url("stocks:add_price_fetcher")+"?stock="+object.pk|string) }}
-                        {{ bg.modalButton("Add Fetcher", "#addFetcher") }}
+                        {{ bg.modalButton("Add Fetcher", "#addFetcher", action=url("stocks:add_price_fetcher")+"?stock="+object.pk|string) }}
                     </div>
                 </td>
             </tr>
@@ -72,24 +75,11 @@
                     <td>{{ localtime(price.date).strftime('%d.%m.%Y %H:%M') }}</td>
                     <td class="text-end">{{ price.price }}</td>
                     <td class="text-end">
-                        {{ mg.djangoModal("Edit Price", "editPrice", url("stocks:edit_price", args=[price.pk])) }}
-                        {{ bg.modalButton("Edit Price", "#editPrice") }}
+                        {{ bg.modalButton("Edit", "#editPrice", action=url("stocks:edit_price", args=[price.pk])) }}
+                        {{ bg.modalButton("Delete", "#deletePrice", action=url("stocks:delete_price", args=[price.pk])) }}
                     </td>
                 </tr>
             {% endfor %}
-            <tr>
-                <td colspan="3">
-                    {% if price_fetcher %}
-                        {{ mg.djangoModal("Edit Price Fetcher", "editPriceFetcher", url("stocks:edit_price_fetcher", args=[price_fetcher.pk])) }}
-                        {{ bg.modalButton("Edit Price Fetcher", "#editPriceFetcher") }}
-                        {{ mg.djangoModal("Delete Price Fetcher", "deletePriceFetcher", url("stocks:delete_price_fetcher", args=[price_fetcher.pk])) }}
-                        {{ bg.modalButton("Delete Price Fetcher", "#deletePriceFetcher") }}
-                    {% else %}
-                        {{ mg.djangoModal("Add Price Fetcher", "addPriceFetcher", url("stocks:add_price_fetcher")+"?stock="+object.pk|string) }}
-                        {{ bg.modalButton("Add Price Fetcher", "#addPriceFetcher") }}
-                    {% endif %}
-                </td>
-            </tr>
             </tbody>
         </table>
     {% endif %}

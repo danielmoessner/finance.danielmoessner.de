@@ -25,13 +25,13 @@ class CustomGetFormMixin(FormMixin):
 class AddDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.CreateView):
     form_class = DepotForm
     model = Depot
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
 
 class EditDepotView(CustomGetFormUserMixin, AjaxResponseMixin, generic.UpdateView):
     model = Depot
     form_class = DepotForm
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
     def get_queryset(self):
         return self.request.user.banking_depots.all()
@@ -39,7 +39,7 @@ class EditDepotView(CustomGetFormUserMixin, AjaxResponseMixin, generic.UpdateVie
 
 class DeleteDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.FormView):
     model = Depot
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
     form_class = DepotSelectForm
 
     def form_valid(self, form):
@@ -67,13 +67,13 @@ class SetActiveDepotView(LoginRequiredMixin, SingleObjectMixin, generic.View):
 class AddAccountView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.CreateView):
     form_class = AccountForm
     model = Account
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
 
 class EditAccountView(CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
     model = Account
     form_class = AccountForm
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
     def get_queryset(self):
         return Account.objects.filter(depot__in=self.request.user.banking_depots.all())
@@ -81,7 +81,7 @@ class EditAccountView(CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView)
 
 class DeleteAccountView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.FormView):
     model = Account
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
     form_class = AccountSelectForm
 
     def form_valid(self, form):
@@ -94,13 +94,13 @@ class DeleteAccountView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixi
 class AddCategoryView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.CreateView):
     form_class = CategoryForm
     model = Category
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
 
 class EditCategoryView(CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
     model = Category
     form_class = CategoryForm
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
     def get_queryset(self):
         return Category.objects.filter(depot__in=self.request.user.banking_depots.all())
@@ -108,7 +108,7 @@ class EditCategoryView(CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView
 
 class DeleteCategoryView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.FormView):
     model = Category
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
     form_class = CategorySelectForm
 
     def form_valid(self, form):
@@ -121,7 +121,7 @@ class DeleteCategoryView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMix
 class AddChangeView(LoginRequiredMixin, AjaxResponseMixin, generic.CreateView):
     model = Change
     form_class = ChangeForm
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
     def get_form(self, form_class=None):
         depot = self.request.user.banking_depots.get(is_active=True)
@@ -135,7 +135,7 @@ class AddChangeView(LoginRequiredMixin, AjaxResponseMixin, generic.CreateView):
 class EditChangeView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
     model = Change
     form_class = ChangeForm
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
     def get_queryset(self):
         return Change.objects.filter(
@@ -144,4 +144,4 @@ class EditChangeView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, 
 
 class DeleteChangeView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
     model = Change
-    template_name = "symbols/delete_snippet.njk"
+    template_name = "symbols/delete_snippet.j2"

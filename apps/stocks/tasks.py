@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 from django.utils import timezone
 
-from .models import Price, Stock
+from .models import Price, PriceFetcher, Stock
 from .forms import PriceForm
 import requests
 import logging
@@ -46,51 +46,50 @@ def get_stocks_to_be_fetched() -> list[Stock]:
 
 
 def fetch_prices():
-    fetch_prices_with_website(get_stocks_to_be_fetched())
-    fetch_prices_with_marketstack(get_stocks_to_be_fetched())
+    fetch_prices_with_website_fetchers(get_stocks_to_be_fetched())
+    fetch_prices_with_marketstack_fetchers(get_stocks_to_be_fetched())
 
 
-def fetch_prices_with_website(stocks, messages: list[str] | None=None):
+def fetch_price_with_website_fetcher(stock: Stock, fetcher: PriceFetcher) -> tuple[bool, str]:
+    website = fetcher.data["website"]
+    target = fetcher.data["target"]
+    try:
+        r = requests.get(website, headers=headers)
+    except requests.exceptions.ConnectionError:
+        return False, "Could not connect to {website}."
+
+    if r.status_code != 200:
+        return False, f"Could not connect to {website}. The status code is {r.status_code}."
+
+    text = r.text
+    soup = BeautifulSoup(text, features='html.parser')
+    selection = soup.select_one(target)
+
+    if not selection:
+        return False, f"Could not find a price for {stock.ticker} on {website} with {target}."
+
+    price = re.search('[0-9]+,[0-9]+', str(selection)).group()
+    price = price.replace(',', '.')
+    price = float(price)
+    save_price(price, stock)
+    return True, ""
+
+
+def fetch_prices_with_website_fetchers(stocks, messages: list[str] | None=None):
     i = 0
     for stock in stocks:
-        fetcher = stock.price_fetchers.filter(type="WEBSITE").first()
-        if fetcher is None:
+        fetchers = list(stock.price_fetchers.filter(type="WEBSITE"))
+        for fetcher in fetchers:
+            success, message = fetch_price_with_website_fetcher(stock, fetcher)
+            if success:
+                break
             if messages is not None:
-                messages.append(f"Could not find a price fetcher for {stock.ticker}.")
-            continue
-
-        website = fetcher.data["website"]
-        target = fetcher.data["target"]
-        try:
-            r = requests.get(website, headers=headers)
-        except requests.exceptions.ConnectionError:
-            if messages is not None:
-                messages.append(f"Could not connect to {website}.")
-            continue
-
-        if r.status_code != 200:
-            if messages is not None:
-                messages.append(f"Could not connect to {website}. The status code is {r.status_code}.")
-            continue
-        
-        text = r.text
-        soup = BeautifulSoup(text, features='html.parser')
-        selection = soup.select_one(target)
-        
-        if not selection:
-            if messages is not None:
-                messages.append(f"Could not find a price for {stock.ticker} on {website} with {target}.")
-            continue
-
-        price = re.search('[0-9]+,[0-9]+', str(selection)).group()
-        price = price.replace(',', '.')
-        price = float(price)
-        save_price(price, stock)
-        i += 1
+                messages.append(message)
         time.sleep(i)
+        i += 1
 
 
-def fetch_prices_with_marketstack(stocks: list[Stock], messages: list[str] | None=None):
+def fetch_prices_with_marketstack_fetchers(stocks: list[Stock], messages: list[str] | None=None):
     stocks_as_dict = {stock.ticker: stock for stock in stocks}
 
     symbols = []
@@ -119,6 +118,6 @@ def fetch_prices_with_marketstack(stocks: list[Stock], messages: list[str] | Non
 
 
 FETCHERS = {
-    "WEBSITE": fetch_prices_with_website,
-    "MARKETSTACK": fetch_prices_with_marketstack,
+    "WEBSITE": fetch_prices_with_website_fetchers,
+    "MARKETSTACK": fetch_prices_with_marketstack_fetchers,
 }

@@ -15,21 +15,21 @@ class UserIsLoggedIn(UserPassesTestMixin):
 class EditUserSettingsView(UserIsLoggedIn, AjaxResponseMixin, generic.UpdateView):
     form_class = UpdateStandardUserForm
     model = StandardUser
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
 
 class EditUserPasswordSettingsView(AjaxResponseMixin, PasswordChangeView):
     form_class = PasswordChangeForm
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
 
 class EditUserGeneralSettingsView(UserIsLoggedIn, AjaxResponseMixin, generic.UpdateView):
     form_class = UpdateGeneralStandardUserForm
     model = StandardUser
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
 
 class EditUserCryptoSettingsView(UserIsLoggedIn, AjaxResponseMixin, generic.UpdateView):
     form_class = UpdateCryptoStandardUserForm
     model = StandardUser
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"

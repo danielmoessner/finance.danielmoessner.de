@@ -462,7 +462,13 @@ class PriceFetcher(models.Model):
     target = models.CharField(max_length=250)
 
     def __str__(self):
-        return '{} - {}'.format(self.stock, self.type)
+        if self.type == 'WEBSITE':
+            return '{} - {}'.format(self.type, self.url)
+        return self.type
+    
+    @property
+    def url(self):
+        return self.data['website']
 
 
 class Flow(models.Model):

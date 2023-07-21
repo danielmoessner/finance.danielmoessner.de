@@ -1,8 +1,8 @@
 {% if request and request.user.is_authenticated %}
-    {% extends "layout/lm.njk" %}
+    {% extends "layout/lm.j2" %}
 {% else %}
-    {% import "symbols/button.njk" as buttons %}
-    {% extends "layout/m.njk" %}
+    {% import "symbols/button.j2" as buttons %}
+    {% extends "layout/m.j2" %}
 {% endif %}
 
 {% block main %}

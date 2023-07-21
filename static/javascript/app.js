@@ -17,14 +17,31 @@ ready(function () {
     document.querySelectorAll('.modal').forEach(modal => document.body.appendChild(modal));
 });
 
+// helper
+const sameUrl = (url) => url === window.location.href;
+
 // bootstrap modal form fetch data (the form) if it is shown
 ready(function () {
     document.querySelectorAll('.modal').forEach(
         modal => {
             modal.addEventListener('shown.bs.modal', function (event) {
                 const url = event.target.querySelector("form").action;
+                if (sameUrl(url)) return;
                 const body = event.target.querySelector(".modal-body");
                 if (typeof url !== "undefined" && typeof body !== "undefined") fetchAndInsert(url, body);
+            })
+        }
+    )
+    document.querySelectorAll('.modal-button').forEach(
+        button => {
+            button.addEventListener('click', function (event) {
+                const url = event.target.dataset.action;
+                const modal = document.querySelector(event.target.dataset.bsTarget);
+                const form = modal.querySelector("form");
+                if (url === undefined) return;
+                form.action = url;
+                const body = modal.querySelector(".modal-body");
+                fetchAndInsert(url, body);
             })
         }
     )
@@ -65,6 +82,7 @@ function postData(postUrl, formData, elementToInsertErrorInto) {
 
 // fetches data from an url and inserts it into an element
 function fetchAndInsert(urlToFetch, elementToInsertTo) {
+    elementToInsertTo.innerHTML = "Loading...";
     fetch(urlToFetch)
         .then((response) => {
             return response.text();

@@ -35,7 +35,7 @@ class IndexView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
 
 
 class CreateDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.CreateView):
-    template_name = 'symbols/form_snippet.njk'
+    template_name = 'symbols/form_snippet.j2'
     model = Depot
     form_class = DepotForm
 
@@ -43,12 +43,12 @@ class CreateDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMi
 class EditDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.UpdateView):
     model = Depot
     form_class = DepotForm
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
 
 class DeleteDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.FormView):
     model = Depot
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
     form_class = DepotSelectForm
 
     def form_valid(self, form):
@@ -95,13 +95,13 @@ class StockView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
 class AddStockView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.CreateView):
     form_class = StockForm
     model = Stock
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
 
 class EditStockView(GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.UpdateView):
     model = Stock
     form_class = EditStockForm
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
     def get_queryset(self):
         return Stock.objects.filter(depot__in=self.request.user.stock_depots.all())
@@ -109,7 +109,7 @@ class EditStockView(GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, gen
 
 class DeleteStockView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.FormView):
     model = Stock
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
     form_class = StockSelectForm
 
     def form_valid(self, form):
@@ -119,12 +119,22 @@ class DeleteStockView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, 
 
 
 ###
-# Price: Edit
+# Price: Edit, Delete
 ###
 class EditPriceView(LoginRequiredMixin, AjaxResponseMixin, generic.UpdateView):
     model = Price
     form_class = PriceEditForm
-    template_name = 'symbols/form_snippet.njk'
+    template_name = 'symbols/form_snippet.j2'
+
+
+class DeletePriceView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
+    model = Price
+    template_name = "symbols/delete_snippet.j2"
+
+    def get_queryset(self):
+        return Price.objects.filter(
+            ticker__in=Stock.objects.filter(
+                depot=self.request.user.get_active_stocks_depot()).values_list('ticker', flat=True))
 
 
 ###
@@ -134,18 +144,18 @@ class AddPriceFetcherView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAnd
                           AjaxResponseMixin, generic.CreateView):
     form_class = PriceFetcherForm
     model = PriceFetcher
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
 
 class EditPriceFetcherView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.UpdateView):
     model = PriceFetcher
     form_class = PriceFetcherForm
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
 
 class DeletePriceFetcherView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
     model = PriceFetcher
-    template_name = "symbols/delete_snippet.njk"
+    template_name = "symbols/delete_snippet.j2"
 
     def get_queryset(self):
         return PriceFetcher.objects.filter(
@@ -185,13 +195,13 @@ class BankView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
 class AddBankView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.CreateView):
     form_class = BankForm
     model = Bank
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
 
 class EditBankView(GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.UpdateView):
     model = Bank
     form_class = BankForm
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
     def get_queryset(self):
         return Bank.objects.filter(depot__in=self.request.user.stock_depots.all())
@@ -199,7 +209,7 @@ class EditBankView(GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, gene
 
 class DeleteBankView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.FormView):
     model = Bank
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
     form_class = BankSelectForm
 
     def form_valid(self, form):
@@ -215,18 +225,18 @@ class AddFlowView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAndInitialD
                   generic.CreateView):
     model = Flow
     form_class = FlowForm
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
 
 class EditFlowView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.UpdateView):
     model = Flow
     form_class = FlowForm
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
 
 class DeleteFlowView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
     model = Flow
-    template_name = "symbols/delete_snippet.njk"
+    template_name = "symbols/delete_snippet.j2"
 
     def get_queryset(self):
         return Flow.objects.filter(
@@ -241,18 +251,18 @@ class AddDividendView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAndInit
                       generic.CreateView):
     model = Dividend
     form_class = DividendForm
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
 
 class EditDividendView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.UpdateView):
     model = Dividend
     form_class = DividendForm
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
 
 class DeleteDividendView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
     model = Dividend
-    template_name = "symbols/delete_snippet.njk"
+    template_name = "symbols/delete_snippet.j2"
 
     def get_queryset(self):
         return Dividend.objects.filter(
@@ -267,18 +277,18 @@ class AddTradeView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAndInitial
                    generic.CreateView):
     model = Trade
     form_class = TradeForm
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
 
 class EditTradeView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.UpdateView):
     model = Trade
     form_class = TradeForm
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
 
 class DeleteTradeView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
     model = Trade
-    template_name = "symbols/delete_snippet.njk"
+    template_name = "symbols/delete_snippet.j2"
 
     def get_queryset(self):
         return Trade.objects.filter(

@@ -32,13 +32,13 @@ class DetailDepotView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
 class CreateDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.CreateView):
     form_class = DepotForm
     model = Depot
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
 
 class UpdateDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.UpdateView):
     model = Depot
     form_class = DepotForm
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
     def get_queryset(self):
         return self.request.user.alternative_depots.all()
@@ -46,7 +46,7 @@ class UpdateDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMi
 
 class DeleteDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.FormView):
     model = Depot
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
     form_class = DepotSelectForm
 
     def form_valid(self, form):
@@ -96,13 +96,13 @@ class DetailAlternativeView(LoginRequiredMixin, TabContextMixin, generic.DetailV
 class CreateAlternativeView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.CreateView):
     form_class = AlternativeForm
     model = Alternative
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
 
 class UpdateAlternativeView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
     model = Alternative
     form_class = AlternativeForm
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
     def get_queryset(self):
         return Alternative.objects.filter(depot__in=self.request.user.alternative_depots.all())
@@ -110,7 +110,7 @@ class UpdateAlternativeView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponse
 
 class DeleteAlternativeView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.FormView):
     model = Alternative
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
     form_class = AlternativeSelectForm
 
     def form_valid(self, form):
@@ -125,7 +125,7 @@ class DeleteAlternativeView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponse
 class CreateFlowView(LoginRequiredMixin, AjaxResponseMixin, generic.CreateView):
     model = Flow
     form_class = FlowForm
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
     def get_form(self, form_class=None):
         depot = self.request.user.alternative_depots.get(is_active=True)
@@ -139,7 +139,7 @@ class CreateFlowView(LoginRequiredMixin, AjaxResponseMixin, generic.CreateView):
 class UpdateFlowView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
     model = Flow
     form_class = FlowForm
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
     def get_queryset(self):
         return Flow.objects.filter(
@@ -148,7 +148,7 @@ class UpdateFlowView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, 
 
 class DeleteFlowView(LoginRequiredMixin, generic.DeleteView):
     model = Flow
-    template_name = "symbols/delete_snippet.njk"
+    template_name = "symbols/delete_snippet.j2"
 
     def delete(self, request, *args, **kwargs):
         flow = self.get_object()
@@ -171,7 +171,7 @@ class DeleteFlowView(LoginRequiredMixin, generic.DeleteView):
 class CreateValueView(LoginRequiredMixin, AjaxResponseMixin, generic.CreateView):
     model = Value
     form_class = ValueForm
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
     def get_form(self, form_class=None):
         depot = self.request.user.alternative_depots.get(is_active=True)
@@ -185,7 +185,7 @@ class CreateValueView(LoginRequiredMixin, AjaxResponseMixin, generic.CreateView)
 class UpdateValueView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
     model = Value
     form_class = ValueForm
-    template_name = "symbols/form_snippet.njk"
+    template_name = "symbols/form_snippet.j2"
 
     def get_queryset(self):
         return Value.objects.filter(
@@ -194,7 +194,7 @@ class UpdateValueView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin,
 
 class DeleteValueView(LoginRequiredMixin, generic.DeleteView):
     model = Value
-    template_name = "symbols/delete_snippet.njk"
+    template_name = "symbols/delete_snippet.j2"
 
     def delete(self, request, *args, **kwargs):
         value = self.get_object()
