@@ -1,6 +1,7 @@
 from datetime import timedelta
 import re
 import time
+from typing import Callable
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.utils import timezone
@@ -50,7 +51,8 @@ def fetch_prices():
     fetch_prices_with_marketstack_fetchers(get_stocks_to_be_fetched())
 
 
-def fetch_price_with_website_fetcher(stock: Stock, fetcher: PriceFetcher) -> tuple[bool, str]:
+def fetch_price_with_website_fetcher(fetcher: PriceFetcher) -> tuple[bool, str]:
+    stock = fetcher.stock
     website = fetcher.data["website"]
     target = fetcher.data["target"]
     try:
@@ -89,9 +91,29 @@ def fetch_prices_with_website_fetchers(stocks, messages: list[str] | None=None):
         i += 1
 
 
-def fetch_prices_with_marketstack_fetchers(stocks: list[Stock], messages: list[str] | None=None):
-    stocks_as_dict = {stock.ticker: stock for stock in stocks}
 
+def fetch_prices_from_marketstack(symbols: list[str]) -> tuple[bool, str]:
+    symbols = ','.join(symbols)
+    params = {
+        'access_key': settings.MARKETSTACK_API_KEY
+    }
+    url = 'http://api.marketstack.com/v1/eod/latest?symbols={}'.format(symbols)    
+    api_result = requests.get(url, params)
+    api_response = api_result.json()
+    if 'error' in api_response:
+        return False , f"Could not fetch prices from marketstack: '{api_response['error']['message']}'."
+    
+    for price in api_response['data']:
+        save_price(round(price['close'], 2), Stock.objects.get(ticker=[price['symbol']]))
+    
+    return True, ""
+
+
+def fetch_price_with_marketstack_fetcher(fetcher: PriceFetcher) -> tuple[bool, str]:
+    return fetch_prices_from_marketstack([fetcher.data["symbol"]])
+
+
+def fetch_prices_with_marketstack_fetchers(stocks: list[Stock], messages: list[str] | None=None):
     symbols = []
     for stock in stocks:
         fetcher = stock.price_fetchers.filter(type="MARKETSTACK").first()
@@ -101,23 +123,12 @@ def fetch_prices_with_marketstack_fetchers(stocks: list[Stock], messages: list[s
             continue
         symbols.append(fetcher.data["symbol"])
 
-    symbols = ','.join(symbols)
-    params = {
-        'access_key': settings.MARKETSTACK_API_KEY
-    }
-    url = 'http://api.marketstack.com/v1/eod/latest?symbols={}'.format(symbols)    
-    api_result = requests.get(url, params)
-    api_response = api_result.json()
-    if 'error' in api_response:
-        if messages is not None:
-            messages.append(f"Could not fetch prices from marketstack: '{api_response['error']['message']}'.")
-        return
-    
-    for price in api_response['data']:
-        save_price(round(price['close'], 2), stocks_as_dict[price['symbol']])
+    fetch_prices_from_marketstack(symbols)
 
 
-FETCHERS = {
-    "WEBSITE": fetch_prices_with_website_fetchers,
-    "MARKETSTACK": fetch_prices_with_marketstack_fetchers,
+FETCHER_FUNCTION = Callable[[PriceFetcher], tuple[bool, str]]
+
+FETCHERS: dict[str, FETCHER_FUNCTION] = {
+    "WEBSITE": fetch_price_with_website_fetcher,
+    "MARKETSTACK": fetch_price_with_marketstack_fetcher,
 }

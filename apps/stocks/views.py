@@ -6,7 +6,7 @@ from django.views import generic
 from django.urls import reverse_lazy
 from django.http import HttpResponse, HttpResponseRedirect
 
-from apps.stocks.tasks import FETCHERS
+from apps.stocks.tasks import FETCHERS, fetch_price_with_website_fetcher
 from .models import Depot, Stock, Bank, Flow, Trade, Price, Dividend, PriceFetcher
 from .mixins import GetDepotMixin
 from .forms import DepotForm, DepotActiveForm, DepotSelectForm, BankForm, BankSelectForm, StockSelectForm, StockForm, \
@@ -168,10 +168,9 @@ class RunPriceFetcherView(LoginRequiredMixin, generic.View):
 
     def get(self, request, pk, *args, **kwargs):
         fetcher = get_object_or_404(PriceFetcher, pk=pk)
-        errors = []
-        FETCHERS[fetcher.type]([fetcher.stock], errors)
-        print(errors)
-        messages.error(request, " ".join(errors))
+        success, message = FETCHERS[fetcher.type](fetcher)
+        if not success:
+            messages.error(request, message)
         url = '{}?tab=prices'.format(reverse_lazy('stocks:stocks', args=[fetcher.stock.pk]))
         return HttpResponseRedirect(url)
 
