@@ -5,6 +5,10 @@ from typing import Callable
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.utils import timezone
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 
 from .models import Price, PriceFetcher, Stock
 from .forms import PriceForm
@@ -25,6 +29,35 @@ headers = {
     "Sec-Fetch-Site": "none",
     "Sec-Fetch-User": "?1",
     "Cache-Control": "max-age=0",
+    ":authority:": "api.boerse-frankfurt.de",
+    ":method:": "GET",
+    ":path:": "/v1/data/quote_box/single?isin=IE00BM67HT60&mic=XETR",
+    "X-Security:": "ca60de3ad5356b275e5551b38a21921a",
+}
+
+headers = {
+    # ":authority:": "api.boerse-frankfurt.de",
+    # ":method:": "GET",
+    # ":path:": "/v1/data/quote_box/single?isin=IE00BM67HT60&mic=XETR",
+    # ":scheme:": "https",
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Language": "en;q=0.8",
+    "Cache-Control": "no-cache",
+    "Client-Date": "2023-07-23T14:26:37.677Z",
+    "Origin": "https://www.boerse-frankfurt.de",
+    "Pragma": "no-cache",
+    "Referer": "https://www.boerse-frankfurt.de/",
+    "Sec-Ch-Ua": "\"Not/A)Brand\";v=\"99\", \"Brave\";v=\"115\", \"Chromium\";v=\"115\"",
+    "Sec-Ch-Ua-Mobile": "?0",
+    "Sec-Ch-Ua-Platform": "\"macOS\"",
+    "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Site": "same-site",
+    "Sec-Gpc": "1",
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
+    "X-Client-Traceid": "fe7f571ac7e5d9b3eeec4b46b73b15db",
+    "X-Security": "affbfc484bd62698686a06b22e71f33c"
 }
 
 
@@ -55,22 +88,32 @@ def fetch_price_with_website_fetcher(fetcher: PriceFetcher) -> tuple[bool, str]:
     stock = fetcher.stock
     website = fetcher.data["website"]
     target = fetcher.data["target"]
+
+    browser = webdriver.Chrome()
     try:
-        r = requests.get(website, headers=headers)
-    except requests.exceptions.ConnectionError:
-        return False, "Could not connect to {website}."
+        browser.get(website)
+        time.sleep(5)  # wait for the api requests to finish
+        html = browser.page_source
+    except Exception as e:
+        return False, f"An error occured while trying to connect to {website}: {e}."
+    finally:
+        browser.quit()
 
-    if r.status_code != 200:
-        return False, f"Could not connect to {website}. The status code is {r.status_code}."
-
-    text = r.text
-    soup = BeautifulSoup(text, features='html.parser')
+    # if r.status_code != 200:
+    #     return False, f"Could not connect to {website}. The status code is {r.status_code}."
+    
+    soup = BeautifulSoup(html, features='html.parser')
     selection = soup.select_one(target)
 
     if not selection:
         return False, f"Could not find a price for {stock.ticker} on {website} with {target}."
 
-    price = re.search('[0-9]+,[0-9]+', str(selection)).group()
+    result = re.search('\d{1,5}[.,]\d{2}', str(selection))
+    
+    if not result:
+        return False, f"Could not find a price inside '{selection}'."
+    
+    price = result.group()
     price = price.replace(',', '.')
     price = float(price)
     save_price(price, stock)
