@@ -137,13 +137,13 @@ class PriceFetcherForm(forms.ModelForm):
             except ValidationError as e:
                 print(str(e))
                 raise forms.ValidationError(self._create_human_error(e))
-        elif self.cleaned_data["type"] == "WEBSITE":
+        elif self.cleaned_data["type"] in ["WEBSITE", "SELENIUM"]:
             try:
                 PriceFetcherDataWebsite(**data)
             except ValidationError as e:
                 raise forms.ValidationError(self._create_human_error(e))
         else:
-            raise forms.ValidationError({"type": "This type is not supported."})
+            self.add_error("type", "This type is not supported.")
         return data
 
     def clean_type(self):

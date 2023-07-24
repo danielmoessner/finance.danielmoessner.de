@@ -472,7 +472,7 @@ class PriceFetcher(models.Model):
     target = models.CharField(max_length=250)
 
     def __str__(self):
-        if self.type == 'WEBSITE':
+        if self.type in ['WEBSITE', 'SELENIUM']:
             return '{} - {}'.format(self.type, self.url)
         return self.type
     
