@@ -8,8 +8,7 @@ from apps.stocks.fetcher.selenium import (
     fetch_prices_with_selenium_fetchers,
 )
 from apps.stocks.fetcher.website import (
-    fetch_price_with_website_fetcher,
-    fetch_prices_with_website_fetchers,
+    WebsiteFetcher,
 )
 
 from apps.stocks.models import PriceFetcher
@@ -33,14 +32,25 @@ def get_stocks_to_be_fetched() -> list[Stock]:
     return stocks_to_be_fetched
 
 
+def get_fetchers_to_be_run(type: str) -> list[PriceFetcher]:
+    fetchers_to_be_run = []
+    for fetcher in list(PriceFetcher.objects.filter(type=type)):
+        if Price.objects.filter(
+            ticker=fetcher.stock.ticker, date__gt=timezone.now() - timedelta(days=1)
+        ).exists():
+            continue
+        fetchers_to_be_run.append(fetcher)
+    return fetchers_to_be_run
+
+
 FETCHERS: dict[str, FETCHER_FUNCTION] = {
-    "WEBSITE": fetch_price_with_website_fetcher,
+    "WEBSITE": WebsiteFetcher.fetch_single,
     "SELENIUM": fetch_price_with_selenium_fetcher,
     "MARKETSTACK": fetch_price_with_marketstack_fetcher,
 }
 
 
 def fetch_prices():
-    fetch_prices_with_website_fetchers(get_stocks_to_be_fetched())
+    WebsiteFetcher.fetch_multiple(get_fetchers_to_be_run("WEBSITE"))
     fetch_prices_with_selenium_fetchers(get_stocks_to_be_fetched())
     fetch_prices_with_marketstack_fetchers(get_stocks_to_be_fetched())
