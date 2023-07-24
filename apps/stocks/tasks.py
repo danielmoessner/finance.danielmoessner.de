@@ -10,6 +10,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
+from apps.core.selenium import get_chrome_driver
+
 from .models import Price, PriceFetcher, Stock
 from .forms import PriceForm
 import requests
@@ -89,7 +91,7 @@ def fetch_price_with_website_fetcher(fetcher: PriceFetcher) -> tuple[bool, str]:
     website = fetcher.data["website"]
     target = fetcher.data["target"]
 
-    browser = webdriver.Chrome()
+    browser = get_chrome_driver()
     try:
         browser.get(website)
         time.sleep(5)  # wait for the api requests to finish
