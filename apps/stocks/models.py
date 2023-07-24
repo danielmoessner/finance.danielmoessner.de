@@ -1,7 +1,4 @@
 from datetime import timedelta
-import re
-import time
-from django.conf import settings
 from django.db import models
 from django.db.models import Sum
 from pydantic import BaseModel, HttpUrl
@@ -11,8 +8,6 @@ from apps.core.utils import get_df_from_database
 from apps.users.models import StandardUser
 from django.utils import timezone
 import apps.core.return_calculation as rc
-from bs4 import BeautifulSoup
-import requests
 
 
 class Depot(models.Model):
@@ -468,6 +463,7 @@ class PriceFetcher(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='price_fetchers')
     PRICE_FETCHER_TYPES = (
         ('WEBSITE', 'Website'),
+        ('SELENIUM', 'Selenium'),
         ('MARKETSTACK', 'Marketstack'),
     )
     type = models.CharField(max_length=250, choices=PRICE_FETCHER_TYPES)
