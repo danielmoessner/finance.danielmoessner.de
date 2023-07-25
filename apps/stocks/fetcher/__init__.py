@@ -1,11 +1,9 @@
 from typing import Callable
 from apps.stocks.fetcher.marketstack import (
-    fetch_price_with_marketstack_fetcher,
-    fetch_prices_with_marketstack_fetchers,
+    MarketstackFetcher,
 )
 from apps.stocks.fetcher.selenium import (
-    fetch_price_with_selenium_fetcher,
-    fetch_prices_with_selenium_fetchers,
+    SeleniumFetcher,
 )
 from apps.stocks.fetcher.website import (
     WebsiteFetcher,
@@ -16,6 +14,22 @@ from datetime import timedelta
 from typing import Callable
 from django.utils import timezone
 from apps.stocks.models import Price, PriceFetcher, Stock
+from django.utils import timezone
+from apps.stocks.models import Stock
+from apps.stocks.forms import PriceForm
+
+
+def save_price(price: float, stock: Stock) -> None:
+    price = PriceForm(
+        {
+            "ticker": stock.ticker,
+            "exchange": stock.exchange,
+            "date": timezone.now(),
+            "price": price,
+        }
+    )
+    if price.is_valid():
+        price.save()
 
 
 FETCHER_FUNCTION = Callable[[PriceFetcher], tuple[bool, str]]
@@ -32,7 +46,7 @@ def get_stocks_to_be_fetched() -> list[Stock]:
     return stocks_to_be_fetched
 
 
-def get_fetchers_to_be_run(type: str) -> list[PriceFetcher]:
+def get_fetchers_to_be_run(type: str) -> dict[str, dict[str, int | str]]:
     fetchers_to_be_run = []
     for fetcher in list(PriceFetcher.objects.filter(type=type)):
         if Price.objects.filter(
@@ -40,17 +54,39 @@ def get_fetchers_to_be_run(type: str) -> list[PriceFetcher]:
         ).exists():
             continue
         fetchers_to_be_run.append(fetcher)
-    return fetchers_to_be_run
+    return {str(fetcher.pk): fetcher.data for fetcher in fetchers_to_be_run}
+
+
+def turn_fetchers_to_data(fetchers: list[PriceFetcher]) -> dict[str, dict]:
+    data = {}
+    for fetcher in fetchers:
+        data[str(fetcher.pk)] = fetcher.data
+    return data
+
+
+def save_prices(results: dict[str, tuple[bool, str | float]]):
+    for fetcher, result in results:
+        fetcher = PriceFetcher.objects.get(pk=fetcher)
+        if result[0]:
+            save_price(fetcher.stock, result[1])
 
 
 FETCHERS: dict[str, FETCHER_FUNCTION] = {
     "WEBSITE": WebsiteFetcher.fetch_single,
-    "SELENIUM": fetch_price_with_selenium_fetcher,
-    "MARKETSTACK": fetch_price_with_marketstack_fetcher,
+    "SELENIUM": SeleniumFetcher.fetch_single,
+    "MARKETSTACK": MarketstackFetcher.fetch_single,
 }
 
 
 def fetch_prices():
-    WebsiteFetcher.fetch_multiple(get_fetchers_to_be_run("WEBSITE"))
-    fetch_prices_with_selenium_fetchers(get_stocks_to_be_fetched())
-    fetch_prices_with_marketstack_fetchers(get_stocks_to_be_fetched())
+    fetchers = get_fetchers_to_be_run("WEBSITE")
+    results = WebsiteFetcher.fetch_multiple(fetchers)
+    save_prices(results)
+
+    fetchers = get_fetchers_to_be_run("SELENIUM")
+    results = SeleniumFetcher.fetch_multiple(fetchers)
+    save_prices(results)
+
+    fetchers = get_fetchers_to_be_run("MARKETSTACK")
+    results = MarketstackFetcher.fetch_multiple(fetchers)
+    save_prices(results)

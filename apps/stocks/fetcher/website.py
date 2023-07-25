@@ -3,7 +3,6 @@ import time
 from bs4 import BeautifulSoup
 import requests
 from apps.stocks.fetcher.base import Fetcher
-from apps.stocks.models import PriceFetcher, Stock
 
 
 headers = {
@@ -22,11 +21,7 @@ headers = {
 
 
 class WebsiteFetcher(Fetcher):
-    def fetch_single(self, fetcher: PriceFetcher) -> tuple[bool, str | float]:
-        stock = fetcher.stock
-        website = fetcher.data["website"]
-        target = fetcher.data["target"]
-
+    def fetch_single(self, website: str, target: str) -> tuple[bool, str | float]:
         try:
             resp = requests.get(website, headers=headers)
             html = resp.text
@@ -45,7 +40,7 @@ class WebsiteFetcher(Fetcher):
         if not selection:
             return (
                 False,
-                f"Could not find a price for {stock.ticker} on {website} with {target}.",
+                f"Could not find a price on {website} with {target}.",
             )
 
         result = re.search("\d{1,5}[.,]\d{2}", str(selection))
@@ -59,14 +54,13 @@ class WebsiteFetcher(Fetcher):
         return True, price
 
     def fetch_multiple(
-        self, fetchers: list[PriceFetcher]
-    ) -> dict[Stock, tuple[bool, str | float]]:
+        self, data: dict[str, dict[str, str | int]]
+    ) -> dict[str, tuple[bool, str | float]]:
         i = 0
         results = {}
-        for fetcher in fetchers:
-            assert fetcher.type == "WEBSITE"
-            result = self.fetch_single(fetcher)
-            results[fetcher.stock] = result
+        for fetcher, input in data.items():
+            result = self.fetch_single(**input)
+            results[fetcher] = result
             time.sleep(i)
             i += 1
         return results
