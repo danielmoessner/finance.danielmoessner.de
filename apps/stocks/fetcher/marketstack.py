@@ -37,3 +37,5 @@ class MarketstackFetcher(Fetcher):
                 if price["symbol"] == symbol:
                     results[fetcher] = (True, round(price["close"], 2))
                     break
+        
+        return results

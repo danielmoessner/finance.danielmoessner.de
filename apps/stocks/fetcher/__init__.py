@@ -32,6 +32,11 @@ def save_price(price: float, stock: Stock) -> None:
         price.save()
 
 
+def set_error(fetcher: PriceFetcher, error: str) -> None:
+    fetcher.error = error
+    fetcher.save()
+
+
 FETCHER_FUNCTION = Callable[[PriceFetcher], tuple[bool, str]]
 
 
@@ -65,10 +70,14 @@ def turn_fetchers_to_data(fetchers: list[PriceFetcher]) -> dict[str, dict]:
 
 
 def save_prices(results: dict[str, tuple[bool, str | float]]):
-    for fetcher, result in results:
+    for fetcher, result in results.items():
         fetcher = PriceFetcher.objects.get(pk=fetcher)
         if result[0]:
-            save_price(fetcher.stock, result[1])
+            save_price(result[1], fetcher.stock)
+            fetcher.error = ""
+            fetcher.save()
+        else:
+            set_error(fetcher, result[1])
 
 
 FETCHERS: dict[str, FETCHER_FUNCTION] = {

@@ -470,6 +470,7 @@ class PriceFetcher(models.Model):
     data = models.JSONField(default=dict)
     website = models.URLField()
     target = models.CharField(max_length=250)
+    error = models.CharField(max_length=1000, blank=True)
 
     def __str__(self):
         if self.type in ['WEBSITE', 'SELENIUM']:

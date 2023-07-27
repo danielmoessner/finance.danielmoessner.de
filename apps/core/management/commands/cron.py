@@ -13,8 +13,4 @@ class Command(BaseCommand):
             job: Callable[[], None] = getattr(module, function_name)  # type: ignore
             jobs.append(job)
         for job in jobs:
-            try:
-                job()
-            except Exception as e:
-                self.stdout.write(self.style.ERROR(e))
-                continue
+            job()
