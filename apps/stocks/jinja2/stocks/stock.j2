@@ -38,13 +38,17 @@
             <thead>
             <tr>
                <th scope="col">Fetcher</th>
+               <th scope="col">Error</th>
                <th scope="col"></th>
             </tr>
             </thead>
             <tbody>
             {% for fetcher in fetchers %}
                 <tr>
-                    <td class="text-truncate w-75" style="max-width: 300px;">{{ fetcher }}</td>
+                    <td class="text-truncate w-75" style="max-width: 300px;">
+                        {{ fetcher }}
+                        {% if fetcher.error %}<br>Error: {{ fetcher.error }}{% endif %}
+                    </td>
                     <td class="text-end">
                         {{ bg.hrefButton("Run", url("stocks:run_price_fetcher", args=[fetcher.pk])) }}
                         {{ bg.modalButton("Edit", "#editFetcher", action=url("stocks:edit_price_fetcher", args=[fetcher.pk])) }}
