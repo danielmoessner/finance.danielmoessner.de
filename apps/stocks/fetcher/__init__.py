@@ -80,13 +80,13 @@ FETCHERS: dict[str, FETCHER_FUNCTION] = {
 
 def fetch_prices():
     data = get_fetchers_to_be_run("WEBSITE")
-    results = WebsiteFetcher.fetch_multiple(data)
+    results = WebsiteFetcher().fetch_multiple(data)
     save_prices(results)
 
     data = get_fetchers_to_be_run("SELENIUM")
-    results = SeleniumFetcher.fetch_multiple(data)
+    results = SeleniumFetcher().fetch_multiple(data)
     save_prices(results)
 
     data = get_fetchers_to_be_run("MARKETSTACK")
-    results = MarketstackFetcher.fetch_multiple(data)
+    results = MarketstackFetcher().fetch_multiple(data)
     save_prices(results)
