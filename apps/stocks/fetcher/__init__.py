@@ -10,53 +10,18 @@ from apps.stocks.fetcher.website import (
 )
 
 from apps.stocks.models import PriceFetcher
-from datetime import timedelta
 from typing import Callable
-from django.utils import timezone
-from apps.stocks.models import Price, PriceFetcher, Stock
-from django.utils import timezone
-from apps.stocks.models import Stock
-from apps.stocks.forms import PriceForm
-
-
-def save_price(price: float, stock: Stock) -> None:
-    price = PriceForm(
-        {
-            "ticker": stock.ticker,
-            "exchange": stock.exchange,
-            "date": timezone.now(),
-            "price": price,
-        }
-    )
-    if price.is_valid():
-        price.save()
-
-
-def set_error(fetcher: PriceFetcher, error: str) -> None:
-    fetcher.error = error
-    fetcher.save()
+from apps.stocks.models import Price, PriceFetcher
 
 
 FETCHER_FUNCTION = Callable[[PriceFetcher], tuple[bool, str]]
 
 
-def get_stocks_to_be_fetched() -> list[Stock]:
-    stocks_to_be_fetched = []
-    for stock in list(Stock.objects.all()):
-        if Price.objects.filter(
-            ticker=stock.ticker, date__gt=timezone.now() - timedelta(days=1)
-        ).exists():
-            continue
-        stocks_to_be_fetched.append(stock)
-    return stocks_to_be_fetched
-
-
 def get_fetchers_to_be_run(type: str) -> dict[str, dict[str, int | str]]:
     fetchers_to_be_run = []
     for fetcher in list(PriceFetcher.objects.filter(type=type)):
-        if Price.objects.filter(
-            ticker=fetcher.stock.ticker, date__gt=timezone.now() - timedelta(days=1)
-        ).exists():
+        price = Price.objects.filter(ticker=fetcher.stock.ticker).order_by("-date").first()
+        if price and not price.is_old:
             continue
         fetchers_to_be_run.append(fetcher)
     return {str(fetcher.pk): fetcher.data for fetcher in fetchers_to_be_run}
@@ -73,11 +38,9 @@ def save_prices(results: dict[str, tuple[bool, str | float]]):
     for fetcher, result in results.items():
         fetcher = PriceFetcher.objects.get(pk=fetcher)
         if result[0]:
-            save_price(result[1], fetcher.stock)
-            fetcher.error = ""
-            fetcher.save()
+            fetcher.save_price(result[1])
         else:
-            set_error(fetcher, result[1])
+            fetcher.set_error(result[1])
 
 
 FETCHERS: dict[str, FETCHER_FUNCTION] = {

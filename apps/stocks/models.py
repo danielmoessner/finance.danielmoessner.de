@@ -5,6 +5,11 @@ from pydantic import BaseModel, HttpUrl
 
 from apps.core import utils
 from apps.core.utils import get_df_from_database
+from apps.stocks.fetcher.base import Fetcher
+from apps.stocks.fetcher.marketstack import MarketstackFetcher
+from apps.stocks.fetcher.selenium import SeleniumFetcher
+from apps.stocks.fetcher.website import WebsiteFetcher
+from apps.stocks.forms import PriceForm
 from apps.users.models import StandardUser
 from django.utils import timezone
 import apps.core.return_calculation as rc
@@ -363,7 +368,7 @@ class Stock(models.Model):
         price = self.get_price_obj()
         if price is None:
             return "404"
-        if price.date.date() <= timezone.now().date() - timedelta(days=7):
+        if price.is_old:
             return "OLD"
         return "{:.2f}".format(price.price)
 
@@ -480,6 +485,45 @@ class PriceFetcher(models.Model):
     @property
     def url(self):
         return self.data['website']
+    
+    @property
+    def fetcher_class(self) -> type[Fetcher]:
+        if self.type == 'WEBSITE':
+            return WebsiteFetcher
+        elif self.type == 'SELENIUM':
+            return SeleniumFetcher
+        elif self.type == 'MARKETSTACK':
+            return MarketstackFetcher
+        else:
+            raise ValueError('unknown type {}'.format(self.type))
+
+    def run(self):
+        fetcher: Fetcher = self.fetcher_class()
+        success, result = fetcher.fetch_single(**self.data)
+        if success:
+            self.save_price(result)
+        else:
+            self.set_error(result)
+        return success, result
+
+    def save_price(self):
+        stock = self.stock
+        price = PriceForm(
+            {
+                "ticker": stock.ticker,
+                "exchange": stock.exchange,
+                "date": timezone.now(),
+                "price": price,
+            }
+        )
+        if price.is_valid():
+            price.save()
+            self.error = ""
+            self.save()
+
+    def set_error(self, error: str):
+        self.error = error
+        self.save()
 
 
 class Flow(models.Model):
@@ -587,6 +631,10 @@ class Price(models.Model):
 
     def __str__(self):
         return '{} - {} - {}'.format(self.ticker, self.get_date(), self.price)
+
+    @property
+    def is_old(self) -> bool:
+        return self.date < timezone.now() - timedelta(days=1)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
