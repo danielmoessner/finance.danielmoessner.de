@@ -165,6 +165,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # crons
 CRONJOBS = [
-    "apps.stocks.fetcher.fetch_prices",
+    "apps.stocks.tasks.fetch_prices",
     "apps.crypto.tasks.update_prices",
 ]

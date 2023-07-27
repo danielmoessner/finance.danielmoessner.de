@@ -9,7 +9,6 @@ from apps.stocks.fetcher.base import Fetcher
 from apps.stocks.fetcher.marketstack import MarketstackFetcher
 from apps.stocks.fetcher.selenium import SeleniumFetcher
 from apps.stocks.fetcher.website import WebsiteFetcher
-from apps.stocks.forms import PriceForm
 from apps.users.models import StandardUser
 from django.utils import timezone
 import apps.core.return_calculation as rc
@@ -471,16 +470,16 @@ class PriceFetcher(models.Model):
         ('SELENIUM', 'Selenium'),
         ('MARKETSTACK', 'Marketstack'),
     )
-    type = models.CharField(max_length=250, choices=PRICE_FETCHER_TYPES)
+    fetcher_type = models.CharField(max_length=250, choices=PRICE_FETCHER_TYPES)
     data = models.JSONField(default=dict)
     website = models.URLField()
     target = models.CharField(max_length=250)
     error = models.CharField(max_length=1000, blank=True)
 
     def __str__(self):
-        if self.type in ['WEBSITE', 'SELENIUM']:
-            return '{} - {}'.format(self.type, self.url)
-        return self.type
+        if self.fetcher_type in ['WEBSITE', 'SELENIUM']:
+            return '{} - {}'.format(self.fetcher_type, self.url)
+        return self.fetcher_type
     
     @property
     def url(self):
@@ -488,14 +487,14 @@ class PriceFetcher(models.Model):
     
     @property
     def fetcher_class(self) -> type[Fetcher]:
-        if self.type == 'WEBSITE':
+        if self.fetcher_type == 'WEBSITE':
             return WebsiteFetcher
-        elif self.type == 'SELENIUM':
+        elif self.fetcher_type == 'SELENIUM':
             return SeleniumFetcher
-        elif self.type == 'MARKETSTACK':
+        elif self.fetcher_type == 'MARKETSTACK':
             return MarketstackFetcher
         else:
-            raise ValueError('unknown type {}'.format(self.type))
+            raise ValueError('unknown type {}'.format(self.fetcher_type))
 
     def run(self):
         fetcher: Fetcher = self.fetcher_class()
@@ -506,20 +505,19 @@ class PriceFetcher(models.Model):
             self.set_error(result)
         return success, result
 
-    def save_price(self):
+    def save_price(self, price):
         stock = self.stock
-        price = PriceForm(
-            {
+        price = Price(
+            **{
                 "ticker": stock.ticker,
                 "exchange": stock.exchange,
                 "date": timezone.now(),
                 "price": price,
             }
         )
-        if price.is_valid():
-            price.save()
-            self.error = ""
-            self.save()
+        price.save()
+        self.error = ""
+        self.save()
 
     def set_error(self, error: str):
         self.error = error

@@ -117,7 +117,7 @@ class StockSelectForm(forms.Form):
 class PriceFetcherForm(forms.ModelForm):
     class Meta:
         model = PriceFetcher
-        fields = ["stock", "type", "data"]
+        fields = ["stock", "fetcher_type", "data"]
 
     def __init__(self, depot, *args, **kwargs):
         super(PriceFetcherForm, self).__init__(*args, **kwargs)

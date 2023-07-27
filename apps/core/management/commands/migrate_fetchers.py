@@ -8,7 +8,7 @@ from apps.stocks.models import PriceFetcher, Stock
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         for fetcher in list(PriceFetcher.objects.all()):
-            if fetcher.type == "WEBSITE":
+            if fetcher.fetcher_type == "WEBSITE":
                 fetcher.data = {
                     "website": fetcher.website,
                     "target": fetcher.target,
