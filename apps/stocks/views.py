@@ -7,7 +7,7 @@ from django.urls import reverse_lazy
 from django.http import HttpResponse, HttpResponseRedirect
 
 from apps.stocks.fetcher import FETCHERS
-from apps.stocks.fetcher.price import save_price
+from apps.stocks.fetcher import save_price
 from .models import Depot, Stock, Bank, Flow, Trade, Price, Dividend, PriceFetcher
 from .mixins import GetDepotMixin
 from .forms import DepotForm, DepotActiveForm, DepotSelectForm, BankForm, BankSelectForm, StockSelectForm, StockForm, \
