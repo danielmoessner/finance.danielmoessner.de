@@ -1,3 +1,4 @@
+from typing import Union
 from apps.users.models import StandardUser
 from apps.core.models import Account as CoreAccount, Depot as CoreDepot
 from django.db.models import Sum
@@ -229,9 +230,20 @@ class Asset(models.Model):
             'Value': self.get_value()
         }
 
+    def __get_price(self) -> Union["Price", None]:
+        return Price.objects.filter(symbol=self.symbol).order_by('date').last()
+    
+    def get_price_display(self) -> str:
+        price = self.__get_price()
+        if price is None:
+            return "404"
+        if price.is_old:
+            return "OLD"
+        return str(price.price)
+
     def get_price(self):
         if self.price is None:
-            price = Price.objects.filter(symbol=self.symbol).order_by('date').last()
+            price = self.__get_price()
             if price is not None:
                 self.price = price.price or 0
             else:
@@ -427,6 +439,10 @@ class Price(models.Model):
     def __str__(self):
         return "{} {} {}".format(self.symbol, self.get_date(), self.price)
 
+    @property
+    def is_old(self):
+        return self.date < timezone.now() - timedelta(days=1)
+
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if Price.objects.filter(symbol=self.symbol,
                                 date__gte=(self.date - timedelta(hours=23)),
@@ -473,3 +489,57 @@ class CoinGeckoAsset(models.Model):
     symbol = models.CharField(max_length=5, unique=True)
     coingecko_symbol = models.CharField(max_length=10)
     coingecko_id = models.CharField(max_length=40, unique=True)
+
+
+class PriceFetcher(models.Model):
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name='price_fetchers')
+    PRICE_FETCHER_TYPES = (
+        ('WEBSITE', 'Website'),
+        ('SELENIUM', 'Selenium'),
+        ('COINGECKO', 'CoinGecko'),
+    )
+    fetcher_type = models.CharField(max_length=250, choices=PRICE_FETCHER_TYPES)
+    data = models.JSONField(default=dict)
+    error = models.CharField(max_length=1000, blank=True)
+
+    def __str__(self):
+        if self.fetcher_type in ['WEBSITE', 'SELENIUM']:
+            return '{} - {}'.format(self.fetcher_type, self.url)
+        return self.fetcher_type
+    
+    # @property
+    # def fetcher_class(self) -> type[Fetcher]:
+    #     if self.fetcher_type == 'WEBSITE':
+    #         return WebsiteFetcher
+    #     elif self.fetcher_type == 'SELENIUM':
+    #         return SeleniumFetcher
+    #     # elif self.fetcher_type == 'MARKETSTACK':
+    #     #     return MarketstackFetcher
+    #     else:
+    #         raise ValueError('unknown type {}'.format(self.fetcher_type))
+
+    # def run(self):
+    #     fetcher: Fetcher = self.fetcher_class()
+    #     success, result = fetcher.fetch_single(**self.data)
+    #     if success:
+    #         self.save_price(result)
+    #     else:
+    #         self.set_error(result)
+    #     return success, result
+
+    def save_price(self, price):
+        asset = self.asset
+        price = Price(
+            **{
+                "symbol": asset.symbol,
+                "date": timezone.now(),
+                "price": price,
+            }
+        )
+        price.save()
+        self.error = ""
+        self.save()
+
+    def set_error(self, error: str):
+        self.error = error
+        self.save()

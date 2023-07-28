@@ -40,7 +40,7 @@
             {% for asset in assets %}
                 <tr>
                     <td>{{ asset.symbol }}</td>
-                    <td class="text-end">{{ asset.get_price() }}</td>
+                    <td class="text-end">{{ asset.get_price_display() }}</td>
                     <td class="text-end">{{ asset.get_amount() }}</td>
                     <td class="text-end">{{ "%.2f"|format(asset.get_value()) }}</td>
                     <td>
