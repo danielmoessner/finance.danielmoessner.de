@@ -1,9 +1,10 @@
 from datetime import timedelta
-from typing import Union
+from typing import TYPE_CHECKING, Union
 
 import pandas as pd
 from django.db import models
 from django.db.models import Sum
+from django.db.models.query import QuerySet
 from django.utils import timezone
 
 import apps.core.return_calculation as rc
@@ -31,6 +32,10 @@ class Depot(CoreDepot):
     invested_capital = models.FloatField(null=True)
     time_weighted_return = models.FloatField(null=True)
     internal_rate_of_return = models.FloatField(null=True)
+
+    if TYPE_CHECKING:
+        assets: QuerySet["Asset"]
+        accounts: QuerySet["Account"]
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -134,6 +139,9 @@ class Account(CoreAccount):
     depot = models.ForeignKey(Depot, on_delete=models.CASCADE, related_name="accounts")
     # query optimization
     value = models.FloatField(null=True)
+
+    if TYPE_CHECKING:
+        asset_stats: QuerySet["AccountAssetStats"]
 
     # getters
     def get_stats(self):
@@ -663,6 +671,10 @@ class PriceFetcher(models.Model):
         return self.fetcher_type
 
     @property
+    def url(self) -> str | None:
+        return getattr(self.data, "url", None)
+
+    @property
     def fetcher_class(self) -> type[Fetcher]:
         if self.fetcher_type == "WEBSITE":
             return WebsiteFetcher
@@ -706,6 +718,7 @@ class PriceFetcher(models.Model):
         self.error = ""
         self.save()
 
-    def set_error(self, error: str):
+    def set_error(self, error: str | float):
+        assert isinstance(error, str)
         self.error = error
         self.save()

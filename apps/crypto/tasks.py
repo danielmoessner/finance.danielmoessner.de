@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Mapping
 
 from apps.core.fetchers.selenium import SeleniumFetcher
 from apps.core.fetchers.website import WebsiteFetcher
@@ -20,7 +20,7 @@ def get_fetchers_to_be_run(fetcher_type: str):
     return {str(fetcher.pk): fetcher.fetcher_input for fetcher in fetchers_to_be_run}
 
 
-def save_prices(results: dict[str, tuple[bool, str | float]]):
+def save_prices(results: Mapping[str, tuple[bool, str | float]]):
     for fetcher, result in results.items():
         fetcher = PriceFetcher.objects.get(pk=fetcher)
         if result[0]:

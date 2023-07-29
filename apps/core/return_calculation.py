@@ -171,8 +171,6 @@ def get_internal_rate_of_return(df):
 # current return
 #############
 def get_current_return_df(flow_df, value_df):
-    print(flow_df)
-    print(value_df)
     # get the right df
     df = get_value_with_flow_df(flow_df, value_df)
     # stop calculations if something went wrong beforehand

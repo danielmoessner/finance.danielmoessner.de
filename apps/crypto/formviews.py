@@ -320,6 +320,7 @@ class RunPriceFetcherView(LoginRequiredMixin, generic.View):
         fetcher = get_object_or_404(PriceFetcher, pk=pk)
         success, result = fetcher.run()
         if not success:
+            assert isinstance(result, str)
             messages.error(request, result)
         url = "{}?tab=prices".format(
             reverse_lazy("crypto:asset", args=[fetcher.asset.pk])

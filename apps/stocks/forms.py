@@ -129,7 +129,6 @@ class PriceFetcherForm(forms.ModelForm):
             try:
                 MarketstackFetcherInput(**data)
             except ValidationError as e:
-                print(str(e))
                 raise forms.ValidationError(self._create_human_error(e))
         elif self.cleaned_data["type"] in ["WEBSITE", "SELENIUM"]:
             try:
