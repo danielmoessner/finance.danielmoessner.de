@@ -13,7 +13,7 @@ from apps.core.fetchers.selenium import SeleniumFetcher, SeleniumFetcherInput
 from apps.core.fetchers.website import WebsiteFetcher, WebsiteFetcherInput
 from apps.core.models import Account as CoreAccount
 from apps.core.models import Depot as CoreDepot
-from apps.core.utils import change_time_of_date_index_in_df, get_df_from_database
+from apps.core.utils import get_df_from_database
 from apps.crypto.fetchers.coingecko import CoinGeckoFetcher, CoinGeckoFetcherInput
 from apps.users.models import StandardUser
 
@@ -32,15 +32,8 @@ class Depot(CoreDepot):
     time_weighted_return = models.FloatField(null=True)
     internal_rate_of_return = models.FloatField(null=True)
 
-    def save(
-        self, force_insert=False, force_update=False, using=None, update_fields=None
-    ):
-        super().save(
-            force_insert=force_insert,
-            force_update=force_update,
-            using=using,
-            update_fields=update_fields,
-        )
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
         if not self.assets.filter(symbol="EUR").exists():
             self.assets.create(symbol="EUR")
         if self.is_active:

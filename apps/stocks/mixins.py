@@ -1,7 +1,6 @@
 from django.http import HttpRequest
 
 
-
 class GetDepotMixin:
     request: HttpRequest
 
