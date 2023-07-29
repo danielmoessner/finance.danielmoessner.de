@@ -2,7 +2,7 @@ import re
 import time
 from bs4 import BeautifulSoup
 import requests
-from apps.stocks.fetchers.base import Fetcher
+from apps.core.fetchers.base import Fetcher
 
 
 headers = {

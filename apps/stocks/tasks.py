@@ -2,10 +2,10 @@ from typing import Callable
 from apps.stocks.fetchers.marketstack import (
     MarketstackFetcher,
 )
-from apps.stocks.fetchers.selenium import (
+from apps.core.fetchers.selenium import (
     SeleniumFetcher,
 )
-from apps.stocks.fetchers.website import (
+from apps.core.fetchers.website import (
     WebsiteFetcher,
 )
 
