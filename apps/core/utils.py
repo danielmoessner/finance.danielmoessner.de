@@ -1,7 +1,8 @@
-from django.db import connection
 from datetime import timedelta
-import pandas as pd
+
 import numpy as np
+import pandas as pd
+from django.db import connection
 
 
 ###
@@ -15,7 +16,7 @@ def remove_all_nans_at_beginning_and_end(df, column):
         first_idx = df.index.get_loc(first_idx)
     # slice the df
     if first_idx and first_idx >= 1:
-        df = df.iloc[first_idx - 1:]
+        df = df.iloc[first_idx - 1 :]
     # get the index of the last non nan value
     last_idx = df.loc[:, column].last_valid_index()
     # get the row number of the index
@@ -23,22 +24,24 @@ def remove_all_nans_at_beginning_and_end(df, column):
         last_idx = df.index.get_loc(last_idx)
     # slice the df
     if last_idx and last_idx + 2 < len(df):
-        df = df.iloc[:last_idx + 2]
+        df = df.iloc[: last_idx + 2]
     # return the df
     return df
 
 
 def get_merged_value_df_from_queryset(queryset):
     # instantiate a new dataframe
-    df = pd.DataFrame(columns=['date', 'value'])
-    df.set_index('date', inplace=True)
+    df = pd.DataFrame(columns=["date", "value"])
+    df.set_index("date", inplace=True)
     # merge the dataframe with all items
     for index, item in enumerate(list(queryset)):
         item_df = item.get_value_df()
         if item_df is None:
             continue
-        item_df.rename(columns={'value': 'value__{}-{}'.format(index, item.pk)}, inplace=True)
-        df = df.merge(item_df, how='outer', sort=True, on='date')
+        item_df.rename(
+            columns={"value": "value__{}-{}".format(index, item.pk)}, inplace=True
+        )
+        df = df.merge(item_df, how="outer", sort=True, on="date")
     # return the df
     return df
 
@@ -47,11 +50,12 @@ def sum_up_value_dfs_from_items(items):
     # get the df with all values
     df = get_merged_value_df_from_queryset(items)
     # fill na values for sum to work correctly
-    df = df.fillna(method='ffill').fillna(0)
+    df = df.fillna(method="ffill").fillna(0)
     # sums up all the values of the assets and interpolates
     df = sum_up_columns_in_a_dataframe(df)
-    # remove all the rows where the value is 0 as it doesn't make sense in the calculations
-    df = df.loc[df.loc[:, 'value'] != 0]
+    # remove all the rows where the value is 0 as it doesn't
+    # make sense in the calculations
+    df = df.loc[df.loc[:, "value"] != 0]
     # return the df
     return df
 
@@ -63,32 +67,34 @@ def create_value_df_from_amount_and_price(item):
     if price_df is None or amount_df is None or price_df.empty or amount_df.empty:
         return None
     # merge dfs into on df
-    df = pd.merge(price_df, amount_df, on='date', how='outer', sort=True)
+    df = pd.merge(price_df, amount_df, on="date", how="outer", sort=True)
     # set the date column to a daily frequency
-    idx = pd.date_range(start=df.index[0], end=df.index[-1], freq='D')
+    idx = pd.date_range(start=df.index[0], end=df.index[-1], freq="D")
     df = df.reindex(idx, fill_value=np.nan)
-    df.index.rename('date', inplace=True)
+    df.index.rename("date", inplace=True)
     # forward fill the amount
-    df.loc[:, 'amount'] = df.loc[:, 'amount'].fillna(method='ffill')
+    df.loc[:, "amount"] = df.loc[:, "amount"].fillna(method="ffill")
     # interpolate the price
-    df.loc[:, 'price'] = df.loc[:, 'price'].interpolate(method='time', limit_direction='both')
+    df.loc[:, "price"] = df.loc[:, "price"].interpolate(
+        method="time", limit_direction="both"
+    )
     # calculate the value
-    df.loc[:, 'value'] = df.loc[:, 'amount'] * df.loc[:, 'price']
+    df.loc[:, "value"] = df.loc[:, "amount"] * df.loc[:, "price"]
     # remove unnecessary columns
-    df = df.loc[:, ['value']]
+    df = df.loc[:, ["value"]]
     # return the df
     return df
 
 
-def sum_up_columns_in_a_dataframe(df, column='value', drop=True):
+def sum_up_columns_in_a_dataframe(df, column="value", drop=True):
     # return none if the df is empty
     if df.empty:
         return None
     # safety check sum probably returns wrong values if that's the case
     if df.isnull().values.any():
-        raise ValueError('The df should not contain nan values.')
+        raise ValueError("The df should not contain nan values.")
     # get all the value columns as list
-    value_columns = df.columns.str.contains(column + '__')
+    value_columns = df.columns.str.contains(column + "__")
     # sum the alternative values in the value column
     df.loc[:, column] = df.iloc[:, value_columns].sum(axis=1)
     # drop all unnecessary columns
@@ -132,8 +138,8 @@ def get_df_from_database(statement, columns):
     cursor.execute(statement)
     data = cursor.fetchall()
     df = pd.DataFrame(data=data, columns=columns)
-    df.loc[:, 'date'] = pd.to_datetime(df.loc[:, 'date'])
-    df.set_index('date', inplace=True)
+    df.loc[:, "date"] = pd.to_datetime(df.loc[:, "date"])
+    df.set_index("date", inplace=True)
     return df
 
 
@@ -151,16 +157,18 @@ def get_number_from_database(statement):
 ###
 # Django Queryset Utils
 ###
-def get_closest_object_in_two_querysets(qs1, qs2, date, direction='previous'):
+def get_closest_object_in_two_querysets(qs1, qs2, date, direction="previous"):
     """
-    Return the closest object of two querysets. If a object in qs1 is closer it
-    returns the object from qs1. If a object in qs2 is closer it returns the object from qs2.
+    Return the closest object of two querysets. If a
+    object in qs1 is closer it
+    returns the object from qs1. If a object in qs2
+    is closer it returns the object from qs2.
     direction: previous | next
     """
-    if direction == 'next':
+    if direction == "next":
         object_from_qs_1 = qs1.filter(date__gte=date).order_by("date").first()
         object_from_qs_2 = qs2.filter(date__gte=date).order_by("date").first()
-    elif direction == 'previous':
+    elif direction == "previous":
         object_from_qs_1 = qs1.filter(date__lte=date).order_by("-date").first()
         object_from_qs_2 = qs2.filter(date__lte=date).order_by("-date").first()
     else:

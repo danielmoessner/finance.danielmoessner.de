@@ -1,8 +1,11 @@
 import re
 import time
+from typing import Mapping
+
+import requests
 from bs4 import BeautifulSoup
 from pydantic import BaseModel, HttpUrl
-import requests
+
 from apps.core.fetchers.base import Fetcher
 
 
@@ -12,8 +15,14 @@ class WebsiteFetcherInput(BaseModel):
 
 
 headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:113.0) Gecko/20100101 Firefox/98.0",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64;"
+        " x64; rv:113.0) Gecko/20100101 Firefox/98.0"
+    ),
+    "Accept": (
+        "text/html,application/xhtml+xml,"
+        "application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+    ),
     "Accept-Language": "en-US,en;q=0.5",
     "Accept-Encoding": "gzip, deflate",
     "Connection": "keep-alive",
@@ -29,15 +38,21 @@ headers = {
 class WebsiteFetcher(Fetcher):
     def fetch_single(self, data: WebsiteFetcherInput) -> tuple[bool, str | float]:
         try:
-            resp = requests.get(data.website, headers=headers)
+            resp = requests.get(str(data.website), headers=headers)
             html = resp.text
         except Exception as e:
-            return False, f"An error occured while trying to connect to {data.website}: {e}."
+            return (
+                False,
+                f"An error occured while trying to connect to {data.website}: {e}.",
+            )
 
         if resp.status_code != 200:
             return (
                 False,
-                f"Could not connect to {data.website}. The status code is {resp.status_code}.",
+                (
+                    f"Could not connect to {data.website}. "
+                    f"The status code is {resp.status_code}."
+                ),
             )
 
         soup = BeautifulSoup(html, features="html.parser")
@@ -61,7 +76,7 @@ class WebsiteFetcher(Fetcher):
 
     def fetch_multiple(
         self, data: dict[str, WebsiteFetcherInput]
-    ) -> dict[str, tuple[bool, str | float]]:
+    ) -> Mapping[str, tuple[bool, str | float]]:
         i = 0
         results = {}
         for fetcher, input in data.items():

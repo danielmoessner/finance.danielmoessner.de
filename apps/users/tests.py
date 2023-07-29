@@ -1,4 +1,4 @@
-from django.test import TestCase, Client
+from django.test import Client, TestCase
 from django.urls import reverse_lazy
 
 from apps.users.models import StandardUser as User
@@ -13,12 +13,12 @@ class ViewsTestCase(TestCase):
 
     def test_login_view(self):
         self.client = Client()
-        response = self.client.get(reverse_lazy('users:signin'))
+        response = self.client.get(reverse_lazy("users:signin"))
         self.assertEqual(response.status_code, 200)
 
     def test_signup_view(self):
         self.client = Client()
-        response = self.client.get(reverse_lazy('users:signup'))
+        response = self.client.get(reverse_lazy("users:signup"))
         self.assertEqual(response.status_code, 200)
 
     def test_index_view(self):
@@ -26,18 +26,30 @@ class ViewsTestCase(TestCase):
         self.client.login(username="dummy", password="test")
         response = self.client.get(reverse_lazy("users:settings", args=[self.user.pk]))
         self.assertEqual(response.status_code, 200)
-        url = "{}?tab=banking".format(reverse_lazy("users:settings", args=[self.user.pk]))
+        url = "{}?tab=banking".format(
+            reverse_lazy("users:settings", args=[self.user.pk])
+        )
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        response = self.client.get("{}?tab=alternative".format(reverse_lazy("users:settings", args=[self.user.pk])))
+        response = self.client.get(
+            "{}?tab=alternative".format(
+                reverse_lazy("users:settings", args=[self.user.pk])
+            )
+        )
         self.assertEqual(response.status_code, 200)
-        response = self.client.get("{}?tab=crypto".format(reverse_lazy("users:settings", args=[self.user.pk])))
+        response = self.client.get(
+            "{}?tab=crypto".format(reverse_lazy("users:settings", args=[self.user.pk]))
+        )
         self.assertEqual(response.status_code, 200)
 
     def test_init_works(self):
         self.client = Client()
         self.client.login(username="dummy", password="test")
-        response = self.client.get(reverse_lazy("users:init_banking", args=[self.user.pk]))
+        response = self.client.get(
+            reverse_lazy("users:init_banking", args=[self.user.pk])
+        )
         self.assertEqual(response.status_code, 302)
-        response = self.client.get(reverse_lazy("users:init_alternative", args=[self.user.pk]))
+        response = self.client.get(
+            reverse_lazy("users:init_alternative", args=[self.user.pk])
+        )
         self.assertEqual(response.status_code, 302)

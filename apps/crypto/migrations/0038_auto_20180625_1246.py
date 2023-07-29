@@ -6,20 +6,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0037_auto_20180625_1240'),
+        ("crypto", "0037_auto_20180625_1240"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='asset',
-            name='private_name',
+            model_name="asset",
+            name="private_name",
             field=models.CharField(blank=True, max_length=80, null=True),
         ),
         migrations.AlterField(
-            model_name='asset',
-            name='private_symbol',
+            model_name="asset",
+            name="private_symbol",
             field=models.CharField(blank=True, max_length=5, null=True),
         ),
     ]

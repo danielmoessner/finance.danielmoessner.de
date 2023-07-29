@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('stocks', '0029_alter_pricefetcher_type'),
+        ("stocks", "0029_alter_pricefetcher_type"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='pricefetcher',
-            name='error',
+            model_name="pricefetcher",
+            name="error",
             field=models.CharField(blank=True, max_length=1000),
         ),
     ]

@@ -1,20 +1,15 @@
+from datetime import datetime
+
 from django import forms
 
-from apps.banking.models import Category
-from apps.banking.models import Account
-from apps.banking.models import Change
-from apps.banking.models import Depot
-
-from datetime import datetime
+from apps.banking.models import Account, Category, Change, Depot
 
 
 # depot
 class DepotForm(forms.ModelForm):
     class Meta:
         model = Depot
-        fields = (
-            "name",
-        )
+        fields = ("name",)
 
     def __init__(self, user, *args, **kwargs):
         super(DepotForm, self).__init__(*args, **kwargs)
@@ -25,9 +20,7 @@ class DepotSelectForm(forms.Form):
     depot = forms.ModelChoiceField(widget=forms.Select, queryset=None)
 
     class Meta:
-        fields = (
-            "depot",
-        )
+        fields = ("depot",)
 
     def __init__(self, user, *args, **kwargs):
         super(DepotSelectForm, self).__init__(*args, **kwargs)
@@ -44,9 +37,7 @@ class DepotActiveForm(forms.ModelForm):
 class AccountForm(forms.ModelForm):
     class Meta:
         model = Account
-        fields = (
-            "name",
-        )
+        fields = ("name",)
 
     def __init__(self, depot, *args, **kwargs):
         super(AccountForm, self).__init__(*args, **kwargs)
@@ -57,9 +48,7 @@ class AccountSelectForm(forms.Form):
     account = forms.ModelChoiceField(widget=forms.Select, queryset=None)
 
     class Meta:
-        fields = (
-            "account",
-        )
+        fields = ("account",)
 
     def __init__(self, depot, *args, **kwargs):
         super(AccountSelectForm, self).__init__(*args, **kwargs)
@@ -84,9 +73,7 @@ class CategorySelectForm(forms.Form):
     category = forms.ModelChoiceField(widget=forms.Select, queryset=None)
 
     class Meta:
-        fields = (
-            "category",
-        )
+        fields = ("category",)
 
     def __init__(self, depot, *args, **kwargs):
         super(CategorySelectForm, self).__init__(*args, **kwargs)
@@ -97,21 +84,25 @@ class CategorySelectForm(forms.Form):
 class ChangeField(forms.DecimalField):
     def __init__(self, *args, **kwargs):
         attrs = {
-            'pattern': r"-?\d+(.|,)?\d{0,2}",
-            'title': "A number with 2 decimal places.",
+            "pattern": r"-?\d+(.|,)?\d{0,2}",
+            "title": "A number with 2 decimal places.",
         }
         super().__init__(widget=forms.TextInput(attrs=attrs), *args, **kwargs)
 
     def to_python(self, value):
         if type(value) == str:
-            value = value.replace(',', '.')
+            value = value.replace(",", ".")
         return super().to_python(value)
 
 
 class ChangeForm(forms.ModelForm):
-    date = forms.DateTimeField(widget=forms.DateTimeInput(attrs={"type": "datetime-local"},
-                                                          format="%Y-%m-%dT%H:%M"),
-                               input_formats=["%Y-%m-%dT%H:%M"], label="Date")
+    date = forms.DateTimeField(
+        widget=forms.DateTimeInput(
+            attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
+        ),
+        input_formats=["%Y-%m-%dT%H:%M"],
+        label="Date",
+    )
     change = ChangeField()
 
     class Meta:
@@ -122,7 +113,6 @@ class ChangeForm(forms.ModelForm):
             "change",
             "category",
             "description",
-
         )
 
     def __init__(self, depot, *args, **kwargs):
@@ -130,4 +120,4 @@ class ChangeForm(forms.ModelForm):
         self.fields["account"].queryset = depot.accounts.all()
         self.fields["category"].queryset = depot.categories.all()
         self.fields["date"].initial = datetime.now()
-        self.fields['description'].widget.attrs.update({'class': 'small'})
+        self.fields["description"].widget.attrs.update({"class": "small"})

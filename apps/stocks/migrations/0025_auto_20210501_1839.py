@@ -4,34 +4,57 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('stocks', '0024_auto_20200815_0008'),
+        ("stocks", "0024_auto_20200815_0008"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='bank',
-            options={'ordering': ['name'], 'verbose_name': 'Bank', 'verbose_name_plural': 'Banks'},
+            name="bank",
+            options={
+                "ordering": ["name"],
+                "verbose_name": "Bank",
+                "verbose_name_plural": "Banks",
+            },
         ),
         migrations.AlterModelOptions(
-            name='depot',
-            options={'ordering': ['name'], 'verbose_name': 'Depot', 'verbose_name_plural': 'Depots'},
+            name="depot",
+            options={
+                "ordering": ["name"],
+                "verbose_name": "Depot",
+                "verbose_name_plural": "Depots",
+            },
         ),
         migrations.AlterModelOptions(
-            name='dividend',
-            options={'ordering': ['-date'], 'verbose_name': 'Dividend', 'verbose_name_plural': 'Dividends'},
+            name="dividend",
+            options={
+                "ordering": ["-date"],
+                "verbose_name": "Dividend",
+                "verbose_name_plural": "Dividends",
+            },
         ),
         migrations.AlterModelOptions(
-            name='flow',
-            options={'ordering': ['-date'], 'verbose_name': 'Depot', 'verbose_name_plural': 'Depots'},
+            name="flow",
+            options={
+                "ordering": ["-date"],
+                "verbose_name": "Depot",
+                "verbose_name_plural": "Depots",
+            },
         ),
         migrations.AlterModelOptions(
-            name='price',
-            options={'ordering': ['-date'], 'verbose_name': 'Price', 'verbose_name_plural': 'Prices'},
+            name="price",
+            options={
+                "ordering": ["-date"],
+                "verbose_name": "Price",
+                "verbose_name_plural": "Prices",
+            },
         ),
         migrations.AlterModelOptions(
-            name='trade',
-            options={'ordering': ['-date'], 'verbose_name': 'Trade', 'verbose_name_plural': 'Trades'},
+            name="trade",
+            options={
+                "ordering": ["-date"],
+                "verbose_name": "Trade",
+                "verbose_name_plural": "Trades",
+            },
         ),
     ]

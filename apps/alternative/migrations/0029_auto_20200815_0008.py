@@ -4,30 +4,29 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('alternative', '0028_remove_alternative_slug'),
+        ("alternative", "0028_remove_alternative_slug"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='alternative',
-            name='current_return',
+            model_name="alternative",
+            name="current_return",
             field=models.FloatField(null=True),
         ),
         migrations.AddField(
-            model_name='alternative',
-            name='internal_rate_of_return',
+            model_name="alternative",
+            name="internal_rate_of_return",
             field=models.FloatField(null=True),
         ),
         migrations.AddField(
-            model_name='alternative',
-            name='invested_capital',
+            model_name="alternative",
+            name="invested_capital",
             field=models.FloatField(null=True),
         ),
         migrations.AddField(
-            model_name='alternative',
-            name='time_weighted_return',
+            model_name="alternative",
+            name="time_weighted_return",
             field=models.FloatField(null=True),
         ),
     ]

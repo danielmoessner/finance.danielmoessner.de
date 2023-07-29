@@ -6,35 +6,34 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0025_auto_20180619_0025'),
+        ("crypto", "0025_auto_20180619_0025"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='trade',
-            name='buy_amount',
+            model_name="trade",
+            name="buy_amount",
             field=models.DecimalField(decimal_places=8, max_digits=20),
         ),
         migrations.AlterField(
-            model_name='trade',
-            name='fees',
+            model_name="trade",
+            name="fees",
             field=models.DecimalField(decimal_places=8, max_digits=20),
         ),
         migrations.AlterField(
-            model_name='trade',
-            name='sell_amount',
+            model_name="trade",
+            name="sell_amount",
             field=models.DecimalField(decimal_places=8, max_digits=20),
         ),
         migrations.AlterField(
-            model_name='transaction',
-            name='amount',
+            model_name="transaction",
+            name="amount",
             field=models.DecimalField(decimal_places=8, max_digits=20),
         ),
         migrations.AlterField(
-            model_name='transaction',
-            name='fees',
+            model_name="transaction",
+            name="fees",
             field=models.DecimalField(decimal_places=8, max_digits=20),
         ),
     ]

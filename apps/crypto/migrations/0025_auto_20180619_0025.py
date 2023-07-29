@@ -6,34 +6,33 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0024_remove_account_movie'),
+        ("crypto", "0024_remove_account_movie"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='picture',
-            name='ba',
+            model_name="picture",
+            name="ba",
         ),
         migrations.RemoveField(
-            model_name='picture',
-            name='bs',
+            model_name="picture",
+            name="bs",
         ),
         migrations.RemoveField(
-            model_name='picture',
-            name='prev',
+            model_name="picture",
+            name="prev",
         ),
         migrations.RemoveField(
-            model_name='picture',
-            name='sa',
+            model_name="picture",
+            name="sa",
         ),
         migrations.RemoveField(
-            model_name='picture',
-            name='ss',
+            model_name="picture",
+            name="ss",
         ),
         migrations.RemoveField(
-            model_name='picture',
-            name='td',
+            model_name="picture",
+            name="td",
         ),
     ]

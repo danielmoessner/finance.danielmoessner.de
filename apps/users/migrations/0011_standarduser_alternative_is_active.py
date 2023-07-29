@@ -6,15 +6,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('users', '0010_auto_20180731_2341'),
+        ("users", "0010_auto_20180731_2341"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='standarduser',
-            name='alternative_is_active',
+            model_name="standarduser",
+            name="alternative_is_active",
             field=models.BooleanField(default=False),
         ),
     ]

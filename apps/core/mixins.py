@@ -1,6 +1,7 @@
-from django.template.loader import render_to_string
-from django.http import HttpResponse
 import json
+
+from django.http import HttpResponse
+from django.template.loader import render_to_string
 
 
 ###
@@ -16,12 +17,18 @@ class CustomGetFormUserMixin:
 
 class AjaxResponseMixin:
     def form_invalid(self, form):
-        html = render_to_string(self.template_name, self.get_context_data(form=form), request=self.request)
-        return HttpResponse(json.dumps({"valid": False, "html": html}), content_type="application/json")
+        html = render_to_string(
+            self.template_name, self.get_context_data(form=form), request=self.request
+        )
+        return HttpResponse(
+            json.dumps({"valid": False, "html": html}), content_type="application/json"
+        )
 
     def form_valid(self, form):
         form.save()
-        return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
+        return HttpResponse(
+            json.dumps({"valid": True}), content_type="application/json"
+        )
 
 
 class GetFormWithDepotMixin:
@@ -37,8 +44,10 @@ class GetFormWithDepotAndInitialDataMixin:
         depot = self.get_depot()
         if form_class is None:
             form_class = self.get_form_class()
-        if self.request.method == 'GET':
-            return form_class(depot, initial=self.request.GET, **self.get_form_kwargs().pop('initial'))
+        if self.request.method == "GET":
+            return form_class(
+                depot, initial=self.request.GET, **self.get_form_kwargs().pop("initial")
+            )
         return form_class(depot, **self.get_form_kwargs())
 
 
@@ -48,7 +57,7 @@ class GetFormWithDepotAndInitialDataMixin:
 class TabContextMixin:
     def get_context_data(self, **kwargs):
         context = super(TabContextMixin, self).get_context_data(**kwargs)
-        context['tab'] = self.request.GET.get('tab', 'stats')
+        context["tab"] = self.request.GET.get("tab", "stats")
         return context
 
 
@@ -56,4 +65,6 @@ class CustomAjaxDeleteMixin:
     def form_valid(self, form):
         object = self.get_object()
         object.delete()
-        return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
+        return HttpResponse(
+            json.dumps({"valid": True}), content_type="application/json"
+        )

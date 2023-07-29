@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0069_coingeckoasset_coingecko_symbol'),
+        ("crypto", "0069_coingeckoasset_coingecko_symbol"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='coingeckoasset',
-            name='name',
+            model_name="coingeckoasset",
+            name="name",
         ),
     ]

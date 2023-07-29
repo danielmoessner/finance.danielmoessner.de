@@ -6,15 +6,14 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('users', '0004_standarduser_banking_show_balance'),
+        ("users", "0004_standarduser_banking_show_balance"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='standarduser',
-            old_name='banking_show_balance',
-            new_name='banking_active',
+            model_name="standarduser",
+            old_name="banking_show_balance",
+            new_name="banking_active",
         ),
     ]

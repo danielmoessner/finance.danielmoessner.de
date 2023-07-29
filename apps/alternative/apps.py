@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class AlternativeConfig(AppConfig):
-    name = 'apps.alternative'
+    name = "apps.alternative"

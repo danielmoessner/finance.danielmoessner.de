@@ -4,20 +4,19 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0064_accountassetstats'),
+        ("crypto", "0064_accountassetstats"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='picture',
-            name='movie',
+            model_name="picture",
+            name="movie",
         ),
         migrations.DeleteModel(
-            name='Movie',
+            name="Movie",
         ),
         migrations.DeleteModel(
-            name='Picture',
+            name="Picture",
         ),
     ]

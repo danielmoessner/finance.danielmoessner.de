@@ -4,15 +4,22 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('users', '0016_auto_20200326_1329'),
+        ("users", "0016_auto_20200326_1329"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='standarduser',
-            name='front_page',
-            field=models.CharField(choices=[('BANKING', 'Banking'), ('CRYPTO', 'Crypto'), ('SETTINGS', 'Settings')], default='SETTINGS', max_length=20),
+            model_name="standarduser",
+            name="front_page",
+            field=models.CharField(
+                choices=[
+                    ("BANKING", "Banking"),
+                    ("CRYPTO", "Crypto"),
+                    ("SETTINGS", "Settings"),
+                ],
+                default="SETTINGS",
+                max_length=20,
+            ),
         ),
     ]

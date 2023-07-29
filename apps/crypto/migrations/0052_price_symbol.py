@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0051_auto_20200329_2114'),
+        ("crypto", "0051_auto_20200329_2114"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='price',
-            name='symbol',
+            model_name="price",
+            name="symbol",
             field=models.CharField(max_length=5, null=True),
         ),
     ]

@@ -6,20 +6,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('alternative', '0004_flow_value'),
+        ("alternative", "0004_flow_value"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='flow',
-            name='date',
+            model_name="flow",
+            name="date",
             field=models.DateField(),
         ),
         migrations.AlterField(
-            model_name='value',
-            name='date',
+            model_name="value",
+            name="date",
             field=models.DateField(),
         ),
     ]

@@ -7,15 +7,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('alternative', '0001_initial'),
+        ("alternative", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='value',
-            name='value',
-            field=models.DecimalField(decimal_places=2, default=0, max_digits=15, validators=[django.core.validators.MinValueValidator(0)]),
+            model_name="value",
+            name="value",
+            field=models.DecimalField(
+                decimal_places=2,
+                default=0,
+                max_digits=15,
+                validators=[django.core.validators.MinValueValidator(0)],
+            ),
         ),
     ]

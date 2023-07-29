@@ -4,15 +4,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('stocks', '0028_alter_pricefetcher_stock'),
+        ("stocks", "0028_alter_pricefetcher_stock"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='pricefetcher',
-            name='type',
-            field=models.CharField(choices=[('WEBSITE', 'Website'), ('SELENIUM', 'Selenium'), ('MARKETSTACK', 'Marketstack')], max_length=250),
+            model_name="pricefetcher",
+            name="type",
+            field=models.CharField(
+                choices=[
+                    ("WEBSITE", "Website"),
+                    ("SELENIUM", "Selenium"),
+                    ("MARKETSTACK", "Marketstack"),
+                ],
+                max_length=250,
+            ),
         ),
     ]

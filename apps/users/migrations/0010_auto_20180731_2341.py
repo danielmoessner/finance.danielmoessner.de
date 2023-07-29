@@ -6,15 +6,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('users', '0009_auto_20180623_1530'),
+        ("users", "0009_auto_20180623_1530"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='standarduser',
-            name='currency',
-            field=models.CharField(choices=[('EUR', '€'), ('USD', '$')], max_length=3),
+            model_name="standarduser",
+            name="currency",
+            field=models.CharField(choices=[("EUR", "€"), ("USD", "$")], max_length=3),
         ),
     ]

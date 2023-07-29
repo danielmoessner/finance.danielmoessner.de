@@ -6,15 +6,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0044_picture_f'),
+        ("crypto", "0044_picture_f"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='picture',
-            name='d',
+            model_name="picture",
+            name="d",
             field=models.DateField(),
         ),
     ]

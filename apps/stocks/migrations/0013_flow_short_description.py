@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('stocks', '0012_dividend'),
+        ("stocks", "0012_dividend"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='flow',
-            name='short_description',
+            model_name="flow",
+            name="short_description",
             field=models.CharField(blank=True, max_length=200),
         ),
     ]

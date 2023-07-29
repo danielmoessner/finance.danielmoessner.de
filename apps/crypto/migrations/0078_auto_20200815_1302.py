@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0077_auto_20200815_1252'),
+        ("crypto", "0077_auto_20200815_1252"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='accountassetstats',
-            name='amount',
+            model_name="accountassetstats",
+            name="amount",
             field=models.DecimalField(decimal_places=8, max_digits=20, null=True),
         ),
     ]

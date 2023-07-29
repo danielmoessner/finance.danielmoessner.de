@@ -6,15 +6,22 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('users', '0007_auto_20180603_0005'),
+        ("users", "0007_auto_20180603_0005"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='standarduser',
-            name='front_page',
-            field=models.CharField(choices=[('Banking', 'BANKING'), ('Crypto', 'CRYPTO'), ('Settings', 'SETTINGS')], default='SETTINGS', max_length=8),
+            model_name="standarduser",
+            name="front_page",
+            field=models.CharField(
+                choices=[
+                    ("Banking", "BANKING"),
+                    ("Crypto", "CRYPTO"),
+                    ("Settings", "SETTINGS"),
+                ],
+                default="SETTINGS",
+                max_length=8,
+            ),
         ),
     ]

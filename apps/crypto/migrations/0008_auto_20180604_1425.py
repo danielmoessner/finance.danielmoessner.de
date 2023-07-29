@@ -6,17 +6,16 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0007_intelligenttimespan_is_active'),
+        ("crypto", "0007_intelligenttimespan_is_active"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='timespan',
-            name='timespan',
+            model_name="timespan",
+            name="timespan",
         ),
         migrations.DeleteModel(
-            name='Timespan',
+            name="Timespan",
         ),
     ]

@@ -4,30 +4,29 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('stocks', '0013_flow_short_description'),
+        ("stocks", "0013_flow_short_description"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='depot',
-            name='invested_capital',
+            model_name="depot",
+            name="invested_capital",
             field=models.DecimalField(decimal_places=2, max_digits=20, null=True),
         ),
         migrations.AddField(
-            model_name='stock',
-            name='dividends_amount',
+            model_name="stock",
+            name="dividends_amount",
             field=models.DecimalField(decimal_places=2, max_digits=20, null=True),
         ),
         migrations.AddField(
-            model_name='stock',
-            name='invested_capital',
+            model_name="stock",
+            name="invested_capital",
             field=models.DecimalField(decimal_places=2, max_digits=20, null=True),
         ),
         migrations.AddField(
-            model_name='stock',
-            name='invested_total',
+            model_name="stock",
+            name="invested_total",
             field=models.DecimalField(decimal_places=2, max_digits=20, null=True),
         ),
     ]

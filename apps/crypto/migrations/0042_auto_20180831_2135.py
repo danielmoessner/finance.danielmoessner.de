@@ -6,44 +6,55 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0041_auto_20180820_1436'),
+        ("crypto", "0041_auto_20180820_1436"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='picture',
-            name='ttwr',
+            model_name="picture",
+            name="ttwr",
         ),
         migrations.AddField(
-            model_name='picture',
-            name='twr',
-            field=models.DecimalField(blank=True, decimal_places=4, max_digits=18, null=True),
+            model_name="picture",
+            name="twr",
+            field=models.DecimalField(
+                blank=True, decimal_places=4, max_digits=18, null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='picture',
-            name='cr',
-            field=models.DecimalField(blank=True, decimal_places=4, max_digits=18, null=True),
+            model_name="picture",
+            name="cr",
+            field=models.DecimalField(
+                blank=True, decimal_places=4, max_digits=18, null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='picture',
-            name='cs',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=18, null=True),
+            model_name="picture",
+            name="cs",
+            field=models.DecimalField(
+                blank=True, decimal_places=2, max_digits=18, null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='picture',
-            name='g',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=18, null=True),
+            model_name="picture",
+            name="g",
+            field=models.DecimalField(
+                blank=True, decimal_places=2, max_digits=18, null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='picture',
-            name='p',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=18, null=True),
+            model_name="picture",
+            name="p",
+            field=models.DecimalField(
+                blank=True, decimal_places=2, max_digits=18, null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='picture',
-            name='v',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=18, null=True),
+            model_name="picture",
+            name="v",
+            field=models.DecimalField(
+                blank=True, decimal_places=2, max_digits=18, null=True
+            ),
         ),
     ]

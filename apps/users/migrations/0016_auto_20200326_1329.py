@@ -4,15 +4,20 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('users', '0015_remove_standarduser_slug'),
+        ("users", "0015_remove_standarduser_slug"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='standarduser',
-            name='date_format',
-            field=models.CharField(choices=[('%d.%m.%Y', 'Date.Month.Year'), ('%m/%d/%Y', 'Month/Date/Year')], max_length=20),
+            model_name="standarduser",
+            name="date_format",
+            field=models.CharField(
+                choices=[
+                    ("%d.%m.%Y", "Date.Month.Year"),
+                    ("%m/%d/%Y", "Month/Date/Year"),
+                ],
+                max_length=20,
+            ),
         ),
     ]

@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('stocks', '0008_auto_20200724_2242'),
+        ("stocks", "0008_auto_20200724_2242"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='stock',
-            name='amount',
+            model_name="stock",
+            name="amount",
             field=models.PositiveIntegerField(null=True),
         ),
         migrations.AlterField(
-            model_name='stock',
-            name='value',
+            model_name="stock",
+            name="value",
             field=models.DecimalField(decimal_places=2, max_digits=20, null=True),
         ),
     ]

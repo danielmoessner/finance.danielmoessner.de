@@ -4,19 +4,26 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0066_flow'),
+        ("crypto", "0066_flow"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='CoinGeckoAsset',
+            name="CoinGeckoAsset",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('symbol', models.CharField(max_length=5, null=True)),
-                ('coingecko_id', models.CharField(max_length=40, null=True)),
-                ('name', models.CharField(max_length=40, null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("symbol", models.CharField(max_length=5, null=True)),
+                ("coingecko_id", models.CharField(max_length=40, null=True)),
+                ("name", models.CharField(max_length=40, null=True)),
             ],
         ),
     ]

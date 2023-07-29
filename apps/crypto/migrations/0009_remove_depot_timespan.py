@@ -6,14 +6,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0008_auto_20180604_1425'),
+        ("crypto", "0008_auto_20180604_1425"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='depot',
-            name='timespan',
+            model_name="depot",
+            name="timespan",
         ),
     ]

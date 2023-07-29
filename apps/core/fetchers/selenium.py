@@ -1,14 +1,16 @@
 import re
 import time
+
 from bs4 import BeautifulSoup
 from pydantic import BaseModel, HttpUrl
-from apps.core.selenium import get_chrome_driver
+
 from apps.core.fetchers.base import Fetcher
+from apps.core.selenium import get_chrome_driver
 
 
 class SeleniumFetcherInput(BaseModel):
     website: HttpUrl
-    target: str  
+    target: str
 
 
 class SeleniumFetcher(Fetcher):
@@ -19,7 +21,10 @@ class SeleniumFetcher(Fetcher):
             time.sleep(5)  # wait for the api requests to finish
             html = browser.page_source
         except Exception as e:
-            return False, f"An error occured while trying to connect to {data.website}: {e}."
+            return (
+                False,
+                f"An error occured while trying to connect to {data.website}: {e}.",
+            )
         finally:
             browser.quit()
 
@@ -42,7 +47,9 @@ class SeleniumFetcher(Fetcher):
         price = float(price)
         return True, price
 
-    def fetch_multiple(self, data: dict[str, SeleniumFetcherInput]) -> dict[str, tuple[bool, str | float]]:
+    def fetch_multiple(
+        self, data: dict[str, SeleniumFetcherInput]
+    ) -> dict[str, tuple[bool, str | float]]:
         results = {}
         for fetcher, input in data.items():
             result = self.fetch_single(input)

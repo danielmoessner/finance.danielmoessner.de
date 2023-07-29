@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0045_auto_20180903_2330'),
+        ("crypto", "0045_auto_20180903_2330"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='account',
-            name='slug',
+            model_name="account",
+            name="slug",
             field=models.SlugField(blank=True, null=True, unique=True),
         ),
     ]

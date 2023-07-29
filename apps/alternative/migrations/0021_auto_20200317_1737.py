@@ -4,25 +4,30 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('alternative', '0020_picture_flow'),
+        ("alternative", "0020_picture_flow"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='movie',
-            name='current_return',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=8, null=True),
+            model_name="movie",
+            name="current_return",
+            field=models.DecimalField(
+                blank=True, decimal_places=2, max_digits=8, null=True
+            ),
         ),
         migrations.AddField(
-            model_name='movie',
-            name='internal_rate_of_return',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=8, null=True),
+            model_name="movie",
+            name="internal_rate_of_return",
+            field=models.DecimalField(
+                blank=True, decimal_places=2, max_digits=8, null=True
+            ),
         ),
         migrations.AddField(
-            model_name='movie',
-            name='time_weighted_return',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=8, null=True),
+            model_name="movie",
+            name="time_weighted_return",
+            field=models.DecimalField(
+                blank=True, decimal_places=2, max_digits=8, null=True
+            ),
         ),
     ]

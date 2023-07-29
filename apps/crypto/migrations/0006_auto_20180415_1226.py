@@ -3,19 +3,22 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-import apps.crypto.models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0005_auto_20180414_2305'),
+        ("crypto", "0005_auto_20180414_2305"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='depot',
-            name='timespan',
-            field=models.ForeignKey(null=True, on_delete=models.SET(None), related_name='depots', to='crypto.IntelligentTimespan'),
+            model_name="depot",
+            name="timespan",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=models.SET(None),
+                related_name="depots",
+                to="crypto.IntelligentTimespan",
+            ),
         ),
     ]

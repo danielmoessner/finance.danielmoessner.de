@@ -4,16 +4,15 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0068_auto_20200401_1604'),
+        ("crypto", "0068_auto_20200401_1604"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='coingeckoasset',
-            name='coingecko_symbol',
-            field=models.CharField(default='', max_length=10, unique=True),
+            model_name="coingeckoasset",
+            name="coingecko_symbol",
+            field=models.CharField(default="", max_length=10, unique=True),
             preserve_default=False,
         ),
     ]

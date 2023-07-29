@@ -4,18 +4,17 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0049_asset_depot'),
+        ("crypto", "0049_asset_depot"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='asset',
-            name='depots',
+            model_name="asset",
+            name="depots",
         ),
         migrations.RemoveField(
-            model_name='asset',
-            name='slug',
+            model_name="asset",
+            name="slug",
         ),
     ]

@@ -4,43 +4,42 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0076_auto_20200815_1235'),
+        ("crypto", "0076_auto_20200815_1235"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='account',
-            name='value',
+            model_name="account",
+            name="value",
             field=models.FloatField(null=True),
         ),
         migrations.AlterField(
-            model_name='accountassetstats',
-            name='amount',
+            model_name="accountassetstats",
+            name="amount",
             field=models.FloatField(null=True),
         ),
         migrations.AlterField(
-            model_name='accountassetstats',
-            name='value',
+            model_name="accountassetstats",
+            name="value",
             field=models.FloatField(null=True),
         ),
         migrations.AlterField(
-            model_name='asset',
-            name='amount',
+            model_name="asset",
+            name="amount",
             field=models.FloatField(null=True),
         ),
         migrations.AlterField(
-            model_name='asset',
-            name='price',
+            model_name="asset",
+            name="price",
             field=models.FloatField(null=True),
         ),
         migrations.AlterField(
-            model_name='asset',
-            name='value',
+            model_name="asset",
+            name="value",
             field=models.FloatField(null=True),
         ),
         migrations.DeleteModel(
-            name='Timespan',
+            name="Timespan",
         ),
     ]

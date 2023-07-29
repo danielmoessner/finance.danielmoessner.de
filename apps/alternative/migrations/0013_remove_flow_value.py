@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('alternative', '0012_auto_20190106_2333'),
+        ("alternative", "0012_auto_20190106_2333"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='flow',
-            name='value',
+            model_name="flow",
+            name="value",
         ),
     ]

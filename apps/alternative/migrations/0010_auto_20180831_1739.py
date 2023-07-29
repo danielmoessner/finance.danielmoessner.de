@@ -7,20 +7,23 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('alternative', '0009_auto_20180831_1711'),
+        ("alternative", "0009_auto_20180831_1711"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='flow',
-            name='flow',
+            model_name="flow",
+            name="flow",
             field=models.DecimalField(decimal_places=2, max_digits=15),
         ),
         migrations.AlterField(
-            model_name='flow',
-            name='value',
-            field=models.DecimalField(decimal_places=2, max_digits=15, validators=[django.core.validators.MinValueValidator(0.01)]),
+            model_name="flow",
+            name="value",
+            field=models.DecimalField(
+                decimal_places=2,
+                max_digits=15,
+                validators=[django.core.validators.MinValueValidator(0.01)],
+            ),
         ),
     ]

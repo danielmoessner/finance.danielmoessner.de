@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('stocks', '0020_pricefetcher'),
+        ("stocks", "0020_pricefetcher"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='pricefetcher',
-            name='website',
+            model_name="pricefetcher",
+            name="website",
             field=models.URLField(),
         ),
     ]

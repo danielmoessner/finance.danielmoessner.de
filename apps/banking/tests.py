@@ -1,36 +1,45 @@
-from django.utils import timezone
-from django.urls import reverse_lazy
-from django.test import TestCase
-from django.test import Client
-
-from apps.banking.models import Depot, Category, Account, Change
-from apps.banking.forms import ChangeForm, AccountForm, DepotForm, CategoryForm
-from apps.users.models import StandardUser as User
-
 from datetime import timedelta
+
+from django.test import Client, TestCase
+from django.urls import reverse_lazy
+from django.utils import timezone
+
+from apps.banking.forms import AccountForm, CategoryForm, ChangeForm, DepotForm
+from apps.banking.models import Account, Category, Change, Depot
+from apps.users.models import StandardUser as User
 
 
 def create_account(depot, name=None):
-    form = AccountForm(depot, {'name': name})
+    form = AccountForm(depot, {"name": name})
     assert form.is_valid()
     return form.save()
 
 
-def create_category(depot, name=None, description=''):
-    form = CategoryForm(depot, {'name': name, 'description': description})
+def create_category(depot, name=None, description=""):
+    form = CategoryForm(depot, {"name": name, "description": description})
     assert form.is_valid()
     return form.save()
 
 
 def create_depot(user, name=None):
-    form = DepotForm(user, {'name': name})
+    form = DepotForm(user, {"name": name})
     assert form.is_valid()
     return form.save()
 
 
-def create_change(depot, account=None, category=None, date=None, change=10, description=''):
-    form = ChangeForm(depot, {'account': account,
-                              'category': category, 'date': date, 'change': change, 'description': description})
+def create_change(
+    depot, account=None, category=None, date=None, change=10, description=""
+):
+    form = ChangeForm(
+        depot,
+        {
+            "account": account,
+            "category": category,
+            "date": date,
+            "change": change,
+            "description": description,
+        },
+    )
     assert form.is_valid()
     return form.save()
 
@@ -48,13 +57,21 @@ class ViewsTestCase(TestCase):
         self.user = User.objects.get(username="dummy")
         response = self.client.get(reverse_lazy("banking:index", args=[1]))
         self.assertEqual(response.status_code, 200)
-        response = self.client.get('{}?tab=stats'.format(reverse_lazy("banking:index", args=[1])))
+        response = self.client.get(
+            "{}?tab=stats".format(reverse_lazy("banking:index", args=[1]))
+        )
         self.assertEqual(response.status_code, 200)
-        response = self.client.get('{}?tab=categories'.format(reverse_lazy("banking:index", args=[1])))
+        response = self.client.get(
+            "{}?tab=categories".format(reverse_lazy("banking:index", args=[1]))
+        )
         self.assertEqual(response.status_code, 200)
-        response = self.client.get('{}?tab=accounts'.format(reverse_lazy("banking:index", args=[1])))
+        response = self.client.get(
+            "{}?tab=accounts".format(reverse_lazy("banking:index", args=[1]))
+        )
         self.assertEqual(response.status_code, 200)
-        response = self.client.get('{}?tab=charts'.format(reverse_lazy("banking:index", args=[1])))
+        response = self.client.get(
+            "{}?tab=charts".format(reverse_lazy("banking:index", args=[1]))
+        )
         self.assertEqual(response.status_code, 200)
 
     def test_account_view(self):
@@ -65,9 +82,9 @@ class ViewsTestCase(TestCase):
         url = reverse_lazy("banking:account", args=[account.pk])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        response = self.client.get('{}?tab=stats'.format(url))
+        response = self.client.get("{}?tab=stats".format(url))
         self.assertEqual(response.status_code, 200)
-        response = self.client.get('{}?tab=changes'.format(url))
+        response = self.client.get("{}?tab=changes".format(url))
         self.assertEqual(response.status_code, 200)
 
     def test_category_view(self):
@@ -78,9 +95,9 @@ class ViewsTestCase(TestCase):
         url = reverse_lazy("banking:category", args=[category.pk])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        response = self.client.get('{}?tab=stats'.format(url))
+        response = self.client.get("{}?tab=stats".format(url))
         self.assertEqual(response.status_code, 200)
-        response = self.client.get('{}?tab=changes'.format(url))
+        response = self.client.get("{}?tab=changes".format(url))
         self.assertEqual(response.status_code, 200)
 
 
@@ -89,9 +106,9 @@ class BalanceUpdateTestCase(TestCase):
         self.user = User.objects.create_user(username="dummy")
         self.user.set_password("test")
         self.user.save()
-        self.depot_pk = create_depot(self.user, 'Depot').pk
-        self.account_pk = create_account(self.get_depot(), 'Account').pk
-        self.category_pk = create_category(self.get_depot(), 'Category').pk
+        self.depot_pk = create_depot(self.user, "Depot").pk
+        self.account_pk = create_account(self.get_depot(), "Account").pk
+        self.category_pk = create_category(self.get_depot(), "Category").pk
 
     def get_account(self):
         return Account.objects.get(pk=self.account_pk)
@@ -104,8 +121,12 @@ class BalanceUpdateTestCase(TestCase):
 
     def create_change_and_set_balances(self, days_ago=20):
         date_x_days_ago = timezone.now() - timedelta(days=days_ago)
-        change = create_change(self.get_depot(), account=self.get_account(), category=self.get_category(),
-                               date=date_x_days_ago)
+        change = create_change(
+            self.get_depot(),
+            account=self.get_account(),
+            category=self.get_category(),
+            date=date_x_days_ago,
+        )
         # set the balances
         self.get_account().get_stats()
         self.get_depot().get_stats()
@@ -114,18 +135,22 @@ class BalanceUpdateTestCase(TestCase):
         return change
 
     def test_balance_is_set_properly(self):
-        change = self.create_change_and_set_balances()
+        self.create_change_and_set_balances()
         # test that stats are being set properly
         assert self.get_account().balance is not None
         assert self.get_depot().balance is not None
         assert self.get_category().balance is not None
 
     def test_balance_is_reset_properly_after_change_added(self):
-        change = self.create_change_and_set_balances(days_ago=20)
+        self.create_change_and_set_balances(days_ago=20)
         # test that balances are reset properly after a change is added
         days_ago_10 = timezone.now() - timedelta(days=10)
-        change = create_change(self.get_depot(), account=self.get_account(), category=self.get_category(),
-                               date=days_ago_10)
+        create_change(
+            self.get_depot(),
+            account=self.get_account(),
+            category=self.get_category(),
+            date=days_ago_10,
+        )
         assert self.get_account().balance is None
         assert self.get_category().balance is None
         assert self.get_depot().balance is None

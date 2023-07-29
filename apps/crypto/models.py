@@ -1,22 +1,30 @@
+from datetime import timedelta
 from typing import Union
+
+import pandas as pd
+from django.db import models
+from django.db.models import Sum
+from django.utils import timezone
+
+import apps.core.return_calculation as rc
+from apps.core import utils
 from apps.core.fetchers.base import Fetcher
 from apps.core.fetchers.selenium import SeleniumFetcher, SeleniumFetcherInput
 from apps.core.fetchers.website import WebsiteFetcher, WebsiteFetcherInput
+from apps.core.models import Account as CoreAccount
+from apps.core.models import Depot as CoreDepot
+from apps.core.utils import change_time_of_date_index_in_df
 from apps.crypto.fetchers.coingecko import CoinGeckoFetcher, CoinGeckoFetcherInput
 from apps.users.models import StandardUser
-from apps.core.models import Account as CoreAccount, Depot as CoreDepot
-from django.db.models import Sum
-from apps.core.utils import change_time_of_date_index_in_df
-from django.utils import timezone
-from django.db import models
-from apps.core import utils
-from datetime import timedelta
-import apps.core.return_calculation as rc
-import pandas as pd
 
 
 class Depot(CoreDepot):
-    user = models.ForeignKey(StandardUser, editable=False, related_name="crypto_depots", on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        StandardUser,
+        editable=False,
+        related_name="crypto_depots",
+        on_delete=models.CASCADE,
+    )
     # query optimization
     value = models.FloatField(null=True)
     current_return = models.FloatField(null=True)
@@ -24,32 +32,49 @@ class Depot(CoreDepot):
     time_weighted_return = models.FloatField(null=True)
     internal_rate_of_return = models.FloatField(null=True)
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
-        if not self.assets.filter(symbol='EUR').exists():
-            self.assets.create(symbol='EUR')
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        super().save(
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields,
+        )
+        if not self.assets.filter(symbol="EUR").exists():
+            self.assets.create(symbol="EUR")
         if self.is_active:
-            self.user.crypto_depots.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
+            self.user.crypto_depots.filter(is_active=True).exclude(pk=self.pk).update(
+                is_active=False
+            )
 
     # getters
     def get_flow_df(self):
-        if not hasattr(self, 'flow_df'):
+        if not hasattr(self, "flow_df"):
             # get the flow df
-            df = pd.DataFrame(data=list(Flow.objects.filter(account__in=self.accounts.all()).values('date', 'flow')),
-                              columns=['date', 'flow'])
-            df.set_index('date', inplace=True)
-            # make it to float so that pandas can calculate everything, decimal doesn't work fine with pandas
-            df.loc[:, 'flow'] = df.loc[:, 'flow'].apply(pd.to_numeric, downcast='float')
-            # make the time to the same as in the value df: 12:00, in order to calculate everything correctly
+            df = pd.DataFrame(
+                data=list(
+                    Flow.objects.filter(account__in=self.accounts.all()).values(
+                        "date", "flow"
+                    )
+                ),
+                columns=["date", "flow"],
+            )
+            df.set_index("date", inplace=True)
+            # make it to float so that pandas can calculate everything,
+            #  decimal doesn't work fine with pandas
+            df.loc[:, "flow"] = df.loc[:, "flow"].apply(pd.to_numeric, downcast="float")
+            # make the time to the same as in the value df: 12:00,
+            # in order to calculate everything correctly
             df = change_time_of_date_index_in_df(df, 12)
             # combine the duplicates to a single flow
-            df = df.groupby(by='date').sum()
+            df = df.groupby(by="date").sum()
             # set the df
             self.flow_df = df
         return self.flow_df
 
     def get_value_df(self):
-        if not hasattr(self, 'value_df'):
+        if not hasattr(self, "value_df"):
             self.value_df = utils.sum_up_value_dfs_from_items(self.assets.all())
         return self.value_df
 
@@ -84,27 +109,36 @@ class Depot(CoreDepot):
 
     def get_internal_rate_of_return(self):
         if self.internal_rate_of_return is None:
-            df = rc.get_internal_rate_of_return_df(self.get_flow_df(), self.get_value_df())
+            df = rc.get_internal_rate_of_return_df(
+                self.get_flow_df(), self.get_value_df()
+            )
             self.internal_rate_of_return = rc.get_internal_rate_of_return(df)
             self.save()
         return self.internal_rate_of_return
 
     def get_stats(self):
         return {
-            'Value': self.get_value(),
-            'Invested Capital': self.get_invested_capital(),
-            'Time Weighted Return': self.get_time_weighted_return(),
-            'Current Return': self.get_current_return(),
-            'Internal Rate of Return': self.get_internal_rate_of_return()
+            "Value": self.get_value(),
+            "Invested Capital": self.get_invested_capital(),
+            "Time Weighted Return": self.get_time_weighted_return(),
+            "Current Return": self.get_current_return(),
+            "Internal Rate of Return": self.get_internal_rate_of_return(),
         }
 
     # setters
     def reset_all(self):
-        Depot.objects.filter(pk=self.pk).update(value=None, internal_rate_of_return=None, invested_capital=None,
-                                                time_weighted_return=None, current_return=None)
+        Depot.objects.filter(pk=self.pk).update(
+            value=None,
+            internal_rate_of_return=None,
+            invested_capital=None,
+            time_weighted_return=None,
+            current_return=None,
+        )
         Asset.objects.filter(depot=self).update(value=None, amount=None, price=None)
         Account.objects.filter(depot=self).update(value=None)
-        AccountAssetStats.objects.filter(account__in=self.accounts.all()).update(value=None, amount=None)
+        AccountAssetStats.objects.filter(account__in=self.accounts.all()).update(
+            value=None, amount=None
+        )
 
 
 class Account(CoreAccount):
@@ -114,9 +148,7 @@ class Account(CoreAccount):
 
     # getters
     def get_stats(self):
-        return {
-            'Value': self.get_value()
-        }
+        return {"Value": self.get_value()}
 
     def get_value(self):
         if self.value is None:
@@ -126,13 +158,15 @@ class Account(CoreAccount):
                     AccountAssetStats.objects.get_or_create(asset=asset, account=self)
             # sum up the values
             self.value = 0
-            for stats in list(self.asset_stats.select_related('asset', 'account')):
+            for stats in list(self.asset_stats.select_related("asset", "account")):
                 self.value += stats.get_value()
             self.save()
         return self.value
 
     def get_asset_stats(self, asset):
-        stats, created = AccountAssetStats.objects.get_or_create(asset=asset, account=self)
+        stats, created = AccountAssetStats.objects.get_or_create(
+            asset=asset, account=self
+        )
         return stats
 
     def get_value_asset(self, asset):
@@ -143,32 +177,49 @@ class Account(CoreAccount):
         stats = self.get_asset_stats(asset)
         return stats.get_amount()
 
-    def get_amount_asset_before_date(self, asset, date, exclude_transactions=None, exclude_trades=None,
-                                     exclude_flows=None):
+    def get_amount_asset_before_date(
+        self,
+        asset,
+        date,
+        exclude_transactions=None,
+        exclude_trades=None,
+        exclude_flows=None,
+    ):
         stats = self.get_asset_stats(asset)
-        return stats.get_amount_before_date(date, exclude_trades=exclude_trades, exclude_flows=exclude_flows,
-                                            exclude_transactions=exclude_transactions)
+        return stats.get_amount_before_date(
+            date,
+            exclude_trades=exclude_trades,
+            exclude_flows=exclude_flows,
+            exclude_transactions=exclude_transactions,
+        )
 
 
 class Asset(models.Model):
     symbol = models.CharField(max_length=5)
-    depot = models.ForeignKey(Depot, related_name='assets', on_delete=models.CASCADE)
+    depot = models.ForeignKey(Depot, related_name="assets", on_delete=models.CASCADE)
     # query optimization
     value = models.FloatField(null=True)
     amount = models.FloatField(null=True)
     price = models.FloatField(null=True)
 
     def __str__(self):
-        return '{}'.format(self.symbol)
+        return "{}".format(self.symbol)
 
-    def save(self, force_insert=False, force_update=False, using=None,
-             update_fields=None):
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
         # uppercase the symbol for convenience
         self.symbol = self.symbol.upper()
-        super().save(force_update=force_update, force_insert=force_insert, using=using, update_fields=update_fields)
-        # test that there is a price for the euro asset or the base asset which is euro in this case
-        if self.symbol == 'EUR' and not Price.objects.filter(symbol='EUR').exists():
-            Price.objects.create(symbol='EUR', price=1, date=timezone.now())
+        super().save(
+            force_update=force_update,
+            force_insert=force_insert,
+            using=using,
+            update_fields=update_fields,
+        )
+        # test that there is a price for the euro asset or
+        # the base asset which is euro in this case
+        if self.symbol == "EUR" and not Price.objects.filter(symbol="EUR").exists():
+            Price.objects.create(symbol="EUR", price=1, date=timezone.now())
 
     # getters
     def get_df_from_database(self, statement, columns):
@@ -185,9 +236,11 @@ class Asset(models.Model):
             where symbol='{}'
             group by date(date)
             order by date asc
-        """.format(self.symbol)
+        """.format(
+            self.symbol
+        )
         # get and return the df
-        df = self.get_df_from_database(statement, ['date', 'price'])
+        df = self.get_df_from_database(statement, ["date", "price"])
         return df
 
     def get_value_df(self):
@@ -195,33 +248,51 @@ class Asset(models.Model):
 
     def get_amount_df(self):
         # get all possible amount changing objects
-        trade_buy_df = pd.DataFrame(data=list(Trade.objects.filter(buy_asset=self).values('date', 'buy_amount')),
-                                    columns=['date', 'buy_amount'])
-        trade_sell_df = pd.DataFrame(data=list(Trade.objects.filter(sell_asset=self).values('date', 'sell_amount')),
-                                     columns=['date', 'sell_amount'])
-        transaction_fees_df = pd.DataFrame(data=list(Transaction.objects.filter(asset=self).values('date', 'fees')),
-                                           columns=['date', 'fees'])
-        flow_df = pd.DataFrame(data=list(Flow.objects.filter(asset=self).values('date', 'flow')),
-                               columns=['date', 'flow'])
+        trade_buy_df = pd.DataFrame(
+            data=list(
+                Trade.objects.filter(buy_asset=self).values("date", "buy_amount")
+            ),
+            columns=["date", "buy_amount"],
+        )
+        trade_sell_df = pd.DataFrame(
+            data=list(
+                Trade.objects.filter(sell_asset=self).values("date", "sell_amount")
+            ),
+            columns=["date", "sell_amount"],
+        )
+        transaction_fees_df = pd.DataFrame(
+            data=list(Transaction.objects.filter(asset=self).values("date", "fees")),
+            columns=["date", "fees"],
+        )
+        flow_df = pd.DataFrame(
+            data=list(Flow.objects.filter(asset=self).values("date", "flow")),
+            columns=["date", "flow"],
+        )
         # merge everything into a big dataframe
-        df = pd.merge(trade_buy_df, trade_sell_df, how='outer', on='date', sort=True)
-        df = df.merge(transaction_fees_df, how='outer', on='date', sort=True)
-        df = df.merge(flow_df, how='outer', on='date', sort=True)
+        df = pd.merge(trade_buy_df, trade_sell_df, how="outer", on="date", sort=True)
+        df = df.merge(transaction_fees_df, how="outer", on="date", sort=True)
+        df = df.merge(flow_df, how="outer", on="date", sort=True)
         # return none if the df is empty
         if df.empty:
             return None
         # set index
-        df.set_index('date', inplace=True)
+        df.set_index("date", inplace=True)
         # replace nan with 0
         df = df.fillna(0)
         # calculate the change on each date
-        df.loc[:, 'change'] = df.loc[:, 'buy_amount'] - df.loc[:, 'sell_amount'] - df.loc[:, 'fees'] + df.loc[:, 'flow']
+        df.loc[:, "change"] = (
+            df.loc[:, "buy_amount"]
+            - df.loc[:, "sell_amount"]
+            - df.loc[:, "fees"]
+            + df.loc[:, "flow"]
+        )
         # the amount is the sum of all changes
-        df.loc[:, 'amount'] = df.loc[:, 'change'].cumsum()
+        df.loc[:, "amount"] = df.loc[:, "change"].cumsum()
         # make the df smaller
-        df = df.loc[:, ['amount']]
-        # cast to float otherwise pandas can not reliably use all methods for example interpolate wouldn't work
-        df.loc[:, 'amount'] = df.loc[:, 'amount'].apply(pd.to_numeric, downcast='float')
+        df = df.loc[:, ["amount"]]
+        # cast to float otherwise pandas can not reliably use all methods for
+        # example interpolate wouldn't work
+        df.loc[:, "amount"] = df.loc[:, "amount"].apply(pd.to_numeric, downcast="float")
         # set a standard time for easir calculations and group by date
         df = utils.remove_time_of_date_index_in_df(df)
         df = df.groupby(df.index, sort=True).tail(1)
@@ -229,14 +300,11 @@ class Asset(models.Model):
         return df
 
     def get_stats(self):
-        return {
-            'Amount': self.get_amount(),
-            'Value': self.get_value()
-        }
+        return {"Amount": self.get_amount(), "Value": self.get_value()}
 
     def __get_price(self) -> Union["Price", None]:
-        return Price.objects.filter(symbol=self.symbol).order_by('date').last()
-    
+        return Price.objects.filter(symbol=self.symbol).order_by("date").last()
+
     def get_price_display(self) -> str:
         price = self.__get_price()
         if price is None:
@@ -264,7 +332,9 @@ class Asset(models.Model):
         return self.value
 
     def get_account_stats(self, account):
-        stats, created = AccountAssetStats.objects.get_or_create(asset=self, account=account)
+        stats, created = AccountAssetStats.objects.get_or_create(
+            asset=self, account=account
+        )
         return stats
 
     def get_value_account(self, account):
@@ -277,26 +347,44 @@ class Asset(models.Model):
 
     def get_amount(self):
         if self.amount is None:
-            trade_buy_amount = (Trade.objects
-                                .filter(buy_asset=self, account__in=self.depot.accounts.all())
-                                .aggregate(Sum('buy_amount'))['buy_amount__sum'] or 0)
-            trade_sell_amount = (Trade.objects
-                                 .filter(sell_asset=self, account__in=self.depot.accounts.all())
-                                 .aggregate(Sum('sell_amount'))['sell_amount__sum'] or 0)
-            transaction_fees_amount = (Transaction.objects
-                                       .filter(asset=self, from_account__in=self.depot.accounts.all())
-                                       .aggregate(Sum('fees'))['fees__sum'] or 0)
-            flow_amount = (Flow.objects
-                           .filter(asset=self)
-                           .aggregate(Sum('flow'))['flow__sum'] or 0)
-            self.amount = trade_buy_amount - trade_sell_amount - transaction_fees_amount + flow_amount
+            trade_buy_amount = (
+                Trade.objects.filter(
+                    buy_asset=self, account__in=self.depot.accounts.all()
+                ).aggregate(Sum("buy_amount"))["buy_amount__sum"]
+                or 0
+            )
+            trade_sell_amount = (
+                Trade.objects.filter(
+                    sell_asset=self, account__in=self.depot.accounts.all()
+                ).aggregate(Sum("sell_amount"))["sell_amount__sum"]
+                or 0
+            )
+            transaction_fees_amount = (
+                Transaction.objects.filter(
+                    asset=self, from_account__in=self.depot.accounts.all()
+                ).aggregate(Sum("fees"))["fees__sum"]
+                or 0
+            )
+            flow_amount = (
+                Flow.objects.filter(asset=self).aggregate(Sum("flow"))["flow__sum"] or 0
+            )
+            self.amount = (
+                trade_buy_amount
+                - trade_sell_amount
+                - transaction_fees_amount
+                + flow_amount
+            )
             self.save()
         return self.amount
 
 
 class AccountAssetStats(models.Model):
-    account = models.ForeignKey(Account, related_name='asset_stats', on_delete=models.CASCADE)
-    asset = models.ForeignKey(Asset, related_name='account_stats', on_delete=models.CASCADE)
+    account = models.ForeignKey(
+        Account, related_name="asset_stats", on_delete=models.CASCADE
+    )
+    asset = models.ForeignKey(
+        Asset, related_name="account_stats", on_delete=models.CASCADE
+    )
     # query optimization
     amount = models.DecimalField(max_digits=20, decimal_places=8, null=True)
     value = models.FloatField(null=True)
@@ -304,30 +392,50 @@ class AccountAssetStats(models.Model):
     # getters
     def get_amount(self):
         if self.amount is None:
-            trade_buy_amount = (Trade.objects
-                                .filter(buy_asset=self.asset, account=self.account)
-                                .aggregate(Sum('buy_amount'))['buy_amount__sum'] or 0)
-            trade_sell_amount = (Trade.objects
-                                 .filter(sell_asset=self.asset, account=self.account)
-                                 .aggregate(Sum('sell_amount'))['sell_amount__sum'] or 0)
-            transaction_to_amount = (Transaction.objects
-                                     .filter(asset=self.asset, to_account=self.account)
-                                     .aggregate(Sum('amount'))['amount__sum'] or 0)
-            transaction_from_and_fees_amount = (Transaction.objects
-                                                .filter(asset=self.asset, from_account=self.account)
-                                                .aggregate(Sum('fees'), Sum('amount')))
-            flow_amount = (Flow.objects
-                           .filter(asset=self.asset, account=self.account)
-                           .aggregate(Sum('flow'))['flow__sum'] or 0)
-            transaction_from_amount = transaction_from_and_fees_amount['amount__sum'] or 0
-            transaction_fees_amount = transaction_from_and_fees_amount['fees__sum'] or 0
+            trade_buy_amount = (
+                Trade.objects.filter(
+                    buy_asset=self.asset, account=self.account
+                ).aggregate(Sum("buy_amount"))["buy_amount__sum"]
+                or 0
+            )
+            trade_sell_amount = (
+                Trade.objects.filter(
+                    sell_asset=self.asset, account=self.account
+                ).aggregate(Sum("sell_amount"))["sell_amount__sum"]
+                or 0
+            )
+            transaction_to_amount = (
+                Transaction.objects.filter(
+                    asset=self.asset, to_account=self.account
+                ).aggregate(Sum("amount"))["amount__sum"]
+                or 0
+            )
+            transaction_from_and_fees_amount = Transaction.objects.filter(
+                asset=self.asset, from_account=self.account
+            ).aggregate(Sum("fees"), Sum("amount"))
+            flow_amount = (
+                Flow.objects.filter(asset=self.asset, account=self.account).aggregate(
+                    Sum("flow")
+                )["flow__sum"]
+                or 0
+            )
+            transaction_from_amount = (
+                transaction_from_and_fees_amount["amount__sum"] or 0
+            )
+            transaction_fees_amount = transaction_from_and_fees_amount["fees__sum"] or 0
             trade_amount = trade_buy_amount - trade_sell_amount
-            transaction_amount = transaction_to_amount - transaction_fees_amount - transaction_from_amount
+            transaction_amount = (
+                transaction_to_amount
+                - transaction_fees_amount
+                - transaction_from_amount
+            )
             self.amount = trade_amount + transaction_amount + flow_amount
             self.save()
         return self.amount
 
-    def get_amount_before_date(self, date, exclude_transactions=None, exclude_trades=None, exclude_flows=None):
+    def get_amount_before_date(
+        self, date, exclude_transactions=None, exclude_trades=None, exclude_flows=None
+    ):
         if exclude_trades is None:
             exclude_trades = []
         if exclude_transactions is None:
@@ -335,30 +443,49 @@ class AccountAssetStats(models.Model):
         if exclude_flows is None:
             exclude_flows = []
 
-        trade_buy_amount = (Trade.objects
-                            .filter(buy_asset=self.asset, account=self.account, date__lt=date)
-                            .exclude(pk__in=exclude_trades)
-                            .aggregate(Sum('buy_amount'))['buy_amount__sum'] or 0)
-        trade_sell_amount = (Trade.objects
-                             .filter(sell_asset=self.asset, account=self.account, date__lt=date)
-                             .exclude(pk__in=exclude_trades)
-                             .aggregate(Sum('sell_amount'))['sell_amount__sum'] or 0)
-        transaction_to_amount = (Transaction.objects
-                                 .filter(asset=self.asset, to_account=self.account, date__lt=date)
-                                 .exclude(pk__in=exclude_transactions)
-                                 .aggregate(Sum('amount'))['amount__sum'] or 0)
-        transaction_from_and_fees_amount = (Transaction.objects
-                                            .filter(asset=self.asset, from_account=self.account, date__lt=date)
-                                            .exclude(pk__in=exclude_transactions)
-                                            .aggregate(Sum('fees'), Sum('amount')))
-        flow_amount = (Flow.objects
-                       .filter(asset=self.asset, account=self.account, date__lt=date)
-                       .exclude(pk__in=exclude_flows)
-                       .aggregate(Sum('flow'))['flow__sum'] or 0)
-        transaction_from_amount = transaction_from_and_fees_amount['amount__sum'] or 0
-        transaction_fees_amount = transaction_from_and_fees_amount['fees__sum'] or 0
+        trade_buy_amount = (
+            Trade.objects.filter(
+                buy_asset=self.asset, account=self.account, date__lt=date
+            )
+            .exclude(pk__in=exclude_trades)
+            .aggregate(Sum("buy_amount"))["buy_amount__sum"]
+            or 0
+        )
+        trade_sell_amount = (
+            Trade.objects.filter(
+                sell_asset=self.asset, account=self.account, date__lt=date
+            )
+            .exclude(pk__in=exclude_trades)
+            .aggregate(Sum("sell_amount"))["sell_amount__sum"]
+            or 0
+        )
+        transaction_to_amount = (
+            Transaction.objects.filter(
+                asset=self.asset, to_account=self.account, date__lt=date
+            )
+            .exclude(pk__in=exclude_transactions)
+            .aggregate(Sum("amount"))["amount__sum"]
+            or 0
+        )
+        transaction_from_and_fees_amount = (
+            Transaction.objects.filter(
+                asset=self.asset, from_account=self.account, date__lt=date
+            )
+            .exclude(pk__in=exclude_transactions)
+            .aggregate(Sum("fees"), Sum("amount"))
+        )
+        flow_amount = (
+            Flow.objects.filter(asset=self.asset, account=self.account, date__lt=date)
+            .exclude(pk__in=exclude_flows)
+            .aggregate(Sum("flow"))["flow__sum"]
+            or 0
+        )
+        transaction_from_amount = transaction_from_and_fees_amount["amount__sum"] or 0
+        transaction_fees_amount = transaction_from_and_fees_amount["fees__sum"] or 0
         trade_amount = trade_buy_amount - trade_sell_amount
-        transaction_amount = transaction_to_amount - transaction_fees_amount - transaction_from_amount
+        transaction_amount = (
+            transaction_to_amount - transaction_fees_amount - transaction_from_amount
+        )
         amount = trade_amount + transaction_amount + flow_amount
         return amount
 
@@ -372,28 +499,43 @@ class AccountAssetStats(models.Model):
 
 
 class Trade(models.Model):
-    account = models.ForeignKey(Account, related_name="trades", on_delete=models.PROTECT)
+    account = models.ForeignKey(
+        Account, related_name="trades", on_delete=models.PROTECT
+    )
     date = models.DateTimeField()
     buy_amount = models.DecimalField(max_digits=20, decimal_places=8)
-    buy_asset = models.ForeignKey(Asset, related_name="buy_trades", on_delete=models.PROTECT)
+    buy_asset = models.ForeignKey(
+        Asset, related_name="buy_trades", on_delete=models.PROTECT
+    )
     sell_amount = models.DecimalField(max_digits=20, decimal_places=8)
-    sell_asset = models.ForeignKey(Asset, related_name="sell_trades", on_delete=models.PROTECT)
+    sell_asset = models.ForeignKey(
+        Asset, related_name="sell_trades", on_delete=models.PROTECT
+    )
 
     class Meta:
         ordering = ["-date"]
-        unique_together = ('account', 'date')
+        unique_together = ("account", "date")
 
     def __str__(self):
         account = str(self.account)
-        date = str(self.date.date())
+        str(self.date.date())
         buy_asset = str(self.buy_asset)
         buy_amount = str(self.buy_amount)
         sell_asset = str(self.sell_asset)
         sell_amount = str(self.sell_amount)
-        return "{} {} {} {} {} {}".format(self.get_date(), account, buy_amount, buy_asset, sell_amount, sell_asset)
+        return "{} {} {} {} {} {}".format(
+            self.get_date(), account, buy_amount, buy_asset, sell_amount, sell_asset
+        )
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        super().save(
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields,
+        )
         self.account.depot.reset_all()
 
     def delete(self, using=None, keep_parents=False):
@@ -406,21 +548,36 @@ class Trade(models.Model):
 
 
 class Transaction(models.Model):
-    asset = models.ForeignKey(Asset, related_name="transactions", on_delete=models.PROTECT)
-    from_account = models.ForeignKey(Account, related_name="from_transactions", on_delete=models.PROTECT)
+    asset = models.ForeignKey(
+        Asset, related_name="transactions", on_delete=models.PROTECT
+    )
+    from_account = models.ForeignKey(
+        Account, related_name="from_transactions", on_delete=models.PROTECT
+    )
     date = models.DateTimeField()
-    to_account = models.ForeignKey(Account, related_name="to_transactions", on_delete=models.PROTECT)
+    to_account = models.ForeignKey(
+        Account, related_name="to_transactions", on_delete=models.PROTECT
+    )
     amount = models.DecimalField(max_digits=20, decimal_places=8)
     fees = models.DecimalField(max_digits=20, decimal_places=8)
 
     class Meta:
-        unique_together = (('from_account', 'date'), ('to_account', 'date'))
+        unique_together = (("from_account", "date"), ("to_account", "date"))
 
     def __str__(self):
-        return '{} {} {} {} {}'.format(self.asset, self.date, self.from_account, self.to_account, self.amount)
+        return "{} {} {} {} {}".format(
+            self.asset, self.date, self.from_account, self.to_account, self.amount
+        )
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        super().save(
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields,
+        )
         self.asset.depot.reset_all()
 
     def delete(self, using=None, keep_parents=False):
@@ -461,19 +618,26 @@ class Price(models.Model):
 
 
 class Flow(models.Model):
-    account = models.ForeignKey(Account, related_name='flows', on_delete=models.CASCADE)
+    account = models.ForeignKey(Account, related_name="flows", on_delete=models.CASCADE)
     date = models.DateTimeField()
     flow = models.DecimalField(max_digits=20, decimal_places=2)
-    asset = models.ForeignKey(Asset, related_name='flows', on_delete=models.CASCADE)
+    asset = models.ForeignKey(Asset, related_name="flows", on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('account', 'date')
+        unique_together = ("account", "date")
 
     def __str__(self):
-        return '{} {} {}'.format(self.get_date(), self.account, self.flow)
+        return "{} {} {}".format(self.get_date(), self.account, self.flow)
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        super().save(
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields,
+        )
         self.account.depot.reset_all()
 
     def delete(self, using=None, keep_parents=False):
@@ -482,7 +646,7 @@ class Flow(models.Model):
 
     # getters
     def get_date(self):
-        return timezone.localtime(self.date).strftime('%d.%m.%Y %H:%M')
+        return timezone.localtime(self.date).strftime("%d.%m.%Y %H:%M")
 
 
 class CoinGeckoAsset(models.Model):
@@ -492,40 +656,44 @@ class CoinGeckoAsset(models.Model):
 
 
 class PriceFetcher(models.Model):
-    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name='price_fetchers')
+    asset = models.ForeignKey(
+        Asset, on_delete=models.CASCADE, related_name="price_fetchers"
+    )
     PRICE_FETCHER_TYPES = (
-        ('WEBSITE', 'Website'),
-        ('SELENIUM', 'Selenium'),
-        ('COINGECKO', 'CoinGecko'),
+        ("WEBSITE", "Website"),
+        ("SELENIUM", "Selenium"),
+        ("COINGECKO", "CoinGecko"),
     )
     fetcher_type = models.CharField(max_length=250, choices=PRICE_FETCHER_TYPES)
     data = models.JSONField(default=dict)
     error = models.CharField(max_length=1000, blank=True)
 
     def __str__(self):
-        if self.fetcher_type in ['WEBSITE', 'SELENIUM']:
-            return '{} - {}'.format(self.fetcher_type, self.url)
+        if self.fetcher_type in ["WEBSITE", "SELENIUM"]:
+            return "{} - {}".format(self.fetcher_type, self.url)
         return self.fetcher_type
-    
-    @property
-    def fetcher_class(self) -> type[Fetcher]:
-        if self.fetcher_type == 'WEBSITE':
-            return WebsiteFetcher
-        elif self.fetcher_type == 'SELENIUM':
-            return SeleniumFetcher
-        elif self.fetcher_type == 'COINGECKO':
-            return CoinGeckoFetcher
-        raise ValueError('unknown type {}'.format(self.fetcher_type))
 
     @property
-    def fetcher_input(self) -> WebsiteFetcherInput | SeleniumFetcherInput | CoinGeckoFetcherInput:
-        if self.fetcher_type == 'WEBSITE':
+    def fetcher_class(self) -> type[Fetcher]:
+        if self.fetcher_type == "WEBSITE":
+            return WebsiteFetcher
+        elif self.fetcher_type == "SELENIUM":
+            return SeleniumFetcher
+        elif self.fetcher_type == "COINGECKO":
+            return CoinGeckoFetcher
+        raise ValueError("unknown type {}".format(self.fetcher_type))
+
+    @property
+    def fetcher_input(
+        self,
+    ) -> WebsiteFetcherInput | SeleniumFetcherInput | CoinGeckoFetcherInput:
+        if self.fetcher_type == "WEBSITE":
             return WebsiteFetcherInput(**self.data)
-        elif self.fetcher_type == 'SELENIUM':
+        elif self.fetcher_type == "SELENIUM":
             return SeleniumFetcherInput(**self.data)
-        elif self.fetcher_type == 'COINGECKO':
+        elif self.fetcher_type == "COINGECKO":
             return CoinGeckoFetcherInput(**self.data)
-        raise ValueError('unknown type {}'.format(self.fetcher_type))
+        raise ValueError("unknown type {}".format(self.fetcher_type))
 
     def run(self):
         fetcher: Fetcher = self.fetcher_class()

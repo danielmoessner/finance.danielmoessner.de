@@ -6,15 +6,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('alternative', '0003_auto_20180828_1656'),
+        ("alternative", "0003_auto_20180828_1656"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='flow',
-            name='value',
+            model_name="flow",
+            name="value",
             field=models.DecimalField(decimal_places=2, default=0, max_digits=15),
         ),
     ]

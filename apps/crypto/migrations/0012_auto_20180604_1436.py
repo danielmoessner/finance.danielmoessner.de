@@ -6,14 +6,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0011_remove_intelligenttimespan_user'),
+        ("crypto", "0011_remove_intelligenttimespan_user"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='IntelligentTimespan',
-            new_name='Timespan',
+            old_name="IntelligentTimespan",
+            new_name="Timespan",
         ),
     ]

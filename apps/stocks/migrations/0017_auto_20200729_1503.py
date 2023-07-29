@@ -4,35 +4,34 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('stocks', '0016_auto_20200729_1441'),
+        ("stocks", "0016_auto_20200729_1441"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='bank',
-            name='balance',
+            model_name="bank",
+            name="balance",
             field=models.FloatField(null=True),
         ),
         migrations.AlterField(
-            model_name='bank',
-            name='value',
+            model_name="bank",
+            name="value",
             field=models.FloatField(null=True),
         ),
         migrations.AlterField(
-            model_name='depot',
-            name='balance',
+            model_name="depot",
+            name="balance",
             field=models.FloatField(null=True),
         ),
         migrations.AlterField(
-            model_name='depot',
-            name='invested_capital',
+            model_name="depot",
+            name="invested_capital",
             field=models.FloatField(null=True),
         ),
         migrations.AlterField(
-            model_name='depot',
-            name='value',
+            model_name="depot",
+            name="value",
             field=models.FloatField(null=True),
         ),
     ]

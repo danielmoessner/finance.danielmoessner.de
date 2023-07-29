@@ -4,30 +4,37 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0074_auto_20200402_2201'),
+        ("crypto", "0074_auto_20200402_2201"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='depot',
-            name='current_return',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=20, null=True),
+            model_name="depot",
+            name="current_return",
+            field=models.DecimalField(
+                blank=True, decimal_places=2, max_digits=20, null=True
+            ),
         ),
         migrations.AddField(
-            model_name='depot',
-            name='internal_rate_of_return',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=20, null=True),
+            model_name="depot",
+            name="internal_rate_of_return",
+            field=models.DecimalField(
+                blank=True, decimal_places=2, max_digits=20, null=True
+            ),
         ),
         migrations.AddField(
-            model_name='depot',
-            name='invested_capital',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=20, null=True),
+            model_name="depot",
+            name="invested_capital",
+            field=models.DecimalField(
+                blank=True, decimal_places=2, max_digits=20, null=True
+            ),
         ),
         migrations.AddField(
-            model_name='depot',
-            name='time_weighted_return',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=20, null=True),
+            model_name="depot",
+            name="time_weighted_return",
+            field=models.DecimalField(
+                blank=True, decimal_places=2, max_digits=20, null=True
+            ),
         ),
     ]

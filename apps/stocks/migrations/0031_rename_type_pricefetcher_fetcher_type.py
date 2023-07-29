@@ -4,15 +4,14 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('stocks', '0030_pricefetcher_error'),
+        ("stocks", "0030_pricefetcher_error"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='pricefetcher',
-            old_name='type',
-            new_name='fetcher_type',
+            model_name="pricefetcher",
+            old_name="type",
+            new_name="fetcher_type",
         ),
     ]

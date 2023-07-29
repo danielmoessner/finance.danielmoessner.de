@@ -1,7 +1,8 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from apps.banking.models import Category, Account, Depot
-from apps.core.mixins import TabContextMixin
 from django.views import generic
+
+from apps.banking.models import Account, Category, Depot
+from apps.core.mixins import TabContextMixin
 
 
 # views
@@ -19,9 +20,9 @@ class IndexView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
         context["accounts"] = self.object.accounts.order_by("name")
         context["categories"] = self.object.categories.order_by("name")
         # specific
-        context['stats'] = self.object.get_stats()
-        context['accounts'] = self.object.accounts.order_by('name')
-        context['categories'] = self.object.categories.order_by('name')
+        context["stats"] = self.object.get_stats()
+        context["accounts"] = self.object.accounts.order_by("name")
+        context["categories"] = self.object.categories.order_by("name")
         # return
         return context
 
@@ -40,7 +41,9 @@ class AccountView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
         context["categories"] = context["depot"].categories.order_by("name")
         context["account"] = self.object
         context["stats"] = self.object.get_stats()
-        context["changes"] = self.object.changes.order_by("-date", "-pk").select_related("category")
+        context["changes"] = self.object.changes.order_by(
+            "-date", "-pk"
+        ).select_related("category")
         return context
 
 
@@ -57,6 +60,8 @@ class CategoryView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
         context["accounts"] = context["depot"].accounts.order_by("name")
         context["categories"] = context["depot"].categories.order_by("name")
         context["category"] = self.object
-        context['stats'] = self.object.get_stats()
-        context["changes"] = self.object.changes.order_by("-date", "-pk").select_related("account")
+        context["stats"] = self.object.get_stats()
+        context["changes"] = self.object.changes.order_by(
+            "-date", "-pk"
+        ).select_related("account")
         return context

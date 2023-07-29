@@ -1,4 +1,6 @@
 import importlib
+from typing import Callable
+
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
@@ -10,7 +12,7 @@ class Command(BaseCommand):
             module_name = ".".join(s.split(".")[:-1])
             module = importlib.import_module(module_name)
             function_name = s.split(".")[-1]
-            job: Callable[[], None] = getattr(module, function_name)  # type: ignore
+            job: Callable[[], None] = getattr(module, function_name)
             jobs.append(job)
         for job in jobs:
             job()

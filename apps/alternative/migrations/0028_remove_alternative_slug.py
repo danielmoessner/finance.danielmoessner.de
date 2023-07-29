@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('alternative', '0027_delete_timespan'),
+        ("alternative", "0027_delete_timespan"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='alternative',
-            name='slug',
+            model_name="alternative",
+            name="slug",
         ),
     ]

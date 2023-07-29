@@ -4,35 +4,34 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0075_auto_20200407_1456'),
+        ("crypto", "0075_auto_20200407_1456"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='depot',
-            name='current_return',
+            model_name="depot",
+            name="current_return",
             field=models.FloatField(null=True),
         ),
         migrations.AlterField(
-            model_name='depot',
-            name='internal_rate_of_return',
+            model_name="depot",
+            name="internal_rate_of_return",
             field=models.FloatField(null=True),
         ),
         migrations.AlterField(
-            model_name='depot',
-            name='invested_capital',
+            model_name="depot",
+            name="invested_capital",
             field=models.FloatField(null=True),
         ),
         migrations.AlterField(
-            model_name='depot',
-            name='time_weighted_return',
+            model_name="depot",
+            name="time_weighted_return",
             field=models.FloatField(null=True),
         ),
         migrations.AlterField(
-            model_name='depot',
-            name='value',
+            model_name="depot",
+            name="value",
             field=models.FloatField(null=True),
         ),
     ]

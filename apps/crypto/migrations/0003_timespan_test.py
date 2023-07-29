@@ -6,15 +6,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0002_auto_20180411_1326'),
+        ("crypto", "0002_auto_20180411_1326"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='timespan',
-            name='test',
+            model_name="timespan",
+            name="test",
             field=models.BooleanField(default=False),
         ),
     ]

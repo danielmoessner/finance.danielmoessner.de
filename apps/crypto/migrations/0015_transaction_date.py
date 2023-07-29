@@ -6,15 +6,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0014_transaction'),
+        ("crypto", "0014_transaction"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='transaction',
-            name='date',
+            model_name="transaction",
+            name="date",
             field=models.DateTimeField(default=None),
             preserve_default=False,
         ),

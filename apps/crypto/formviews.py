@@ -1,15 +1,43 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
-from apps.crypto.models import Price, PriceFetcher, Transaction, Flow, Account, Asset, Trade, Depot
-from apps.crypto.forms import FlowForm, AccountSelectForm, PriceEditForm, PriceFetcherForm, TradeForm, DepotForm, AccountForm, AssetSelectForm, \
-    DepotSelectForm, DepotActiveForm, TransactionForm, AssetForm
-from apps.core.mixins import CustomAjaxDeleteMixin, AjaxResponseMixin, CustomGetFormUserMixin, \
-    GetFormWithDepotAndInitialDataMixin, GetFormWithDepotMixin
-from django.shortcuts import get_object_or_404
-from django.views import generic
-from django.http import HttpResponseRedirect, HttpResponse
-from django.urls import reverse_lazy
 import json
+
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404
+from django.urls import reverse_lazy
+from django.views import generic
+
+from apps.core.mixins import (
+    AjaxResponseMixin,
+    CustomAjaxDeleteMixin,
+    CustomGetFormUserMixin,
+    GetFormWithDepotAndInitialDataMixin,
+    GetFormWithDepotMixin,
+)
+from apps.crypto.forms import (
+    AccountForm,
+    AccountSelectForm,
+    AssetForm,
+    AssetSelectForm,
+    DepotActiveForm,
+    DepotForm,
+    DepotSelectForm,
+    FlowForm,
+    PriceEditForm,
+    PriceFetcherForm,
+    TradeForm,
+    TransactionForm,
+)
+from apps.crypto.models import (
+    Account,
+    Asset,
+    Depot,
+    Flow,
+    Price,
+    PriceFetcher,
+    Trade,
+    Transaction,
+)
 
 
 # mixins
@@ -27,19 +55,25 @@ class GetDepotMixin:
 
 
 # depot
-class AddDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.CreateView):
+class AddDepotView(
+    LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.CreateView
+):
     form_class = DepotForm
     model = Depot
     template_name = "symbols/form_snippet.j2"
 
 
-class EditDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.UpdateView):
+class EditDepotView(
+    LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.UpdateView
+):
     model = Depot
     form_class = DepotForm
     template_name = "symbols/form_snippet.j2"
 
 
-class DeleteDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.FormView):
+class DeleteDepotView(
+    LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.FormView
+):
     model = Depot
     template_name = "symbols/form_snippet.j2"
     form_class = DepotSelectForm
@@ -50,35 +84,45 @@ class DeleteDepotView(LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMi
         depot.delete()
         if user.crypto_depots.count() <= 0:
             user.save()
-        return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
+        return HttpResponse(
+            json.dumps({"valid": True}), content_type="application/json"
+        )
 
 
 class SetActiveDepotView(LoginRequiredMixin, generic.View):
-    http_method_names = ['get', 'head', 'options']
+    http_method_names = ["get", "head", "options"]
 
     def get(self, request, pk, *args, **kwargs):
         depot = get_object_or_404(self.request.user.crypto_depots.all(), pk=pk)
-        form = DepotActiveForm(data={'is_active': True}, instance=depot)
+        form = DepotActiveForm(data={"is_active": True}, instance=depot)
         if form.is_valid():
             form.save()
-        url = '{}?tab=crypto'.format(reverse_lazy('users:settings', args=[self.request.user.pk]))
+        url = "{}?tab=crypto".format(
+            reverse_lazy("users:settings", args=[self.request.user.pk])
+        )
         return HttpResponseRedirect(url)
 
 
 # account
-class AddAccountView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.CreateView):
+class AddAccountView(
+    LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.CreateView
+):
     form_class = AccountForm
     model = Account
     template_name = "symbols/form_snippet.j2"
 
 
-class EditAccountView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
+class EditAccountView(
+    LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView
+):
     model = Account
     form_class = AccountForm
     template_name = "symbols/form_snippet.j2"
 
 
-class DeleteAccountView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.FormView):
+class DeleteAccountView(
+    LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.FormView
+):
     model = Account
     template_name = "symbols/form_snippet.j2"
     form_class = AccountSelectForm
@@ -86,23 +130,35 @@ class DeleteAccountView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixi
     def form_valid(self, form):
         account = form.cleaned_data["account"]
         account.delete()
-        return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
+        return HttpResponse(
+            json.dumps({"valid": True}), content_type="application/json"
+        )
 
 
 # asset
-class AddAssetView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.CreateView):
+class AddAssetView(
+    LoginRequiredMixin,
+    GetDepotMixin,
+    GetFormWithDepotMixin,
+    AjaxResponseMixin,
+    generic.CreateView,
+):
     model = Asset
     template_name = "symbols/form_snippet.j2"
     form_class = AssetForm
 
 
-class EditAssetView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
+class EditAssetView(
+    LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView
+):
     model = Asset
     template_name = "symbols/form_snippet.j2"
     form_class = AssetForm
 
 
-class DeleteAssetView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.FormView):
+class DeleteAssetView(
+    LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.FormView
+):
     model = Asset
     template_name = "symbols/form_snippet.j2"
     form_class = AssetSelectForm
@@ -110,18 +166,27 @@ class DeleteAssetView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin,
     def form_valid(self, form):
         asset = form.cleaned_data["asset"]
         asset.delete()
-        return HttpResponse(json.dumps({"valid": True}), content_type="application/json")
+        return HttpResponse(
+            json.dumps({"valid": True}), content_type="application/json"
+        )
 
 
 # trade
-class AddTradeView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAndInitialDataMixin, AjaxResponseMixin,
-                   generic.CreateView):
+class AddTradeView(
+    LoginRequiredMixin,
+    GetDepotMixin,
+    GetFormWithDepotAndInitialDataMixin,
+    AjaxResponseMixin,
+    generic.CreateView,
+):
     model = Trade
     form_class = TradeForm
     template_name = "symbols/form_snippet.j2"
 
 
-class EditTradeView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
+class EditTradeView(
+    LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView
+):
     model = Trade
     form_class = TradeForm
     template_name = "symbols/form_snippet.j2"
@@ -138,7 +203,7 @@ class DeleteTradeView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteV
 class EditPriceView(LoginRequiredMixin, AjaxResponseMixin, generic.UpdateView):
     model = Price
     form_class = PriceEditForm
-    template_name = 'symbols/form_snippet.j2'
+    template_name = "symbols/form_snippet.j2"
 
 
 class DeletePriceView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
@@ -148,37 +213,55 @@ class DeletePriceView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteV
     def get_queryset(self):
         return Price.objects.filter(
             symbol__in=Asset.objects.filter(
-                depot=self.request.user.get_active_crypto_depot()).values_list('symbol', flat=True))
+                depot=self.request.user.get_active_crypto_depot()
+            ).values_list("symbol", flat=True)
+        )
 
 
 # transaction
-class AddTransactionView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAndInitialDataMixin, AjaxResponseMixin,
-                         generic.CreateView):
+class AddTransactionView(
+    LoginRequiredMixin,
+    GetDepotMixin,
+    GetFormWithDepotAndInitialDataMixin,
+    AjaxResponseMixin,
+    generic.CreateView,
+):
     model = Transaction
     form_class = TransactionForm
     template_name = "symbols/form_snippet.j2"
 
 
-class EditTransactionView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
+class EditTransactionView(
+    LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView
+):
     model = Transaction
     form_class = TransactionForm
     template_name = "symbols/form_snippet.j2"
 
 
-class DeleteTransactionView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
+class DeleteTransactionView(
+    LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView
+):
     model = Transaction
     template_name = "symbols/delete_snippet.j2"
 
 
 # flow
-class AddFlowView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAndInitialDataMixin, AjaxResponseMixin,
-                  generic.CreateView):
+class AddFlowView(
+    LoginRequiredMixin,
+    GetDepotMixin,
+    GetFormWithDepotAndInitialDataMixin,
+    AjaxResponseMixin,
+    generic.CreateView,
+):
     model = Flow
     form_class = FlowForm
     template_name = "symbols/form_snippet.j2"
 
 
-class EditFlowView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
+class EditFlowView(
+    LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView
+):
     model = Flow
     form_class = FlowForm
     template_name = "symbols/form_snippet.j2"
@@ -192,36 +275,53 @@ class DeleteFlowView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteVi
 ###
 # CryptoPriceFetcher: Add, Edit, Delete, Run
 ###
-class AddPriceFetcherView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAndInitialDataMixin,
-                          AjaxResponseMixin, generic.CreateView):
+class AddPriceFetcherView(
+    LoginRequiredMixin,
+    GetDepotMixin,
+    GetFormWithDepotAndInitialDataMixin,
+    AjaxResponseMixin,
+    generic.CreateView,
+):
     form_class = PriceFetcherForm
     model = PriceFetcher
     template_name = "symbols/form_snippet.j2"
 
 
-class EditPriceFetcherView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.UpdateView):
+class EditPriceFetcherView(
+    LoginRequiredMixin,
+    GetDepotMixin,
+    GetFormWithDepotMixin,
+    AjaxResponseMixin,
+    generic.UpdateView,
+):
     model = PriceFetcher
     form_class = PriceFetcherForm
     template_name = "symbols/form_snippet.j2"
 
 
-class DeletePriceFetcherView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
+class DeletePriceFetcherView(
+    LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView
+):
     model = PriceFetcher
     template_name = "symbols/delete_snippet.j2"
 
     def get_queryset(self):
         return PriceFetcher.objects.filter(
             asset__in=Asset.objects.filter(
-                depot=self.request.user.get_active_crypto_depot()))
+                depot=self.request.user.get_active_crypto_depot()
+            )
+        )
 
 
 class RunPriceFetcherView(LoginRequiredMixin, generic.View):
-    http_method_names = ['get', 'head', 'options']
+    http_method_names = ["get", "head", "options"]
 
     def get(self, request, pk, *args, **kwargs):
         fetcher = get_object_or_404(PriceFetcher, pk=pk)
         success, result = fetcher.run()
         if not success:
             messages.error(request, result)
-        url = '{}?tab=prices'.format(reverse_lazy('crypto:asset', args=[fetcher.asset.pk]))
+        url = "{}?tab=prices".format(
+            reverse_lazy("crypto:asset", args=[fetcher.asset.pk])
+        )
         return HttpResponseRedirect(url)

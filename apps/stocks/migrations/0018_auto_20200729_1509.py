@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('stocks', '0017_auto_20200729_1503'),
+        ("stocks", "0017_auto_20200729_1503"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='depot',
-            name='inflow_total',
+            model_name="depot",
+            name="inflow_total",
             field=models.FloatField(null=True),
         ),
         migrations.AddField(
-            model_name='depot',
-            name='outflow_total',
+            model_name="depot",
+            name="outflow_total",
             field=models.FloatField(null=True),
         ),
     ]

@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0072_auto_20200402_1913'),
+        ("crypto", "0072_auto_20200402_1913"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='flow',
-            unique_together={('account', 'date')},
+            name="flow",
+            unique_together={("account", "date")},
         ),
     ]

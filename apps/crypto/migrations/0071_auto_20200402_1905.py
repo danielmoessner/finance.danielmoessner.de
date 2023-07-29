@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0070_remove_coingeckoasset_name'),
+        ("crypto", "0070_remove_coingeckoasset_name"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='trade',
-            unique_together={('account', 'date')},
+            name="trade",
+            unique_together={("account", "date")},
         ),
     ]

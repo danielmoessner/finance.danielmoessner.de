@@ -6,25 +6,24 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0038_auto_20180625_1246'),
+        ("crypto", "0038_auto_20180625_1246"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='personalprice',
+            name="personalprice",
             unique_together=set([]),
         ),
         migrations.RemoveField(
-            model_name='personalprice',
-            name='asset',
+            model_name="personalprice",
+            name="asset",
         ),
         migrations.RemoveField(
-            model_name='price',
-            name='asset_symbol',
+            model_name="price",
+            name="asset_symbol",
         ),
         migrations.DeleteModel(
-            name='PersonalPrice',
+            name="PersonalPrice",
         ),
     ]

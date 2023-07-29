@@ -1,23 +1,19 @@
 from typing import Callable
+
+from apps.core.fetchers.selenium import SeleniumFetcher
+from apps.core.fetchers.website import WebsiteFetcher
 from apps.crypto.fetchers.coingecko import CoinGeckoFetcher
 from apps.crypto.models import Price, PriceFetcher
-from apps.core.fetchers.selenium import (
-    SeleniumFetcher,
-)
-from apps.core.fetchers.website import (
-    WebsiteFetcher,
-)
-
-from typing import Callable
-
 
 FETCHER_FUNCTION = Callable[[PriceFetcher], tuple[bool, str]]
 
 
-def get_fetchers_to_be_run(fetcher_type: str) -> dict[str, dict[str, int | str]]:
+def get_fetchers_to_be_run(fetcher_type: str):
     fetchers_to_be_run: list[PriceFetcher] = []
     for fetcher in list(PriceFetcher.objects.filter(fetcher_type=fetcher_type)):
-        price = Price.objects.filter(symbol=fetcher.asset.symbol).order_by("-date").first()
+        price = (
+            Price.objects.filter(symbol=fetcher.asset.symbol).order_by("-date").first()
+        )
         if price and not price.is_old:
             continue
         fetchers_to_be_run.append(fetcher)

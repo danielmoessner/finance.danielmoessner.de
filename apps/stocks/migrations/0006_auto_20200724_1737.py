@@ -4,24 +4,31 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('stocks', '0005_depot_balance'),
+        ("stocks", "0005_depot_balance"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Price',
+            name="Price",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateTimeField()),
-                ('ticker', models.CharField(max_length=20)),
-                ('price', models.DecimalField(decimal_places=2, max_digits=20)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date", models.DateTimeField()),
+                ("ticker", models.CharField(max_length=20)),
+                ("price", models.DecimalField(decimal_places=2, max_digits=20)),
             ],
         ),
         migrations.AddField(
-            model_name='stock',
-            name='exchange',
-            field=models.CharField(default='XETRA', max_length=20),
+            model_name="stock",
+            name="exchange",
+            field=models.CharField(default="XETRA", max_length=20),
         ),
     ]

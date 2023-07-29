@@ -1,30 +1,41 @@
 from django.core.validators import MinValueValidator
-from apps.users.models import StandardUser
-from apps.core.models import Depot as CoreDepot
-from django.utils import timezone
 from django.db import models
+from django.utils import timezone
+
 import apps.core.return_calculation as rc
 import apps.core.utils as utils
+from apps.core.models import Depot as CoreDepot
+from apps.users.models import StandardUser
 
 
 class Depot(CoreDepot):
-    user = models.ForeignKey(StandardUser, editable=False, related_name="alternative_depots", on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        StandardUser,
+        editable=False,
+        related_name="alternative_depots",
+        on_delete=models.CASCADE,
+    )
 
-    def save(self, force_insert=False, force_update=False, using=None,
-             update_fields=None):
-        super().save(force_insert=force_insert, force_update=force_update, using=using,
-                     update_fields=update_fields)
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        super().save(
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields,
+        )
         if self.is_active:
-            self.user.alternative_depots.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
+            self.user.alternative_depots.filter(is_active=True).exclude(
+                pk=self.pk
+            ).update(is_active=False)
 
     # getters
     def get_stats(self):
-        return {
-            'Value': self.get_value()
-        }
+        return {"Value": self.get_value()}
 
     def get_value(self):
-        if not hasattr(self, 'value'):
+        if not hasattr(self, "value"):
             statement = """
             select sum(value) as value
             from alternative_value v
@@ -35,7 +46,9 @@ class Depot(CoreDepot):
                 from alternative_value v
                 group by v.alternative_id
             )
-            """.format(self.pk)
+            """.format(
+                self.pk
+            )
             self.value = self.get_number_from_database(statement)
         return self.value
 
@@ -44,14 +57,16 @@ class Depot(CoreDepot):
         return utils.get_number_from_database(statement)
 
     def get_value_df(self):
-        if not hasattr(self, 'value_df'):
+        if not hasattr(self, "value_df"):
             self.value_df = utils.sum_up_value_dfs_from_items(self.alternatives.all())
         return self.value_df
 
 
 class Alternative(models.Model):
     name = models.CharField(max_length=200)
-    depot = models.ForeignKey(Depot, on_delete=models.CASCADE, related_name="alternatives")
+    depot = models.ForeignKey(
+        Depot, on_delete=models.CASCADE, related_name="alternatives"
+    )
     # query optimization
     invested_capital = models.FloatField(null=True)
     time_weighted_return = models.FloatField(null=True)
@@ -63,20 +78,20 @@ class Alternative(models.Model):
         unique_together = ("depot", "name")
 
     def __str__(self):
-        return '{}'.format(self.name)
+        return "{}".format(self.name)
 
     # getters
     def get_stats(self):
         return {
-            'Value': self.get_value(),
-            'Invested Capital': self.get_invested_capital(),
-            'Current Return': self.get_current_return(),
-            'Time Weighted Return': self.get_time_weighted_return(),
-            'Internal Rate of Return': self.get_internal_rate_of_return()
+            "Value": self.get_value(),
+            "Invested Capital": self.get_invested_capital(),
+            "Current Return": self.get_current_return(),
+            "Time Weighted Return": self.get_time_weighted_return(),
+            "Internal Rate of Return": self.get_internal_rate_of_return(),
         }
 
     def get_value(self):
-        value = Value.objects.filter(alternative=self).order_by('date').last()
+        value = Value.objects.filter(alternative=self).order_by("date").last()
         if value:
             return float(value.value)
         return None
@@ -101,27 +116,37 @@ class Alternative(models.Model):
 
     def get_time_weighted_return(self):
         if self.time_weighted_return is None:
-            time_weighted_return_df = rc.get_time_weighted_return_df(self.get_flow_df(), self.get_value_df())
-            self.time_weighted_return = rc.get_time_weighted_return(time_weighted_return_df)
+            time_weighted_return_df = rc.get_time_weighted_return_df(
+                self.get_flow_df(), self.get_value_df()
+            )
+            self.time_weighted_return = rc.get_time_weighted_return(
+                time_weighted_return_df
+            )
             self.save()
         return self.time_weighted_return
 
     def get_internal_rate_of_return(self):
         if self.internal_rate_of_return is None:
-            internal_rate_of_return_df = rc.get_internal_rate_of_return_df(self.get_flow_df(), self.get_value_df())
-            self.internal_rate_of_return = rc.get_internal_rate_of_return(internal_rate_of_return_df)
+            internal_rate_of_return_df = rc.get_internal_rate_of_return_df(
+                self.get_flow_df(), self.get_value_df()
+            )
+            self.internal_rate_of_return = rc.get_internal_rate_of_return(
+                internal_rate_of_return_df
+            )
             self.save()
         return self.internal_rate_of_return
 
     def get_current_return(self):
         if self.current_return is None:
-            current_return_df = rc.get_current_return_df(self.get_flow_df(), self.get_value_df())
+            current_return_df = rc.get_current_return_df(
+                self.get_flow_df(), self.get_value_df()
+            )
             self.current_return = rc.get_current_return(current_return_df)
             self.save()
         return self.current_return
 
     def get_value_df(self):
-        if not hasattr(self, 'value_df'):
+        if not hasattr(self, "value_df"):
             statement = """
                 select date(date) as date,
                        value      as value
@@ -133,9 +158,11 @@ class Alternative(models.Model):
                     where alternative_id = {}
                     group by date(date)
                 )
-            """.format(self.pk, self.pk)
+            """.format(
+                self.pk, self.pk
+            )
             # get the flow df
-            self.value_df = self.get_df_from_database(statement, ['date', 'value'])
+            self.value_df = self.get_df_from_database(statement, ["date", "value"])
         return self.value_df
 
     def get_df_from_database(self, statement, columns):
@@ -143,7 +170,7 @@ class Alternative(models.Model):
         return utils.get_df_from_database(statement, columns)
 
     def get_flow_df(self):
-        if not hasattr(self, 'flow_df'):
+        if not hasattr(self, "flow_df"):
             statement = """
                 select 
                     date(date) as date,
@@ -152,16 +179,18 @@ class Alternative(models.Model):
                 join alternative_alternative a on f.alternative_id=a.id
                 where a.id = {}
                 group by date(date)
-            """.format(self.pk)
+            """.format(
+                self.pk
+            )
             # get the flow df
-            self.flow_df = self.get_df_from_database(statement, ['date', 'flow'])
+            self.flow_df = self.get_df_from_database(statement, ["date", "flow"])
         return self.flow_df
 
     def get_flows_and_values(self):
-        flows = list(self.flows.all().values('date', 'flow', 'pk'))
-        values = list(self.values.all().values('date', 'value', 'pk'))
+        flows = list(self.flows.all().values("date", "flow", "pk"))
+        values = list(self.values.all().values("date", "value", "pk"))
         flows_and_values = flows + values
-        flows_and_values_sorted = sorted(flows_and_values, key=lambda k: k['date'])
+        flows_and_values_sorted = sorted(flows_and_values, key=lambda k: k["date"])
         return flows_and_values_sorted
 
     # setters
@@ -174,15 +203,19 @@ class Alternative(models.Model):
 
 
 class Value(models.Model):
-    alternative = models.ForeignKey(Alternative, related_name="values", on_delete=models.CASCADE)
+    alternative = models.ForeignKey(
+        Alternative, related_name="values", on_delete=models.CASCADE
+    )
     date = models.DateTimeField()
-    value = models.DecimalField(decimal_places=2, max_digits=15, validators=[MinValueValidator(0)])
+    value = models.DecimalField(
+        decimal_places=2, max_digits=15, validators=[MinValueValidator(0)]
+    )
 
     class Meta:
         unique_together = ("alternative", "date")
 
     def __str__(self):
-        return '{}: {} {}'.format(self.alternative, self.get_date(), self.value)
+        return "{}: {} {}".format(self.alternative, self.get_date(), self.value)
 
     def save(self, *args, **kwargs):
         self.alternative.reset()
@@ -194,11 +227,13 @@ class Value(models.Model):
 
     # getters
     def get_date(self):
-        return timezone.localtime(self.date).strftime('%d.%m.%y %H:%M')
+        return timezone.localtime(self.date).strftime("%d.%m.%y %H:%M")
 
 
 class Flow(models.Model):
-    alternative = models.ForeignKey(Alternative, related_name="flows", on_delete=models.CASCADE)
+    alternative = models.ForeignKey(
+        Alternative, related_name="flows", on_delete=models.CASCADE
+    )
     date = models.DateTimeField()
     flow = models.DecimalField(decimal_places=2, max_digits=15)
 
@@ -206,7 +241,7 @@ class Flow(models.Model):
         unique_together = ("alternative", "date")
 
     def __str__(self):
-        return '{}: {} {}'.format(self.alternative, self.get_date(), self.flow)
+        return "{}: {} {}".format(self.alternative, self.get_date(), self.flow)
 
     def save(self, *args, **kwargs):
         self.alternative.reset()
@@ -218,4 +253,4 @@ class Flow(models.Model):
 
     # getters
     def get_date(self):
-        return timezone.localtime(self.date).strftime('%d.%m.%y %H:%M')
+        return timezone.localtime(self.date).strftime("%d.%m.%y %H:%M")

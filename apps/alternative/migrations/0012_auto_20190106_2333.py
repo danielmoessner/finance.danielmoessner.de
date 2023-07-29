@@ -5,15 +5,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('alternative', '0011_remove_timespan_period'),
+        ("alternative", "0011_remove_timespan_period"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='flow',
-            name='value',
-            field=models.DecimalField(decimal_places=2, max_digits=15, validators=[django.core.validators.MinValueValidator(0)]),
+            model_name="flow",
+            name="value",
+            field=models.DecimalField(
+                decimal_places=2,
+                max_digits=15,
+                validators=[django.core.validators.MinValueValidator(0)],
+            ),
         ),
     ]

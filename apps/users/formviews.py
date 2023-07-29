@@ -1,10 +1,15 @@
-from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.auth.views import PasswordChangeView
-from apps.users.models import StandardUser
-from apps.users.forms import UpdateGeneralStandardUserForm, UpdateCryptoStandardUserForm, UpdateStandardUserForm
-from apps.core.mixins import AjaxResponseMixin
 from django.views import generic
+
+from apps.core.mixins import AjaxResponseMixin
+from apps.users.forms import (
+    UpdateCryptoStandardUserForm,
+    UpdateGeneralStandardUserForm,
+    UpdateStandardUserForm,
+)
+from apps.users.models import StandardUser
 
 
 class UserIsLoggedIn(UserPassesTestMixin):
@@ -23,7 +28,9 @@ class EditUserPasswordSettingsView(AjaxResponseMixin, PasswordChangeView):
     template_name = "symbols/form_snippet.j2"
 
 
-class EditUserGeneralSettingsView(UserIsLoggedIn, AjaxResponseMixin, generic.UpdateView):
+class EditUserGeneralSettingsView(
+    UserIsLoggedIn, AjaxResponseMixin, generic.UpdateView
+):
     form_class = UpdateGeneralStandardUserForm
     model = StandardUser
     template_name = "symbols/form_snippet.j2"

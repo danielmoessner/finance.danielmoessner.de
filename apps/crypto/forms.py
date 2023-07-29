@@ -1,22 +1,20 @@
+from datetime import datetime
+
+from django import forms
 from django.db.models import Q
 from django.utils import timezone
-from django import forms
 
 from apps.core.fetchers.website import WebsiteFetcherInput
 from apps.crypto.fetchers.coingecko import CoinGeckoFetcherInput
 
-from .models import Account, Flow, Price, PriceFetcher, Transaction, Trade, Depot, Asset
-
-from datetime import datetime
+from .models import Account, Asset, Depot, Flow, Price, PriceFetcher, Trade, Transaction
 
 
 # depot
 class DepotForm(forms.ModelForm):
     class Meta:
         model = Depot
-        fields = (
-            "name",
-        )
+        fields = ("name",)
 
     def __init__(self, user, *args, **kwargs):
         super(DepotForm, self).__init__(*args, **kwargs)
@@ -27,9 +25,7 @@ class DepotSelectForm(forms.Form):
     depot = forms.ModelChoiceField(widget=forms.Select, queryset=None)
 
     class Meta:
-        fields = (
-            "depot",
-        )
+        fields = ("depot",)
 
     def __init__(self, user, *args, **kwargs):
         super(DepotSelectForm, self).__init__(*args, **kwargs)
@@ -46,9 +42,7 @@ class DepotActiveForm(forms.ModelForm):
 class AccountForm(forms.ModelForm):
     class Meta:
         model = Account
-        fields = (
-            "name",
-        )
+        fields = ("name",)
 
     def __init__(self, depot, *args, **kwargs):
         super(AccountForm, self).__init__(*args, **kwargs)
@@ -59,9 +53,7 @@ class AccountSelectForm(forms.Form):
     account = forms.ModelChoiceField(widget=forms.Select, queryset=None)
 
     class Meta:
-        fields = (
-            "account",
-        )
+        fields = ("account",)
 
     def __init__(self, depot, *args, **kwargs):
         super(AccountSelectForm, self).__init__(*args, **kwargs)
@@ -72,11 +64,12 @@ class AccountSelectForm(forms.Form):
 class AssetForm(forms.ModelForm):
     class Meta:
         model = Asset
-        fields = (
-            'symbol',
-        )
+        fields = ("symbol",)
         help_texts = {
-            'symbol': "It's not advised to change the symbol of an asset as the prices of the asset will change.",
+            "symbol": (
+                "It's not advised to change the symbol of"
+                " an asset as the prices of the asset will change."
+            ),
         }
 
     def __init__(self, depot, *args, **kwargs):
@@ -88,9 +81,7 @@ class AssetSelectForm(forms.Form):
     asset = forms.ModelChoiceField(widget=forms.Select, queryset=None)
 
     class Meta:
-        fields = (
-            "asset",
-        )
+        fields = ("asset",)
 
     def __init__(self, depot, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -99,8 +90,13 @@ class AssetSelectForm(forms.Form):
 
 # trade
 class TradeForm(forms.ModelForm):
-    date = forms.DateTimeField(widget=forms.DateTimeInput(attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
-                               input_formats=["%Y-%m-%dT%H:%M"], label="Date")
+    date = forms.DateTimeField(
+        widget=forms.DateTimeInput(
+            attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
+        ),
+        input_formats=["%Y-%m-%dT%H:%M"],
+        label="Date",
+    )
 
     class Meta:
         model = Trade
@@ -121,35 +117,47 @@ class TradeForm(forms.ModelForm):
         self.fields["date"].initial = datetime.now()
 
     def clean(self):
-        account = self.cleaned_data['account']
-        sell_asset = self.cleaned_data['sell_asset']
-        sell_amount = self.cleaned_data['sell_amount']
-        buy_amount = self.cleaned_data['buy_amount']
-        date = self.cleaned_data['date']
-        # check that there is not already a transaction or flow on this exact date and account
-        if Transaction.objects.filter(Q(date=date), Q(from_account=account) | Q(to_account=account)).exists():
-            raise forms.ValidationError('There is already a transaction at this date and account.')
+        account = self.cleaned_data["account"]
+        sell_asset = self.cleaned_data["sell_asset"]
+        sell_amount = self.cleaned_data["sell_amount"]
+        buy_amount = self.cleaned_data["buy_amount"]
+        date = self.cleaned_data["date"]
+        # check that there is not already a transaction or
+        # flow on this exact date and account
+        if Transaction.objects.filter(
+            Q(date=date), Q(from_account=account) | Q(to_account=account)
+        ).exists():
+            raise forms.ValidationError(
+                "There is already a transaction at this date and account."
+            )
         if Flow.objects.filter(date=date, account=account).exists():
-            raise forms.ValidationError('There is already a flow at this date and account')
-        # check that buy and sell amount is positive because a trade doesnt make sense otherwise
+            raise forms.ValidationError(
+                "There is already a flow at this date and account"
+            )
+        # check that buy and sell amount is positive because a
+        # trade doesnt make sense otherwise
         if sell_amount < 0 or buy_amount < 0:
-            raise forms.ValidationError('Sell and buy amount must be positive.')
+            raise forms.ValidationError("Sell and buy amount must be positive.")
         # check that enough asset is available of the asset that is sold
         # TODO exclude the own instance from the available calculation
         available_amount = account.get_amount_asset_before_date(sell_asset, date)
         if available_amount < sell_amount:
             message = (
-                'There is not enough asset on this account to support this trade. '
-                'There is {} available.'.format(available_amount)
+                "There is not enough asset on this account to support this trade. "
+                "There is {} available.".format(available_amount)
             )
             raise forms.ValidationError(message)
 
 
 # transaction
 class TransactionForm(forms.ModelForm):
-    date = forms.DateTimeField(widget=forms.DateTimeInput(attrs={"type": "datetime-local"},
-                                                          format="%Y-%m-%dT%H:%M"),
-                               input_formats=["%Y-%m-%dT%H:%M"], label="Date")
+    date = forms.DateTimeField(
+        widget=forms.DateTimeInput(
+            attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
+        ),
+        input_formats=["%Y-%m-%dT%H:%M"],
+        label="Date",
+    )
 
     class Meta:
         model = Transaction
@@ -170,65 +178,90 @@ class TransactionForm(forms.ModelForm):
         self.fields["date"].initial = datetime.now()
 
     def clean(self):
-        from_account = self.cleaned_data['from_account']
-        to_account = self.cleaned_data['to_account']
-        asset = self.cleaned_data['asset']
-        amount = self.cleaned_data['amount']
-        fees = self.cleaned_data['fees']
-        date = self.cleaned_data['date']
+        from_account = self.cleaned_data["from_account"]
+        to_account = self.cleaned_data["to_account"]
+        asset = self.cleaned_data["asset"]
+        amount = self.cleaned_data["amount"]
+        fees = self.cleaned_data["fees"]
+        date = self.cleaned_data["date"]
         # check that there is not already a trade or flow on this exact date and account
-        if Trade.objects.filter(Q(date=date), Q(account=from_account) | Q(account=to_account)).exists():
-            raise forms.ValidationError('There is already a trade at this date and one of the accounts.')
-        if Flow.objects.filter(Q(date=date), Q(account=from_account) | Q(account=to_account)).exists():
-            raise forms.ValidationError('There is already a flow at this date and account')
-        # check that buy and sell amount is positive because a trade doesnt make sense otherwise
+        if Trade.objects.filter(
+            Q(date=date), Q(account=from_account) | Q(account=to_account)
+        ).exists():
+            raise forms.ValidationError(
+                "There is already a trade at this date and one of the accounts."
+            )
+        if Flow.objects.filter(
+            Q(date=date), Q(account=from_account) | Q(account=to_account)
+        ).exists():
+            raise forms.ValidationError(
+                "There is already a flow at this date and account"
+            )
+        # check that buy and sell amount is positive because
+        # a trade doesnt make sense otherwise
         if amount < 0:
-            raise forms.ValidationError('The amount must be positive.')
+            raise forms.ValidationError("The amount must be positive.")
         # check that enough asset is available of the asset that is sold
         exclude = [self.instance.pk] if self.instance.pk else None
-        available_amount = from_account.get_amount_asset_before_date(asset, date, exclude_transactions=exclude)
+        available_amount = from_account.get_amount_asset_before_date(
+            asset, date, exclude_transactions=exclude
+        )
         if available_amount < (amount + fees):
             message = (
-                'There is not enough asset on this account to support this transaction. '
-                'There is {} available'.format(available_amount)
+                "There is not enough asset on this account"
+                " to support this transaction. "
+                "There is {} available".format(available_amount)
             )
             raise forms.ValidationError(message)
 
 
 # flow
 class FlowForm(forms.ModelForm):
-    date = forms.DateTimeField(widget=forms.DateTimeInput(
-        attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
-        input_formats=['%Y-%m-%dT%H:%M'], label='Date')
+    date = forms.DateTimeField(
+        widget=forms.DateTimeInput(
+            attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
+        ),
+        input_formats=["%Y-%m-%dT%H:%M"],
+        label="Date",
+    )
 
     class Meta:
         model = Flow
         fields = (
-            'account',
-            'date',
-            'flow',
+            "account",
+            "date",
+            "flow",
         )
 
     def __init__(self, depot, *args, **kwargs):
         super(FlowForm, self).__init__(*args, **kwargs)
-        self.instance.asset = depot.assets.get(symbol='EUR')
-        self.fields['account'].queryset = depot.accounts.all()
-        self.fields['date'].initial = timezone.now().date
+        self.instance.asset = depot.assets.get(symbol="EUR")
+        self.fields["account"].queryset = depot.accounts.all()
+        self.fields["date"].initial = timezone.now().date
 
     def clean(self):
-        date = self.cleaned_data['date']
-        flow = self.cleaned_data['flow']
-        account = self.cleaned_data['account']
+        date = self.cleaned_data["date"]
+        flow = self.cleaned_data["flow"]
+        account = self.cleaned_data["account"]
         asset = self.instance.asset
-        # check that there is not already a transaction or trade on this exact date and account
-        if Transaction.objects.filter(Q(date=date), Q(from_account=account) | Q(to_account=account)).exists():
-            raise forms.ValidationError('There is already a transaction at this date and account.')
+        # check that there is not already a transaction or
+        # trade on this exact date and account
+        if Transaction.objects.filter(
+            Q(date=date), Q(from_account=account) | Q(to_account=account)
+        ).exists():
+            raise forms.ValidationError(
+                "There is already a transaction at this date and account."
+            )
         if Trade.objects.filter(date=date, account=account).exists():
-            raise forms.ValidationError('There is already a trade at this date and account.')
+            raise forms.ValidationError(
+                "There is already a trade at this date and account."
+            )
         # check that enough asset is available if asset is withdrawn
         # TODO exclude the own instance from the available calculation
         if flow < 0 and account.get_amount_asset_before_date(asset, date) < abs(flow):
-            raise forms.ValidationError('There is not enough asset on this account to support this flow.')
+            raise forms.ValidationError(
+                "There is not enough asset on this account to support this flow."
+            )
 
 
 ###
@@ -241,7 +274,7 @@ class PriceFetcherForm(forms.ModelForm):
 
     def __init__(self, depot, *args, **kwargs):
         super(PriceFetcherForm, self).__init__(*args, **kwargs)
-        self.fields['asset'].queryset = depot.assets.all()
+        self.fields["asset"].queryset = depot.assets.all()
 
     def _create_human_error(self, error: forms.ValidationError) -> str:
         error_string = ""
@@ -269,7 +302,7 @@ class PriceFetcherForm(forms.ModelForm):
     def clean_type(self):
         type = self.cleaned_data["type"]
         if type not in map(lambda x: x[0], PriceFetcher.PRICE_FETCHER_TYPES):
-            raise forms.ValidationError('This type is not supported.')
+            raise forms.ValidationError("This type is not supported.")
         return type
 
 
@@ -277,6 +310,4 @@ class PriceFetcherForm(forms.ModelForm):
 class PriceEditForm(forms.ModelForm):
     class Meta:
         model = Price
-        fields = (
-            'price',
-        )
+        fields = ("price",)

@@ -2,6 +2,5 @@ from django.apps import AppConfig
 
 
 class BankingConfig(AppConfig):
-    name = 'apps.banking'
+    name = "apps.banking"
     verbose_name = "Banking"
-

@@ -4,29 +4,34 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crypto', '0054_auto_20200329_2151'),
+        ("crypto", "0054_auto_20200329_2151"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='account',
-            name='slug',
+            model_name="account",
+            name="slug",
         ),
         migrations.AddField(
-            model_name='account',
-            name='value',
-            field=models.DecimalField(blank=True, decimal_places=8, max_digits=20, null=True),
+            model_name="account",
+            name="value",
+            field=models.DecimalField(
+                blank=True, decimal_places=8, max_digits=20, null=True
+            ),
         ),
         migrations.AddField(
-            model_name='asset',
-            name='value',
-            field=models.DecimalField(blank=True, decimal_places=8, max_digits=20, null=True),
+            model_name="asset",
+            name="value",
+            field=models.DecimalField(
+                blank=True, decimal_places=8, max_digits=20, null=True
+            ),
         ),
         migrations.AddField(
-            model_name='depot',
-            name='value',
-            field=models.DecimalField(blank=True, decimal_places=8, max_digits=20, null=True),
+            model_name="depot",
+            name="value",
+            field=models.DecimalField(
+                blank=True, decimal_places=8, max_digits=20, null=True
+            ),
         ),
     ]

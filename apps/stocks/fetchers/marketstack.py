@@ -1,6 +1,7 @@
+import requests
 from django.conf import settings
 from pydantic import BaseModel
-import requests
+
 from apps.core.fetchers.base import Fetcher
 
 
@@ -31,10 +32,13 @@ class MarketstackFetcher(Fetcher):
             for fetcher in data:
                 results[fetcher] = (
                     False,
-                    f"Could not fetch prices from marketstack: '{api_response['error']['message']}'.",
+                    (
+                        "Could not fetch prices from marketstack: "
+                        f"'{api_response['error']['message']}'."
+                    ),
                 )
             return results
-        
+
         for fetcher, input in data.items():
             symbol = input.symbol
             results[fetcher] = (False, "Price not found in response.")
@@ -42,5 +46,5 @@ class MarketstackFetcher(Fetcher):
                 if price["symbol"] == symbol:
                     results[fetcher] = (True, round(price["close"], 2))
                     break
-        
+
         return results
