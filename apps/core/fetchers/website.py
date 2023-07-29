@@ -1,8 +1,14 @@
 import re
 import time
 from bs4 import BeautifulSoup
+from pydantic import BaseModel, HttpUrl
 import requests
 from apps.core.fetchers.base import Fetcher
+
+
+class WebsiteFetcherInput(BaseModel):
+    website: HttpUrl
+    target: str
 
 
 headers = {
@@ -21,26 +27,26 @@ headers = {
 
 
 class WebsiteFetcher(Fetcher):
-    def fetch_single(self, website: str, target: str) -> tuple[bool, str | float]:
+    def fetch_single(self, data: WebsiteFetcherInput) -> tuple[bool, str | float]:
         try:
-            resp = requests.get(website, headers=headers)
+            resp = requests.get(data.website, headers=headers)
             html = resp.text
         except Exception as e:
-            return False, f"An error occured while trying to connect to {website}: {e}."
+            return False, f"An error occured while trying to connect to {data.website}: {e}."
 
         if resp.status_code != 200:
             return (
                 False,
-                f"Could not connect to {website}. The status code is {resp.status_code}.",
+                f"Could not connect to {data.website}. The status code is {resp.status_code}.",
             )
 
         soup = BeautifulSoup(html, features="html.parser")
-        selection = soup.select_one(target)
+        selection = soup.select_one(data.target)
 
         if not selection:
             return (
                 False,
-                f"Could not find a price on {website} with {target}.",
+                f"Could not find a price on {data.website} with {data.target}.",
             )
 
         result = re.search("\d{1,5}[.,]\d{2}", str(selection))
@@ -54,12 +60,12 @@ class WebsiteFetcher(Fetcher):
         return True, price
 
     def fetch_multiple(
-        self, data: dict[str, dict[str, str | int]]
+        self, data: dict[str, WebsiteFetcherInput]
     ) -> dict[str, tuple[bool, str | float]]:
         i = 0
         results = {}
         for fetcher, input in data.items():
-            result = self.fetch_single(**input)
+            result = self.fetch_single(input)
             results[fetcher] = result
             time.sleep(i)
             i += 1

@@ -6,9 +6,9 @@ from pydantic import BaseModel, HttpUrl
 from apps.core import utils
 from apps.core.utils import get_df_from_database
 from apps.core.fetchers.base import Fetcher
-from apps.stocks.fetchers.marketstack import MarketstackFetcher
-from apps.core.fetchers.selenium import SeleniumFetcher
-from apps.core.fetchers.website import WebsiteFetcher
+from apps.stocks.fetchers.marketstack import MarketstackFetcher, MarketstackFetcherInput
+from apps.core.fetchers.selenium import SeleniumFetcher, SeleniumFetcherInput
+from apps.core.fetchers.website import WebsiteFetcher, WebsiteFetcherInput
 from apps.users.models import StandardUser
 from django.utils import timezone
 import apps.core.return_calculation as rc
@@ -454,15 +454,6 @@ class Stock(models.Model):
         return utils.create_value_df_from_amount_and_price(self)
 
 
-class PriceFetcherDataMarketstack(BaseModel):
-    symbol: str
-
-
-class PriceFetcherDataWebsite(BaseModel):
-    website: HttpUrl
-    target: str
-
-
 class PriceFetcher(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='price_fetchers')
     PRICE_FETCHER_TYPES = (
@@ -472,8 +463,6 @@ class PriceFetcher(models.Model):
     )
     fetcher_type = models.CharField(max_length=250, choices=PRICE_FETCHER_TYPES)
     data = models.JSONField(default=dict)
-    website = models.URLField()
-    target = models.CharField(max_length=250)
     error = models.CharField(max_length=1000, blank=True)
 
     def __str__(self):
@@ -493,8 +482,17 @@ class PriceFetcher(models.Model):
             return SeleniumFetcher
         elif self.fetcher_type == 'MARKETSTACK':
             return MarketstackFetcher
-        else:
-            raise ValueError('unknown type {}'.format(self.fetcher_type))
+        raise ValueError('unknown type {}'.format(self.fetcher_type))
+
+    @property
+    def fetcher_input(self) -> WebsiteFetcherInput | SeleniumFetcherInput | MarketstackFetcherInput:
+        if self.fetcher_type == 'WEBSITE':
+            return WebsiteFetcherInput(**self.data)
+        elif self.fetcher_type == 'SELENIUM':
+            return SeleniumFetcherInput(**self.data)
+        elif self.fetcher_type == 'MARKETSTACK':
+            return MarketstackFetcherInput(**self.data)
+        raise ValueError('unknown type {}'.format(self.fetcher_type))
 
     def run(self):
         fetcher: Fetcher = self.fetcher_class()

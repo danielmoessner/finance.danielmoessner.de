@@ -1,18 +1,23 @@
 from django.conf import settings
+from pydantic import BaseModel
 import requests
 from apps.core.fetchers.base import Fetcher
 
 
+class MarketstackFetcherInput(BaseModel):
+    symbol: str
+
+
 class MarketstackFetcher(Fetcher):
-    def fetch_single(self, symbol: str) -> tuple[bool, str | float]:
-        return self.fetch_multiple({"_": {"symbol": symbol}})["_"]
+    def fetch_single(self, data: MarketstackFetcherInput) -> tuple[bool, str | float]:
+        return self.fetch_multiple({"_": {"symbol": data.symbol}})["_"]
 
     def fetch_multiple(
-        self, data: dict[str, dict[str, str | int]]
+        self, data: dict[str, MarketstackFetcherInput]
     ) -> dict[str, tuple[bool, str | float]]:
         symbols = []
         for fetcher, input in data.items():
-            symbols.append(input["symbol"])
+            symbols.append(input.symbol)
 
         symbols = ",".join(symbols)
         params = {"access_key": settings.MARKETSTACK_API_KEY}

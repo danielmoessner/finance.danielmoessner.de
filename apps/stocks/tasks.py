@@ -18,20 +18,13 @@ FETCHER_FUNCTION = Callable[[PriceFetcher], tuple[bool, str]]
 
 
 def get_fetchers_to_be_run(fetcher_type: str) -> dict[str, dict[str, int | str]]:
-    fetchers_to_be_run = []
+    fetchers_to_be_run: list[PriceFetcher] = []
     for fetcher in list(PriceFetcher.objects.filter(fetcher_type=fetcher_type)):
         price = Price.objects.filter(ticker=fetcher.stock.ticker).order_by("-date").first()
         if price and not price.is_old:
             continue
         fetchers_to_be_run.append(fetcher)
-    return {str(fetcher.pk): fetcher.data for fetcher in fetchers_to_be_run}
-
-
-def turn_fetchers_to_data(fetchers: list[PriceFetcher]) -> dict[str, dict]:
-    data = {}
-    for fetcher in fetchers:
-        data[str(fetcher.pk)] = fetcher.data
-    return data
+    return {str(fetcher.pk): fetcher.fetcher_input for fetcher in fetchers_to_be_run}
 
 
 def save_prices(results: dict[str, tuple[bool, str | float]]):
