@@ -23,11 +23,48 @@
     {% include "symbols/stats.j2" %}
 
     {% if tab=="prices" %}
+        {{ mg.djangoModal("Add Fetcher", "addFetcher") }}
+        {{ mg.djangoModal("Edit Fetcher", "editFetcher") }}
+        {{ mg.djangoModal("Delete Fetcher", "deleteFetcher") }}
+        {{ mg.djangoModal("Edit Price", "editPrice") }}
+        {{ mg.djangoModal("Delete Price", "deletePrice") }}
+
         <table class="table table-dark table-responsive-md rounded mb-5">
             <thead>
             <tr>
-               <th scope="col">Date</th>
-               <th class="text-end" scope="col">Price</th>
+               <th scope="col">Fetcher</th>
+               <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for fetcher in fetchers %}
+                <tr>
+                    <td class="text-truncate w-75" style="max-width: 300px;">
+                        {{ fetcher }}
+                        {% if fetcher.error %}<abbr title="{{ fetcher.error }}"><br>Error: {{ fetcher.error }}</abbr>{% endif %}
+                    </td>
+                    <td class="text-end">
+                        {{ bg.hrefButton("Run", url("crypto:run_price_fetcher", args=[fetcher.pk])) }}
+                        {{ bg.modalButton("Edit", "#editFetcher", action=url("crypto:edit_price_fetcher", args=[fetcher.pk])) }}
+                        {{ bg.modalButton("Delete", "#deleteFetcher", action=url("crypto:delete_price_fetcher", args=[fetcher.pk])) }}
+                    </td>
+                </tr>
+            {% endfor %}
+            <tr>
+                <td colspan="2">
+                    <div class="d-flex">
+                        {{ bg.modalButton("Add Fetcher", "#addFetcher", action=url("crypto:add_price_fetcher")+"?asset="+object.pk|string) }}
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <table class="table table-dark table-responsive-md rounded mb-5">
+            <thead>
+            <tr>
+                <th scope="col">Date</th>
+                <th class="text-end" scope="col">Price</th>
+                <th scope="col"></th>
             </tr>
             </thead>
             <tbody>
@@ -35,6 +72,10 @@
                 <tr>
                     <td>{{ localtime(price.date).strftime('%d.%m.%Y %H:%M') }}</td>
                     <td class="text-end">{{ price.price }}</td>
+                    <td class="text-end">
+                        {{ bg.modalButton("Edit", "#editPrice", action=url("crypto:edit_price", args=[price.pk])) }}
+                        {{ bg.modalButton("Delete", "#deletePrice", action=url("crypto:delete_price", args=[price.pk])) }}
+                    </td>
                 </tr>
             {% endfor %}
             </tbody>

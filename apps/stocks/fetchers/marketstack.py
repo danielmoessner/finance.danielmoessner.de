@@ -36,7 +36,7 @@ class MarketstackFetcher(Fetcher):
             return results
         
         for fetcher, input in data.items():
-            symbol = input["symbol"]
+            symbol = input.symbol
             results[fetcher] = (False, "Price not found in response.")
             for price in api_response["data"]:
                 if price["symbol"] == symbol:

@@ -1,7 +1,9 @@
 from django import forms
 from django.utils import timezone
 from pydantic import ValidationError
-from apps.stocks.models import Depot, Bank, PriceFetcherDataMarketstack, PriceFetcherDataWebsite, Trade, Stock, Flow, Price, Dividend, PriceFetcher
+from apps.core.fetchers.website import WebsiteFetcherInput
+from apps.stocks.fetchers.marketstack import MarketstackFetcherInput
+from apps.stocks.models import Depot, Bank, Trade, Stock, Flow, Price, Dividend, PriceFetcher
 from apps.core import utils
 
 
@@ -133,13 +135,13 @@ class PriceFetcherForm(forms.ModelForm):
         data = self.cleaned_data["data"]
         if self.cleaned_data["type"] == "MARKETSTACK":
             try:
-                PriceFetcherDataMarketstack(**data)
+                MarketstackFetcherInput(**data)
             except ValidationError as e:
                 print(str(e))
                 raise forms.ValidationError(self._create_human_error(e))
         elif self.cleaned_data["type"] in ["WEBSITE", "SELENIUM"]:
             try:
-                PriceFetcherDataWebsite(**data)
+                WebsiteFetcherInput(**data)
             except ValidationError as e:
                 raise forms.ValidationError(self._create_human_error(e))
         else:

@@ -37,6 +37,16 @@ urlpatterns = [
     path("flows/<int:pk>/edit/", formviews.EditFlowView.as_view(), name="edit_flow"),
     path("flows/<int:pk>/delete/", formviews.DeleteFlowView.as_view(), name="delete_flow"),
 
+    # price
+    path('price/<int:pk>/edit/', formviews.EditPriceView.as_view(), name='edit_price'),
+    path('price/<int:pk>/delete/', formviews.DeletePriceView.as_view(), name='delete_price'),
+
+    # price fetcher
+    path("price-fetcher/add/", formviews.AddPriceFetcherView.as_view(), name="add_price_fetcher"),
+    path("price-fetcher/<int:pk>/edit/", formviews.EditPriceFetcherView.as_view(), name="edit_price_fetcher"),
+    path("price-fetcher/<int:pk>/delete/", formviews.DeletePriceFetcherView.as_view(), name="delete_price_fetcher"),
+    path("price-fetcher/<int:pk>/run/", formviews.RunPriceFetcherView.as_view(), name="run_price_fetcher"),
+
     # views
     path("depots/<int:pk>/", views.IndexView.as_view(), name="index"),
     path("accounts/<int:pk>/", views.AccountView.as_view(), name="account"),

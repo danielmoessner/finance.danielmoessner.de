@@ -1,6 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from apps.crypto.models import Transaction, Flow, Account, Asset, Trade, Depot
-from apps.crypto.forms import FlowForm, AccountSelectForm, TradeForm, DepotForm, AccountForm, AssetSelectForm, \
+from apps.crypto.models import Price, PriceFetcher, Transaction, Flow, Account, Asset, Trade, Depot
+from apps.crypto.forms import FlowForm, AccountSelectForm, PriceEditForm, PriceFetcherForm, TradeForm, DepotForm, AccountForm, AssetSelectForm, \
     DepotSelectForm, DepotActiveForm, TransactionForm, AssetForm
 from apps.core.mixins import CustomAjaxDeleteMixin, AjaxResponseMixin, CustomGetFormUserMixin, \
     GetFormWithDepotAndInitialDataMixin, GetFormWithDepotMixin
@@ -9,6 +9,7 @@ from django.views import generic
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse_lazy
 import json
+from django.contrib import messages
 
 
 # mixins
@@ -131,6 +132,25 @@ class DeleteTradeView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteV
     template_name = "symbols/delete_snippet.j2"
 
 
+###
+# Price: Edit, Delete
+###
+class EditPriceView(LoginRequiredMixin, AjaxResponseMixin, generic.UpdateView):
+    model = Price
+    form_class = PriceEditForm
+    template_name = 'symbols/form_snippet.j2'
+
+
+class DeletePriceView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
+    model = Price
+    template_name = "symbols/delete_snippet.j2"
+
+    def get_queryset(self):
+        return Price.objects.filter(
+            symbol__in=Asset.objects.filter(
+                depot=self.request.user.get_active_crypto_depot()).values_list('symbol', flat=True))
+
+
 # transaction
 class AddTransactionView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAndInitialDataMixin, AjaxResponseMixin,
                          generic.CreateView):
@@ -167,3 +187,41 @@ class EditFlowView(LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, ge
 class DeleteFlowView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
     model = Flow
     template_name = "symbols/delete_snippet.j2"
+
+
+###
+# CryptoPriceFetcher: Add, Edit, Delete, Run
+###
+class AddPriceFetcherView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotAndInitialDataMixin,
+                          AjaxResponseMixin, generic.CreateView):
+    form_class = PriceFetcherForm
+    model = PriceFetcher
+    template_name = "symbols/form_snippet.j2"
+
+
+class EditPriceFetcherView(LoginRequiredMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.UpdateView):
+    model = PriceFetcher
+    form_class = PriceFetcherForm
+    template_name = "symbols/form_snippet.j2"
+
+
+class DeletePriceFetcherView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
+    model = PriceFetcher
+    template_name = "symbols/delete_snippet.j2"
+
+    def get_queryset(self):
+        return PriceFetcher.objects.filter(
+            asset__in=Asset.objects.filter(
+                depot=self.request.user.get_active_crypto_depot()))
+
+
+class RunPriceFetcherView(LoginRequiredMixin, generic.View):
+    http_method_names = ['get', 'head', 'options']
+
+    def get(self, request, pk, *args, **kwargs):
+        fetcher = get_object_or_404(PriceFetcher, pk=pk)
+        success, result = fetcher.run()
+        if not success:
+            messages.error(request, result)
+        url = '{}?tab=prices'.format(reverse_lazy('crypto:asset', args=[fetcher.asset.pk]))
+        return HttpResponseRedirect(url)

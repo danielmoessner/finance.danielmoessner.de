@@ -1,4 +1,8 @@
 from typing import Union
+from apps.core.fetchers.base import Fetcher
+from apps.core.fetchers.selenium import SeleniumFetcher, SeleniumFetcherInput
+from apps.core.fetchers.website import WebsiteFetcher, WebsiteFetcherInput
+from apps.crypto.fetchers.coingecko import CoinGeckoFetcher, CoinGeckoFetcherInput
 from apps.users.models import StandardUser
 from apps.core.models import Account as CoreAccount, Depot as CoreDepot
 from django.db.models import Sum
@@ -443,16 +447,12 @@ class Price(models.Model):
     def is_old(self):
         return self.date < timezone.now() - timedelta(days=1)
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        if Price.objects.filter(symbol=self.symbol,
-                                date__gte=(self.date - timedelta(hours=23)),
-                                date__lte=self.date).exists():
-            return
-        super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
         [asset.depot.reset_all() for asset in Asset.objects.filter(symbol=self.symbol)]
 
-    def delete(self, using=None, keep_parents=False):
-        super().delete(using=using, keep_parents=keep_parents)
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
         [asset.depot.reset_all() for asset in Asset.objects.filter(symbol=self.symbol)]
 
     # getters
@@ -507,25 +507,34 @@ class PriceFetcher(models.Model):
             return '{} - {}'.format(self.fetcher_type, self.url)
         return self.fetcher_type
     
-    # @property
-    # def fetcher_class(self) -> type[Fetcher]:
-    #     if self.fetcher_type == 'WEBSITE':
-    #         return WebsiteFetcher
-    #     elif self.fetcher_type == 'SELENIUM':
-    #         return SeleniumFetcher
-    #     # elif self.fetcher_type == 'MARKETSTACK':
-    #     #     return MarketstackFetcher
-    #     else:
-    #         raise ValueError('unknown type {}'.format(self.fetcher_type))
+    @property
+    def fetcher_class(self) -> type[Fetcher]:
+        if self.fetcher_type == 'WEBSITE':
+            return WebsiteFetcher
+        elif self.fetcher_type == 'SELENIUM':
+            return SeleniumFetcher
+        elif self.fetcher_type == 'COINGECKO':
+            return CoinGeckoFetcher
+        raise ValueError('unknown type {}'.format(self.fetcher_type))
 
-    # def run(self):
-    #     fetcher: Fetcher = self.fetcher_class()
-    #     success, result = fetcher.fetch_single(**self.data)
-    #     if success:
-    #         self.save_price(result)
-    #     else:
-    #         self.set_error(result)
-    #     return success, result
+    @property
+    def fetcher_input(self) -> WebsiteFetcherInput | SeleniumFetcherInput | CoinGeckoFetcherInput:
+        if self.fetcher_type == 'WEBSITE':
+            return WebsiteFetcherInput(**self.data)
+        elif self.fetcher_type == 'SELENIUM':
+            return SeleniumFetcherInput(**self.data)
+        elif self.fetcher_type == 'COINGECKO':
+            return CoinGeckoFetcherInput(**self.data)
+        raise ValueError('unknown type {}'.format(self.fetcher_type))
+
+    def run(self):
+        fetcher: Fetcher = self.fetcher_class()
+        success, result = fetcher.fetch_single(self.fetcher_input)
+        if success:
+            self.save_price(result)
+        else:
+            self.set_error(result)
+        return success, result
 
     def save_price(self, price):
         asset = self.asset

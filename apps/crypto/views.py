@@ -66,6 +66,7 @@ class AssetView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
             .select_related("account", "buy_asset", "sell_asset")
         context["transactions"] = self.object.transactions.filter(from_account__in=accounts).order_by("-date") \
             .select_related("from_account", "to_account", "asset")
+        context["fetchers"] = self.object.price_fetchers.all()
         return context
 
 

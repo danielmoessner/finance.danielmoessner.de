@@ -1,45 +1,47 @@
-from datetime import timedelta
-from django.utils import timezone
+from typing import Callable
+from apps.crypto.fetchers.coingecko import CoinGeckoFetcher
+from apps.crypto.models import Price, PriceFetcher
+from apps.core.fetchers.selenium import (
+    SeleniumFetcher,
+)
+from apps.core.fetchers.website import (
+    WebsiteFetcher,
+)
 
-from .models import Asset, CoinGeckoAsset, Price
-
-from urllib.request import urlopen
-import json
-
-
-def create_coingecko_asset(symbol):
-    url = 'https://api.coingecko.com/api/v3/coins/list'
-    with urlopen(url) as response:
-        all_available_coins = json.loads(response.read().decode())
-        coins_i_am_looking_for = list(filter(lambda coin: coin['symbol'] == symbol.lower(), all_available_coins))
-        if len(coins_i_am_looking_for) != 1:
-            return None
-        coin = coins_i_am_looking_for[0]
-        CoinGeckoAsset.objects.create(coingecko_id=coin['id'], coingecko_symbol=coin['symbol'], symbol=symbol)
+from typing import Callable
 
 
-def fetch_price(coingecko_assets: list[CoinGeckoAsset]):
-    ids = ','.join([asset.coingecko_id for asset in coingecko_assets])
-    url = 'https://api.coingecko.com/api/v3/simple/price?ids={}&vs_currencies=eur'.format(ids)
-    with urlopen(url) as response:
-        prices = json.loads(response.read().decode())
-    for asset in coingecko_assets:
-        price = prices[asset.coingecko_id]['eur']
-        Price.objects.create(symbol=asset.symbol, price=price, date=timezone.now())
+FETCHER_FUNCTION = Callable[[PriceFetcher], tuple[bool, str]]
 
 
-def update_prices():
-    asset_symbols = Asset.objects.all().values_list('symbol', flat=True).distinct()
-    coingecko_assets = []
-    # create coingecko connections for every asset that there is
-    for symbol in asset_symbols:
-        try:
-            asset = CoinGeckoAsset.objects.get(symbol=symbol)
-            if Price.objects.filter(symbol=asset.symbol, date__gt=timezone.now() - timedelta(days=1)).exists():
-                continue
-            coingecko_assets.append(asset)
-        except CoinGeckoAsset.DoesNotExist:
-            create_coingecko_asset(symbol)
-            # skip the price fetching for this asset at the moment
+def get_fetchers_to_be_run(fetcher_type: str) -> dict[str, dict[str, int | str]]:
+    fetchers_to_be_run: list[PriceFetcher] = []
+    for fetcher in list(PriceFetcher.objects.filter(fetcher_type=fetcher_type)):
+        price = Price.objects.filter(symbol=fetcher.asset.symbol).order_by("-date").first()
+        if price and not price.is_old:
             continue
-    fetch_price(coingecko_assets)
+        fetchers_to_be_run.append(fetcher)
+    return {str(fetcher.pk): fetcher.fetcher_input for fetcher in fetchers_to_be_run}
+
+
+def save_prices(results: dict[str, tuple[bool, str | float]]):
+    for fetcher, result in results.items():
+        fetcher = PriceFetcher.objects.get(pk=fetcher)
+        if result[0]:
+            fetcher.save_price(result[1])
+        else:
+            fetcher.set_error(result[1])
+
+
+def fetch_prices():
+    data = get_fetchers_to_be_run("WEBSITE")
+    results = WebsiteFetcher().fetch_multiple(data)
+    save_prices(results)
+
+    data = get_fetchers_to_be_run("SELENIUM")
+    results = SeleniumFetcher().fetch_multiple(data)
+    save_prices(results)
+
+    data = get_fetchers_to_be_run("COINGECKO")
+    results = CoinGeckoFetcher().fetch_multiple(data)
+    save_prices(results)

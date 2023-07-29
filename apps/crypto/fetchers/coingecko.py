@@ -30,12 +30,14 @@ class CoinGeckoFetcher(Fetcher):
         for _, input in data.items():
             ids.append(input.coingecko_id)
         
-        results = self.__fetch(ids)
+        response = self.__fetch(ids)
+
+        results = {}
 
         for fetcher, input in data.items():
-            if input.coingecko_id not in results:
+            if input.coingecko_id not in response:
                 results[fetcher] = (False, f"Could not find a price for {input.coingecko_id}.")
             else:
-                results[fetcher] = (True, results[fetcher])
+                results[fetcher] = (True, response[input.coingecko_id])
 
         return results

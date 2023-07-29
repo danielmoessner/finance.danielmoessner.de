@@ -496,7 +496,7 @@ class PriceFetcher(models.Model):
 
     def run(self):
         fetcher: Fetcher = self.fetcher_class()
-        success, result = fetcher.fetch_single(**self.data)
+        success, result = fetcher.fetch_single(self.fetcher_input)
         if success:
             self.save_price(result)
         else:

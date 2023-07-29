@@ -2,7 +2,10 @@ from django.db.models import Q
 from django.utils import timezone
 from django import forms
 
-from .models import Account, Flow, Transaction, Trade, Depot, Asset
+from apps.core.fetchers.website import WebsiteFetcherInput
+from apps.crypto.fetchers.coingecko import CoinGeckoFetcherInput
+
+from .models import Account, Flow, Price, PriceFetcher, Transaction, Trade, Depot, Asset
 
 from datetime import datetime
 
@@ -226,3 +229,54 @@ class FlowForm(forms.ModelForm):
         # TODO exclude the own instance from the available calculation
         if flow < 0 and account.get_amount_asset_before_date(asset, date) < abs(flow):
             raise forms.ValidationError('There is not enough asset on this account to support this flow.')
+
+
+###
+# CryptoPriceFetcher
+###
+class PriceFetcherForm(forms.ModelForm):
+    class Meta:
+        model = PriceFetcher
+        fields = ["asset", "fetcher_type", "data"]
+
+    def __init__(self, depot, *args, **kwargs):
+        super(PriceFetcherForm, self).__init__(*args, **kwargs)
+        self.fields['asset'].queryset = depot.assets.all()
+
+    def _create_human_error(self, error: forms.ValidationError) -> str:
+        error_string = ""
+        for e in error.errors():
+            error_string += f"{e['loc'][0]}: {e['msg']}\n"
+        return error_string
+
+    def clean_data(self):
+        data = self.cleaned_data["data"]
+        if self.cleaned_data["type"] == "COINGECKO":
+            try:
+                CoinGeckoFetcherInput(**data)
+            except forms.ValidationError as e:
+                print(str(e))
+                raise forms.ValidationError(self._create_human_error(e))
+        elif self.cleaned_data["type"] in ["WEBSITE", "SELENIUM"]:
+            try:
+                WebsiteFetcherInput(**data)
+            except forms.ValidationError as e:
+                raise forms.ValidationError(self._create_human_error(e))
+        else:
+            self.add_error("type", "This type is not supported.")
+        return data
+
+    def clean_type(self):
+        type = self.cleaned_data["type"]
+        if type not in map(lambda x: x[0], PriceFetcher.PRICE_FETCHER_TYPES):
+            raise forms.ValidationError('This type is not supported.')
+        return type
+
+
+# price
+class PriceEditForm(forms.ModelForm):
+    class Meta:
+        model = Price
+        fields = (
+            'price',
+        )
