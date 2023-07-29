@@ -13,7 +13,7 @@ from apps.core.fetchers.selenium import SeleniumFetcher, SeleniumFetcherInput
 from apps.core.fetchers.website import WebsiteFetcher, WebsiteFetcherInput
 from apps.core.models import Account as CoreAccount
 from apps.core.models import Depot as CoreDepot
-from apps.core.utils import change_time_of_date_index_in_df
+from apps.core.utils import change_time_of_date_index_in_df, get_df_from_database
 from apps.crypto.fetchers.coingecko import CoinGeckoFetcher, CoinGeckoFetcherInput
 from apps.users.models import StandardUser
 
@@ -49,28 +49,24 @@ class Depot(CoreDepot):
             )
 
     # getters
+    def __get_flow_df(self):
+        statement = """
+            select 
+                date(date) as date,
+                sum(flow) as flow
+            from crypto_flow f
+            join crypto_account a on f.account_id=a.id
+            where a.depot_id = {}
+            group by date(date)
+        """.format(
+            self.pk
+        )
+        assert str(self.pk) in statement
+        return get_df_from_database(statement, ["date", "flow"])
+
     def get_flow_df(self):
         if not hasattr(self, "flow_df"):
-            # get the flow df
-            df = pd.DataFrame(
-                data=list(
-                    Flow.objects.filter(account__in=self.accounts.all()).values(
-                        "date", "flow"
-                    )
-                ),
-                columns=["date", "flow"],
-            )
-            df.set_index("date", inplace=True)
-            # make it to float so that pandas can calculate everything,
-            #  decimal doesn't work fine with pandas
-            df.loc[:, "flow"] = df.loc[:, "flow"].apply(pd.to_numeric, downcast="float")
-            # make the time to the same as in the value df: 12:00,
-            # in order to calculate everything correctly
-            df = change_time_of_date_index_in_df(df, 12)
-            # combine the duplicates to a single flow
-            df = df.groupby(by="date").sum()
-            # set the df
-            self.flow_df = df
+            self.flow_df = self.__get_flow_df()
         return self.flow_df
 
     def get_value_df(self):
