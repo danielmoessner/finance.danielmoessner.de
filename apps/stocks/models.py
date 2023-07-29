@@ -5,10 +5,10 @@ from pydantic import BaseModel, HttpUrl
 
 from apps.core import utils
 from apps.core.utils import get_df_from_database
-from apps.stocks.fetcher.base import Fetcher
-from apps.stocks.fetcher.marketstack import MarketstackFetcher
-from apps.stocks.fetcher.selenium import SeleniumFetcher
-from apps.stocks.fetcher.website import WebsiteFetcher
+from apps.stocks.fetchers.base import Fetcher
+from apps.stocks.fetchers.marketstack import MarketstackFetcher
+from apps.stocks.fetchers.selenium import SeleniumFetcher
+from apps.stocks.fetchers.website import WebsiteFetcher
 from apps.users.models import StandardUser
 from django.utils import timezone
 import apps.core.return_calculation as rc

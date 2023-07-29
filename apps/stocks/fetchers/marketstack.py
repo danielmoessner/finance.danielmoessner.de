@@ -1,6 +1,6 @@
 from django.conf import settings
 import requests
-from apps.stocks.fetcher.base import Fetcher
+from apps.stocks.fetchers.base import Fetcher
 
 
 class MarketstackFetcher(Fetcher):

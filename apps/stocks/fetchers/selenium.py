@@ -2,7 +2,7 @@ import re
 import time
 from bs4 import BeautifulSoup
 from apps.core.selenium import get_chrome_driver
-from apps.stocks.fetcher.base import Fetcher
+from apps.stocks.fetchers.base import Fetcher
 
 
 class SeleniumFetcher(Fetcher):
