@@ -1,3 +1,4 @@
+from datetime import date
 import numpy as np
 import pandas as pd
 from scipy.optimize import newton
@@ -176,6 +177,8 @@ def get_current_return_df(flow_df, value_df):
     # stop calculations if something went wrong beforehand
     if df is None or df.empty:
         return None
+    # new check to see if there are still datetimes used instead of dates
+    assert isinstance(flow_df.index[0], date) and isinstance(value_df.index[0], date)
     # copy the first value to the flow column if there is no flow
     if df.iloc[0, df.columns.get_loc("flow")] == 0:
         df.iloc[0, df.columns.get_loc("flow")] = df.iloc[0, df.columns.get_loc("value")]

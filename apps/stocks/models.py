@@ -1,4 +1,5 @@
 from datetime import timedelta
+from typing import TYPE_CHECKING
 
 from django.db import models
 from django.db.models import Sum
@@ -12,7 +13,7 @@ from apps.core.fetchers.website import WebsiteFetcher, WebsiteFetcherInput
 from apps.core.utils import get_df_from_database
 from apps.stocks.fetchers.marketstack import MarketstackFetcher, MarketstackFetcherInput
 from apps.users.models import StandardUser
-
+from django.db.models import QuerySet
 
 class Depot(models.Model):
     name = models.CharField(max_length=200)
@@ -29,6 +30,10 @@ class Depot(models.Model):
     invested_capital = models.FloatField(null=True)
     inflow_total = models.FloatField(null=True)
     outflow_total = models.FloatField(null=True)
+
+    if TYPE_CHECKING:
+        banks: QuerySet["Bank"]
+        stocks: QuerySet["Stock"]
 
     class Meta:
         verbose_name = "Depot"
