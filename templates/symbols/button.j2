@@ -1,5 +1,5 @@
-{% macro modalButton(text, target, classes="", action="") %}
-    <a class="btn btn-sm btn-info {{ classes }} modal-button" type="button" data-bs-toggle="modal"
+{% macro modalButton(text, target, action="") %}
+    <a class="btn btn-sm btn-info modal-button" type="button" data-bs-toggle="modal"
        data-bs-target="{{ target }}" data-action="{{ action }}">{{ text }}</a>
 {% endmacro %}
 
