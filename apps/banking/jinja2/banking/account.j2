@@ -19,45 +19,47 @@
     {% include 'symbols/stats.j2' %}
 
     {% if tab=='changes' %}
-            <table class="table rounded table-responsive-md table-dark mb-5">
-                <thead>
-                <tr>
-                   <th scope="col">Date</th>
-                   <th scope="col">Category</th>
-                   <th scope="col">Description</th>
-                    <th class="text-end" scope="col">Change</th>
-                    <th class="text-end" scope="col">Balance</th>
-                    <th class="text-end" scope="col">
-                        {{ bg.modalButton("Add Change", "#addChange") }}
-                    </th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for change in changes %}
-                <tr>
-                    <td>{{ localtime(change.date).strftime('%d.%m.%Y %H:%M') }}</td>
-                    <td>{{ change.category }}</td>
-                    <td>{{ change.get_description() }}</td>
-                    <td class="text-end">{{ change.change }}</td>
-                    <td class="text-end">{{ change.get_stats()['Balance'] }}</td>
-                    <td>
-                        <div class="d-flex justify-content-end">
-                            {{ mg.djangoModal("Edit Change", "editChange"+change.pk|string, url("banking:edit_change", args=[change.pk])) }}
-                            {{ bg.modalButton("Edit", "#editChange"+change.pk|string) }}
-                            {{ mg.djangoModal("Delete Change", "deleteChange"+change.pk|string, url("banking:delete_change", args=[change.pk])) }}
-                            {{ bg.modalButton("Delete", "#deleteChange"+change.pk|string) }}
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-                <tr>
-                    <td colspan="6">
-                        {{ mg.djangoModal("Add Change", "addChange", url("banking:add_change")+"?account="+account.pk|string) }}
-                        {{ bg.modalButton("Add Change", "#addChange") }}
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+
+        {{ mg.djangoModal("Edit Change", "editChange") }}
+        {{ mg.djangoModal("Delete Change", "deleteChange") }}
+        {{ mg.djangoModal("Add Change", "addChange", url("banking:add_change")+"?account="+account.pk|string) }}
+
+        <table class="table rounded table-responsive-md table-dark mb-5">
+            <thead>
+            <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Category</th>
+                <th scope="col">Description</th>
+                <th class="text-end" scope="col">Change</th>
+                <th class="text-end" scope="col">Balance</th>
+                <th class="text-end" scope="col">
+                    {{ bg.modalButton("Add Change", "#addChange") }}
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for change in changes %}
+            <tr>
+                <td>{{ localtime(change.date).strftime('%d.%m.%Y %H:%M') }}</td>
+                <td>{{ change.category }}</td>
+                <td>{{ change.get_description() }}</td>
+                <td class="text-end">{{ change.change }}</td>
+                <td class="text-end">{{ change.get_stats()['Balance'] }}</td>
+                <td>
+                    <div class="d-flex justify-content-end">
+                        {{ bg.modalButton("Edit", "#editChange", url("banking:edit_change", args=[change.pk])) }}
+                        {{ bg.modalButton("Delete", "#deleteChange", url("banking:delete_change", args=[change.pk])) }}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td colspan="6">
+                    {{ bg.modalButton("Add Change", "#addChange") }}
+                </td>
+            </tr>
+            </tbody>
+        </table>
     {% endif %}
 
 {% endblock %}
