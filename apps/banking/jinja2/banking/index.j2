@@ -24,7 +24,9 @@
     
     {{ mg.djangoModal("Add Change", "addChange") }}
     {{ mg.djangoModal("Edit Account", "editAccount") }}
-    
+    {{ mg.djangoModal("Add Account", "addAccount") }}
+    {{ mg.djangoModal("Delete Account", "deleteAccount") }}
+
     <table class="table rounded table-responsive-md table-dark mb-5">
         <thead>
         <tr>
@@ -50,10 +52,8 @@
         <tr>
             <td colspan="3">
                 <div class="d-flex">
-                    {{ mg.djangoModal("Add Account", "addAccount", url("banking:add_account")) }}
-                    {{ bg.modalButton("Add Account", "#addAccount") }}
-                    {{ mg.djangoModal("Delete Account", "deleteAccount", url("banking:delete_account")) }}
-                    {{ bg.modalButton("Delete Account", "#deleteAccount") }}
+                    {{ bg.modalButton("Add Account", "#addAccount", url("banking:add_account")) }}
+                    {{ bg.modalButton("Delete Account", "#deleteAccount", url("banking:delete_account")) }}
                 </div>
             </td>
         </tr>
