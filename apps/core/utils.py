@@ -87,7 +87,9 @@ def create_value_df_from_amount_and_price(item) -> Union[pd.DataFrame, None]:
     return df
 
 
-def sum_up_columns_in_a_dataframe(df, column="value", drop=True) -> Union[pd.DataFrame, None]:
+def sum_up_columns_in_a_dataframe(
+    df, column="value", drop=True
+) -> Union[pd.DataFrame, None]:
     # return none if the df is empty
     if df.empty:
         return None

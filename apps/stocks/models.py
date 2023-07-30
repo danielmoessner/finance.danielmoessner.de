@@ -2,7 +2,7 @@ from datetime import timedelta
 from typing import TYPE_CHECKING, Union
 
 from django.db import models
-from django.db.models import Sum
+from django.db.models import QuerySet, Sum
 from django.utils import timezone
 
 import apps.core.return_calculation as rc
@@ -13,7 +13,7 @@ from apps.core.fetchers.website import WebsiteFetcher, WebsiteFetcherInput
 from apps.core.utils import get_df_from_database
 from apps.stocks.fetchers.marketstack import MarketstackFetcher, MarketstackFetcherInput
 from apps.users.models import StandardUser
-from django.db.models import QuerySet
+
 
 class Depot(models.Model):
     name = models.CharField(max_length=200)

@@ -1,13 +1,15 @@
 from typing import TYPE_CHECKING
+
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models import QuerySet
 from django.utils import timezone
 
 import apps.core.return_calculation as rc
 import apps.core.utils as utils
 from apps.core.models import Depot as CoreDepot
 from apps.users.models import StandardUser
-from django.db.models import QuerySet
+
 
 class Depot(CoreDepot):
     user = models.ForeignKey(

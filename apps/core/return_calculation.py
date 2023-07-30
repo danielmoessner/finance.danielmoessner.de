@@ -1,5 +1,6 @@
 from datetime import date
 from typing import Union
+
 import numpy as np
 import pandas as pd
 from scipy.optimize import newton
@@ -8,7 +9,9 @@ from scipy.optimize import newton
 #############
 # standard dfs
 #############
-def _get_merged_flow_and_value_df(flow_df: pd.DataFrame, value_df: pd.DataFrame) -> Union[pd.DataFrame, None]:
+def _get_merged_flow_and_value_df(
+    flow_df: pd.DataFrame, value_df: pd.DataFrame
+) -> Union[pd.DataFrame, None]:
     # no calculations are possible if on of the dfs is none
     if value_df is None or flow_df is None or value_df.empty or flow_df.empty:
         return None
@@ -26,7 +29,9 @@ def _get_merged_flow_and_value_df(flow_df: pd.DataFrame, value_df: pd.DataFrame)
     return df
 
 
-def get_value_with_flow_df(flow_df: pd.DataFrame, value_df: pd.DataFrame) -> Union[pd.DataFrame, None]:
+def get_value_with_flow_df(
+    flow_df: pd.DataFrame, value_df: pd.DataFrame
+) -> Union[pd.DataFrame, None]:
     # get the right df
     df = _get_merged_flow_and_value_df(flow_df, value_df)
     # stop calculations if something went wrong beforehand
@@ -48,7 +53,9 @@ def get_value_with_flow_df(flow_df: pd.DataFrame, value_df: pd.DataFrame) -> Uni
 #############
 # time weighted return
 #############
-def get_time_weighted_return_df(flow_df: pd.DataFrame, value_df: pd.DataFrame) -> Union[pd.DataFrame, None]:
+def get_time_weighted_return_df(
+    flow_df: pd.DataFrame, value_df: pd.DataFrame
+) -> Union[pd.DataFrame, None]:
     # get the right df
     df = get_value_with_flow_df(flow_df, value_df)
     # stop calculations if something went wrong beforehand
@@ -85,7 +92,9 @@ def get_time_weighted_return(df: pd.DataFrame) -> Union[float, None]:
 #############
 # internal rate of return
 #############
-def get_internal_rate_of_return_df(flow_df: pd.DataFrame, value_df: pd.DataFrame) -> Union[pd.DataFrame, None]:
+def get_internal_rate_of_return_df(
+    flow_df: pd.DataFrame, value_df: pd.DataFrame
+) -> Union[pd.DataFrame, None]:
     # get the right df
     df = _get_merged_flow_and_value_df(flow_df, value_df)
     # stop calculations if something went wrong beforehand
@@ -172,7 +181,9 @@ def get_internal_rate_of_return(df: pd.DataFrame) -> Union[pd.DataFrame, None]:
 #############
 # current return
 #############
-def get_current_return_df(flow_df: pd.DataFrame, value_df: pd.DataFrame) -> Union[pd.DataFrame, None]:
+def get_current_return_df(
+    flow_df: pd.DataFrame, value_df: pd.DataFrame
+) -> Union[pd.DataFrame, None]:
     # get the right df
     df = get_value_with_flow_df(flow_df, value_df)
     # stop calculations if something went wrong beforehand
