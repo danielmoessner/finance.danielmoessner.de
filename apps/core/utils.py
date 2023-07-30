@@ -1,4 +1,5 @@
 from datetime import timedelta
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -60,7 +61,7 @@ def sum_up_value_dfs_from_items(items):
     return df
 
 
-def create_value_df_from_amount_and_price(item):
+def create_value_df_from_amount_and_price(item) -> Union[pd.DataFrame, None]:
     price_df = item.get_price_df()
     amount_df = item.get_amount_df()
     # return none if there is nothing to be calculated
@@ -86,7 +87,7 @@ def create_value_df_from_amount_and_price(item):
     return df
 
 
-def sum_up_columns_in_a_dataframe(df, column="value", drop=True):
+def sum_up_columns_in_a_dataframe(df, column="value", drop=True) -> Union[pd.DataFrame, None]:
     # return none if the df is empty
     if df.empty:
         return None
@@ -112,7 +113,7 @@ def change_time_of_date_index_in_df(df, hours):
     return df
 
 
-def remove_time_of_date_index_in_df(df):
+def remove_time_of_date_index_in_df(df) -> pd.DataFrame:
     if not df.empty:
         df.index = df.index.normalize()
         df = df.tz_localize(None)
@@ -133,7 +134,7 @@ def turn_dict_of_dicts_into_list_of_dicts(dict_of_dicts, name_of_key):
 ###
 # Database Utils
 ###
-def get_df_from_database(statement, columns):
+def get_df_from_database(statement: str, columns: list[str]) -> pd.DataFrame:
     cursor = connection.cursor()
     cursor.execute(statement)
     data = cursor.fetchall()
@@ -143,7 +144,7 @@ def get_df_from_database(statement, columns):
     return df
 
 
-def get_number_from_database(statement):
+def get_number_from_database(statement: str):
     cursor = connection.cursor()
     cursor.execute(statement)
     data = cursor.fetchall()

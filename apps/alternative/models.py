@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
@@ -6,7 +7,7 @@ import apps.core.return_calculation as rc
 import apps.core.utils as utils
 from apps.core.models import Depot as CoreDepot
 from apps.users.models import StandardUser
-
+from django.db.models import QuerySet
 
 class Depot(CoreDepot):
     user = models.ForeignKey(
@@ -15,6 +16,9 @@ class Depot(CoreDepot):
         related_name="alternative_depots",
         on_delete=models.CASCADE,
     )
+
+    if TYPE_CHECKING:
+        alternatives: QuerySet["Alternative"]
 
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
@@ -49,10 +53,10 @@ class Depot(CoreDepot):
             """.format(
                 self.pk
             )
-            self.value = self.get_number_from_database(statement)
+            self.value = self.__get_number_from_database(statement)
         return self.value
 
-    def get_number_from_database(self, statement):
+    def __get_number_from_database(self, statement):
         assert str(self.pk) in statement
         return utils.get_number_from_database(statement)
 
@@ -73,6 +77,10 @@ class Alternative(models.Model):
     internal_rate_of_return = models.FloatField(null=True)
     current_return = models.FloatField(null=True)
     profit = models.FloatField(null=True)
+
+    if TYPE_CHECKING:
+        values: QuerySet["Value"]
+        flows: QuerySet["Flow"]
 
     class Meta:
         unique_together = ("depot", "name")

@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from django.db import models
 from django.db.models import Sum
@@ -187,6 +187,11 @@ class Bank(models.Model):
     balance = models.FloatField(null=True)
     value = models.FloatField(null=True)
 
+    if TYPE_CHECKING:
+        flows: QuerySet["Flow"]
+        trades: QuerySet["Trade"]
+        dividends: QuerySet["Dividend"]
+
     class Meta:
         verbose_name = "Bank"
         verbose_name_plural = "Banks"
@@ -308,6 +313,10 @@ class Stock(models.Model):
     sold_total = models.FloatField(null=True)
     price = models.FloatField(null=True)
 
+    if TYPE_CHECKING:
+        trades: QuerySet["Trade"]
+        dividends: QuerySet["Dividend"]
+
     class Meta:
         verbose_name = "Stock"
         verbose_name_plural = "Stocks"
@@ -424,7 +433,7 @@ class Stock(models.Model):
 
         return get_flows_lazy
 
-    def get_price_obj(self) -> "Price":
+    def get_price_obj(self) -> Union["Price", None]:
         prices = Price.objects.filter(ticker=self.ticker, exchange=self.exchange)
         if prices.exists():
             return prices.order_by("date").last()
