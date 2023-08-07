@@ -17,7 +17,7 @@ class SeleniumFetcher(Fetcher):
     def fetch_single(self, data: SeleniumFetcherInput) -> tuple[bool, str | float]:
         browser = get_chrome_driver()
         try:
-            browser.get(data.website)
+            browser.get(str(data.website))
             time.sleep(5)  # wait for the api requests to finish
             html = browser.page_source
         except Exception as e:

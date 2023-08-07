@@ -125,22 +125,22 @@ class PriceFetcherForm(forms.ModelForm):
 
     def clean_data(self):
         data = self.cleaned_data["data"]
-        if self.cleaned_data["type"] == "MARKETSTACK":
+        if self.cleaned_data["fetcher_type"] == "MARKETSTACK":
             try:
                 MarketstackFetcherInput(**data)
             except ValidationError as e:
                 raise forms.ValidationError(self._create_human_error(e))
-        elif self.cleaned_data["type"] in ["WEBSITE", "SELENIUM"]:
+        elif self.cleaned_data["fetcher_type"] in ["WEBSITE", "SELENIUM"]:
             try:
                 WebsiteFetcherInput(**data)
             except ValidationError as e:
                 raise forms.ValidationError(self._create_human_error(e))
         else:
-            self.add_error("type", "This type is not supported.")
+            self.add_error("fetcher_type", "This type is not supported.")
         return data
 
-    def clean_type(self):
-        type = self.cleaned_data["type"]
+    def clean_fetcher_type(self):
+        type = self.cleaned_data["fetcher_type"]
         if type not in map(lambda x: x[0], PriceFetcher.PRICE_FETCHER_TYPES):
             raise forms.ValidationError("This type is not supported.")
         return type
@@ -152,7 +152,7 @@ class PriceFetcherForm(forms.ModelForm):
 class FlowForm(forms.ModelForm):
     date = forms.DateTimeField(
         widget=forms.DateTimeInput(
-            attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
+            attrs={"fetcher_type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
         ),
         input_formats=["%Y-%m-%dT%H:%M"],
         label="Date",
@@ -228,7 +228,7 @@ class FlowForm(forms.ModelForm):
 class DividendForm(forms.ModelForm):
     date = forms.DateTimeField(
         widget=forms.DateTimeInput(
-            attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
+            attrs={"fetcher_type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
         ),
         input_formats=["%Y-%m-%dT%H:%M"],
         label="Date",
@@ -279,7 +279,7 @@ class DividendForm(forms.ModelForm):
 class TradeForm(forms.ModelForm):
     date = forms.DateTimeField(
         widget=forms.DateTimeInput(
-            attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
+            attrs={"fetcher_type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
         ),
         input_formats=["%Y-%m-%dT%H:%M"],
         label="Date",
@@ -376,7 +376,7 @@ class TradeForm(forms.ModelForm):
 class PriceForm(forms.ModelForm):
     date = forms.DateTimeField(
         widget=forms.DateTimeInput(
-            attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
+            attrs={"fetcher_type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
         ),
         input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%dT%H:%M:%S%z"],
         label="Date",
