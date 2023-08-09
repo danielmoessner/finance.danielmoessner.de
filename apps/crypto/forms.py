@@ -284,22 +284,22 @@ class PriceFetcherForm(forms.ModelForm):
 
     def clean_data(self):
         data = self.cleaned_data["data"]
-        if self.cleaned_data["type"] == "COINGECKO":
+        if self.cleaned_data["fetcher_type"] == "COINGECKO":
             try:
                 CoinGeckoFetcherInput(**data)
             except forms.ValidationError as e:
                 raise forms.ValidationError(self._create_human_error(e))
-        elif self.cleaned_data["type"] in ["WEBSITE", "SELENIUM"]:
+        elif self.cleaned_data["fetcher_type"] in ["WEBSITE", "SELENIUM"]:
             try:
                 WebsiteFetcherInput(**data)
             except forms.ValidationError as e:
                 raise forms.ValidationError(self._create_human_error(e))
         else:
-            self.add_error("type", "This type is not supported.")
+            self.add_error("fetcher_type", "This type is not supported.")
         return data
 
-    def clean_type(self):
-        type = self.cleaned_data["type"]
+    def clean_fetcher_type(self):
+        type = self.cleaned_data["fetcher_type"]
         if type not in map(lambda x: x[0], PriceFetcher.PRICE_FETCHER_TYPES):
             raise forms.ValidationError("This type is not supported.")
         return type
