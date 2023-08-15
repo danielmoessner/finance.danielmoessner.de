@@ -117,6 +117,14 @@ class TradeForm(forms.ModelForm):
         self.fields["date"].initial = datetime.now()
 
     def clean(self):
+        if (
+            "account" not in self.cleaned_data
+            or "sell_asset" not in self.cleaned_data
+            or "sell_amount" not in self.cleaned_data
+            or "buy_amount" not in self.cleaned_data
+            or "date" not in self.cleaned_data
+        ):
+            return
         account = self.cleaned_data["account"]
         sell_asset = self.cleaned_data["sell_asset"]
         sell_amount = self.cleaned_data["sell_amount"]
