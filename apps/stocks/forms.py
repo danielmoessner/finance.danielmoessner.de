@@ -152,7 +152,7 @@ class PriceFetcherForm(forms.ModelForm):
 class FlowForm(forms.ModelForm):
     date = forms.DateTimeField(
         widget=forms.DateTimeInput(
-            attrs={"fetcher_type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
+            attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
         ),
         input_formats=["%Y-%m-%dT%H:%M"],
         label="Date",
@@ -228,7 +228,7 @@ class FlowForm(forms.ModelForm):
 class DividendForm(forms.ModelForm):
     date = forms.DateTimeField(
         widget=forms.DateTimeInput(
-            attrs={"fetcher_type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
+            attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
         ),
         input_formats=["%Y-%m-%dT%H:%M"],
         label="Date",
@@ -279,7 +279,7 @@ class DividendForm(forms.ModelForm):
 class TradeForm(forms.ModelForm):
     date = forms.DateTimeField(
         widget=forms.DateTimeInput(
-            attrs={"fetcher_type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
+            attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
         ),
         input_formats=["%Y-%m-%dT%H:%M"],
         label="Date",
@@ -376,7 +376,7 @@ class TradeForm(forms.ModelForm):
 class PriceForm(forms.ModelForm):
     date = forms.DateTimeField(
         widget=forms.DateTimeInput(
-            attrs={"fetcher_type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
+            attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
         ),
         input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%dT%H:%M:%S%z"],
         label="Date",
