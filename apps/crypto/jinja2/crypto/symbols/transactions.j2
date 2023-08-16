@@ -1,14 +1,25 @@
 {% if tab=="transactions" %}
+    {{ mg.djangoModal("Add Transaction", "addTransaction") }}
+    {{ mg.djangoModal("Edit Transaction", "editTransaction") }}
+    {{ mg.djangoModal("Delete Transaction", "deleteTransaction") }}
+    {% if asset %}
+        {% set defaults="?asset="+object.pk|string %}
+    {% endif %}
+    {% if account %}
+        {% set defaults="?from_account="+object.pk|string+"&to_account="+object.pk|string%}
+    {% endif %}
     <table class="table table-dark table-responsive-md rounded mb-5">
         <thead>
         <tr>
-           <th scope="col">Date</th>
-           <th scope="col">Asset</th>
-           <th scope="col">From Account</th>
-           <th scope="col">To Account</th>
-           <th class="text-end" scope="col">Amount</th>
-           <th class="text-end" scope="col">Fees</th>
-           <th scope="col"></th>
+            <th scope="col">Date</th>
+            <th scope="col">Asset</th>
+            <th scope="col">From Account</th>
+            <th scope="col">To Account</th>
+            <th class="text-end" scope="col">Amount</th>
+            <th class="text-end" scope="col">Fees</th>
+            <th class="text-end" scope="col">
+                {{ bg.modalButton("Add Transaction", "#addTransaction", url("crypto:add_transaction")+defaults) }}
+            </th>
         </tr>
         </thead>
         <tbody>
@@ -22,10 +33,8 @@
                 <td class="text-end">{{ transaction.fees }}</td>
                 <td>
                     <div class="d-flex justify-content-end">
-                        {{ mg.djangoModal("Edit Transaction", "editTransaction"+transaction.pk|string, url("crypto:edit_transaction", args=[transaction.pk])) }}
-                        {{ bg.modalButton("Edit", "#editTransaction"+transaction.pk|string) }}
-                        {{ mg.djangoModal("Delete Transaction", "deleteTransaction"+transaction.pk|string, url("crypto:delete_transaction", args=[transaction.pk])) }}
-                        {{ bg.modalButton("Delete", "#deleteTransaction"+transaction.pk|string) }}
+                        {{ bg.modalButton("Edit", "#editTransaction", url("crypto:edit_transaction", args=[transaction.pk])) }}
+                        {{ bg.modalButton("Delete", "#deleteTransaction", url("crypto:delete_transaction", args=[transaction.pk])) }}
                     </div>
                 </td>
             </tr>
@@ -33,8 +42,7 @@
         <tr>
             <td colspan="7">
                 <div class="d-flex">
-                    {{ mg.djangoModal("Add Transaction", "addTransaction", url("crypto:add_transaction")) }}
-                    {{ bg.modalButton("Add Transaction", "#addTransaction") }}
+                    {{ bg.modalButton("Add Transaction", "#addTransaction", url("crypto:add_transaction")+defaults) }}
                 </div>
             </td>
         </tr>

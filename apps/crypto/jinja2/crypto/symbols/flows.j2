@@ -1,4 +1,7 @@
 {% if tab=="flows" %}
+    {{ mg.djangoModal("Add Flow", "addFlow") }}
+    {{ mg.djangoModal("Edit Flow", "editFlow") }}
+    {{ mg.djangoModal("Delete Flow", "deleteFlow") }}
     <table class="table table-dark table-responsive-md rounded">
         <thead>
         <tr>
@@ -16,10 +19,8 @@
                 <td class="text-end">{{ flow.flow }}</td>
                 <td>
                     <div class="d-flex justify-content-end">
-                        {{ mg.djangoModal("Edit Flow", "editFlow"+flow.pk|string, url("crypto:edit_flow", args=[flow.pk])) }}
-                        {{ bg.modalButton("Edit", "#editFlow"+flow.pk|string) }}
-                        {{ mg.djangoModal("Delete Flow", "deleteFlow"+flow.pk|string, url("crypto:delete_flow", args=[flow.pk])) }}
-                        {{ bg.modalButton("Delete", "#deleteFlow"+flow.pk|string) }}
+                        {{ bg.modalButton("Edit", "#editFlow", url("crypto:edit_flow", args=[flow.pk])) }}
+                        {{ bg.modalButton("Delete", "#deleteFlow", url("crypto:delete_flow", args=[flow.pk])) }}
                     </div>
                 </td>
             </tr>
@@ -27,8 +28,7 @@
         <tr>
             <td colspan="4">
                 <div class="d-flex">
-                    {{ mg.djangoModal("Add Flow", "addFlow", url("crypto:add_flow")) }}
-                    {{ bg.modalButton("Add Flow", "#addFlow") }}
+                    {{ bg.modalButton("Add Flow", "#addFlow", url("crypto:add_flow")+"?account="+account.pk|string) }}
                 </div>
             </td>
         </tr>

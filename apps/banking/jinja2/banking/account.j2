@@ -22,7 +22,7 @@
 
         {{ mg.djangoModal("Edit Change", "editChange") }}
         {{ mg.djangoModal("Delete Change", "deleteChange") }}
-        {{ mg.djangoModal("Add Change", "addChange", url("banking:add_change")+"?account="+account.pk|string) }}
+        {{ mg.djangoModal("Add Change", "addChange") }}
 
         <table class="table rounded table-responsive-md table-dark mb-5">
             <thead>
@@ -33,7 +33,7 @@
                 <th class="text-end" scope="col">Change</th>
                 <th class="text-end" scope="col">Balance</th>
                 <th class="text-end" scope="col">
-                    {{ bg.modalButton("Add Change", "#addChange") }}
+                    {{ bg.modalButton("Add Change", "#addChange", url("banking:add_change")+"?account="+account.pk|string) }}
                 </th>
             </tr>
             </thead>

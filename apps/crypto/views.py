@@ -56,6 +56,7 @@ class AccountView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
             .select_related("from_account", "to_account", "asset")
         )
         context["flows"] = Flow.objects.filter(account=self.object).order_by("-date")
+        context["account"] = self.object
         return context
 
 
@@ -88,6 +89,7 @@ class AssetView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
             .select_related("from_account", "to_account", "asset")
         )
         context["fetchers"] = self.object.price_fetchers.all()
+        context["asset"] = self.object
         return context
 
 

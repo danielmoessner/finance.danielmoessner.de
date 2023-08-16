@@ -1,39 +1,52 @@
-{% if tab=="trades" %}
+{% if tab == "trades" %}
+    {{ mg.djangoModal("Add Trade", "addTrade") }}
+    {{ mg.djangoModal("Edit Trade", "editTrade") }}
+    {{ mg.djangoModal("Delete Trade", "deleteTrade") }}
+    {% if account %}
+        {% set defaults="?account="+account.pk|string %}
+    {% endif %}
+    {% if asset %}
+        {% set defaults="?buy_asset="+asset.pk|string+"&sell_asset="+asset.pk|string %}
+    {% endif %}
+    
     <table class="table table-dark table-responsive-md rounded mb-5">
         <thead>
-        <tr>
-           <th scope="col">Date</th>
-           <th scope="col">Account</th>
-           <th class="text-end" scope="col">Buy</th>
-           <th class="text-end" scope="col">Sell</th>
-           <th scope="col"></th>
-        </tr>
+            <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Account</th>
+                <th class="text-end" scope="col">Buy</th>
+                <th class="text-end" scope="col">Sell</th>
+                <th class="text-end" scope="col">
+                    {{ bg.modalButton("Add Trade", "#addTrade", url("crypto:add_trade")+defaults) }}
+                </th>
+            </tr>
         </thead>
         <tbody>
-        {% for trade in trades %}
+            {% for trade in trades %}
+                <tr>
+                    <td>{{ localtime(trade.date).strftime('%d.%m.%Y %H:%M') }}</td>
+                    <td>{{ trade.account }}</td>
+                    <td class="text-end">
+                        {{ trade.buy_amount }} {{ trade.buy_asset.symbol }}
+                    </td>
+                    <td class="text-end">
+                        {{ trade.sell_amount }} {{ trade.sell_asset.symbol }}
+                    </td>
+                    <td>
+                        <div class="d-flex justify-content-end">
+                            {{ bg.modalButton("Edit", "#editTrade", url("crypto:edit_trade", args=[trade.pk])) }}
+                            {{ bg.modalButton("Delete", "#deleteTrade", url("crypto:delete_trade", args=[trade.pk])) }}
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
             <tr>
-                <td>{{ localtime(trade.date).strftime('%d.%m.%Y %H:%M') }}</td>
-                <td>{{ trade.account }}</td>
-                <td class="text-end">{{ trade.buy_amount }} {{ trade.buy_asset.symbol }}</td>
-                <td class="text-end">{{ trade.sell_amount }} {{ trade.sell_asset.symbol }}</td>
-                <td>
-                    <div class="d-flex justify-content-end">
-                        {{ mg.djangoModal("Edit Trade", "editTrade"+trade.pk|string, url("crypto:edit_trade", args=[trade.pk])) }}
-                        {{ bg.modalButton("Edit", "#editTrade"+trade.pk|string) }}
-                        {{ mg.djangoModal("Delete Trade", "deleteTrade"+trade.pk|string, url("crypto:delete_trade", args=[trade.pk])) }}
-                        {{ bg.modalButton("Delete", "#deleteTrade"+trade.pk|string) }}
+                <td colspan="5">
+                    <div class="f-flex">
+                        {{ bg.modalButton("Add Trade", "#addTrade", url("crypto:add_trade")+defaults) }}
                     </div>
                 </td>
             </tr>
-        {% endfor %}
-        <tr>
-            <td colspan="5">
-                <div class="f-flex">
-                    {{ mg.djangoModal("Add Trade", "addTrade", url("crypto:add_trade")) }}
-                    {{ bg.modalButton("Add Trade", "#addTrade") }}
-                </div>
-            </td>
-        </tr>
         </tbody>
     </table>
 {% endif %}
