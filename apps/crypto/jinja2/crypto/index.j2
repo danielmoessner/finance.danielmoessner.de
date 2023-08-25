@@ -31,6 +31,7 @@
             <tr>
                <th scope="col">Asset</th>
                <th class="text-end" scope="col">Price</th>
+               <th class="text-end" scope="col">Top</th>
                <th class="text-end" scope="col">Amount</th>
                <th class="text-end" scope="col">Value</th>
                <th scope="col"></th>
@@ -41,6 +42,7 @@
                 <tr>
                     <td>{{ asset.symbol }}</td>
                     <td class="text-end">{{ asset.get_price_display() }}</td>
+                    <td class="text-end">{{ asset.get_top_price() }}</td>
                     <td class="text-end">{{ asset.get_amount() }}</td>
                     <td class="text-end">{{ "%.2f"|format(asset.get_value()) }}</td>
                     <td>

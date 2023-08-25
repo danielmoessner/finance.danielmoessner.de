@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Union
 
 import pandas as pd
 from django.db import models
-from django.db.models import Sum
+from django.db.models import Max, Sum
 from django.db.models.query import QuerySet
 from django.utils import timezone
 
@@ -195,6 +195,7 @@ class Asset(models.Model):
     symbol = models.CharField(max_length=5)
     depot = models.ForeignKey(Depot, related_name="assets", on_delete=models.CASCADE)
     # query optimization
+    top_price = models.CharField(max_length=100, null=True)
     value = models.FloatField(null=True)
     amount = models.FloatField(null=True)
     price = models.FloatField(null=True)
@@ -297,7 +298,11 @@ class Asset(models.Model):
         return df
 
     def get_stats(self):
-        return {"Amount": self.get_amount(), "Value": self.get_value()}
+        return {
+            "Amount": self.get_amount(),
+            "Value": self.get_value(),
+            "Top": self.get_top_price(),
+        }
 
     def __get_price(self) -> Union["Price", None]:
         return Price.objects.filter(symbol=self.symbol).order_by("date").last()
@@ -309,6 +314,21 @@ class Asset(models.Model):
         if price.is_old:
             return "OLD"
         return str(price.price)
+
+    def get_top_price(self) -> str:
+        if self.top_price is None:
+            date = timezone.now() - timedelta(days=365 * 2)
+            top_price = Price.objects.filter(
+                symbol=self.symbol, date__gt=date
+            ).aggregate(Max("price"))["price__max"]
+            if top_price is None:
+                self.top_price = "404"
+            else:
+                self.top_price = "{:.2f}/{:.2f}".format(
+                    top_price, float(top_price) - self.get_price()
+                )
+            self.save()
+        return self.top_price
 
     def get_price(self):
         if self.price is None:

@@ -3,7 +3,6 @@ from typing import Union
 
 import numpy as np
 import pandas as pd
-from scipy.optimize import newton
 
 
 #############
@@ -141,19 +140,21 @@ def _custom_xnpv(rate, df):
 
 
 def _get_daily_internal_rate_of_return(df, guess=0.000210874):
-    # test that all necessary columns are available
-    assert "flow" in df.columns and "days" in df.columns
-    # return nan if the last flow is 0 because that means
-    # that there is no money invested anymore
-    if df.iloc[-1, df.columns.get_loc("flow")] == 0:
-        return np.nan
-    # calculate the internal rate of return
-    try:
-        internal_rate_of_return = newton(lambda rate: _custom_xnpv(rate, df), guess)
-    except RuntimeError:
-        internal_rate_of_return = None
-    # return the rate
-    return internal_rate_of_return
+    return None
+
+    # # test that all necessary columns are available
+    # assert "flow" in df.columns and "days" in df.columns
+    # # return nan if the last flow is 0 because that means
+    # # that there is no money invested anymore
+    # if df.iloc[-1, df.columns.get_loc("flow")] == 0:
+    #     return np.nan
+    # # calculate the internal rate of return
+    # try:
+    #     internal_rate_of_return = newton(lambda rate: _custom_xnpv(rate, df), guess)
+    # except RuntimeError:
+    #     internal_rate_of_return = None
+    # # return the rate
+    # return internal_rate_of_return
 
 
 def get_internal_rate_of_return(df: pd.DataFrame) -> Union[pd.DataFrame, None]:
