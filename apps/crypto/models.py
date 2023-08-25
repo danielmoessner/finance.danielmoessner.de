@@ -87,13 +87,6 @@ class Depot(CoreDepot):
             self.save()
         return self.invested_capital
 
-    def get_time_weighted_return(self):
-        if self.time_weighted_return is None:
-            df = rc.get_time_weighted_return_df(self.get_flow_df(), self.get_value_df())
-            self.time_weighted_return = rc.get_time_weighted_return(df)
-            self.save()
-        return self.time_weighted_return
-
     def get_current_return(self):
         if self.current_return is None:
             df = rc.get_current_return_df(self.get_flow_df(), self.get_value_df())
@@ -101,22 +94,11 @@ class Depot(CoreDepot):
             self.save()
         return self.current_return
 
-    def get_internal_rate_of_return(self):
-        if self.internal_rate_of_return is None:
-            df = rc.get_internal_rate_of_return_df(
-                self.get_flow_df(), self.get_value_df()
-            )
-            self.internal_rate_of_return = rc.get_internal_rate_of_return(df)
-            self.save()
-        return self.internal_rate_of_return
-
     def get_stats(self):
         return {
             "Value": self.get_value(),
             "Invested Capital": self.get_invested_capital(),
-            "Time Weighted Return": self.get_time_weighted_return(),
             "Current Return": self.get_current_return(),
-            "Internal Rate of Return": self.get_internal_rate_of_return(),
         }
 
     # setters

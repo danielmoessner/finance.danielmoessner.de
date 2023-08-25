@@ -96,8 +96,6 @@ class Alternative(models.Model):
             "Value": self.get_value(),
             "Invested Capital": self.get_invested_capital(),
             "Current Return": self.get_current_return(),
-            "Time Weighted Return": self.get_time_weighted_return(),
-            "Internal Rate of Return": self.get_internal_rate_of_return(),
         }
 
     def get_value(self):
@@ -123,28 +121,6 @@ class Alternative(models.Model):
             self.invested_capital = rc.get_invested_capital(df)
             self.save()
         return self.invested_capital
-
-    def get_time_weighted_return(self):
-        if self.time_weighted_return is None:
-            time_weighted_return_df = rc.get_time_weighted_return_df(
-                self.get_flow_df(), self.get_value_df()
-            )
-            self.time_weighted_return = rc.get_time_weighted_return(
-                time_weighted_return_df
-            )
-            self.save()
-        return self.time_weighted_return
-
-    def get_internal_rate_of_return(self):
-        if self.internal_rate_of_return is None:
-            internal_rate_of_return_df = rc.get_internal_rate_of_return_df(
-                self.get_flow_df(), self.get_value_df()
-            )
-            self.internal_rate_of_return = rc.get_internal_rate_of_return(
-                internal_rate_of_return_df
-            )
-            self.save()
-        return self.internal_rate_of_return
 
     def get_current_return(self):
         if self.current_return is None:

@@ -348,7 +348,7 @@ class Stock(models.Model):
             "Top Price": self.get_top_price(),
             "Value": self.get_value(),
             "Amount": self.get_amount(),
-            "Divdends": self.get_dividends(),
+            "Dividends": self.get_dividends(),
             "Invested Total": self.get_invested_total(),
             "Sold Total": self.get_sold_total(),
             "Invested Capital*": self.get_invested_capital(),
