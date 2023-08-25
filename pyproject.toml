@@ -38,7 +38,6 @@ dependencies = [
     "pandas>=2.0.3",
     "pytz>=2023.3",
     "requests>=2.31.0",
-    "scipy>=1.9.3",
     "pydantic>=2.1.1",
     "selenium>=4.10.0",
     "webdriver-manager>=4.0.0",
