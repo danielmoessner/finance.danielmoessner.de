@@ -2,7 +2,7 @@ from datetime import timedelta
 from typing import TYPE_CHECKING, Union
 
 from django.db import models
-from django.db.models import QuerySet, Sum
+from django.db.models import Max, QuerySet, Sum
 from django.utils import timezone
 
 import apps.core.return_calculation as rc
@@ -305,6 +305,7 @@ class Stock(models.Model):
     ticker = models.CharField(max_length=10)
     exchange = models.CharField(max_length=20, default="XETRA")
     # query optimization
+    top_price = models.CharField(max_length=50, null=True)
     amount = models.DecimalField(max_digits=10, decimal_places=3, null=True)
     value = models.FloatField(null=True)
     invested_total = models.FloatField(null=True)
@@ -333,6 +334,7 @@ class Stock(models.Model):
         self.dividends_amount = None
         self.sold_total = None
         self.price = None
+        self.top_price = None
         self.save()
 
     # getters
@@ -343,6 +345,7 @@ class Stock(models.Model):
         return {
             "Symbol": f"{self.ticker}.{self.exchange}",
             "Price": self.get_price_with_date(),
+            "Top Price": self.get_top_price(),
             "Value": self.get_value(),
             "Amount": self.get_amount(),
             "Divdends": self.get_dividends(),
@@ -439,6 +442,21 @@ class Stock(models.Model):
             return prices.order_by("date").last()
         return None
 
+    def get_top_price(self) -> str:
+        if self.top_price is None:
+            date = timezone.now() - timedelta(days=365 * 2)
+            top_price = Price.objects.filter(
+                ticker=self.ticker, date__gt=date
+            ).aggregate(Max("price"))["price__max"]
+            if top_price is None:
+                self.top_price = "404"
+            else:
+                self.top_price = "{:.2f}/{:.2f}".format(
+                    top_price, float(top_price) - self.get_price()
+                )
+            self.save()
+        return self.top_price
+
     def get_price_with_date(self) -> str:
         price = self.get_price_obj()
         if price is None:
@@ -447,7 +465,7 @@ class Stock(models.Model):
             return "OLD"
         return "{:.2f}".format(price.price)
 
-    def get_price(self):
+    def get_price(self) -> float:
         if self.price is None:
             price = self.get_price_obj()
             if price is None:

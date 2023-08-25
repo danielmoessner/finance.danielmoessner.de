@@ -68,23 +68,21 @@
         <table class="table rounded table-responsive-md table-dark mb-5">
             <thead>
             <tr>
-               <th scope="col">Name</th>
-               <th scope="col">Ticker</th>
-               <th scope="col">Exchange</th>
+                <th scope="col">Name</th>
                 <th class="text-end" scope="col">Price</th>
+                <th class="text-end" scope="col">Top</th>
                 <th class="text-end" scope="col">Amount</th>
                 <th class="text-end" scope="col">Value</th>
-               <th scope="col"></th>
+                <th scope="col"></th>
             </tr>
             </thead>
             <tbody>
             {% for stock in stocks %}
                 <tr>
                     <td>{{ stock.name }}</td>
-                    <td>{{ stock.ticker }}</td>
-                    <td>{{ stock.exchange }}</td>
                     {% with stats=stock.get_stats() %}
                         <td class="text-end">{{ stats['Price'] }}</td>
+                        <td class="text-end">{{ stats['Top Price'] }}</td>
                         <td class="text-end">{{ stats['Amount'] }}</td>
                         {% if stats['Value'] %}
                             <td class="text-end">{{ "%.2f"|format(stats['Value']) }}</td>
