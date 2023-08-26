@@ -80,16 +80,10 @@
             {% for stock in stocks %}
                 <tr>
                     <td>{{ stock.name }}</td>
-                    {% with stats=stock.get_stats() %}
-                        <td class="text-end">{{ stats['Price'] }}</td>
-                        <td class="text-end">{{ stats['Top Price'] }}</td>
-                        <td class="text-end">{{ stats['Amount'] }}</td>
-                        {% if stats['Value'] %}
-                            <td class="text-end">{{ "%.2f"|format(stats['Value']) }}</td>
-                        {% else %}
-                            <td class="text-end">{{ stats['Value'] }}</td>
-                        {% endif %}
-                    {% endwith %}
+                    <td class="text-end">{{ stock.get_price_display() }}</td>
+                    <td class="text-end">{{ stock.get_top_price_display() }}</td>
+                    <td class="text-end">{{ stock.get_amount_display() }}</td>
+                    <td class="text-end">{{ stock.get_value_display() }}</td>
                     <td>
                         <div class="d-flex align-items-center">
                             {{ mg.djangoModal("Edit Stock", "editStock"+stock.pk|string, url("stocks:edit_stock", args=[stock.pk])) }}

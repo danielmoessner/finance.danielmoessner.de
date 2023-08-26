@@ -2,7 +2,7 @@ from datetime import timedelta
 from typing import TYPE_CHECKING, Union
 
 from django.db import models
-from django.db.models import Max, QuerySet, Sum
+from django.db.models import QuerySet, Sum
 from django.utils import timezone
 
 import apps.core.return_calculation as rc
@@ -97,7 +97,7 @@ class Depot(models.Model):
         if self.value is None:
             self.value = 0
             for stock in self.stocks.all():
-                value = stock.get_value()
+                value = stock.calculate_value()
                 if value:
                     self.value += value
             self.save()
@@ -305,14 +305,18 @@ class Stock(models.Model):
     ticker = models.CharField(max_length=10)
     exchange = models.CharField(max_length=20, default="XETRA")
     # query optimization
-    top_price = models.CharField(max_length=50, null=True)
+    top_price = models.ForeignKey(
+        "Price", null=True, on_delete=models.SET_NULL, related_name="top_price_stocks"
+    )
+    price = models.ForeignKey(
+        "Price", null=True, on_delete=models.CASCADE, related_name="price_stocks"
+    )
     amount = models.DecimalField(max_digits=10, decimal_places=3, null=True)
     value = models.FloatField(null=True)
     invested_total = models.FloatField(null=True)
     invested_capital = models.FloatField(null=True)
     dividends_amount = models.FloatField(null=True)
     sold_total = models.FloatField(null=True)
-    price = models.FloatField(null=True)
 
     if TYPE_CHECKING:
         trades: QuerySet["Trade"]
@@ -326,7 +330,7 @@ class Stock(models.Model):
     def __str__(self):
         return "{}".format(self.name)
 
-    def reset(self):
+    def reset(self, new_price: Union["Price", None]):
         self.amount = None
         self.value = None
         self.invested_capital = None
@@ -335,7 +339,71 @@ class Stock(models.Model):
         self.sold_total = None
         self.price = None
         self.top_price = None
+        if new_price is not None:
+            self.recalculate_stats(new_price)
         self.save()
+
+    def recalculate_stats(self, new_price: Union["Price", None]):
+        if new_price is not None:
+            self.calculate_top_price(new_price)
+            self.calculate_price(new_price)
+        self.calculate_invested_capital()
+        self.calculate_dividends_amount()
+        self.calculate_sold_total()
+        self.calculate_invested_total()
+        self.calculate_amount()
+        self.calculate_value()
+
+    def calculate_price(self, new_price: "Price"):
+        if self.price is None or new_price.date > self.price.date:
+            self.price = new_price
+
+    def calculate_top_price(self, new_price: "Price"):
+        if self.top_price is None:
+            self.top_price = new_price
+            return
+        assert self.top_price is not None
+        if new_price.date < self.top_price.date:
+            return
+        if new_price.price > self.top_price:
+            self.top_price = new_price
+
+    def calculate_invested_capital(self):
+        df = rc.get_current_return_df(self.get_flow_df(), self.get_value_df())
+        self.invested_capital = rc.get_invested_capital(df)
+
+    def calculate_dividends_amount(self):
+        dividends = self.dividends.all().aggregate(Sum("dividend"))["dividend__sum"]
+        self.dividends_amount = float(dividends) if dividends else 0
+
+    def calculate_sold_total(self):
+        sold_total = Trade.objects.filter(buy_or_sell="SELL", stock=self).aggregate(
+            Sum("money_amount")
+        )["money_amount__sum"]
+        self.sold_total = float(sold_total) if sold_total else 0
+
+    def calculate_invested_total(self):
+        invested_total = Trade.objects.filter(buy_or_sell="BUY", stock=self).aggregate(
+            Sum("money_amount")
+        )["money_amount__sum"]
+        self.invested_total = float(invested_total) if invested_total else 0
+
+    def calculate_amount(self):
+        self.amount = 0
+        trades = Trade.objects.filter(bank__in=self.depot.banks.all(), stock=self)
+        buy_amount = trades.filter(buy_or_sell="BUY").aggregate(Sum("stock_amount"))[
+            "stock_amount__sum"
+        ]
+        sell_amount = trades.filter(buy_or_sell="SELL").aggregate(Sum("stock_amount"))[
+            "stock_amount__sum"
+        ]
+        self.amount += buy_amount if buy_amount else 0
+        self.amount -= sell_amount if sell_amount else 0
+
+    def calculate_value(self):
+        if self.price is None or self.amount is None:
+            return
+        self.value = float(self.price.price) * float(self.amount)
 
     # getters
     def get_marketstack_symbol(self):
@@ -344,72 +412,46 @@ class Stock(models.Model):
     def get_stats(self):
         return {
             "Symbol": f"{self.ticker}.{self.exchange}",
-            "Price": self.get_price_with_date(),
-            "Top Price": self.get_top_price(),
-            "Value": self.get_value(),
-            "Amount": self.get_amount(),
-            "Dividends": self.get_dividends(),
-            "Invested Total": self.get_invested_total(),
-            "Sold Total": self.get_sold_total(),
-            "Invested Capital*": self.get_invested_capital(),
+            "Price": self.get_price_display(),
+            "Top Price": self.get_top_price_display(),
+            "Value": self.get_value_display(),
+            "Amount": self.get_amount_display(),
+            "Dividends": self.get_dividends_display(),
+            "Invested Total": self.get_invested_total_display(),
+            "Sold Total": self.get_sold_total_display(),
+            "Invested Capital*": self.get_invested_capital_display(),
             "info": "*Calculated with the calculated flows and values.",
         }
 
-    def get_invested_capital(self):
-        if self.invested_capital is None:
-            df = rc.get_current_return_df(self.get_flow_df(), self.get_value_df())
-            self.invested_capital = rc.get_invested_capital(df)
-            self.save()
-        return self.invested_capital
-
-    def get_dividends(self):
+    def get_dividends_display(self) -> str:
         if self.dividends_amount is None:
-            dividends = self.dividends.all().aggregate(Sum("dividend"))["dividend__sum"]
-            self.dividends_amount = float(dividends) if dividends else 0
-            self.save()
-        return self.dividends_amount
+            return "404"
+        return "{:.2f}".format(self.dividends_amount)
 
-    def get_sold_total(self):
-        if self.sold_total is None:
-            sold_total = Trade.objects.filter(buy_or_sell="SELL", stock=self).aggregate(
-                Sum("money_amount")
-            )["money_amount__sum"]
-            self.sold_total = float(sold_total) if sold_total else 0
-        return self.sold_total
+    def get_invested_capital_display(self) -> str:
+        if self.invested_capital is None:
+            return "404"
+        return "{:.2f}".format(self.invested_capital)
 
-    def get_invested_total(self):
-        if self.invested_total is None:
-            invested_total = Trade.objects.filter(
-                buy_or_sell="BUY", stock=self
-            ).aggregate(Sum("money_amount"))["money_amount__sum"]
-            self.invested_total = float(invested_total) if invested_total else 0
-            self.save()
-        return self.invested_total
+    def get_value_display(self) -> str:
+        if self.value is None:
+            return "404"
+        return "{:.2f}".format(self.value)
 
-    def get_amount(self):
+    def get_amount_display(self) -> str:
         if self.amount is None:
-            self.amount = 0
-            trades = Trade.objects.filter(bank__in=self.depot.banks.all(), stock=self)
-            buy_amount = trades.filter(buy_or_sell="BUY").aggregate(
-                Sum("stock_amount")
-            )["stock_amount__sum"]
-            sell_amount = trades.filter(buy_or_sell="SELL").aggregate(
-                Sum("stock_amount")
-            )["stock_amount__sum"]
-            self.amount += buy_amount if buy_amount else 0
-            self.amount -= sell_amount if sell_amount else 0
-            self.save()
-        return self.amount
+            return "404"
+        return str(self.amount)
 
-    def get_value(self):
-        if (
-            self.value is None
-            and self.get_price() is not None
-            and self.get_amount() is not None
-        ):
-            self.value = float(self.get_price()) * float(self.get_amount())
-            self.save()
-        return self.value
+    def get_invested_total_display(self) -> str:
+        if self.invested_total is None:
+            return "404"
+        return "{:.2f}".format(self.invested_total)
+
+    def get_sold_total_display(self) -> str:
+        if self.sold_total is None:
+            return "404"
+        return "{:.2f}".format(self.sold_total)
 
     def get_amount_bank(self, bank):
         amount = 0
@@ -436,44 +478,22 @@ class Stock(models.Model):
 
         return get_flows_lazy
 
-    def get_price_obj(self) -> Union["Price", None]:
-        prices = Price.objects.filter(ticker=self.ticker, exchange=self.exchange)
-        if prices.exists():
-            return prices.order_by("date").last()
-        return None
-
-    def get_top_price(self) -> str:
-        if self.top_price is None:
-            date = timezone.now() - timedelta(days=365 * 2)
-            top_price = Price.objects.filter(
-                ticker=self.ticker, date__gt=date
-            ).aggregate(Max("price"))["price__max"]
-            if top_price is None:
-                self.top_price = "404"
-            else:
-                self.top_price = "{:.2f}/{:.2f}".format(
-                    top_price, float(top_price) - self.get_price()
-                )
-            self.save()
-        return self.top_price
-
-    def get_price_with_date(self) -> str:
-        price = self.get_price_obj()
-        if price is None:
+    def get_top_price_display(self) -> str:
+        if self.top_price is None or self.price is None:
             return "404"
-        if price.is_old:
+        return "{:.2f}/{:.2f}".format(
+            self.top_price.price, self.top_price.price - self.price.price
+        )
+
+    def get_price_display(self) -> str:
+        if self.price is None:
+            return "404"
+        if self.price.is_old:
             return "OLD"
-        return "{:.2f}".format(price.price)
+        return "{:.2f}".format(self.price.price)
 
     def get_price(self) -> float:
-        if self.price is None:
-            price = self.get_price_obj()
-            if price is None:
-                self.price = 0
-            else:
-                self.price = price.price
-            self.save()
-        return self.price
+        return float(self.price.price) if self.price else 0
 
     def get_df_from_database(self, statement, columns):
         assert str(self.pk) in statement or (
@@ -751,7 +771,7 @@ class Price(models.Model):
             ticker=self.ticker, exchange=self.exchange
         ).select_related("depot")
         for stock in list(affected_stocks):
-            stock.reset()
+            stock.reset(self)
             stock.depot.reset()
             [bank.reset() for bank in list(stock.depot.banks.all())]
 

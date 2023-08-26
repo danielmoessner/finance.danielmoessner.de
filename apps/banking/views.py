@@ -1,8 +1,10 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import models
 from django.views import generic
 
 from apps.banking.models import Account, Category, Depot
 from apps.core.mixins import TabContextMixin
+from apps.users.models import StandardUser
 
 
 # views
@@ -10,8 +12,9 @@ class IndexView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
     template_name = "banking/index.j2"
     model = Depot
 
-    def get_queryset(self):
-        return self.request.user.banking_depots.all()
+    def get_object(self, _=None) -> Depot | None:
+        user: StandardUser = self.request.user  # type: ignore
+        return user.get_active_banking_depot()
 
     def get_context_data(self, **kwargs):
         # general

@@ -2,6 +2,7 @@ import json
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import models
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
@@ -15,6 +16,7 @@ from apps.core.mixins import (
     GetFormWithDepotMixin,
     TabContextMixin,
 )
+from apps.users.models import StandardUser
 
 from .forms import (
     BankForm,
@@ -42,14 +44,15 @@ class IndexView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
     template_name = "stocks/index.j2"
     model = Depot
 
-    def get_queryset(self):
-        return self.request.user.stock_depots.all()
+    def get_object(self, _=None) -> Depot | None:
+        user: StandardUser = self.request.user  # type: ignore
+        return user.get_active_stocks_depot()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["stats"] = self.object.get_stats()
         context["banks"] = self.object.banks.order_by("-value", "name")
-        context["stocks"] = self.object.stocks.order_by("-value", "name")
+        context["stocks"] = self.object.stocks.select_related("price", "top_price").order_by("-value", "name")
         context["values"] = self.object.get_values()
         context["flows"] = self.object.get_flows()
         return context

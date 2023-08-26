@@ -72,7 +72,7 @@ urlpatterns = [
         name="run_price_fetcher",
     ),
     # views
-    path("depots/<int:pk>/", views.IndexView.as_view(), name="index"),
+    path("depot/", views.IndexView.as_view(), name="index"),
     path("banks/<int:pk>/", views.BankView.as_view(), name="banks"),
     path("stocks/<int:pk>/", views.StockView.as_view(), name="stocks"),
 ]

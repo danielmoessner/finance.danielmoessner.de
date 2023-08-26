@@ -41,7 +41,7 @@ urlpatterns = [
     path("flows/<int:pk>/edit/", views.UpdateFlowView.as_view(), name="edit_flow"),
     path("flows/<int:pk>/delete/", views.DeleteFlowView.as_view(), name="delete_flow"),
     # pages
-    path("depots/<int:pk>/", views.DetailDepotView.as_view(), name="index"),
+    path("depot/", views.DetailDepotView.as_view(), name="index"),
     path(
         "alternatives/<int:pk>/",
         views.DetailAlternativeView.as_view(),

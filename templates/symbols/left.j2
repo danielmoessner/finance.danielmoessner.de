@@ -17,34 +17,18 @@
                 <li class="nav-item">
                     {{ buttons.navigationButton("Overview", url("overview:index"), active=("overview" in request.path)) }}
                 </li>
-                {% with depot=request.user.get_active_banking_depot() %}
-                    {% if depot != None %}
-                        <li class="nav-item">
-                            {{ buttons.navigationButton("Banking", url("banking:index", args=[depot.pk]), active=("banking" in request.path)) }}
-                        </li>
-                    {% endif %}
-                {% endwith %}
-                {% with depot=request.user.get_active_crypto_depot() %}
-                    {% if depot != None %}
-                        <li class="nav-item">
-                            {{ buttons.navigationButton("Crypto", url('crypto:index', args=[depot.pk]), active=("crypto" in request.path)) }}
-                        </li>
-                    {% endif %}
-                {% endwith %}
-                {% with depot=request.user.get_active_alternative_depot() %}
-                    {% if depot != None %}
-                        <li class="nav-item">
-                            {{ buttons.navigationButton("Alternative", url('alternative:index', args=[depot.pk]), active=("alternative" in request.path)) }}
-                        </li>
-                    {% endif %}
-                {% endwith %}
-                {% with depot=request.user.get_active_stocks_depot() %}
-                    {% if depot != None %}
-                        <li class="nav-item">
-                            {{ buttons.navigationButton("Stocks", url('stocks:index', args=[depot.pk]), active=("stocks" in request.path)) }}
-                        </li>
-                    {% endif %}
-                {% endwith %}
+                <li class="nav-item">
+                    {{ buttons.navigationButton("Banking", url("banking:index"), active=("banking" in request.path)) }}
+                </li>
+                <li class="nav-item">
+                    {{ buttons.navigationButton("Crypto", url('crypto:index'), active=("crypto" in request.path)) }}
+                </li>
+                <li class="nav-item">
+                    {{ buttons.navigationButton("Alternative", url('alternative:index'), active=("alternative" in request.path)) }}
+                </li>
+                <li class="nav-item">
+                    {{ buttons.navigationButton("Stocks", url('stocks:index'), active=("stocks" in request.path)) }}
+                </li>
                 <li class="nav-item">
                     <p class="font-weight-bold m-0 mb-2 mt-3">User</p>
                 </li>

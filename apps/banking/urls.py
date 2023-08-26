@@ -59,7 +59,7 @@ urlpatterns = [
         name="delete_change",
     ),
     # pages
-    path("depots/<int:pk>/", views.IndexView.as_view(), name="index"),
+    path("depot/", views.IndexView.as_view(), name="index"),
     path("accounts/<int:pk>/", views.AccountView.as_view(), name="account"),
     path("categories/<int:pk>/", views.CategoryView.as_view(), name="category"),
 ]

@@ -19,6 +19,7 @@ from apps.alternative.forms import (
 from apps.alternative.mixins import CustomGetFormMixin
 from apps.alternative.models import Alternative, Depot, Flow, Value
 from apps.core.mixins import AjaxResponseMixin, CustomGetFormUserMixin, TabContextMixin
+from apps.users.models import StandardUser
 
 
 ###
@@ -28,8 +29,9 @@ class DetailDepotView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
     template_name = "alternative/index.j2"
     model = Depot
 
-    def get_queryset(self):
-        return self.request.user.alternative_depots.all()
+    def get_object(self, _=None) -> Depot | None:
+        user: StandardUser = self.request.user  # type: ignore
+        return user.get_active_alternative_depot()
 
     def get_context_data(self, **kwargs):
         context = super(DetailDepotView, self).get_context_data(**kwargs)

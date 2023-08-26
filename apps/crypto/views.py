@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import models
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
@@ -6,14 +7,16 @@ from django.views import generic
 
 from apps.core.mixins import TabContextMixin
 from apps.crypto.models import Account, Asset, Depot, Flow, Price, Trade, Transaction
+from apps.users.models import StandardUser
 
 
 class IndexView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
     template_name = "crypto/index.j2"
     model = Depot
 
-    def get_queryset(self):
-        return self.request.user.crypto_depots.all()
+    def get_object(self, _ = None) -> Depot | None:
+        user: StandardUser = self.request.user  # type: ignore
+        return user.get_active_crypto_depot()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
