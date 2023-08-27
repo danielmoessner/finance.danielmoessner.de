@@ -18,17 +18,11 @@ class RedirectView(generic.RedirectView):
             user = self.request.user
             front_page = user.front_page
             if front_page == "BANKING":
-                return reverse_lazy(
-                    "banking:index", args=[user.get_active_banking_depot().pk]
-                )
+                return reverse_lazy("banking:index")
             elif front_page == "CRYPTO":
-                return reverse_lazy(
-                    "crypto:index", args=[user.get_active_crypto_depot().pk]
-                )
+                return reverse_lazy("crypto:index")
             elif front_page == "ALTERNATIVE":
-                return reverse_lazy(
-                    "alternative:index", args=[user.get_active_alternative_depot().pk]
-                )
+                return reverse_lazy("alternative:index")
             else:
                 return reverse_lazy("users:settings", args=[user.pk])
         else:

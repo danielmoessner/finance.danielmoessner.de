@@ -1,5 +1,4 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db import models
 from django.views import generic
 
 from apps.banking.models import Account, Category, Depot

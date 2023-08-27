@@ -12,7 +12,7 @@ django_settings_module = "config.settings.local"
 ignore_missing_settings = true
 
 [tool.isort]
-known_local_folder = ["dms", "seedwork"]
+known_local_folder = ["apps", "config"]
 profile = "black"
 
 [tool.ruff]

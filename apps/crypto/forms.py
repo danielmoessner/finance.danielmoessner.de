@@ -4,10 +4,9 @@ from django import forms
 from django.db.models import Q
 from django.utils import timezone
 
+from .models import Account, Asset, Depot, Flow, Price, PriceFetcher, Trade, Transaction
 from apps.core.fetchers.website import WebsiteFetcherInput
 from apps.crypto.fetchers.coingecko import CoinGeckoFetcherInput
-
-from .models import Account, Asset, Depot, Flow, Price, PriceFetcher, Trade, Transaction
 
 
 # depot
