@@ -56,6 +56,8 @@ def sum_up_value_dfs_from_items(items):
     df = sum_up_columns_in_a_dataframe(df)
     # remove all the rows where the value is 0 as it doesn't
     # make sense in the calculations
+    if df is None:
+        return None
     df = df.loc[df.loc[:, "value"] != 0]
     # return the df
     return df

@@ -46,7 +46,6 @@ dependencies = [
     "ruff>=0.0.280",
     "mypy>=1.4.1",
     "django-types>=0.17.0",
-    "django-stubs[compatible-mypy]>=4.2.3",
     "types-requests>=2.31.0.2",
 ]
 requires-python = ">=3.11"

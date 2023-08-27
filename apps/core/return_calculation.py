@@ -9,7 +9,7 @@ import pandas as pd
 # standard dfs
 #############
 def _get_merged_flow_and_value_df(
-    flow_df: pd.DataFrame, value_df: pd.DataFrame
+    flow_df: pd.DataFrame | None, value_df: pd.DataFrame | None
 ) -> Union[pd.DataFrame, None]:
     # no calculations are possible if on of the dfs is none
     if value_df is None or flow_df is None or value_df.empty or flow_df.empty:
@@ -19,17 +19,21 @@ def _get_merged_flow_and_value_df(
     # merge the dfs and sort by date
     df = flow_df.merge(value_df, how="outer", sort=True, on="date")
     # stop calculation if there is not a flow in the first row
-    if np.isnan(df.iloc[0, df.columns.get_loc("flow")]):
+    first_flow_cell = df.iloc[0, df.columns.get_loc("flow")]
+    assert type(first_flow_cell) == np.float64
+    if np.isnan(first_flow_cell):
         return None
     # stop calculations if there is no value in the last row
-    if np.isnan(df.iloc[-1, df.columns.get_loc("value")]):
+    last_flow_cell = df.iloc[-1, df.columns.get_loc("flow")]
+    assert type(last_flow_cell) == np.float64
+    if np.isnan(last_flow_cell):
         return None
     # return the new df
     return df
 
 
 def get_value_with_flow_df(
-    flow_df: pd.DataFrame, value_df: pd.DataFrame
+    flow_df: pd.DataFrame | None, value_df: pd.DataFrame | None
 ) -> Union[pd.DataFrame, None]:
     # get the right df
     df = _get_merged_flow_and_value_df(flow_df, value_df)
@@ -53,8 +57,10 @@ def get_value_with_flow_df(
 # current return
 #############
 def get_current_return_df(
-    flow_df: pd.DataFrame, value_df: pd.DataFrame
+    flow_df: pd.DataFrame | None, value_df: pd.DataFrame | None
 ) -> Union[pd.DataFrame, None]:
+    if flow_df is None or value_df is None:
+        return None
     # get the right df
     df = get_value_with_flow_df(flow_df, value_df)
     # stop calculations if something went wrong beforehand
@@ -73,6 +79,7 @@ def get_current_return_df(
         previous_invested_capital = (
             df.iloc[i - 1, df.columns.get_loc("invested_capital")] if i > 0 else 0
         )
+        assert type(flow) == np.float64
         if flow > 0:
             invested_capital = previous_invested_capital + flow
         elif flow < 0:

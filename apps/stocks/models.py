@@ -44,24 +44,100 @@ class Depot(models.Model):
         return "{}".format(self.name)
 
     def reset(self):
-        if self.balance is not None or self.value is not None:
-            self.balance = None
-            self.value = None
-            self.invested_capital = None
-            self.inflow_total = None
-            self.outflow_total = None
-            self.save()
+        self.balance = None
+        self.value = None
+        self.invested_capital = None
+        self.inflow_total = None
+        self.outflow_total = None
+        self.recalculate()
+
+    def recalculate(self):
+        self.calculate_invested_capital()
+        self.calculate_balance()
+        self.calculate_value()
+        self.calculate_outflow()
+        self.calculate_inflow()
+        self.save()
+
+    def calculate_invested_capital(self):
+        df = rc.get_current_return_df(self.get_flow_df(), self.get_value_df())
+        self.invested_capital = rc.get_invested_capital(df)
+
+    def calculate_value(self):
+        self.value = 0
+        for stock in list(self.stocks.all()):
+            if stock.value is None:
+                stock.calculate_value()
+            value = stock.value
+            if value:
+                self.value += value
+
+    def calculate_balance(self):
+        self.balance = 0
+        banks = self.banks.all()
+        flows_amount = Flow.objects.filter(bank__in=banks).aggregate(Sum("flow"))
+        self.balance += flows_amount["flow__sum"] if flows_amount["flow__sum"] else 0
+        buy_trades_amount = Trade.objects.filter(
+            bank__in=banks, buy_or_sell="BUY"
+        ).aggregate(Sum("money_amount"))
+        self.balance -= (
+            buy_trades_amount["money_amount__sum"]
+            if buy_trades_amount["money_amount__sum"]
+            else 0
+        )
+        sell_trades_amount = Trade.objects.filter(
+            bank__in=banks, buy_or_sell="SELL"
+        ).aggregate(Sum("money_amount"))
+        self.balance += (
+            sell_trades_amount["money_amount__sum"]
+            if sell_trades_amount["money_amount__sum"]
+            else 0
+        )
+        dividends = Dividend.objects.filter(bank__in=banks).aggregate(Sum("dividend"))
+        self.balance += dividends["dividend__sum"] if dividends["dividend__sum"] else 0
+        self.balance = float(self.balance)
+
+    def calculate_inflow(self):
+        self.inflow_total = self.get_inflow_or_outflow_total("INFLOW")
+
+    def calculate_outflow(self):
+        self.outflow_total = self.get_inflow_or_outflow_total("OUTFLOW")
 
     # getters
     def get_stats(self):
         return {
-            "Balance": self.get_balance(),
-            "Value": self.get_value(),
-            "Inflow Total": self.get_inflow_total(),
-            "Outflow Total": self.get_outflow_total(),
-            "Invested Capital*": self.get_invested_capital(),
+            "Balance": self.get_balance_display(),
+            "Value": self.get_value_display(),
+            "Inflow Total": self.get_inflow_display(),
+            "Outflow Total": self.get_outflow_display(),
+            "Invested Capital*": self.get_invested_capital_display(),
             "info": "*Calculated with the calculated flows and values.",
         }
+
+    def get_balance_display(self):
+        if self.balance is None:
+            return "404"
+        return "{:.2f}".format(self.balance)
+
+    def get_value_display(self):
+        if self.value is None:
+            return "404"
+        return "{:.2f}".format(self.value)
+
+    def get_inflow_display(self):
+        if self.inflow_total is None:
+            return "404"
+        return "{:.2f}".format(self.inflow_total)
+
+    def get_outflow_display(self):
+        if self.outflow_total is None:
+            return "404"
+        return "{:.2f}".format(self.outflow_total)
+
+    def get_invested_capital_display(self):
+        if self.invested_capital is None:
+            return "404"
+        return "{:.2f}".format(self.invested_capital)
 
     def get_inflow_or_outflow_total(self, inflow_or_outflow):
         flows = Flow.objects.filter(bank__in=self.banks.all())
@@ -74,76 +150,16 @@ class Depot(models.Model):
         flow = flows.aggregate(Sum("flow"))["flow__sum"]
         return float(flow) if flow else 0
 
-    def get_inflow_total(self):
-        if self.inflow_total is None:
-            self.inflow_total = self.get_inflow_or_outflow_total("INFLOW")
-            self.save()
-        return self.inflow_total
-
-    def get_outflow_total(self):
-        if self.outflow_total is None:
-            self.outflow_total = self.get_inflow_or_outflow_total("OUTFLOW")
-            self.save()
-        return self.outflow_total
-
-    def get_invested_capital(self):
-        if self.invested_capital is None:
-            df = rc.get_current_return_df(self.get_flow_df(), self.get_value_df())
-            self.invested_capital = rc.get_invested_capital(df)
-            self.save()
-        return self.invested_capital
-
-    def get_value(self):
-        if self.value is None:
-            self.value = 0
-            for stock in self.stocks.all():
-                value = stock.calculate_value()
-                if value:
-                    self.value += value
-            self.save()
-        return self.value
-
-    def get_balance(self):
-        if self.balance is None:
-            self.balance = 0
-            banks = self.banks.all()
-            flows_amount = Flow.objects.filter(bank__in=banks).aggregate(Sum("flow"))
-            self.balance += (
-                flows_amount["flow__sum"] if flows_amount["flow__sum"] else 0
-            )
-            buy_trades_amount = Trade.objects.filter(
-                bank__in=banks, buy_or_sell="BUY"
-            ).aggregate(Sum("money_amount"))
-            self.balance -= (
-                buy_trades_amount["money_amount__sum"]
-                if buy_trades_amount["money_amount__sum"]
-                else 0
-            )
-            sell_trades_amount = Trade.objects.filter(
-                bank__in=banks, buy_or_sell="SELL"
-            ).aggregate(Sum("money_amount"))
-            self.balance += (
-                sell_trades_amount["money_amount__sum"]
-                if sell_trades_amount["money_amount__sum"]
-                else 0
-            )
-            dividends = Dividend.objects.filter(bank__in=banks).aggregate(
-                Sum("dividend")
-            )
-            self.balance += (
-                dividends["dividend__sum"] if dividends["dividend__sum"] else 0
-            )
-            self.balance = float(self.balance)
-            self.save()
-        return self.balance
-
     def get_df_from_database(self, statement, columns):
         assert str(self.pk) in statement
         return get_df_from_database(statement, columns)
 
     def get_values(self):
         def get_values_lazy():
-            return self.get_value_df().reset_index().values.tolist()
+            value_df = self.get_value_df()
+            if value_df is None:
+                return []
+            return value_df.reset_index().values.tolist()
 
         return get_values_lazy
 
@@ -188,6 +204,7 @@ class Bank(models.Model):
     value = models.FloatField(null=True)
 
     if TYPE_CHECKING:
+        stocks: QuerySet["Stock"]
         flows: QuerySet["Flow"]
         trades: QuerySet["Trade"]
         dividends: QuerySet["Dividend"]
@@ -201,58 +218,63 @@ class Bank(models.Model):
         return "{}".format(self.name)
 
     def reset(self):
-        if self.balance is not None or self.value is not None:
-            self.balance = None
-            self.value = None
-            self.save()
+        self.balance = None
+        self.value = None
+        self.recalculate()
+
+    def recalculate(self):
+        self.calculate_value()
+        self.calculate_balance()
+        self.save()
+
+    def calculate_value(self):
+        self.value = 0
+        for stock in self.depot.stocks.all():
+            amount = stock.get_amount_bank(self)
+            price = stock.get_price()
+            self.value += float(amount) * float(price)
+
+    def calculate_balance(self, in_decimal=False):
+        self.balance = 0
+        flows_amount = self.flows.all().aggregate(Sum("flow"))
+        self.balance += flows_amount["flow__sum"] if flows_amount["flow__sum"] else 0
+        buy_trades_amount = self.trades.filter(buy_or_sell="BUY").aggregate(
+            Sum("money_amount")
+        )
+        self.balance -= (
+            buy_trades_amount["money_amount__sum"]
+            if buy_trades_amount["money_amount__sum"]
+            else 0
+        )
+        sell_trades_amount = self.trades.filter(buy_or_sell="SELL").aggregate(
+            Sum("money_amount")
+        )
+        self.balance += (
+            sell_trades_amount["money_amount__sum"]
+            if sell_trades_amount["money_amount__sum"]
+            else 0
+        )
+        dividends_amount = self.dividends.all().aggregate(Sum("dividend"))
+        self.balance += (
+            dividends_amount["dividend__sum"]
+            if dividends_amount["dividend__sum"]
+            else 0
+        )
+        self.balance = float(self.balance)
 
     # getters
     def get_stats(self):
-        return {"Balance": self.get_balance(), "Value": self.get_value()}
+        return {"Balance": self.calculate_balance(), "Value": self.get_value_display()}
 
-    def get_value(self):
+    def get_value_display(self):
         if self.value is None:
-            self.value = 0
-            for stock in self.depot.stocks.all():
-                self.value += float(stock.get_amount_bank(self)) * float(
-                    stock.get_price()
-                )
-            self.save()
-        return self.value
+            return "404"
+        return "{:.2f}".format(self.value)
 
-    def get_balance(self, in_decimal=False):
-        if self.balance is None or in_decimal is True:
-            self.balance = 0
-            flows_amount = self.flows.all().aggregate(Sum("flow"))
-            self.balance += (
-                flows_amount["flow__sum"] if flows_amount["flow__sum"] else 0
-            )
-            buy_trades_amount = self.trades.filter(buy_or_sell="BUY").aggregate(
-                Sum("money_amount")
-            )
-            self.balance -= (
-                buy_trades_amount["money_amount__sum"]
-                if buy_trades_amount["money_amount__sum"]
-                else 0
-            )
-            sell_trades_amount = self.trades.filter(buy_or_sell="SELL").aggregate(
-                Sum("money_amount")
-            )
-            self.balance += (
-                sell_trades_amount["money_amount__sum"]
-                if sell_trades_amount["money_amount__sum"]
-                else 0
-            )
-            dividends_amount = self.dividends.all().aggregate(Sum("dividend"))
-            self.balance += (
-                dividends_amount["dividend__sum"]
-                if dividends_amount["dividend__sum"]
-                else 0
-            )
-            if not in_decimal:
-                self.balance = float(self.balance)
-                self.save()
-        return self.balance
+    def get_balance_display(self):
+        if self.balance is None:
+            return "404"
+        return "{:.2f}".format(self.balance)
 
     def get_balance_on_date(
         self, date, exclude_flow=None, exclude_trade=None, exclude_dividend=None
@@ -330,7 +352,7 @@ class Stock(models.Model):
     def __str__(self):
         return "{}".format(self.name)
 
-    def reset(self, new_price: Union["Price", None]):
+    def reset(self, new_price: Union["Price", None] = None):
         self.amount = None
         self.value = None
         self.invested_capital = None
@@ -339,14 +361,12 @@ class Stock(models.Model):
         self.sold_total = None
         self.price = None
         self.top_price = None
-        if new_price is not None:
-            self.recalculate_stats(new_price)
+        self.recalculate_stats(new_price)
         self.save()
 
     def recalculate_stats(self, new_price: Union["Price", None]):
-        if new_price is not None:
-            self.calculate_top_price(new_price)
-            self.calculate_price(new_price)
+        self.calculate_top_price()
+        self.calculate_price()
         self.calculate_invested_capital()
         self.calculate_dividends_amount()
         self.calculate_sold_total()
@@ -354,19 +374,23 @@ class Stock(models.Model):
         self.calculate_amount()
         self.calculate_value()
 
-    def calculate_price(self, new_price: "Price"):
+    def calculate_price(self):
+        new_price = self.__get_latest_price()
+        if new_price is None:
+            return
         if self.price is None or new_price.date > self.price.date:
             self.price = new_price
 
-    def calculate_top_price(self, new_price: "Price"):
-        if self.top_price is None:
-            self.top_price = new_price
-            return
-        assert self.top_price is not None
-        if new_price.date < self.top_price.date:
-            return
-        if new_price.price > self.top_price:
-            self.top_price = new_price
+    def calculate_top_price(self):
+        date = timezone.now() - timedelta(days=365 * 2)
+        top_price = (
+            Price.objects.filter(
+                ticker=self.ticker, exchange=self.exchange, date__gt=date
+            )
+            .order_by("-price")
+            .first()
+        )
+        self.top_price = top_price
 
     def calculate_invested_capital(self):
         df = rc.get_current_return_df(self.get_flow_df(), self.get_value_df())
@@ -406,6 +430,13 @@ class Stock(models.Model):
         self.value = float(self.price.price) * float(self.amount)
 
     # getters
+    def __get_latest_price(self) -> Union["Price", None]:
+        return (
+            Price.objects.filter(ticker=self.ticker, exchange=self.exchange)
+            .order_by("-date")
+            .first()
+        )
+
     def get_marketstack_symbol(self):
         return "{}.{}".format(self.ticker, self.exchange)
 
@@ -468,7 +499,10 @@ class Stock(models.Model):
 
     def get_values(self):
         def get_values_lazy():
-            return self.get_value_df().reset_index().values.tolist()
+            value_df = self.get_value_df()
+            if value_df is None:
+                return []
+            return value_df.reset_index().values.tolist()
 
         return get_values_lazy
 
@@ -631,8 +665,10 @@ class PriceFetcher(models.Model):
         fetcher: Fetcher = self.fetcher_class()
         success, result = fetcher.fetch_single(self.fetcher_input)
         if success:
+            assert isinstance(result, float)
             self.save_price(result)
         else:
+            assert isinstance(result, str)
             self.set_error(result)
         return success, result
 

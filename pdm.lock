@@ -6,7 +6,7 @@ groups = ["default"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:6db87020e6167b34cc07b66d117a75bc21de1b392f6b7f12f182508b18a4d6ad"
+content_hash = "sha256:3ed79e6416f8f427f5cfab2c61b238ce4d1481569647fbfdd473b6f33d0fe1bf"
 
 [[package]]
 name = "annotated-types"
@@ -290,53 +290,6 @@ dependencies = [
 files = [
     {file = "django_debug_toolbar-4.2.0-py3-none-any.whl", hash = "sha256:af99128c06e8e794479e65ab62cc6c7d1e74e1c19beb44dcbf9bad7a9c017327"},
     {file = "django_debug_toolbar-4.2.0.tar.gz", hash = "sha256:bc7fdaafafcdedefcc67a4a5ad9dac96efd6e41db15bc74d402a54a2ba4854dc"},
-]
-
-[[package]]
-name = "django-stubs"
-version = "4.2.3"
-requires_python = ">=3.8"
-summary = "Mypy stubs for Django"
-dependencies = [
-    "django",
-    "django-stubs-ext>=4.2.2",
-    "mypy>=1.0.0",
-    "types-PyYAML",
-    "types-pytz",
-    "typing-extensions",
-]
-files = [
-    {file = "django-stubs-4.2.3.tar.gz", hash = "sha256:dadab39b46d9ae8f37a8e879c590f39a9e042b565c03fa0c5a8f754b441b1f23"},
-    {file = "django_stubs-4.2.3-py3-none-any.whl", hash = "sha256:e30e2e4927ba14bec587ed2c686404b6b8e473cabe9baca445e7d2e1e0d7b14f"},
-]
-
-[[package]]
-name = "django-stubs-ext"
-version = "4.2.2"
-requires_python = ">=3.8"
-summary = "Monkey-patching and extensions for django-stubs"
-dependencies = [
-    "django",
-    "typing-extensions",
-]
-files = [
-    {file = "django-stubs-ext-4.2.2.tar.gz", hash = "sha256:c69d1cc46f1c4c3b7894b685a5022c29b2a36c7cfb52e23762eaf357ebfc2c98"},
-    {file = "django_stubs_ext-4.2.2-py3-none-any.whl", hash = "sha256:fdacc65a14d2d4b97334b58ff178a5853ec8c8c76cec406e417916ad67536ce4"},
-]
-
-[[package]]
-name = "django-stubs"
-version = "4.2.3"
-extras = ["compatible-mypy"]
-requires_python = ">=3.8"
-summary = "Mypy stubs for Django"
-dependencies = [
-    "django-stubs==4.2.3",
-    "mypy==1.4.*",
-]
-files = [
-    {file = "django-stubs-4.2.3.tar.gz", hash = "sha256:dadab39b46d9ae8f37a8e879c590f39a9e042b565c03fa0c5a8f754b441b1f23"},
-    {file = "django_stubs-4.2.3-py3-none-any.whl", hash = "sha256:e30e2e4927ba14bec587ed2c686404b6b8e473cabe9baca445e7d2e1e0d7b14f"},
 ]
 
 [[package]]
@@ -847,24 +800,6 @@ dependencies = [
 files = [
     {file = "trio-websocket-0.10.3.tar.gz", hash = "sha256:1a748604ad906a7dcab9a43c6eb5681e37de4793ba0847ef0bc9486933ed027b"},
     {file = "trio_websocket-0.10.3-py3-none-any.whl", hash = "sha256:a9937d48e8132ebf833019efde2a52ca82d223a30a7ea3e8d60a7d28f75a4e3a"},
-]
-
-[[package]]
-name = "types-pytz"
-version = "2023.3.0.0"
-summary = "Typing stubs for pytz"
-files = [
-    {file = "types-pytz-2023.3.0.0.tar.gz", hash = "sha256:ecdc70d543aaf3616a7e48631543a884f74205f284cefd6649ddf44c6a820aac"},
-    {file = "types_pytz-2023.3.0.0-py3-none-any.whl", hash = "sha256:4fc2a7fbbc315f0b6630e0b899fd6c743705abe1094d007b0e612d10da15e0f3"},
-]
-
-[[package]]
-name = "types-pyyaml"
-version = "6.0.12.11"
-summary = "Typing stubs for PyYAML"
-files = [
-    {file = "types-PyYAML-6.0.12.11.tar.gz", hash = "sha256:7d340b19ca28cddfdba438ee638cd4084bde213e501a3978738543e27094775b"},
-    {file = "types_PyYAML-6.0.12.11-py3-none-any.whl", hash = "sha256:a461508f3096d1d5810ec5ab95d7eeecb651f3a15b71959999988942063bf01d"},
 ]
 
 [[package]]
