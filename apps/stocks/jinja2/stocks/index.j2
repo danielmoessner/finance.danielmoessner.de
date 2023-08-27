@@ -26,6 +26,7 @@
     {% include 'symbols/stats.j2' %}
 
     {% if tab=='banks' %}
+        {{ mg.djangoModal("Edit Bank", "editBank") }}
         <table class="table rounded table-responsive-md table-dark mb-5">
             <thead>
             <tr>
@@ -39,12 +40,11 @@
             {% for bank in banks %}
                 <tr>
                     <td>{{ bank.name }}</td>
-                    <td class="text-end">{{ "%.2f"|format(bank.get_stats()['Balance']) }}</td>
-                    <td class="text-end">{{ "%.2f"|format(bank.get_stats()['Value']) }}</td>
+                    <td class="text-end">{{ bank.get_balance_display() }}</td>
+                    <td class="text-end">{{ bank.get_value_display() }}</td>
                     <td>
                         <div class="d-flex align-items-center justify-content-end">
-                            {{ mg.djangoModal("Edit Bank", "editBank"+bank.pk|string, url("stocks:edit_bank", args=[bank.pk])) }}
-                            {{ bg.modalButton("Edit", "#editBank"+bank.pk|string) }}
+                            {{ bg.modalButton("Edit", "#editBank", url("stocks:edit_bank", args=[bank.pk])) }}
                             {{ bg.hrefButton("Open", url("stocks:banks", args=[bank.pk])) }}
                         </div>
                     </td>
