@@ -75,7 +75,7 @@ class StandardSetUpTestCase(TestCase):
 
 class ViewsTestCase(StandardSetUpTestCase):
     def test_index_view(self):
-        url = reverse_lazy("crypto:index", args=[self.depot.pk])
+        url = reverse_lazy("crypto:index")
         for tab in [
             "",
             "stats",

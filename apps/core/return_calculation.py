@@ -24,9 +24,9 @@ def _get_merged_flow_and_value_df(
     if np.isnan(first_flow_cell):
         return None
     # stop calculations if there is no value in the last row
-    last_flow_cell = df.iloc[-1, df.columns.get_loc("flow")]
-    assert type(last_flow_cell) == np.float64
-    if np.isnan(last_flow_cell):
+    last_value_cell = df.iloc[-1, df.columns.get_loc("value")]
+    assert type(last_value_cell) == np.float64, type(last_value_cell)
+    if np.isnan(last_value_cell):
         return None
     # return the new df
     return df

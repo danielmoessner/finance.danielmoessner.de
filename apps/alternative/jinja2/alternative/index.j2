@@ -34,9 +34,9 @@
             {% for alternative in alternatives %}
                 <tr>
                     <td>{{ alternative.name }}</td>
-                    <td class="text-end">{{ "%.2f"|format(alternative.get_invested_capital()) }}</td>
-                    <td class="text-end">{{ "%.2f"|format(alternative.get_value()) }}</td>
-                    <td class="text-end">{{ "%.2f"|format(alternative.get_profit()) }}</td>
+                    <td class="text-end">{{ alternative.get_invested_capital() }}</td>
+                    <td class="text-end">{{ alternative.get_value() }}</td>
+                    <td class="text-end">{{ alternative.get_profit() }}</td>
                     <td>
                         <div class="d-flex justify-content-end">
                             {{ bg.hrefButton("Open", url('alternative:alternative', args=[alternative.pk])) }}

@@ -55,22 +55,20 @@ class ViewsTestCase(TestCase):
         self.client = Client()
         self.client.login(username="dummy", password="test")
         self.user = User.objects.get(username="dummy")
-        response = self.client.get(reverse_lazy("banking:index", args=[1]))
+        response = self.client.get(reverse_lazy("banking:index"))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get("{}?tab=stats".format(reverse_lazy("banking:index")))
         self.assertEqual(response.status_code, 200)
         response = self.client.get(
-            "{}?tab=stats".format(reverse_lazy("banking:index", args=[1]))
+            "{}?tab=categories".format(reverse_lazy("banking:index"))
         )
         self.assertEqual(response.status_code, 200)
         response = self.client.get(
-            "{}?tab=categories".format(reverse_lazy("banking:index", args=[1]))
+            "{}?tab=accounts".format(reverse_lazy("banking:index"))
         )
         self.assertEqual(response.status_code, 200)
         response = self.client.get(
-            "{}?tab=accounts".format(reverse_lazy("banking:index", args=[1]))
-        )
-        self.assertEqual(response.status_code, 200)
-        response = self.client.get(
-            "{}?tab=charts".format(reverse_lazy("banking:index", args=[1]))
+            "{}?tab=charts".format(reverse_lazy("banking:index"))
         )
         self.assertEqual(response.status_code, 200)
 

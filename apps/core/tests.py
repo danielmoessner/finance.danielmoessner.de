@@ -175,7 +175,7 @@ class ReturnCalculationTestCase(TestCase):
     def test_current_return_returning_nan_with_flow_in_last_row(self):
         current_return_df = rc.get_current_return_df(self.late_flow_df, self.value_df)
         current_return = rc.get_current_return(current_return_df)
-        assert current_return is None
+        assert current_return is None, current_return
 
 
 class NanRemovalTestCase(TestCase):

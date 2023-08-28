@@ -166,7 +166,6 @@ class StandardUser(AbstractUser):
         # helper create alternative
         def create_alternative(name):
             alternative = Alternative(depot=depot, name=name)
-            alternative.slug = "remove-asap"
             alternative.save()
             return alternative
 
@@ -199,23 +198,23 @@ class StandardUser(AbstractUser):
         alternative3 = create_alternative("Tube Amplifier")
 
         # 1
-        create_flow(alternative1, 50, 100)
-        create_value(alternative1, 50, 100)
-        create_value(alternative1, 30, 110)
-        create_flow(alternative1, 20, 50)
-        create_value(alternative1, 20, 160)
-        create_value(alternative1, 0, 160)
+        create_flow(alternative1, 50, 100.0)
+        create_value(alternative1, 50, 100.0)
+        create_value(alternative1, 30, 110.20)
+        create_flow(alternative1, 20, 50.0)
+        create_value(alternative1, 20, 160.20)
+        create_value(alternative1, 0, 160.20)
         # 2
-        create_flow(alternative2, 40, 100)
-        create_value(alternative2, 40, 100)
-        create_value(alternative2, 0, 200)
+        create_flow(alternative2, 40, 100.0)
+        create_value(alternative2, 40, 100.0)
+        create_value(alternative2, 0, 200.50)
         # 3
-        create_flow(alternative3, 30, 100)
-        create_value(alternative3, 30, 100)
-        create_value(alternative3, 20, 50)
-        create_flow(alternative3, 10, 10)
-        create_value(alternative3, 10, 60)
-        create_value(alternative3, 0, 60)
+        create_flow(alternative3, 30, 100.0)
+        create_value(alternative3, 30, 100.0)
+        create_value(alternative3, 20, 50.1)
+        create_flow(alternative3, 10, 10.0)
+        create_value(alternative3, 10, 60.0)
+        create_value(alternative3, 0, 60.0)
 
         # return the depot that contains all the test data
         return depot

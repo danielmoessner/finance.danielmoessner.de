@@ -8,7 +8,7 @@ from apps.users.models import StandardUser as User
 
 class ViewsTestCase(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username="dummy")
+        self.user: User = User.objects.create_user(username="dummy")  # type: ignore
         self.user.set_password("test")
         self.user.save()
         self.user.create_random_alternative_data()
@@ -16,7 +16,7 @@ class ViewsTestCase(TestCase):
     def test_index_view(self):
         self.client = Client()
         self.client.login(username="dummy", password="test")
-        url = reverse_lazy("alternative:index", args=[1])
+        url = reverse_lazy("alternative:index")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         response = self.client.get("{}?tab=stats".format(url))

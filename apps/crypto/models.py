@@ -312,11 +312,11 @@ class Asset(models.Model):
             self.save()
         return self.top_price
 
-    def get_price(self):
+    def get_price(self) -> float:
         if self.price is None:
             price = self.__get_price()
             if price is not None:
-                self.price = price.price or 0
+                self.price = float(price.price) or 0
             else:
                 self.price = 0
             self.save()
