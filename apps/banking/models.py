@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from django.db import connection, models
 
 import apps.banking.duplicated_code as banking_duplicated_code
@@ -6,6 +8,9 @@ from apps.core.models import Account as CoreAccount
 from apps.core.models import Depot as CoreDepot
 from apps.core.utils import turn_dict_of_dicts_into_list_of_dicts
 from apps.users.models import StandardUser
+
+if TYPE_CHECKING:
+    from django.db.models.query import QuerySet
 
 
 class Depot(CoreDepot):
@@ -19,6 +24,10 @@ class Depot(CoreDepot):
     balance = models.DecimalField(
         max_digits=15, decimal_places=2, null=True, blank=True
     )
+
+    if TYPE_CHECKING:
+        accounts: QuerySet["Account"]
+        categories: QuerySet["Category"]
 
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None

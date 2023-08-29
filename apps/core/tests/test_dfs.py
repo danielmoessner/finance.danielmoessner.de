@@ -136,12 +136,12 @@ class ReturnCalculationTestCase(TestCase):
     def test_current_return_working(self):
         current_return_df = rc.get_current_return_df(self.flow_df, self.value_df)
         current_return = rc.get_current_return(current_return_df)
-        self.assertAlmostEqual(current_return, 0.7783650458069062)
+        self.assertAlmostEqual(current_return, 0.7783650458069062)  # type: ignore
 
     def test_invested_capital_working(self):
         current_return_df = rc.get_current_return_df(self.flow_df, self.value_df)
         invested_capital = rc.get_invested_capital(current_return_df)
-        self.assertAlmostEqual(invested_capital, 674.7770953041411)
+        self.assertAlmostEqual(invested_capital, 674.7770953041411)  # type: ignore
 
     def test_current_return_failing_with_no_values(self):
         current_return_df = rc.get_current_return_df(self.flow_df, self.empty_value_df)

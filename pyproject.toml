@@ -7,6 +7,10 @@ ignore_missing_imports = true
 check_untyped_defs = true
 exclude = ["migrations", "__pypackages__", "venv"]
 
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.local"
+addopts = "--ignore=__pypackages__"
+
 [tool.django-stubs]
 django_settings_module = "config.settings.local"
 ignore_missing_settings = true
@@ -47,6 +51,8 @@ dependencies = [
     "mypy>=1.4.1",
     "django-types>=0.17.0",
     "types-requests>=2.31.0.2",
+    "pytest>=7.4.0",
+    "pytest-django>=4.5.2",
 ]
 requires-python = ">=3.11"
 license = {text = "MIT"}

@@ -3,11 +3,8 @@ import os
 
 from django.core.exceptions import ImproperlyConfigured
 
-# Paths
-
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Secret settings
 
 with open(os.path.join(BASE_DIR, "tmp/secrets.json")) as f:
     secrets_json = json.loads(f.read())
@@ -22,8 +19,6 @@ def get_secret(setting, secrets=secrets_json):
 
 
 SECRET_KEY = get_secret("SECRET_KEY")
-
-# Application definition
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -84,8 +79,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-# Database
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -93,17 +86,11 @@ DATABASES = {
     }
 }
 
-# User
-
 LOGIN_URL = "users:signin"
-
 LOGIN_REDIRECT_URL = "users:redirect"
-
 LOGOUT_REDIRECT_URL = "users:redirect"
-
 AUTH_USER_MODEL = "users.StandardUser"
 
-# Password validation
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -120,35 +107,27 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Internationalization
-
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "Europe/Berlin"
-
 USE_I18N = True
-
-USE_L10N = True
-
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-
 STATIC_URL = "/static/"
-
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static/app"),
 ]
-
 STATIC_ROOT = os.path.join(BASE_DIR, "tmp/static")
-
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+    },
+}
 
 MEDIA_URL = "/media/"
-
 MEDIA_ROOT = os.path.join(BASE_DIR, "tmp/media")
-
-# E-Mail
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = "smtp.strato.de"
@@ -156,14 +135,10 @@ EMAIL_HOST_USER = "projekte@tortuga-webdesign.de"
 EMAIL_HOST_PASSWORD = get_secret("EMAIL_PWD")
 EMAIL_PORT = 587
 
-# Marketstack API
 MARKETSTACK_API_KEY = get_secret("MARKETSTACK_API_KEY")
 
-# django 3.2
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
-
-# crons
 CRONJOBS = [
     "apps.stocks.tasks.fetch_prices",
     "apps.crypto.tasks.fetch_prices",

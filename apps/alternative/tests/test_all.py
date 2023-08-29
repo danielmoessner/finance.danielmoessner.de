@@ -32,6 +32,7 @@ class ViewsTestCase(TestCase):
         alternative = self.user.alternative_depots.get(
             is_active=True
         ).alternatives.first()
+        assert alternative is not None
         url = reverse_lazy("alternative:alternative", args=[alternative.pk])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -45,7 +46,7 @@ class ViewsTestCase(TestCase):
 
 class GeneralTestCase(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username="dummy")
+        self.user = User.objects.create_user(username="dummy")  # type: ignore
         self.user.set_password("test")
         self.user.save()
         self.depot = Depot.objects.create(name="Test Depot", user=self.user)

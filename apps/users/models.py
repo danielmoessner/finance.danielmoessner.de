@@ -10,6 +10,7 @@ from django.utils import timezone
 if TYPE_CHECKING:
     from django.db.models.query import QuerySet
 
+    from apps.alternative.models import Depot as AlternativeDepot
     from apps.banking.models import Depot as BankingDepot
     from apps.crypto.models import Depot as CryptoDepto
     from apps.stocks.models import Depot as StockDepot
@@ -34,9 +35,10 @@ class StandardUser(AbstractUser):
     rounded_numbers = models.BooleanField(default=True)
 
     if TYPE_CHECKING:
-        crypto_depots = QuerySet[CryptoDepto]
-        stock_depots = QuerySet[StockDepot]
-        banking_depots = QuerySet[BankingDepot]
+        crypto_depots: QuerySet[CryptoDepto]
+        stock_depots: QuerySet[StockDepot]
+        alternative_depots: QuerySet[AlternativeDepot]
+        banking_depots: QuerySet[BankingDepot]
 
     # getters
     def get_active_crypto_depot(self):

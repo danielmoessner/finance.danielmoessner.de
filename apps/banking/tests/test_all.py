@@ -46,7 +46,7 @@ def create_change(
 
 class ViewsTestCase(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username="dummy")
+        self.user = User.objects.create_user(username="dummy")  # type: ignore
         self.user.set_password("test")
         self.user.save()
         self.user.create_random_banking_data()
@@ -76,7 +76,10 @@ class ViewsTestCase(TestCase):
         self.client = Client()
         self.client.login(username="dummy", password="test")
         self.user = User.objects.get(username="dummy")
-        account = self.user.banking_depots.get(is_active=True).accounts.first()
+        depot = self.user.banking_depots.get(is_active=True)
+        assert depot is not None
+        account = depot.accounts.first()
+        assert account is not None
         url = reverse_lazy("banking:account", args=[account.pk])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -89,7 +92,10 @@ class ViewsTestCase(TestCase):
         self.client = Client()
         self.client.login(username="dummy", password="test")
         self.user = User.objects.get(username="dummy")
-        category = self.user.banking_depots.get(is_active=True).categories.first()
+        depot = self.user.banking_depots.get(is_active=True)
+        assert depot is not None
+        category = depot.categories.first()
+        assert category is not None
         url = reverse_lazy("banking:category", args=[category.pk])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -101,7 +107,7 @@ class ViewsTestCase(TestCase):
 
 class BalanceUpdateTestCase(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username="dummy")
+        self.user = User.objects.create_user(username="dummy")  # type: ignore
         self.user.set_password("test")
         self.user.save()
         self.depot_pk = create_depot(self.user, "Depot").pk
