@@ -706,10 +706,6 @@ class Flow(models.Model):
         return "{} - {} - {}".format(self.get_date(), self.bank, self.flow)
 
     def save(self, *args, **kwargs):
-        if self.pk:
-            bank = Flow.objects.get(pk=self.pk).bank
-            bank.reset()
-            bank.depot.reset()
         super().save(*args, **kwargs)
         self.bank.reset()
         self.bank.depot.reset()
@@ -734,10 +730,6 @@ class Dividend(models.Model):
         return "{} - {} - {}".format(self.stock, self.get_date(), self.dividend)
 
     def save(self, *args, **kwargs):
-        if self.pk:
-            Dividend.objects.get(pk=self.pk).stock.reset()
-            Dividend.objects.get(pk=self.pk).bank.reset()
-            Dividend.objects.get(pk=self.pk).stock.depot.reset()
         super().save(*args, **kwargs)
         self.stock.reset()
         self.bank.reset()

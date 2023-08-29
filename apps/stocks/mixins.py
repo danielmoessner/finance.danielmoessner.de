@@ -1,8 +1,11 @@
 from django.http import HttpRequest
 
+from apps.users.models import StandardUser
+
 
 class GetDepotMixin:
     request: HttpRequest
 
     def get_depot(self):
-        return self.request.user.stock_depots.filter(is_active=True).first()
+        user: StandardUser = self.request.user  # type: ignore
+        return user.get_active_stocks_depot()

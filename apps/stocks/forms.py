@@ -156,6 +156,7 @@ class FlowForm(forms.ModelForm):
         ),
         input_formats=["%Y-%m-%dT%H:%M"],
         label="Date",
+        initial=timezone.now,
     )
 
     class Meta:
@@ -165,13 +166,14 @@ class FlowForm(forms.ModelForm):
     def __init__(self, depot, *args, **kwargs):
         super(FlowForm, self).__init__(*args, **kwargs)
         self.fields["bank"].queryset = depot.banks.all()
-        self.fields["date"].initial = timezone.now()
+        if self.instance.pk:
+            self.fields["bank"].disabled = True
 
     def clean(self):
         super().clean()
         date = self.cleaned_data["date"]
         flow = self.cleaned_data["flow"]
-        bank = self.cleaned_data["bank"]
+        bank = getattr(self.cleaned_data, "bank", self.instance.bank)
         # check that there doesn't already exist a flow or trade on this particular date
         instance_pk = self.instance.pk if self.instance.pk else 0
         if (
@@ -232,6 +234,7 @@ class DividendForm(forms.ModelForm):
         ),
         input_formats=["%Y-%m-%dT%H:%M"],
         label="Date",
+        initial=timezone.now,
     )
 
     class Meta:
@@ -239,10 +242,13 @@ class DividendForm(forms.ModelForm):
         fields = ("bank", "stock", "date", "dividend")
 
     def __init__(self, depot, *args, **kwargs):
+        print(args, kwargs)
         super(DividendForm, self).__init__(*args, **kwargs)
         self.fields["bank"].queryset = depot.banks.order_by("name")
         self.fields["stock"].queryset = depot.stocks.order_by("name")
-        self.fields["date"].initial = timezone.now()
+        if self.instance.pk:
+            self.fields["bank"].disabled = True
+            self.fields["stock"].disabled = True
 
     def clean(self):
         cleaned_data = super().clean()
