@@ -1,5 +1,4 @@
 import re
-import time
 
 from bs4 import BeautifulSoup
 from pydantic import BaseModel, HttpUrl
@@ -18,7 +17,7 @@ class SeleniumFetcher(Fetcher):
         browser = get_chrome_driver()
         try:
             browser.get(str(data.website))
-            time.sleep(5)  # wait for the api requests to finish
+            browser.implicitly_wait(5)  # wait for the api requests to finish
             html = browser.page_source
         except Exception as e:
             return (
@@ -37,7 +36,7 @@ class SeleniumFetcher(Fetcher):
                 f"Could not find a price for on {data.website} with {data.target}.",
             )
 
-        result = re.search("\d{1,5}[.,]\d{2}", str(selection))
+        result = re.search(r"\d{1,5}[.,]\d{2}", str(selection))
 
         if not result:
             return False, f"Could not find a price inside '{selection}'."

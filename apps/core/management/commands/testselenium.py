@@ -8,5 +8,5 @@ class Command(BaseCommand):
         driver = get_chrome_driver()
         driver.get("https://www.google.com/")
         title = driver.title
-        self.stdout.write(self.style.SUCCESS(f"Title: {title}"))
         driver.quit()
+        self.stdout.write(self.style.SUCCESS(f"Title: {title}"))
