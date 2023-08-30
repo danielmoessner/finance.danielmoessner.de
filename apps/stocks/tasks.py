@@ -1,4 +1,6 @@
-from typing import Callable
+from typing import Callable, Mapping
+
+from pydantic import BaseModel
 
 from apps.core.fetchers.selenium import SeleniumFetcher
 from apps.core.fetchers.website import WebsiteFetcher
@@ -8,7 +10,7 @@ from apps.stocks.models import Price, PriceFetcher
 FETCHER_FUNCTION = Callable[[PriceFetcher], tuple[bool, str]]
 
 
-def get_fetchers_to_be_run(fetcher_type: str) -> dict[str, dict[str, int | str]]:
+def get_fetchers_to_be_run(fetcher_type: str) -> dict[str, BaseModel]:
     fetchers_to_be_run: list[PriceFetcher] = []
     for fetcher in list(PriceFetcher.objects.filter(fetcher_type=fetcher_type)):
         price = (
@@ -20,12 +22,14 @@ def get_fetchers_to_be_run(fetcher_type: str) -> dict[str, dict[str, int | str]]
     return {str(fetcher.pk): fetcher.fetcher_input for fetcher in fetchers_to_be_run}
 
 
-def save_prices(results: dict[str, tuple[bool, str | float]]):
+def save_prices(results: Mapping[str, tuple[bool, str | float]]):
     for fetcher, result in results.items():
         fetcher = PriceFetcher.objects.get(pk=fetcher)
         if result[0]:
+            assert isinstance(result[1], float)
             fetcher.save_price(result[1])
         else:
+            assert isinstance(result[1], str)
             fetcher.set_error(result[1])
 
 

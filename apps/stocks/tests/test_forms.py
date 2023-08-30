@@ -7,7 +7,7 @@ from apps.users.models import StandardUser
 
 class StandardSetUpTestCase(TestCase):
     def setUp(self):
-        self.user = StandardUser.objects.create_user(username="Dummy")
+        self.user = StandardUser.objects.create_user(username="Dummy")  # type: ignore
         self.user.set_password("test")
         self.user.save()
         self.client = Client()

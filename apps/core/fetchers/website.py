@@ -64,7 +64,7 @@ class WebsiteFetcher(Fetcher):
                 f"Could not find a price on {data.website} with {data.target}.",
             )
 
-        result = re.search("\d{1,5}[.,]\d{2}", str(selection))
+        result = re.search(r"\d{1,5}[.,]\d{2}", str(selection))
 
         if not result:
             return False, f"Could not find a price inside '{selection}'."
