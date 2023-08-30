@@ -173,7 +173,8 @@ class FlowForm(forms.ModelForm):
         super().clean()
         date = self.cleaned_data["date"]
         flow = self.cleaned_data["flow"]
-        bank = getattr(self.cleaned_data, "bank", self.instance.bank)
+        bank = self.cleaned_data["bank"]
+
         # check that there doesn't already exist a flow or trade on this particular date
         instance_pk = self.instance.pk if self.instance.pk else 0
         if (
@@ -289,6 +290,7 @@ class TradeForm(forms.ModelForm):
         ),
         input_formats=["%Y-%m-%dT%H:%M"],
         label="Date",
+        initial=timezone.now,
     )
 
     class Meta:
@@ -306,7 +308,9 @@ class TradeForm(forms.ModelForm):
         super(TradeForm, self).__init__(*args, **kwargs)
         self.fields["bank"].queryset = depot.banks.order_by("name")
         self.fields["stock"].queryset = depot.stocks.order_by("name")
-        self.fields["date"].initial = timezone.now()
+        if self.instance.pk:
+            self.fields["bank"].disabled = True
+            self.fields["stock"].disabled = True
 
     def clean(self):
         super().clean()

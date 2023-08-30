@@ -35,7 +35,7 @@ authors = [
 ]
 dependencies = [
     "beautifulsoup4>=4.12.2",
-    "django>=4.2.3",
+    "django>=4.2.4",
     "django-debug-toolbar>=4.2.0",
     "Jinja2>=3.1.2",
     "numpy>=1.25.1",
@@ -49,10 +49,10 @@ dependencies = [
     "black>=23.7.0",
     "ruff>=0.0.280",
     "mypy>=1.4.1",
-    "django-types>=0.17.0",
     "types-requests>=2.31.0.2",
     "pytest>=7.4.0",
     "pytest-django>=4.5.2",
+    "django-types>=0.17.0",
 ]
 requires-python = ">=3.11"
 license = {text = "MIT"}

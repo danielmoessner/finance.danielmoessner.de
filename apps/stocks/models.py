@@ -758,13 +758,6 @@ class Trade(models.Model):
         return "{} - {} - {}".format(self.get_date(), self.bank, self.stock)
 
     def save(self, *args, **kwargs):
-        if self.pk:
-            trade = Trade.objects.get(pk=self.pk)
-            bank = trade.bank
-            bank.reset()
-            bank.depot.reset()
-            stock = trade.stock
-            stock.reset()
         super().save(*args, **kwargs)
         self.bank.reset()
         self.bank.depot.reset()
@@ -795,9 +788,11 @@ class Price(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        affected_stocks = Stock.objects.filter(
-            ticker=self.ticker, exchange=self.exchange
-        ).select_related("depot")
+        affected_stocks = (
+            Stock.objects.filter(ticker=self.ticker, exchange=self.exchange)
+            .select_related("depot")
+            .prefetch_related("depot__banks")
+        )
         for stock in list(affected_stocks):
             stock.reset(self)
             stock.depot.reset()
