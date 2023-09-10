@@ -41,6 +41,7 @@ from apps.users.models import StandardUser
 class IndexView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
     template_name = "stocks/index.j2"
     model = Depot
+    object: Depot
 
     def get_object(self, _=None) -> Depot | None:
         user: StandardUser = self.request.user  # type: ignore
@@ -113,6 +114,7 @@ class SetActiveDepotView(LoginRequiredMixin, generic.View):
 class StockView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
     template_name = "stocks/stock.j2"
     model = Stock
+    object: Stock
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

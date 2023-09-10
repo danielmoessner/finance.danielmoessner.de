@@ -343,6 +343,7 @@ class Stock(models.Model):
     if TYPE_CHECKING:
         trades: QuerySet["Trade"]
         dividends: QuerySet["Dividend"]
+        price_fetchers: QuerySet["PriceFetcher"]
 
     class Meta:
         verbose_name = "Stock"
