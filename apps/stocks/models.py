@@ -113,7 +113,7 @@ class Depot(models.Model):
             "Invested Capital*": self.get_invested_capital_display(),
             "info": "*Calculated with the calculated flows and values.",
         }
-    
+
     def get_value(self) -> float | None:
         return self.value
 
