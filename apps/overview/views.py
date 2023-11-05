@@ -12,19 +12,23 @@ from apps.core.utils import (
     get_merged_value_df_from_queryset,
     sum_up_columns_in_a_dataframe,
 )
+from apps.users.models import StandardUser
 
 
 class IndexView(LoginRequiredMixin, TabContextMixin, generic.TemplateView):
     template_name = "overview/index.j2"
 
+    def get_user(self) -> StandardUser:
+        return self.request.user  # type: ignore
+
     def get_stats(self):
         total = 0
-        for depot in self.request.user.get_all_active_depots():
+        for depot in self.get_user().get_all_active_depots():
             total += float(depot.get_value())
         return {"Total": round(total, 2)}
 
     def get_value_df(self):
-        active_depots = self.request.user.get_all_active_depots()
+        active_depots = self.get_user().get_all_active_depots()
         # get the df with all values
         df = get_merged_value_df_from_queryset(active_depots)
         # make the date normal
@@ -49,7 +53,7 @@ class IndexView(LoginRequiredMixin, TabContextMixin, generic.TemplateView):
         return df
 
     def get_queryset(self):
-        return self.request.user.banking_depots.all()
+        return self.get_user().banking_depots.all()
 
     def get_context_data(self, **kwargs):
         # general
@@ -60,7 +64,7 @@ class IndexView(LoginRequiredMixin, TabContextMixin, generic.TemplateView):
         if context["tab"] == "values":
             context["value_df"] = self.get_value_df()
         if context["tab"] == "charts":
-            context["active_depots"] = self.request.user.get_all_active_depots()
+            context["active_depots"] = self.get_user().get_all_active_depots()
         # return
         return context
 
