@@ -1,11 +1,12 @@
-node_modules/**
-
+node_modules
 tmp/*
-
 *.sqlite3
 *.pyc
-
+.venv
+.ruff_cache
+.pytest_cache
+.pdm-build
+.mypy_cache
 **/.idea
 **/__pycache__
-
 .pdm-python
