@@ -2,7 +2,7 @@ import json
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse_lazy
 from django.views import generic
 from django.views.generic.detail import SingleObjectMixin
@@ -14,12 +14,22 @@ from apps.alternative.forms import (
     DepotForm,
     DepotSelectForm,
     FlowForm,
+    SubmitForm,
     ValueForm,
 )
 from apps.alternative.mixins import CustomGetFormMixin
 from apps.alternative.models import Alternative, Depot, Flow, Value
-from apps.core.mixins import AjaxResponseMixin, CustomGetFormUserMixin, TabContextMixin
+from apps.core.mixins import AjaxResponseMixin, CustomAjaxDeleteMixin, CustomGetFormUserMixin, TabContextMixin
 from apps.users.models import StandardUser
+
+
+class GetUserMixin(LoginRequiredMixin):
+    request: HttpRequest
+
+    def get_user(self) -> StandardUser:
+        user = self.request.user
+        assert isinstance(user, StandardUser)
+        return user
 
 
 ###
@@ -93,6 +103,16 @@ class SetActiveDepotView(LoginRequiredMixin, SingleObjectMixin, generic.View):
             reverse_lazy("users:settings", args=[self.request.user.pk])
         )
         return HttpResponseRedirect(url)
+
+
+class ResetDepotView(GetUserMixin, generic.FormView):
+    form_class = SubmitForm
+    template_name = "symbols/form_snippet.j2"
+
+    def post(self, request, pk, *args, **kwargs):
+        depot = self.get_user().alternative_depots.get(pk=pk)
+        depot.reset_all()
+        return JsonResponse({"valid": True})
 
 
 ###
@@ -188,31 +208,31 @@ class UpdateFlowView(
         )
 
 
-class DeleteFlowView(LoginRequiredMixin, generic.DeleteView):
+class DeleteFlowView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
     model = Flow
     template_name = "symbols/delete_snippet.j2"
 
-    def delete(self, request, *args, **kwargs):
-        flow = self.get_object()
+    # def delete(self, request, *args, **kwargs):
+    #     flow = self.get_object()
 
         # test that calculations are not being fucked up by deleting some random flow
-        if (
-            Value.objects.filter(
-                alternative=flow.alternative, date__gt=flow.date
-            ).exists()
-            or Flow.objects.filter(
-                alternative=flow.alternative, date__gt=flow.date
-            ).exists()
-        ):
-            message = (
-                "You can only delete this flow if there is no flow or value afterwards."
-            )
-            messages.error(request, message)
-        else:
-            flow.delete()
-        return HttpResponse(
-            json.dumps({"valid": True}), content_type="application/json"
-        )
+        # if (
+        #     Value.objects.filter(
+        #         alternative=flow.alternative, date__gt=flow.date
+        #     ).exists()
+        #     or Flow.objects.filter(
+        #         alternative=flow.alternative, date__gt=flow.date
+        #     ).exists()
+        # ):
+        #     message = (
+        #         "You can only delete this flow if there is no flow or value afterwards."
+        #     )
+        #     messages.error(request, message)
+        # else:
+        #     flow.delete()
+        # return HttpResponse(
+        #     json.dumps({"valid": True}), content_type="application/json"
+        # )
 
 
 ###
@@ -249,7 +269,7 @@ class UpdateValueView(
         )
 
 
-class DeleteValueView(LoginRequiredMixin, generic.DeleteView):
+class DeleteValueView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
     model = Value
     template_name = "symbols/delete_snippet.j2"
 

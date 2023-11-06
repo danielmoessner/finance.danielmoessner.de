@@ -8,6 +8,7 @@ urlpatterns = [
     # depot
     path("depots/add/", views.CreateDepotView.as_view(), name="add_depot"),
     path("depots/<int:pk>/edit/", views.UpdateDepotView.as_view(), name="edit_depot"),
+    path("depots/<int:pk>/reset/", views.ResetDepotView.as_view(), name="reset_depot"),
     path("depots/delete/", views.DeleteDepotView.as_view(), name="delete_depot"),
     path(
         "depots/<int:pk>/set-active/",

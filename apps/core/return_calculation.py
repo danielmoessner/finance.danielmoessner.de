@@ -69,8 +69,8 @@ def get_current_return_df(
     # new check to see if there are still datetimes used instead of dates
     assert isinstance(flow_df.index[0], date) and isinstance(value_df.index[0], date)
     # copy the first value to the flow column if there is no flow
-    if df.iloc[0, df.columns.get_loc("flow")] == 0:
-        df.iloc[0, df.columns.get_loc("flow")] = df.iloc[0, df.columns.get_loc("value")]
+    # if df.iloc[0, df.columns.get_loc("flow")] == 0:
+    #     df.iloc[0, df.columns.get_loc("flow")] = df.iloc[0, df.columns.get_loc("value")]
     # init the invested_capital column
     df.loc[:, "invested_capital"] = None
     # calculate the invested capital
@@ -92,8 +92,8 @@ def get_current_return_df(
     df.loc[:, "invested_capital"] = df.loc[:, "invested_capital"].apply(
         pd.to_numeric, downcast="float"
     )
-    df.loc[:, "invested_capital"] = df.loc[:, "invested_capital"].replace(0, np.nan)
-    df.loc[:, "current_return"] = df.loc[:, "value"] / df.loc[:, "invested_capital"]
+    # df.loc[:, "invested_capital"] = df.loc[:, "invested_capital"].replace(0, np.nan)
+    df.loc[:, "current_return"] = df.loc[:, "value"] / df.loc[:, "invested_capital"].replace(0, np.nan)
     # return the df
     return df
 

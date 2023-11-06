@@ -33,16 +33,16 @@
             {% for data in flows_and_values %}
                 <tr>
                     <td>{{ localtime(data.date).strftime('%d.%m.%Y %H:%M') }}</td>
-                    <td class="text-end">{{ data.flow or "" }}</td>
-                    <td class="text-end">{{ data.value or "" }}</td>
+                    <td class="text-end">{{ data.flow if "flow" in data else "" }}</td>
+                    <td class="text-end">{{ data.value if 'value' in data else "" }}</td>
                     <td>
                         <div class="d-flex justify-content-end">
-                            {% if data.flow %}
+                            {% if 'flow' in data %}
                                 {{ bg.modalButton("Edit", "#editFlow"+data.pk|string) }}
                                 {{ bg.modalButton("Delete", "#deleteFlow"+data.pk|string) }}
                                 {{ mg.djangoModal("Edit Flow", "editFlow"+data.pk|string, url("alternative:edit_flow", args=[data.pk])) }}
                                 {{ mg.djangoModal("Delete Flow", "deleteFlow"+data.pk|string, url("alternative:delete_flow", args=[data.pk])) }}
-                            {% elif data.value %}
+                            {% elif 'value' in data %}
                                 {{ bg.modalButton("Edit", "#editValue"+data.pk|string) }}
                                 {{ bg.modalButton("Delete", "#deleteValue"+data.pk|string) }}
                                 {{ mg.djangoModal("Edit Value", "editValue"+data.pk|string, url("alternative:edit_value", args=[data.pk])) }}

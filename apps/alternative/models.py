@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from django.core.validators import MinValueValidator
 from django.db import models
@@ -18,45 +18,20 @@ class Depot(CoreDepot):
         related_name="alternative_depots",
         on_delete=models.CASCADE,
     )
+    # query optimization
+    value = models.FloatField(null=True)
 
     if TYPE_CHECKING:
         alternatives: QuerySet["Alternative"]
 
-    def save(
-        self, force_insert=False, force_update=False, using=None, update_fields=None
-    ):
-        super().save(
-            force_insert=force_insert,
-            force_update=force_update,
-            using=using,
-            update_fields=update_fields,
-        )
-        if self.is_active:
-            self.user.alternative_depots.filter(is_active=True).exclude(
-                pk=self.pk
-            ).update(is_active=False)
-
     # getters
     def get_stats(self):
-        return {"Value": self.get_value()}
+        return {"Value": self.get_value_display()}
 
-    def get_value(self):
-        if not hasattr(self, "value"):
-            statement = """
-            select sum(value) as value
-            from alternative_value v
-            left join alternative_alternative a on v.alternative_id = a.id
-            where depot_id = {}
-            and (date, alternative_id) in (
-                select max(date) as date, v.alternative_id
-                from alternative_value v
-                group by v.alternative_id
-            )
-            """.format(
-                self.pk
-            )
-            self.value = self.__get_number_from_database(statement)
-        return self.value
+    def get_value_display(self) -> str:
+        if self.value is None:
+            return "404"
+        return "{:,.2f} €".format(self.value)
 
     def __get_number_from_database(self, statement):
         assert str(self.pk) in statement
@@ -67,6 +42,36 @@ class Depot(CoreDepot):
             self.value_df = utils.sum_up_value_dfs_from_items(self.alternatives.all())
         return self.value_df
 
+    # setters
+    def reset(self):
+        self.value = None
+        self.recalculate()
+
+    def recalculate(self):
+        self.calculate_value()
+        self.save()
+
+    def calculate_value(self):
+        statement = """
+            select sum(value) as value
+            from alternative_value v
+            left join alternative_alternative a on v.alternative_id = a.id
+            where depot_id = {}
+            and (date, alternative_id) in (
+                select max(date) as date, v.alternative_id
+                from alternative_value v
+                group by v.alternative_id
+            )
+            """.format(
+            self.pk
+        )
+        self.value = self.__get_number_from_database(statement)
+
+    def reset_all(self):
+        for alternative in self.alternatives.all():
+            alternative.reset()
+        self.reset()
+
 
 class Alternative(models.Model):
     name = models.CharField(max_length=200)
@@ -75,8 +80,6 @@ class Alternative(models.Model):
     )
     # query optimization
     invested_capital = models.FloatField(null=True)
-    time_weighted_return = models.FloatField(null=True)
-    internal_rate_of_return = models.FloatField(null=True)
     current_return = models.FloatField(null=True)
     profit = models.FloatField(null=True)
 
@@ -93,43 +96,42 @@ class Alternative(models.Model):
     # getters
     def get_stats(self):
         return {
-            "Value": self.get_value(),
-            "Invested Capital": self.get_invested_capital(),
-            "Current Return": self.get_current_return(),
+            "Value": self.get_value_display(),
+            "Invested Capital": self.get_invested_capital_display(),
+            "Current Return": self.get_current_return_display(),
+            "Profit": self.get_profit_display(),
         }
 
-    def get_value(self):
+    def __get_value(self) -> Union["Value", None]:
         value = Value.objects.filter(alternative=self).order_by("date").last()
+        return value
+
+    def get_value(self):
+        value = self.__get_value()
         if value:
-            return float(value.value)
+            return value.value
         return None
 
-    def get_profit(self):
-        if self.profit is None:
-            invested_capital = self.get_invested_capital()
-            value = self.get_value()
-            if invested_capital and value:
-                self.profit = value - invested_capital
-            else:
-                self.profit = None
-            self.save()
-        return self.profit
+    def get_value_display(self) -> str:
+        value = self.get_value()
+        if value is not None:
+            return "{:.2f} €".format(value)
+        return "404"
 
-    def get_invested_capital(self):
-        if self.invested_capital is None:
-            df = rc.get_current_return_df(self.get_flow_df(), self.get_value_df())
-            self.invested_capital = rc.get_invested_capital(df)
-            self.save()
-        return self.invested_capital
+    def get_profit_display(self) -> str:
+        if self.profit is not None:
+            return "{:.2f} €".format(self.profit)
+        return "404"
 
-    def get_current_return(self):
-        if self.current_return is None:
-            current_return_df = rc.get_current_return_df(
-                self.get_flow_df(), self.get_value_df()
-            )
-            self.current_return = rc.get_current_return(current_return_df)
-            self.save()
-        return self.current_return
+    def get_invested_capital_display(self) -> str:
+        if self.invested_capital is not None:
+            return "{:.2f} €".format(self.invested_capital)
+        return "404"
+
+    def get_current_return_display(self):
+        if self.current_return is not None:
+            return "{:.0f} %".format(self.current_return * 100)
+        return "404"
 
     def get_value_df(self):
         if not hasattr(self, "value_df"):
@@ -148,12 +150,8 @@ class Alternative(models.Model):
                 self.pk, self.pk
             )
             # get the flow df
-            self.value_df = self.get_df_from_database(statement, ["date", "value"])
+            self.value_df = utils.get_df_from_database(statement, ["date", "value"])
         return self.value_df
-
-    def get_df_from_database(self, statement, columns):
-        assert str(self.pk) in statement
-        return utils.get_df_from_database(statement, columns)
 
     def get_flow_df(self):
         if not hasattr(self, "flow_df"):
@@ -169,7 +167,7 @@ class Alternative(models.Model):
                 self.pk
             )
             # get the flow df
-            self.flow_df = self.get_df_from_database(statement, ["date", "flow"])
+            self.flow_df = utils.get_df_from_database(statement, ["date", "flow"])
         return self.flow_df
 
     def get_flows_and_values(self):
@@ -182,10 +180,31 @@ class Alternative(models.Model):
     # setters
     def reset(self):
         self.current_return = None
-        self.internal_rate_of_return = None
         self.invested_capital = None
-        self.time_weighted_return = None
+        self.profit = None
+        self.recalculate()
         self.save()
+
+    def recalculate(self):
+        current_return_df = rc.get_current_return_df(
+            self.get_flow_df(), self.get_value_df()
+        )
+        self.calculate_current_return(current_return_df)
+        self.calculate_invested_capital(current_return_df)
+        self.calculate_profit()
+        self.save()
+
+    def calculate_current_return(self, current_return_df):
+        self.current_return = rc.get_current_return(current_return_df)
+
+    def calculate_invested_capital(self, current_return_df):
+        self.invested_capital = rc.get_invested_capital(current_return_df)
+
+    def calculate_profit(self):
+        self.profit = None
+        value = self.__get_value()
+        if self.invested_capital is not None and value is not None:
+            self.profit = float(value.value) - float(self.invested_capital)
 
 
 class Value(models.Model):
@@ -204,16 +223,21 @@ class Value(models.Model):
         return "{}: {} {}".format(self.alternative, self.get_date(), self.value)
 
     def save(self, *args, **kwargs):
-        self.alternative.reset()
         super().save(*args, **kwargs)
+        self.reset_deps()
 
     def delete(self, *args, **kwargs):
-        self.alternative.reset()
         super().delete(*args, **kwargs)
+        self.reset_deps()
 
     # getters
     def get_date(self):
         return timezone.localtime(self.date).strftime("%d.%m.%y %H:%M")
+
+    # setters
+    def reset_deps(self):
+        self.alternative.reset()
+        self.alternative.depot.reset()
 
 
 class Flow(models.Model):
@@ -230,13 +254,16 @@ class Flow(models.Model):
         return "{}: {} {}".format(self.alternative, self.get_date(), self.flow)
 
     def save(self, *args, **kwargs):
-        self.alternative.reset()
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        self.alternative.reset()
         super().delete(*args, **kwargs)
 
     # getters
     def get_date(self):
         return timezone.localtime(self.date).strftime("%d.%m.%y %H:%M")
+
+    # setters
+    def reset_deps(self):
+        self.alternative.reset()
+        self.alternative.depot.reset()

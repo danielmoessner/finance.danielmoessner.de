@@ -18,6 +18,10 @@
     </div>
 
     {% include 'symbols/stats.j2' %}
+    {% if tab == 'stats' %}
+        {{ mg.djangoModal("Reset Stats", "resetDepot") }}
+        {{ bg.modalButton("Reset Stats", "#resetDepot", url("alternative:reset_depot", args=[depot.pk])) }}
+    {% endif %}
 
     {% if tab == 'alternatives' %}
         <table class="table table-responsive-md rounded table-dark mb-5">
@@ -27,16 +31,16 @@
                <th class="text-end" scope="col">Invested Capital</th>
                <th class="text-end" scope="col">Value</th>
                <th class="text-end" scope="col">Profit</th>
-               <th scope="col"></th>
+               <th class="text-end" scope="col"></th>
             </tr>
             </thead>
             <tbody>
             {% for alternative in alternatives %}
                 <tr>
                     <td>{{ alternative.name }}</td>
-                    <td class="text-end">{{ alternative.get_invested_capital() }}</td>
-                    <td class="text-end">{{ alternative.get_value() }}</td>
-                    <td class="text-end">{{ alternative.get_profit() }}</td>
+                    <td class="text-end">{{ alternative.get_invested_capital_display() }}</td>
+                    <td class="text-end">{{ alternative.get_value_display() }}</td>
+                    <td class="text-end">{{ alternative.get_profit_display() }}</td>
                     <td>
                         <div class="d-flex justify-content-end">
                             {{ bg.hrefButton("Open", url('alternative:alternative', args=[alternative.pk])) }}
