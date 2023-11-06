@@ -38,7 +38,6 @@ dependencies = [
     "django>=4.2.4",
     "django-debug-toolbar>=4.2.0",
     "Jinja2>=3.1.2",
-    "numpy>=1.25.1",
     "pandas>=2.0.3",
     "pytz>=2023.3",
     "requests>=2.31.0",
@@ -53,9 +52,14 @@ dependencies = [
     "pytest>=7.4.0",
     "pytest-django>=4.5.2",
     "django-types>=0.17.0",
+    "numpy>=1.26.1",
 ]
 requires-python = ">=3.11"
 license = {text = "MIT"}
+
+[[tool.pdm.autoexport]]
+filename = "requirements.txt"
+groups = ["default"]
 
 [build-system]
 requires = ["pdm-backend"]
