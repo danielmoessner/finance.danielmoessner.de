@@ -42,9 +42,9 @@
                 <tr>
                     <td>{{ asset.symbol }}</td>
                     <td class="text-end">{{ asset.get_price_display() }}</td>
-                    <td class="text-end">{{ asset.get_top_price() }}</td>
-                    <td class="text-end">{{ asset.get_amount() }}</td>
-                    <td class="text-end">{{ "%.2f"|format(asset.get_value()) }}</td>
+                    <td class="text-end">{{ asset.get_top_price_display() }}</td>
+                    <td class="text-end">{{ asset.get_amount_display() }}</td>
+                    <td class="text-end">{{ asset.get_value_display() }}</td>
                     <td>
                         <div class="d-flex justify-content-end">
                             {{ mg.djangoModal("Add Trade", "addTrade", url("crypto:add_trade")+"?buy_asset="+asset.pk|string+"&sell_asset="+asset.pk|string) }}
@@ -59,7 +59,7 @@
                 </tr>
             {% endfor %}
             <tr>
-                <td colspan="5">
+                <td colspan="6">
                     <div class="d-flex">
                         {{ mg.djangoModal("Add Asset", "addAsset", url("crypto:add_asset")) }}
                         {{ bg.modalButton("Add Asset", "#addAsset") }}
@@ -85,7 +85,7 @@
             {% for account in accounts %}
                 <tr>
                     <td>{{ account.name }}</td>
-                    <td class="text-end">{{ "%.2f"|format(account.get_value()) }}</td>
+                    <td class="text-end">{{ account.get_value_display() }}</td>
                     <td>
                         <div class="d-flex justify-content-end">
                             {{ mg.djangoModal("Deposit / Withdraw", "addFlow"+account.pk|string, url("crypto:add_flow")+"?account="+account.pk|string) }}

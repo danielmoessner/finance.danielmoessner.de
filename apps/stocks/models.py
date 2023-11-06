@@ -267,7 +267,10 @@ class Bank(models.Model):
 
     # getters
     def get_stats(self):
-        return {"Balance": self.calculate_balance(), "Value": self.get_value_display()}
+        return {
+            "Balance": self.get_balance_display(),
+            "Value": self.get_value_display(),
+        }
 
     def get_value_display(self):
         if self.value is None:

@@ -3,6 +3,7 @@ from datetime import datetime
 from django import forms
 from django.db.models import Q
 from django.utils import timezone
+from pydantic import ValidationError
 
 from .models import Account, Asset, Depot, Flow, Price, PriceFetcher, Trade, Transaction
 from apps.core.fetchers.website import WebsiteFetcherInput
@@ -283,7 +284,7 @@ class PriceFetcherForm(forms.ModelForm):
         super(PriceFetcherForm, self).__init__(*args, **kwargs)
         self.fields["asset"].queryset = depot.assets.all()
 
-    def _create_human_error(self, error: forms.ValidationError) -> str:
+    def _create_human_error(self, error: ValidationError) -> str:
         error_string = ""
         for e in error.errors():
             error_string += f"{e['loc'][0]}: {e['msg']}\n"
@@ -294,12 +295,12 @@ class PriceFetcherForm(forms.ModelForm):
         if self.cleaned_data["fetcher_type"] == "COINGECKO":
             try:
                 CoinGeckoFetcherInput(**data)
-            except forms.ValidationError as e:
+            except ValidationError as e:
                 raise forms.ValidationError(self._create_human_error(e))
         elif self.cleaned_data["fetcher_type"] in ["WEBSITE", "SELENIUM"]:
             try:
                 WebsiteFetcherInput(**data)
-            except forms.ValidationError as e:
+            except ValidationError as e:
                 raise forms.ValidationError(self._create_human_error(e))
         else:
             self.add_error("fetcher_type", "This type is not supported.")

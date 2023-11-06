@@ -41,10 +41,6 @@ class Depot(CoreDepot):
         super().save(*args, **kwargs)
         if not self.assets.filter(symbol="EUR").exists():
             self.assets.create(symbol="EUR")
-        if self.is_active:
-            self.user.crypto_depots.filter(is_active=True).exclude(pk=self.pk).update(
-                is_active=False
-            )
 
     # getters
     def __get_flow_df(self):
@@ -73,35 +69,60 @@ class Depot(CoreDepot):
         return self.value_df
 
     def get_value(self):
-        if self.value is None:
-            self.value = 0
-            for asset in list(self.assets.all()):
-                self.value += float(asset.get_value())
-            self.save()
         return self.value
 
-    def get_invested_capital(self):
-        if self.invested_capital is None:
-            df = rc.get_current_return_df(self.get_flow_df(), self.get_value_df())
-            self.invested_capital = rc.get_invested_capital(df)
-            self.save()
-        return self.invested_capital
+    def get_value_display(self):
+        if self.value is None:
+            return "404"
+        return "{:.2f} €".format(self.value)
 
-    def get_current_return(self):
+    def get_current_return_display(self):
         if self.current_return is None:
-            df = rc.get_current_return_df(self.get_flow_df(), self.get_value_df())
-            self.current_return = rc.get_current_return(df)
-            self.save()
-        return self.current_return
+            return "404"
+        return f"{int(self.current_return * 100)} %"
+
+    def get_invested_capital_display(self):
+        if self.invested_capital is None:
+            return "404"
+        return "{:.2f} €".format(self.invested_capital)
 
     def get_stats(self):
         return {
-            "Value": self.get_value(),
-            "Invested Capital": self.get_invested_capital(),
-            "Current Return": self.get_current_return(),
+            "Value": self.get_value_display(),
+            "Invested Capital": self.get_invested_capital_display(),
+            "Current Return": self.get_current_return_display(),
         }
 
     # setters
+    def reset(self):
+        self.value = None
+        self.invested_capital = None
+        self.current_return = None
+        self.recalculate()
+
+    def recalculate(self):
+        self.calculate_value()
+        flow_df = self.get_flow_df()
+        value_df = self.get_value_df()
+        self.calculate_invested_capital(flow_df, value_df)
+        self.calculate_current_return(flow_df, value_df)
+        self.save()
+
+    def calculate_value(self):
+        self.value = 0
+        for asset in list(self.assets.all()):
+            if asset.value is None:
+                continue
+            self.value += asset.value
+
+    def calculate_invested_capital(self, flow_df, value_df):
+        df = rc.get_current_return_df(flow_df, value_df)
+        self.invested_capital = rc.get_invested_capital(df)
+
+    def calculate_current_return(self, flow_df, value_df):
+        df = rc.get_current_return_df(flow_df, value_df)
+        self.current_return = rc.get_current_return(df)
+
     def reset_all(self):
         Depot.objects.filter(pk=self.pk).update(
             value=None,
@@ -127,34 +148,18 @@ class Account(CoreAccount):
 
     # getters
     def get_stats(self):
-        return {"Value": self.get_value()}
+        return {"Value": self.get_value_display()}
 
-    def get_value(self):
+    def get_value_display(self):
         if self.value is None:
-            # create all asset stats so that the calculated data is correct
-            if self.asset_stats.all().count() != self.depot.assets.all().count():
-                for asset in self.depot.assets.all():
-                    AccountAssetStats.objects.get_or_create(asset=asset, account=self)
-            # sum up the values
-            self.value = 0
-            for stats in list(self.asset_stats.select_related("asset", "account")):
-                self.value += stats.get_value()
-            self.save()
-        return self.value
+            return "404"
+        return "{:.2f} €".format(self.value)
 
     def get_asset_stats(self, asset):
         stats, created = AccountAssetStats.objects.get_or_create(
             asset=asset, account=self
         )
         return stats
-
-    def get_value_asset(self, asset):
-        stats = self.get_asset_stats(asset)
-        return stats.get_value()
-
-    def get_amount_asset(self, asset):
-        stats = self.get_asset_stats(asset)
-        return stats.get_amount()
 
     def get_amount_asset_before_date(
         self,
@@ -172,6 +177,27 @@ class Account(CoreAccount):
             exclude_transactions=exclude_transactions,
         )
 
+    # setters
+    def reset(self):
+        self.value = None
+        self.recalculate()
+
+    def recalculate(self):
+        self.calculate_value()
+        self.save()
+
+    def calculate_value(self):
+        self.value = 0
+        for stats in list(self.asset_stats.select_related("asset", "account")):
+            if self.asset_stats.all().count() != self.depot.assets.all().count():
+                for asset in self.depot.assets.all():
+                    AccountAssetStats.objects.get_or_create(asset=asset, account=self)
+            self.value = 0
+            for stats in list(self.asset_stats.select_related("asset", "account")):
+                if stats.value is None:
+                    continue
+                self.value += stats.value
+
 
 class Asset(models.Model):
     symbol = models.CharField(max_length=5)
@@ -185,17 +211,10 @@ class Asset(models.Model):
     def __str__(self):
         return "{}".format(self.symbol)
 
-    def save(
-        self, force_insert=False, force_update=False, using=None, update_fields=None
-    ):
+    def save(self, *args, **kwargs):
         # uppercase the symbol for convenience
         self.symbol = self.symbol.upper()
-        super().save(
-            force_update=force_update,
-            force_insert=force_insert,
-            using=using,
-            update_fields=update_fields,
-        )
+        super().save(*args, **kwargs)
         # test that there is a price for the euro asset or
         # the base asset which is euro in this case
         if self.symbol == "EUR" and not Price.objects.filter(symbol="EUR").exists():
@@ -281,9 +300,9 @@ class Asset(models.Model):
 
     def get_stats(self):
         return {
-            "Amount": self.get_amount(),
-            "Value": self.get_value(),
-            "Top": self.get_top_price(),
+            "Amount": self.get_amount_display(),
+            "Value": self.get_value_display(),
+            "Top": self.get_top_price_display(),
         }
 
     def __get_price(self) -> Union["Price", None]:
@@ -295,86 +314,92 @@ class Asset(models.Model):
             return "404"
         if price.is_old:
             return "OLD"
-        return str(price.price)
+        return "{:.2f} €".format(price.price)
 
-    def get_top_price(self) -> str:
+    def get_top_price_display(self) -> str:
         if self.top_price is None:
-            date = timezone.now() - timedelta(days=365 * 2)
-            top_price = Price.objects.filter(
-                symbol=self.symbol, date__gt=date
-            ).aggregate(Max("price"))["price__max"]
-            if top_price is None:
-                self.top_price = "404"
-            else:
-                self.top_price = "{:.2f}/{:.2f}".format(
-                    top_price, float(top_price) - self.get_price()
-                )
-            self.save()
+            return "404"
         return self.top_price
 
-    def get_price(self) -> float:
-        if self.price is None:
-            price = self.__get_price()
-            if price is not None:
-                self.price = float(price.price) or 0
-            else:
-                self.price = 0
-            self.save()
-        return self.price
-
-    def get_value(self):
+    def get_value_display(self) -> str:
         if self.value is None:
-            amount = self.get_amount()
-            price = self.get_price()
-            self.value = float(amount) * float(price)
-            self.save()
-        return self.value
+            return "404"
+        return "{:.2f} €".format(self.value)
 
-    def get_account_stats(self, account):
-        stats, created = AccountAssetStats.objects.get_or_create(
-            asset=self, account=account
-        )
-        return stats
-
-    def get_value_account(self, account):
-        stats = self.get_account_stats(account)
-        return stats.get_value()
-
-    def get_amount_account(self, account):
-        stats = self.get_account_stats(account)
-        return stats.get_amount()
-
-    def get_amount(self):
+    def get_amount_display(self) -> str:
         if self.amount is None:
-            trade_buy_amount = (
-                Trade.objects.filter(
-                    buy_asset=self, account__in=self.depot.accounts.all()
-                ).aggregate(Sum("buy_amount"))["buy_amount__sum"]
-                or 0
+            return "404"
+        return "{:.8f}".format(self.amount)
+
+    # setters
+    def reset(self):
+        self.value = None
+        self.amount = None
+        self.price = None
+        self.top_price = None
+        self.recalculate()
+
+    def recalculate(self):
+        self.calculate_amount()
+        self.calculate_price()
+        self.calculate_value()
+        self.calculate_top_price()
+        self.save()
+
+    def calculate_value(self):
+        amount = self.amount
+        price = self.price
+        if amount is None or price is None:
+            self.value = None
+            return
+        self.value = float(amount) * float(price)
+
+    def calculate_amount(self):
+        trade_buy_amount = (
+            Trade.objects.filter(
+                buy_asset=self, account__in=self.depot.accounts.all()
+            ).aggregate(Sum("buy_amount"))["buy_amount__sum"]
+            or 0
+        )
+        trade_sell_amount = (
+            Trade.objects.filter(
+                sell_asset=self, account__in=self.depot.accounts.all()
+            ).aggregate(Sum("sell_amount"))["sell_amount__sum"]
+            or 0
+        )
+        transaction_fees_amount = (
+            Transaction.objects.filter(
+                asset=self, from_account__in=self.depot.accounts.all()
+            ).aggregate(Sum("fees"))["fees__sum"]
+            or 0
+        )
+        flow_amount = (
+            Flow.objects.filter(asset=self).aggregate(Sum("flow"))["flow__sum"] or 0
+        )
+        self.amount = (
+            trade_buy_amount - trade_sell_amount - transaction_fees_amount + flow_amount
+        )
+
+    def calculate_price(self):
+        price = self.__get_price()
+        if price is not None:
+            self.price = float(price.price) or 0
+        else:
+            self.price = 0
+
+    def calculate_top_price(self):
+        date = timezone.now() - timedelta(days=365 * 2)
+        top_price = Price.objects.filter(symbol=self.symbol, date__gt=date).aggregate(
+            Max("price")
+        )["price__max"]
+        if self.price is None:
+            self.top_price = "404"
+        elif top_price is None:
+            self.top_price = "404"
+        else:
+            self.top_price = "{:.2f}/{:.2f}".format(
+                top_price, float(top_price) - self.price
             )
-            trade_sell_amount = (
-                Trade.objects.filter(
-                    sell_asset=self, account__in=self.depot.accounts.all()
-                ).aggregate(Sum("sell_amount"))["sell_amount__sum"]
-                or 0
-            )
-            transaction_fees_amount = (
-                Transaction.objects.filter(
-                    asset=self, from_account__in=self.depot.accounts.all()
-                ).aggregate(Sum("fees"))["fees__sum"]
-                or 0
-            )
-            flow_amount = (
-                Flow.objects.filter(asset=self).aggregate(Sum("flow"))["flow__sum"] or 0
-            )
-            self.amount = (
-                trade_buy_amount
-                - trade_sell_amount
-                - transaction_fees_amount
-                + flow_amount
-            )
-            self.save()
-        return self.amount
 
 
 class AccountAssetStats(models.Model):
@@ -390,47 +415,10 @@ class AccountAssetStats(models.Model):
 
     # getters
     def get_amount(self):
-        if self.amount is None:
-            trade_buy_amount = (
-                Trade.objects.filter(
-                    buy_asset=self.asset, account=self.account
-                ).aggregate(Sum("buy_amount"))["buy_amount__sum"]
-                or 0
-            )
-            trade_sell_amount = (
-                Trade.objects.filter(
-                    sell_asset=self.asset, account=self.account
-                ).aggregate(Sum("sell_amount"))["sell_amount__sum"]
-                or 0
-            )
-            transaction_to_amount = (
-                Transaction.objects.filter(
-                    asset=self.asset, to_account=self.account
-                ).aggregate(Sum("amount"))["amount__sum"]
-                or 0
-            )
-            transaction_from_and_fees_amount = Transaction.objects.filter(
-                asset=self.asset, from_account=self.account
-            ).aggregate(Sum("fees"), Sum("amount"))
-            flow_amount = (
-                Flow.objects.filter(asset=self.asset, account=self.account).aggregate(
-                    Sum("flow")
-                )["flow__sum"]
-                or 0
-            )
-            transaction_from_amount = (
-                transaction_from_and_fees_amount["amount__sum"] or 0
-            )
-            transaction_fees_amount = transaction_from_and_fees_amount["fees__sum"] or 0
-            trade_amount = trade_buy_amount - trade_sell_amount
-            transaction_amount = (
-                transaction_to_amount
-                - transaction_fees_amount
-                - transaction_from_amount
-            )
-            self.amount = trade_amount + transaction_amount + flow_amount
-            self.save()
         return self.amount
+
+    def get_value(self):
+        return self.value
 
     def get_amount_before_date(
         self, date, exclude_transactions=None, exclude_trades=None, exclude_flows=None
@@ -488,13 +476,60 @@ class AccountAssetStats(models.Model):
         amount = trade_amount + transaction_amount + flow_amount
         return amount
 
-    def get_value(self):
-        if self.value is None:
-            amount = float(self.get_amount())
-            price = float(self.asset.get_price())
-            self.value = amount * price
-            self.save()
-        return self.value
+    # setters
+    def reset(self):
+        self.value = None
+        self.amount = None
+        self.recalculate()
+
+    def recalculate(self):
+        self.calculate_amount()
+        self.calculate_value()
+        self.save()
+
+    def calculate_value(self):
+        if self.amount is None:
+            self.value = None
+            return
+        amount = float(self.amount)
+        price = float(self.asset.get_price_display())
+        self.value = amount * price
+
+    def calculate_amount(self):
+        trade_buy_amount = (
+            Trade.objects.filter(buy_asset=self.asset, account=self.account).aggregate(
+                Sum("buy_amount")
+            )["buy_amount__sum"]
+            or 0
+        )
+        trade_sell_amount = (
+            Trade.objects.filter(sell_asset=self.asset, account=self.account).aggregate(
+                Sum("sell_amount")
+            )["sell_amount__sum"]
+            or 0
+        )
+        transaction_to_amount = (
+            Transaction.objects.filter(
+                asset=self.asset, to_account=self.account
+            ).aggregate(Sum("amount"))["amount__sum"]
+            or 0
+        )
+        transaction_from_and_fees_amount = Transaction.objects.filter(
+            asset=self.asset, from_account=self.account
+        ).aggregate(Sum("fees"), Sum("amount"))
+        flow_amount = (
+            Flow.objects.filter(asset=self.asset, account=self.account).aggregate(
+                Sum("flow")
+            )["flow__sum"]
+            or 0
+        )
+        transaction_from_amount = transaction_from_and_fees_amount["amount__sum"] or 0
+        transaction_fees_amount = transaction_from_and_fees_amount["fees__sum"] or 0
+        trade_amount = trade_buy_amount - trade_sell_amount
+        transaction_amount = (
+            transaction_to_amount - transaction_fees_amount - transaction_from_amount
+        )
+        self.amount = trade_amount + transaction_amount + flow_amount
 
 
 class Trade(models.Model):
@@ -517,7 +552,6 @@ class Trade(models.Model):
 
     def __str__(self):
         account = str(self.account)
-        str(self.date.date())
         buy_asset = str(self.buy_asset)
         buy_amount = str(self.buy_amount)
         sell_asset = str(self.sell_asset)
@@ -526,24 +560,24 @@ class Trade(models.Model):
             self.get_date(), account, buy_amount, buy_asset, sell_amount, sell_asset
         )
 
-    def save(
-        self, force_insert=False, force_update=False, using=None, update_fields=None
-    ):
-        super().save(
-            force_insert=force_insert,
-            force_update=force_update,
-            using=using,
-            update_fields=update_fields,
-        )
-        self.account.depot.reset_all()
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.reset_deps()
 
     def delete(self, using=None, keep_parents=False):
         super().delete(using=using, keep_parents=keep_parents)
-        self.account.depot.reset_all()
+        self.reset_deps()
 
     # getters
     def get_date(self):
         return timezone.localtime(self.date).strftime("%d.%m.%Y %H:%M")
+
+    # setters
+    def reset_deps(self):
+        self.buy_asset.reset()
+        self.sell_asset.reset()
+        self.account.reset()
+        self.account.depot.reset()
 
 
 class Transaction(models.Model):
@@ -568,24 +602,24 @@ class Transaction(models.Model):
             self.asset, self.date, self.from_account, self.to_account, self.amount
         )
 
-    def save(
-        self, force_insert=False, force_update=False, using=None, update_fields=None
-    ):
-        super().save(
-            force_insert=force_insert,
-            force_update=force_update,
-            using=using,
-            update_fields=update_fields,
-        )
-        self.asset.depot.reset_all()
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.reset_deps()
 
-    def delete(self, using=None, keep_parents=False):
-        super().delete(using=using, keep_parents=keep_parents)
-        self.asset.depot.reset_all()
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+        self.reset_deps()
 
     # getters
     def get_date(self):
         return timezone.localtime(self.date).strftime("%d.%m.%Y %H:%M")
+
+    # setters
+    def reset_deps(self):
+        self.asset.reset()
+        self.from_account.reset()
+        self.to_account.reset()
+        self.to_account.depot.reset()
 
 
 class Price(models.Model):
@@ -615,6 +649,23 @@ class Price(models.Model):
     def get_date(self):
         return timezone.localtime(self.date).strftime("%d.%m.%Y")
 
+    # setters
+    def reset_deps(self):
+        affected_assets = (
+            Asset.objects.filter(symbol=self.symbol)
+            .select_related("depot")
+            .prefetch_related("depot__accounts")
+        )
+        affected_depots: list[Depot] = []
+        for asset in affected_assets:
+            asset.reset()
+            affected_depots.append(asset.depot)
+        for depot in affected_depots:
+            accounts = list(depot.accounts.all())
+            for account in accounts:
+                account.reset()
+            depot.reset()
+
 
 class Flow(models.Model):
     account = models.ForeignKey(Account, related_name="flows", on_delete=models.CASCADE)
@@ -628,24 +679,23 @@ class Flow(models.Model):
     def __str__(self):
         return "{} {} {}".format(self.get_date(), self.account, self.flow)
 
-    def save(
-        self, force_insert=False, force_update=False, using=None, update_fields=None
-    ):
-        super().save(
-            force_insert=force_insert,
-            force_update=force_update,
-            using=using,
-            update_fields=update_fields,
-        )
-        self.account.depot.reset_all()
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.reset_deps()
 
     def delete(self, using=None, keep_parents=False):
         super().delete(using=using, keep_parents=keep_parents)
-        self.account.depot.reset_all()
+        self.reset_deps()
 
     # getters
     def get_date(self):
         return timezone.localtime(self.date).strftime("%d.%m.%Y %H:%M")
+
+    # setters
+    def reset_deps(self):
+        self.asset.reset()
+        self.account.reset()
+        self.account.depot.reset()
 
 
 class PriceFetcher(models.Model):
