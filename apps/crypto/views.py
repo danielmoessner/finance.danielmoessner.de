@@ -6,6 +6,7 @@ from django.views import generic
 
 from apps.core.mixins import TabContextMixin
 from apps.crypto.models import Account, Asset, Depot, Flow, Price, Trade, Transaction
+from apps.users.mixins import GetUserMixin
 from apps.users.models import StandardUser
 
 
@@ -95,7 +96,8 @@ class AssetView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
         return context
 
 
-def reset_depot_stats(request, pk, *args, **kwargs):
-    depot = get_object_or_404(request.user.crypto_depots.all(), pk=pk)
-    depot.reset_all()
-    return HttpResponseRedirect(reverse_lazy("crypto:index", args=[depot.pk]))
+class ResetDepotView(GetUserMixin, generic.View):
+    def post(self, request, pk, *args, **kwargs):
+        depot = self.get_user().crypto_depots.get(pk=pk)
+        depot.reset_all()
+        return HttpResponseRedirect(reverse_lazy("crypto:index"))

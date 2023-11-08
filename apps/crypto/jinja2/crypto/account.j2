@@ -35,9 +35,9 @@
             {% for asset in assets %}
                 <tr>
                     <td>{{ asset.symbol }}</td>
-                    <td class="text-end">{{ asset.get_price() }}</td>
+                    <td class="text-end">{{ asset.get_price_display() }}</td>
                     <td class="text-end">{{ asset.get_amount_account(object) }}</td>
-                    <td class="text-end">{{ "%.2f"|format(asset.get_value_account(object)) }}</td>
+                    <td class="text-end">{{ asset.get_value_account(object) }}</td>
                 </tr>
             {% endfor %}
             </tbody>

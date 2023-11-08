@@ -14,7 +14,7 @@ urlpatterns = [
         formviews.SetActiveDepotView.as_view(),
         name="set_depot",
     ),
-    path("depots/<int:pk>/reset/", views.reset_depot_stats, name="reset_stats"),
+    path("depots/<int:pk>/reset/", views.ResetDepotView.as_view(), name="reset_stats"),
     # account
     path("accounts/add/", formviews.AddAccountView.as_view(), name="add_account"),
     path(

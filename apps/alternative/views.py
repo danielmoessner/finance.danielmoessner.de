@@ -20,16 +20,10 @@ from apps.alternative.forms import (
 from apps.alternative.mixins import CustomGetFormMixin
 from apps.alternative.models import Alternative, Depot, Flow, Value
 from apps.core.mixins import AjaxResponseMixin, CustomAjaxDeleteMixin, CustomGetFormUserMixin, TabContextMixin
+from apps.users.mixins import GetUserMixin
 from apps.users.models import StandardUser
 
 
-class GetUserMixin(LoginRequiredMixin):
-    request: HttpRequest
-
-    def get_user(self) -> StandardUser:
-        user = self.request.user
-        assert isinstance(user, StandardUser)
-        return user
 
 
 ###

@@ -74,7 +74,7 @@ class Depot(CoreDepot):
     def get_value_display(self):
         if self.value is None:
             return "404"
-        return "{:.2f} €".format(self.value)
+        return "{:,.2f} €".format(self.value)
 
     def get_current_return_display(self):
         if self.current_return is None:
@@ -84,7 +84,7 @@ class Depot(CoreDepot):
     def get_invested_capital_display(self):
         if self.invested_capital is None:
             return "404"
-        return "{:.2f} €".format(self.invested_capital)
+        return "{:,.2f} €".format(self.invested_capital)
 
     def get_stats(self):
         return {
@@ -124,18 +124,13 @@ class Depot(CoreDepot):
         self.current_return = rc.get_current_return(df)
 
     def reset_all(self):
-        Depot.objects.filter(pk=self.pk).update(
-            value=None,
-            internal_rate_of_return=None,
-            invested_capital=None,
-            time_weighted_return=None,
-            current_return=None,
-        )
-        Asset.objects.filter(depot=self).update(value=None, amount=None, price=None)
-        Account.objects.filter(depot=self).update(value=None)
-        AccountAssetStats.objects.filter(account__in=self.accounts.all()).update(
-            value=None, amount=None
-        )
+        for stats in list(AccountAssetStats.objects.filter(account__in=self.accounts.all())):
+            stats.reset()
+        for asset in list(Asset.objects.filter(depot=self)):
+            asset.reset()
+        for account in list(Account.objects.filter(depot=self)):
+            account.reset()
+        self.reset()
 
 
 class Account(CoreAccount):
@@ -298,6 +293,18 @@ class Asset(models.Model):
         # return the df
         return df
 
+    def __get_account_stats(self, account: Account):
+        stats, created = AccountAssetStats.objects.get_or_create(asset=self, account=account)
+        return stats
+
+    def get_amount_account(self, account: Account):
+        stats = self.__get_account_stats(account)
+        return stats.get_amount_display()
+    
+    def get_value_account(self, account: Account):
+        stats = self.__get_account_stats(account)
+        return stats.get_value_display()
+
     def get_stats(self):
         return {
             "Amount": self.get_amount_display(),
@@ -330,6 +337,11 @@ class Asset(models.Model):
         if self.amount is None:
             return "404"
         return "{:.8f}".format(self.amount)
+    
+    def get_amount_display_short(self) -> str:
+        if self.amount is None:
+            return "404"
+        return "{:.2f}".format(self.amount)
 
     # setters
     def reset(self):
@@ -420,6 +432,16 @@ class AccountAssetStats(models.Model):
     def get_value(self):
         return self.value
 
+    def get_amount_display(self) -> str:
+        if self.amount is None:
+            return "404"
+        return "{:.8f}".format(self.amount)
+    
+    def get_value_display(self) -> str:
+        if self.value is None:
+            return "404"
+        return "{:.2f} €".format(self.value)
+
     def get_amount_before_date(
         self, date, exclude_transactions=None, exclude_trades=None, exclude_flows=None
     ):
@@ -488,11 +510,11 @@ class AccountAssetStats(models.Model):
         self.save()
 
     def calculate_value(self):
-        if self.amount is None:
+        if self.amount is None or self.asset.price is None:
             self.value = None
             return
         amount = float(self.amount)
-        price = float(self.asset.get_price_display())
+        price = float(self.asset.price)
         self.value = amount * price
 
     def calculate_amount(self):

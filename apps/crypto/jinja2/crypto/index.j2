@@ -6,109 +6,115 @@
 
 {% block main %}
 
-    {% import "symbols/button.j2" as bg %}
-    {% import "symbols/modal.j2" as mg %}
+{% import "symbols/button.j2" as bg %}
+{% import "symbols/modal.j2" as mg %}
 
-    <div class="d-flex justify-content-center mt-2 mb-5">
-        <div class="btn-group" role="group" aria-label="Console">
-            {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
-            {{ bg.hrefButton("Assets", request.path + '?tab=assets', active=(tab=='assets')) }}
-            {{ bg.hrefButton("Accounts", request.path + '?tab=accounts', active=(tab=='accounts')) }}
-        </div>
+<div class="d-flex justify-content-center mt-2 mb-5">
+    <div class="btn-group" role="group" aria-label="Console">
+        {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
+        {{ bg.hrefButton("Assets", request.path + '?tab=assets', active=(tab=='assets')) }}
+        {{ bg.hrefButton("Accounts", request.path + '?tab=accounts', active=(tab=='accounts')) }}
     </div>
+</div>
 
-    <div class="d-flex mb-2">
-        <div class="ms-auto">
-            {{ bg.hrefButton("Reset Stats", url=url("crypto:reset_stats", args=[object.pk])) }}
-        </div>
+{% if tab=="stats" %}
+<div class="d-flex mb-2">
+    <div class="ms-auto">
+        {{ bg.postButton("Reset Stats", url("crypto:reset_stats", args=[object.pk]), csrf_token) }}
     </div>
+</div>
+{% endif %}
+{% include 'symbols/stats.j2' %}
 
-    {% include 'symbols/stats.j2' %}
+{% if tab=="assets" %}
+<table class="table rounded table-responsive-md table-dark">
+    <thead>
+        <tr>
+            <th scope="col">Asset</th>
+            <th class="text-end" scope="col">Price</th>
+            <th class="text-end" scope="col">Top</th>
+            <th class="text-end" scope="col">Amount</th>
+            <th class="text-end" scope="col">Value</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for asset in assets %}
+        <tr>
+            <td>{{ asset.symbol }}</td>
+            <td class="text-end">{{ asset.get_price_display() }}</td>
+            <td class="text-end">{{ asset.get_top_price_display() }}</td>
+            <td class="text-end">{{ asset.get_amount_display_short() }}</td>
+            <td class="text-end">{{ asset.get_value_display() }}</td>
+            <td>
+                <div class="d-flex justify-content-end">
+                    {{ mg.djangoModal("Add Trade", "addTrade",
+                    url("crypto:add_trade")+"?buy_asset="+asset.pk|string+"&sell_asset="+asset.pk|string) }}
+                    {{ bg.modalButton("Buy / Sell", "#addTrade") }}
+                    {{ mg.djangoModal("Add Transaction", "addTransaction",
+                    url("crypto:add_transaction")+"?asset="+asset.pk|string) }}
+                    {{ bg.modalButton("Send / Receive", "#addTransaction") }}
+                    {{ bg.modalButton("Edit", "#editAsset"+asset.pk|string) }}
+                    {{ mg.djangoModal("Edit Asset", "editAsset"+asset.pk|string, url("crypto:edit_asset",
+                    args=[asset.pk])) }}
+                    {{ bg.hrefButton("Open", url=url("crypto:asset", args=[asset.pk])) }}
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="6">
+                <div class="d-flex">
+                    {{ mg.djangoModal("Add Asset", "addAsset", url("crypto:add_asset")) }}
+                    {{ bg.modalButton("Add Asset", "#addAsset") }}
+                    {{ mg.djangoModal("Delete Asset", "removeAsset", url("crypto:remove_asset")) }}
+                    {{ bg.modalButton("Delete Asset", "#removeAsset") }}
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>
+{% endif %}
 
-    {% if tab=="assets" %}
-        <table class="table rounded table-responsive-md table-dark">
-            <thead>
-            <tr>
-               <th scope="col">Asset</th>
-               <th class="text-end" scope="col">Price</th>
-               <th class="text-end" scope="col">Top</th>
-               <th class="text-end" scope="col">Amount</th>
-               <th class="text-end" scope="col">Value</th>
-               <th scope="col"></th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for asset in assets %}
-                <tr>
-                    <td>{{ asset.symbol }}</td>
-                    <td class="text-end">{{ asset.get_price_display() }}</td>
-                    <td class="text-end">{{ asset.get_top_price_display() }}</td>
-                    <td class="text-end">{{ asset.get_amount_display() }}</td>
-                    <td class="text-end">{{ asset.get_value_display() }}</td>
-                    <td>
-                        <div class="d-flex justify-content-end">
-                            {{ mg.djangoModal("Add Trade", "addTrade", url("crypto:add_trade")+"?buy_asset="+asset.pk|string+"&sell_asset="+asset.pk|string) }}
-                            {{ bg.modalButton("Buy / Sell", "#addTrade") }}
-                            {{ mg.djangoModal("Add Transaction", "addTransaction", url("crypto:add_transaction")+"?asset="+asset.pk|string) }}
-                            {{ bg.modalButton("Send / Receive", "#addTransaction") }}
-                            {{ bg.modalButton("Edit", "#editAsset"+asset.pk|string) }}
-                            {{ mg.djangoModal("Edit Asset", "editAsset"+asset.pk|string, url("crypto:edit_asset", args=[asset.pk])) }}
-                            {{ bg.hrefButton("Open", url=url("crypto:asset", args=[asset.pk])) }}
-                        </div>
-                    </td>
-                </tr>
-            {% endfor %}
-            <tr>
-                <td colspan="6">
-                    <div class="d-flex">
-                        {{ mg.djangoModal("Add Asset", "addAsset", url("crypto:add_asset")) }}
-                        {{ bg.modalButton("Add Asset", "#addAsset") }}
-                        {{ mg.djangoModal("Delete Asset", "removeAsset", url("crypto:remove_asset")) }}
-                        {{ bg.modalButton("Delete Asset", "#removeAsset") }}
-                    </div>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    {% endif %}
-
-    {% if tab=="accounts" %}
-        <table class="table table-dark table-responsive-md rounded">
-            <thead>
-            <tr>
-               <th scope="col">Account</th>
-               <th class="text-end" scope="col">Value</th>
-               <th scope="col"></th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for account in accounts %}
-                <tr>
-                    <td>{{ account.name }}</td>
-                    <td class="text-end">{{ account.get_value_display() }}</td>
-                    <td>
-                        <div class="d-flex justify-content-end">
-                            {{ mg.djangoModal("Deposit / Withdraw", "addFlow"+account.pk|string, url("crypto:add_flow")+"?account="+account.pk|string) }}
-                            {{ bg.modalButton("Deposit / Withdraw", "#addFlow"+account.pk|string) }}
-                            {{ bg.modalButton("Edit", "#editAccount"+account.pk|string) }}
-                            {{ mg.djangoModal("Edit Account", "editAccount"+account.pk|string, url("crypto:edit_account", args=[account.pk])) }}
-                            {{ bg.hrefButton("Open", url=url("crypto:account", args=[account.pk])) }}
-                        </div>
-                    </td>
-                </tr>
-            {% endfor %}
-            <tr>
-                <td colspan="3">
-                    <div class="d-flex">
-                        {{ mg.djangoModal("Add Account", "addAccount", url("crypto:add_account")) }}
-                        {{ bg.modalButton("Add Account", "#addAccount") }}
-                        {{ mg.djangoModal("Delete Account", "deleteAccount", url("crypto:delete_account")) }}
-                        {{ bg.modalButton("Delete Account", "#deleteAccount") }}
-                    </div>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    {% endif %}
+{% if tab=="accounts" %}
+<table class="table table-dark table-responsive-md rounded">
+    <thead>
+        <tr>
+            <th scope="col">Account</th>
+            <th class="text-end" scope="col">Value</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for account in accounts %}
+        <tr>
+            <td>{{ account.name }}</td>
+            <td class="text-end">{{ account.get_value_display() }}</td>
+            <td>
+                <div class="d-flex justify-content-end">
+                    {{ mg.djangoModal("Deposit / Withdraw", "addFlow"+account.pk|string,
+                    url("crypto:add_flow")+"?account="+account.pk|string) }}
+                    {{ bg.modalButton("Deposit / Withdraw", "#addFlow"+account.pk|string) }}
+                    {{ bg.modalButton("Edit", "#editAccount"+account.pk|string) }}
+                    {{ mg.djangoModal("Edit Account", "editAccount"+account.pk|string, url("crypto:edit_account",
+                    args=[account.pk])) }}
+                    {{ bg.hrefButton("Open", url=url("crypto:account", args=[account.pk])) }}
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="3">
+                <div class="d-flex">
+                    {{ mg.djangoModal("Add Account", "addAccount", url("crypto:add_account")) }}
+                    {{ bg.modalButton("Add Account", "#addAccount") }}
+                    {{ mg.djangoModal("Delete Account", "deleteAccount", url("crypto:delete_account")) }}
+                    {{ bg.modalButton("Delete Account", "#deleteAccount") }}
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>
+{% endif %}
 
 {% endblock %}
