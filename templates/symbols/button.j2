@@ -3,6 +3,13 @@
        data-bs-target="{{ target }}" data-action="{{ action }}">{{ text }}</a>
 {% endmacro %}
 
+{% macro postButton(text, action, csrf_token) %}
+    <form action="{{ action }}" method="post">
+        <button class="btn btn-sm btn-secondary" type="submit">{{ text }}</button>
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    </form>
+{% endmacro %}
+
 {% macro hrefButton(text, url, classes="btn-sm", active=False, disabled=False) %}
     <a class="btn btn-secondary {{ classes }} {{ 'disabled' if disabled else '' }} {{ 'active' if active else '' }}"
        type="button" href="{{ url }}">{{ text }}</a>

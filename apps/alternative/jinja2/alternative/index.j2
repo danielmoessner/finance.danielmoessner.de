@@ -7,61 +7,66 @@
 
 {% block main %}
 
-    {% import "symbols/button.j2" as bg %}
-    {% import "symbols/modal.j2" as mg %}
+{% import "symbols/button.j2" as bg %}
+{% import "symbols/modal.j2" as mg %}
 
-    <div class="d-flex justify-content-center mt-2 mb-5">
-        <div class="btn-group" role="group" aria-label="Console">
-            {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
-            {{ bg.hrefButton("Alternatives", request.path + '?tab=alternatives', active=(tab=='alternatives')) }}
-        </div>
+<div class="d-flex justify-content-center mt-2 mb-5">
+    <div class="btn-group" role="group" aria-label="Console">
+        {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
+        {{ bg.hrefButton("Alternatives", request.path + '?tab=alternatives', active=(tab=='alternatives')) }}
     </div>
+</div>
 
-    {% include 'symbols/stats.j2' %}
-    {% if tab == 'stats' %}
-        {{ mg.djangoModal("Reset Stats", "resetDepot") }}
-        {{ bg.modalButton("Reset Stats", "#resetDepot", url("alternative:reset_depot", args=[depot.pk])) }}
-    {% endif %}
+{% if tab == 'stats' %}
+<div class="d-flex mb-2">
+    <div class="ms-auto">
+        {{ bg.postButton("Reset Stats", url("alternative:reset_depot", args=[depot.pk]), csrf_token) }}
+    </div>
+</div>
+{% endif %}
+{% include 'symbols/stats.j2' %}
 
-    {% if tab == 'alternatives' %}
-        <table class="table table-responsive-md rounded table-dark mb-5">
-            <thead>
-            <tr>
-               <th scope="col">Alternative</th>
-               <th class="text-end" scope="col">Invested Capital</th>
-               <th class="text-end" scope="col">Value</th>
-               <th class="text-end" scope="col">Profit</th>
-               <th class="text-end" scope="col"></th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for alternative in alternatives %}
-                <tr>
-                    <td>{{ alternative.name }}</td>
-                    <td class="text-end">{{ alternative.get_invested_capital_display() }}</td>
-                    <td class="text-end">{{ alternative.get_value_display() }}</td>
-                    <td class="text-end">{{ alternative.get_profit_display() }}</td>
-                    <td>
-                        <div class="d-flex justify-content-end">
-                            {{ bg.hrefButton("Open", url('alternative:alternative', args=[alternative.pk])) }}
-                            {{ mg.djangoModal("Edit Alternative", "editAlternative"+alternative.pk|string, url("alternative:edit_alternative", args=[alternative.pk])) }}
-                            {{ bg.modalButton("Edit", "#editAlternative"+alternative.pk|string) }}
-                        </div>
-                    </td>
-                </tr>
-            {% endfor %}
-            <tr>
-                <td colspan="5">
-                    <div class="d-flex">
-                        {{ bg.modalButton("Add Alternative", "#addAlternative") }}
-                        {{ bg.modalButton("Delete Alternative", "#deleteAlternative") }}
-                        {{ mg.djangoModal("Add Alternative", "addAlternative", url("alternative:add_alternative")) }}
-                        {{ mg.djangoModal("Delete Alternative", "deleteAlternative", url("alternative:delete_alternative")) }}
-                    </div>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    {% endif %}
+{% if tab == 'alternatives' %}
+<table class="table table-responsive-md rounded table-dark mb-5">
+    <thead>
+        <tr>
+            <th scope="col">Alternative</th>
+            <th class="text-end" scope="col">Invested Capital</th>
+            <th class="text-end" scope="col">Value</th>
+            <th class="text-end" scope="col">Profit</th>
+            <th class="text-end" scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for alternative in alternatives %}
+        <tr>
+            <td>{{ alternative.name }}</td>
+            <td class="text-end">{{ alternative.get_invested_capital_display() }}</td>
+            <td class="text-end">{{ alternative.get_value_display() }}</td>
+            <td class="text-end">{{ alternative.get_profit_display() }}</td>
+            <td>
+                <div class="d-flex justify-content-end">
+                    {{ bg.hrefButton("Open", url('alternative:alternative', args=[alternative.pk])) }}
+                    {{ mg.djangoModal("Edit Alternative", "editAlternative"+alternative.pk|string,
+                    url("alternative:edit_alternative", args=[alternative.pk])) }}
+                    {{ bg.modalButton("Edit", "#editAlternative"+alternative.pk|string) }}
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="5">
+                <div class="d-flex">
+                    {{ bg.modalButton("Add Alternative", "#addAlternative") }}
+                    {{ bg.modalButton("Delete Alternative", "#deleteAlternative") }}
+                    {{ mg.djangoModal("Add Alternative", "addAlternative", url("alternative:add_alternative")) }}
+                    {{ mg.djangoModal("Delete Alternative", "deleteAlternative", url("alternative:delete_alternative"))
+                    }}
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>
+{% endif %}
 
 {% endblock %}

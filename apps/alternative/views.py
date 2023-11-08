@@ -105,14 +105,11 @@ class SetActiveDepotView(LoginRequiredMixin, SingleObjectMixin, generic.View):
         return HttpResponseRedirect(url)
 
 
-class ResetDepotView(GetUserMixin, generic.FormView):
-    form_class = SubmitForm
-    template_name = "symbols/form_snippet.j2"
-
+class ResetDepotView(GetUserMixin, generic.View):
     def post(self, request, pk, *args, **kwargs):
         depot = self.get_user().alternative_depots.get(pk=pk)
         depot.reset_all()
-        return JsonResponse({"valid": True})
+        return HttpResponseRedirect(reverse_lazy("alternative:index"))
 
 
 ###
