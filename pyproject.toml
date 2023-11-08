@@ -2,7 +2,6 @@
 line-length = 88
 
 [tool.mypy]
-plugins = ["mypy_django_plugin.main"]
 ignore_missing_imports = true
 check_untyped_defs = true
 exclude = ["migrations", "__pypackages__", "venv"]

@@ -143,6 +143,9 @@ class Account(CoreAccount):
 
     if TYPE_CHECKING:
         asset_stats: QuerySet["AccountAssetStats"]
+        trades: QuerySet["Trade"]
+        to_transactions: QuerySet["Transaction"]
+        from_transactions: QuerySet["Transaction"]
 
     # getters
     def get_stats(self):
@@ -205,6 +208,14 @@ class Asset(models.Model):
     value = models.FloatField(null=True)
     amount = models.FloatField(null=True)
     price = models.FloatField(null=True)
+
+    if TYPE_CHECKING:
+        buy_trades: QuerySet["Trade"]
+        sell_trades: QuerySet["Trade"]
+        transactions: QuerySet["Transaction"]
+        flows: QuerySet["Flow"]
+        account_stats: QuerySet["AccountAssetStats"]
+        price_fetchers: QuerySet["PriceFetcher"]
 
     def __str__(self):
         return "{}".format(self.symbol)

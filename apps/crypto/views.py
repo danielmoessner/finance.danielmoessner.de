@@ -1,4 +1,3 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views import generic
@@ -9,12 +8,13 @@ from apps.users.mixins import GetUserMixin
 from apps.users.models import StandardUser
 
 
-class IndexView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
+class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
     template_name = "crypto/index.j2"
     model = Depot
+    object: Depot
 
     def get_object(self, _=None) -> Depot | None:
-        user: StandardUser = self.request.user  # type: ignore
+        user: StandardUser = self.get_user()  # type: ignore
         return user.get_active_crypto_depot()
 
     def get_context_data(self, **kwargs):
@@ -34,12 +34,13 @@ class IndexView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
         return context
 
 
-class AccountView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
+class AccountView(GetUserMixin, TabContextMixin, generic.DetailView):
     template_name = "crypto/account.j2"
     model = Account
+    object: Account
 
     def get_queryset(self):
-        return Account.objects.filter(depot__in=self.request.user.crypto_depots.all())
+        return Account.objects.filter(depot__in=self.get_user().crypto_depots.all())
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -62,9 +63,10 @@ class AccountView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
         return context
 
 
-class AssetView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
+class AssetView(GetUserMixin, TabContextMixin, generic.DetailView):
     template_name = "crypto/asset.j2"
     model = Asset
+    object: Asset
 
     def get_queryset(self):
         return Asset.objects.all()
@@ -76,7 +78,7 @@ class AssetView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
             "-date"
         )
         accounts = Account.objects.filter(
-            depot=self.request.user.get_active_crypto_depot()
+            depot=self.get_user().get_active_crypto_depot()
         )
         buy_trades = self.object.buy_trades.filter(account__in=accounts)
         sell_trades = self.object.sell_trades.filter(account__in=accounts)
