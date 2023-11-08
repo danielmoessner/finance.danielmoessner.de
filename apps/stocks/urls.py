@@ -14,6 +14,7 @@ urlpatterns = [
         views.SetActiveDepotView.as_view(),
         name="set_depot",
     ),
+    path("depots/<int:pk>/reset/", views.ResetDepotView.as_view(), name="reset_depot"),
     # account
     path("accounts/add/", views.AddBankView.as_view(), name="add_bank"),
     path("accounts/delete/", views.DeleteBankView.as_view(), name="delete_bank"),

@@ -43,6 +43,14 @@ class Depot(models.Model):
     def __str__(self):
         return "{}".format(self.name)
 
+    # setters
+    def reset_all(self):
+        for bank in list(self.banks.all()):
+            bank.reset()
+        for stock in list(self.stocks.all()):
+            stock.reset()
+        self.reset()
+
     def reset(self):
         self.balance = None
         self.value = None

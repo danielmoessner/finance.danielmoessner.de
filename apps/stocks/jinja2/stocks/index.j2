@@ -23,6 +23,13 @@
         </div>
     </div>
 
+    {% if tab == 'stats' %}
+    <div class="d-flex mb-2">
+        <div class="ms-auto">
+            {{ bg.postButton("Reset Stats", url("stocks:reset_depot", args=[depot.pk]), csrf_token) }}
+        </div>
+    </div>
+    {% endif %}
     {% include 'symbols/stats.j2' %}
 
     {% if tab=='banks' %}
