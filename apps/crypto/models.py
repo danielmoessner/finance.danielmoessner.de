@@ -1,4 +1,5 @@
 from datetime import timedelta
+from decimal import Decimal
 from typing import TYPE_CHECKING, Union
 
 import pandas as pd
@@ -651,7 +652,7 @@ class Transaction(models.Model):
 class Price(models.Model):
     symbol = models.CharField(max_length=5, null=True)
     date = models.DateTimeField()
-    price = models.DecimalField(decimal_places=2, max_digits=15, default=0)
+    price = models.DecimalField(decimal_places=2, max_digits=15, default=Decimal(0))
 
     class Meta:
         unique_together = ("symbol", "date")

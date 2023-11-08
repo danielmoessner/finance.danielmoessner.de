@@ -20,7 +20,9 @@ def _get_merged_flow_and_value_df(
     df = flow_df.merge(value_df, how="outer", sort=True, on="date")
     # stop calculation if there is not a flow in the first row
     first_flow_cell = df.iloc[0, df.columns.get_loc("flow")]
-    assert type(first_flow_cell) == np.float64 or type(first_flow_cell) == np.int64, type(first_flow_cell)
+    assert (
+        type(first_flow_cell) == np.float64 or type(first_flow_cell) == np.int64
+    ), type(first_flow_cell)
     if np.isnan(first_flow_cell):
         return None
     # stop calculations if there is no value in the last row
