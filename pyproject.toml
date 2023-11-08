@@ -35,26 +35,26 @@ authors = [
 ]
 dependencies = [
     "beautifulsoup4>=4.12.2",
-    "django>=4.2.4",
+    "django>=4.2.7",
     "django-debug-toolbar>=4.2.0",
     "Jinja2>=3.1.2",
-    "pandas>=2.0.3",
-    "pytz>=2023.3",
+    "pandas>=2.1.2",
+    "pytz>=2023.3.post1",
     "requests>=2.31.0",
     "pydantic>=2.1.1",
     "selenium>=4.10.0",
     "webdriver-manager>=4.0.0",
     "isort>=5.12.0",
-    "black>=23.7.0",
-    "ruff>=0.0.280",
-    "mypy>=1.4.1",
-    "types-requests>=2.31.0.2",
-    "pytest>=7.4.0",
-    "pytest-django>=4.5.2",
-    "django-types>=0.17.0",
+    "black>=23.11.0",
+    "ruff>=0.1.4",
+    "mypy>=1.6.1",
+    "types-requests>=2.31.0.10",
+    "pytest>=7.4.3",
+    "pytest-django>=4.7.0",
+    "django-types>=0.19.1",
     "numpy>=1.26.1",
 ]
-requires-python = ">=3.11"
+requires-python = "==3.11.*"
 license = {text = "MIT"}
 
 [[tool.pdm.autoexport]]
