@@ -1,24 +1,23 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import generic
 
 from apps.banking.models import Account, Category, Depot
 from apps.core.mixins import TabContextMixin
-from apps.users.models import StandardUser
+from apps.users.mixins import GetUserMixin
 
 
 # views
-class IndexView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
+class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
     template_name = "banking/index.j2"
     model = Depot
+    object: Depot
 
     def get_object(self, _=None) -> Depot | None:
-        user: StandardUser = self.request.user  # type: ignore
-        return user.get_active_banking_depot()
+        return self.get_user().get_active_banking_depot()
 
     def get_context_data(self, **kwargs):
         # general
         context = super(IndexView, self).get_context_data(**kwargs)
-        context["user"] = self.request.user
+        context["user"] = self.get_user()
         context["accounts"] = self.object.accounts.order_by("name")
         context["categories"] = self.object.categories.order_by("name")
         # specific
@@ -29,12 +28,13 @@ class IndexView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
         return context
 
 
-class AccountView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
+class AccountView(GetUserMixin, TabContextMixin, generic.DetailView):
     template_name = "banking/account.j2"
     model = Account
+    object: Account
 
     def get_queryset(self):
-        return Account.objects.filter(depot__in=self.request.user.banking_depots.all())
+        return Account.objects.filter(depot__in=self.get_user().banking_depots.all())
 
     def get_context_data(self, **kwargs):
         context = super(AccountView, self).get_context_data(**kwargs)
@@ -49,12 +49,13 @@ class AccountView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
         return context
 
 
-class CategoryView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
+class CategoryView(GetUserMixin, TabContextMixin, generic.DetailView):
     template_name = "banking/category.j2"
     model = Category
+    object: Category
 
     def get_queryset(self):
-        return Category.objects.filter(depot__in=self.request.user.banking_depots.all())
+        return Category.objects.filter(depot__in=self.get_user().banking_depots.all())
 
     def get_context_data(self, **kwargs):
         context = super(CategoryView, self).get_context_data(**kwargs)

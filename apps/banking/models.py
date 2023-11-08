@@ -92,6 +92,7 @@ class Depot(CoreDepot):
                 account__in=self.accounts.all(), category__in=self.categories.all()
             )
             banking_duplicated_code.set_balance(self, changes)
+        assert self.balance is not None
         return round(self.balance, 2)
 
     def get_value(self):
@@ -128,6 +129,9 @@ class Account(CoreAccount):
         max_digits=15, decimal_places=2, null=True, blank=True
     )
 
+    if TYPE_CHECKING:
+        changes: QuerySet["Change"]
+
     def delete(self, using=None, keep_parents=False):
         self.depot.set_balances_to_none()
         return super().delete(using=using, keep_parents=keep_parents)
@@ -137,6 +141,7 @@ class Account(CoreAccount):
         if self.balance is None:
             changes = Change.objects.filter(account=self)
             banking_duplicated_code.set_balance(self, changes)
+        assert self.balance is not None
         return round(self.balance, 2)
 
     def get_stats(self):
@@ -194,6 +199,9 @@ class Category(models.Model):
         max_digits=15, decimal_places=2, null=True, blank=True
     )
 
+    if TYPE_CHECKING:
+        changes: QuerySet["Change"]
+
     def __str__(self):
         return self.name
 
@@ -206,6 +214,7 @@ class Category(models.Model):
         if self.balance is None:
             changes = Change.objects.filter(category=self)
             banking_duplicated_code.set_balance(self, changes)
+        assert self.balance is not None
         return round(self.balance, 2)
 
     def get_stats(self):
@@ -286,6 +295,7 @@ class Change(models.Model):
         if self.balance is None:
             changes = Change.objects.filter(account=self.account, date__lte=self.date)
             banking_duplicated_code.set_balance(self, changes)
+        assert self.balance is not None
         return round(self.balance, 2)
 
     def get_stats(self):
@@ -302,7 +312,8 @@ class Change(models.Model):
 
     # setters
     def set_balances_of_affected_objects_to_null(self):
-        Category.objects.filter(pk=self.category.pk).update(balance=None)
+        if self.category is not None:
+            Category.objects.filter(pk=self.category.pk).update(balance=None)
         Account.objects.filter(pk=self.account.pk).update(balance=None)
         Change.objects.filter(account=self.account, date__gte=self.date).update(
             balance=None

@@ -1,11 +1,12 @@
 from django.http import JsonResponse
 from django.views import View
 
+from apps.users.mixins import GetUserMixin
 
-class IncomeAndExpenditureData(View):
+
+class IncomeAndExpenditureData(GetUserMixin, View):
     def get_queryset(self):
-        user = self.request.user
-        return user.banking_depots.all()
+        return self.get_user().banking_depots.all()
 
     def get(self, request, pk):
         instance = self.get_queryset().get(pk=pk)
@@ -15,10 +16,9 @@ class IncomeAndExpenditureData(View):
         return JsonResponse(data, safe=False)
 
 
-class BalanceData(View):
+class BalanceData(GetUserMixin, View):
     def get_queryset(self):
-        user = self.request.user
-        return user.banking_depots.all()
+        return self.get_user().banking_depots.all()
 
     def get(self, request, pk):
         instance = self.get_queryset().get(pk=pk)

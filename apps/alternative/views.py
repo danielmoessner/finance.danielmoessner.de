@@ -1,7 +1,6 @@
 import json
 
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views import generic
@@ -31,12 +30,13 @@ from apps.users.models import StandardUser
 ###
 # Depot: Detail, Create, Update, Delete, UpdateSetActive
 ###
-class DetailDepotView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
+class DetailDepotView(GetUserMixin, TabContextMixin, generic.DetailView):
     template_name = "alternative/index.j2"
     model = Depot
+    object: Depot
 
     def get_object(self, _=None) -> Depot | None:
-        user: StandardUser = self.request.user  # type: ignore
+        user: StandardUser = self.get_user()  # type: ignore
         return user.get_active_alternative_depot()
 
     def get_context_data(self, **kwargs):
@@ -47,7 +47,7 @@ class DetailDepotView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
 
 
 class CreateDepotView(
-    LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.CreateView
+    GetUserMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.CreateView
 ):
     form_class = DepotForm
     model = Depot
@@ -55,18 +55,18 @@ class CreateDepotView(
 
 
 class UpdateDepotView(
-    LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.UpdateView
+    GetUserMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.UpdateView
 ):
     model = Depot
     form_class = DepotForm
     template_name = "symbols/form_snippet.j2"
 
     def get_queryset(self):
-        return self.request.user.alternative_depots.all()
+        return self.get_user().alternative_depots.all()
 
 
 class DeleteDepotView(
-    LoginRequiredMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.FormView
+    GetUserMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.FormView
 ):
     model = Depot
     template_name = "symbols/form_snippet.j2"
@@ -84,11 +84,11 @@ class DeleteDepotView(
         )
 
 
-class SetActiveDepotView(LoginRequiredMixin, SingleObjectMixin, generic.View):
+class SetActiveDepotView(GetUserMixin, SingleObjectMixin, generic.View):
     http_method_names = ["get", "head", "options"]
 
     def get_queryset(self):
-        return self.request.user.alternative_depots.all()
+        return self.get_user().alternative_depots.all()
 
     def get(self, request, *args, **kwargs):
         depot = self.get_object()
@@ -96,7 +96,7 @@ class SetActiveDepotView(LoginRequiredMixin, SingleObjectMixin, generic.View):
         if form.is_valid():
             form.save()
         url = "{}?tab=alternative".format(
-            reverse_lazy("users:settings", args=[self.request.user.pk])
+            reverse_lazy("users:settings", args=[self.get_user().pk])
         )
         return HttpResponseRedirect(url)
 
@@ -111,13 +111,14 @@ class ResetDepotView(GetUserMixin, generic.View):
 ###
 # Alternative: Detail, Create, Update, Delete
 ###
-class DetailAlternativeView(LoginRequiredMixin, TabContextMixin, generic.DetailView):
+class DetailAlternativeView(GetUserMixin, TabContextMixin, generic.DetailView):
     template_name = "alternative/alternative.j2"
     model = Alternative
+    object: Alternative
 
     def get_queryset(self):
         return Alternative.objects.filter(
-            depot__in=self.request.user.alternative_depots.all()
+            depot__in=self.get_user().alternative_depots.all()
         )
 
     def get_context_data(self, **kwargs):
@@ -132,7 +133,7 @@ class DetailAlternativeView(LoginRequiredMixin, TabContextMixin, generic.DetailV
 
 
 class CreateAlternativeView(
-    LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.CreateView
+    GetUserMixin, CustomGetFormMixin, AjaxResponseMixin, generic.CreateView
 ):
     form_class = AlternativeForm
     model = Alternative
@@ -140,7 +141,7 @@ class CreateAlternativeView(
 
 
 class UpdateAlternativeView(
-    LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView
+    GetUserMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView
 ):
     model = Alternative
     form_class = AlternativeForm
@@ -148,12 +149,12 @@ class UpdateAlternativeView(
 
     def get_queryset(self):
         return Alternative.objects.filter(
-            depot__in=self.request.user.alternative_depots.all()
+            depot__in=self.get_user().alternative_depots.all()
         )
 
 
 class DeleteAlternativeView(
-    LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.FormView
+    GetUserMixin, CustomGetFormMixin, AjaxResponseMixin, generic.FormView
 ):
     model = Alternative
     template_name = "symbols/form_snippet.j2"
@@ -170,13 +171,14 @@ class DeleteAlternativeView(
 ###
 # Flow: Create, Update, Delete
 ###
-class CreateFlowView(LoginRequiredMixin, AjaxResponseMixin, generic.CreateView):
+class CreateFlowView(GetUserMixin, AjaxResponseMixin, generic.CreateView):
     model = Flow
     form_class = FlowForm
     template_name = "symbols/form_snippet.j2"
+    object: Flow
 
     def get_form(self, form_class=None):
-        depot = self.request.user.alternative_depots.get(is_active=True)
+        depot = self.get_user().alternative_depots.get(is_active=True)
         if form_class is None:
             form_class = self.get_form_class()
         if self.request.method == "GET":
@@ -187,7 +189,7 @@ class CreateFlowView(LoginRequiredMixin, AjaxResponseMixin, generic.CreateView):
 
 
 class UpdateFlowView(
-    LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView
+    GetUserMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView
 ):
     model = Flow
     form_class = FlowForm
@@ -196,12 +198,12 @@ class UpdateFlowView(
     def get_queryset(self):
         return Flow.objects.filter(
             alternative__in=Alternative.objects.filter(
-                depot__in=self.request.user.alternative_depots.all()
+                depot__in=self.get_user().alternative_depots.all()
             )
         )
 
 
-class DeleteFlowView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
+class DeleteFlowView(GetUserMixin, CustomAjaxDeleteMixin, generic.DeleteView):
     model = Flow
     template_name = "symbols/delete_snippet.j2"
 
@@ -231,13 +233,13 @@ class DeleteFlowView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteVi
 ###
 # Value: Create, Update, Delete
 ###
-class CreateValueView(LoginRequiredMixin, AjaxResponseMixin, generic.CreateView):
+class CreateValueView(GetUserMixin, AjaxResponseMixin, generic.CreateView):
     model = Value
     form_class = ValueForm
     template_name = "symbols/form_snippet.j2"
 
     def get_form(self, form_class=None):
-        depot = self.request.user.alternative_depots.get(is_active=True)
+        depot = self.get_user().alternative_depots.get(is_active=True)
         if form_class is None:
             form_class = self.get_form_class()
         if self.request.method == "GET":
@@ -248,7 +250,7 @@ class CreateValueView(LoginRequiredMixin, AjaxResponseMixin, generic.CreateView)
 
 
 class UpdateValueView(
-    LoginRequiredMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView
+    GetUserMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView
 ):
     model = Value
     form_class = ValueForm
@@ -257,12 +259,12 @@ class UpdateValueView(
     def get_queryset(self):
         return Value.objects.filter(
             alternative__in=Alternative.objects.filter(
-                depot__in=self.request.user.alternative_depots.all()
+                depot__in=self.get_user().alternative_depots.all()
             )
         )
 
 
-class DeleteValueView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteView):
+class DeleteValueView(GetUserMixin, CustomAjaxDeleteMixin, generic.DeleteView):
     model = Value
     template_name = "symbols/delete_snippet.j2"
 
