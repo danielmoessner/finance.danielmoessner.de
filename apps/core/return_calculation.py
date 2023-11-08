@@ -20,7 +20,7 @@ def _get_merged_flow_and_value_df(
     df = flow_df.merge(value_df, how="outer", sort=True, on="date")
     # stop calculation if there is not a flow in the first row
     first_flow_cell = df.iloc[0, df.columns.get_loc("flow")]
-    assert type(first_flow_cell) == np.float64
+    assert type(first_flow_cell) == np.float64 or type(first_flow_cell) == np.int64, type(first_flow_cell)
     if np.isnan(first_flow_cell):
         return None
     # stop calculations if there is no value in the last row
@@ -79,7 +79,7 @@ def get_current_return_df(
         previous_invested_capital = (
             df.iloc[i - 1, df.columns.get_loc("invested_capital")] if i > 0 else 0
         )
-        assert type(flow) == np.float64
+        assert type(flow) == np.float64 or type(flow) == np.int64, type(flow)
         if flow > 0:
             invested_capital = previous_invested_capital + flow
         elif flow < 0:

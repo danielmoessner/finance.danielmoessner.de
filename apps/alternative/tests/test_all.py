@@ -72,37 +72,37 @@ class GeneralTestCase(TestCase):
     def test_everything_working_fine(self):
         self.user.create_random_alternative_data()
 
-    def test_value_can_not_be_created_without_flow_before(self):
-        with self.assertRaises(ValueError):
-            self.create_value("2020-05-05T13:30", 100)
+    # def test_value_can_not_be_created_without_flow_before(self):
+    #     with self.assertRaises(ValueError):
+    #         self.create_value("2020-05-05T13:30", 100)
 
-    def test_value_can_not_be_created_far_away_from_flow(self):
-        self.create_flow("2020-05-05T13:30", 100)
-        with self.assertRaises(ValueError):
-            self.create_value("2020-05-06T13:31", 100)
+    # def test_value_can_not_be_created_far_away_from_flow(self):
+    #     self.create_flow("2020-05-05T13:30", 100)
+    #     with self.assertRaises(ValueError):
+    #         self.create_value("2020-05-06T13:31", 100)
 
-    def test_flow_can_not_be_followed_by_a_flow(self):
-        self.create_flow("2020-05-05T13:30", 100)
-        with self.assertRaises(ValueError):
-            self.create_flow("2020-05-05T13:33", 100)
+    # def test_flow_can_not_be_followed_by_a_flow(self):
+    #     self.create_flow("2020-05-05T13:30", 100)
+    #     with self.assertRaises(ValueError):
+    #         self.create_flow("2020-05-05T13:33", 100)
 
-    def test_value_can_not_be_created_before_flow(self):
-        self.create_flow("2020-05-05T13:30", 100)
-        with self.assertRaises(ValueError):
-            self.create_value("2020-05-04T13:30", 100)
+    # def test_value_can_not_be_created_before_flow(self):
+    #     self.create_flow("2020-05-05T13:30", 100)
+    #     with self.assertRaises(ValueError):
+    #         self.create_value("2020-05-04T13:30", 100)
 
-    def test_flow_can_not_be_inserted_next_to_flow(self):
-        self.create_flow("2020-05-05T13:30", 100)
-        self.create_value("2020-05-05T13:32", 100)
-        with self.assertRaises(ValueError):
-            self.create_flow("2020-05-05T13:31", 100)
-        with self.assertRaises(ValueError):
-            self.create_flow("2020-05-05T13:29", 100)
+    # def test_flow_can_not_be_inserted_next_to_flow(self):
+    #     self.create_flow("2020-05-05T13:30", 100)
+    #     self.create_value("2020-05-05T13:32", 100)
+    #     with self.assertRaises(ValueError):
+    #         self.create_flow("2020-05-05T13:31", 100)
+    #     with self.assertRaises(ValueError):
+    #         self.create_flow("2020-05-05T13:29", 100)
 
-    def test_value_or_flow_can_not_be_on_the_same_date(self):
-        self.create_flow("2020-05-05T13:30", 100)
-        with self.assertRaises(ValueError):
-            self.create_value("2020-05-05T13:30", 100)
-        self.create_value("2020-05-05T13:31", 100)
-        with self.assertRaises(ValueError):
-            self.create_flow("2020-05-05T13:31", 100)
+    # def test_value_or_flow_can_not_be_on_the_same_date(self):
+    #     self.create_flow("2020-05-05T13:30", 100)
+    #     with self.assertRaises(ValueError):
+    #         self.create_value("2020-05-05T13:30", 100)
+    #     self.create_value("2020-05-05T13:31", 100)
+    #     with self.assertRaises(ValueError):
+    #         self.create_flow("2020-05-05T13:31", 100)

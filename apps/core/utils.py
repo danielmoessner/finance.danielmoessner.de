@@ -51,7 +51,7 @@ def sum_up_value_dfs_from_items(items):
     # get the df with all values
     df = get_merged_value_df_from_queryset(items)
     # fill na values for sum to work correctly
-    df = df.fillna(method="ffill").fillna(0)
+    df = df.ffill().fillna(0)
     # sums up all the values of the assets and interpolates
     df = sum_up_columns_in_a_dataframe(df)
     # remove all the rows where the value is 0 as it doesn't
@@ -76,7 +76,7 @@ def create_value_df_from_amount_and_price(item) -> Union[pd.DataFrame, None]:
     df = df.reindex(idx, fill_value=np.nan)
     df.index.rename("date", inplace=True)
     # forward fill the amount
-    df.loc[:, "amount"] = df.loc[:, "amount"].fillna(method="ffill")
+    df.loc[:, "amount"] = df.loc[:, "amount"].ffill()
     # interpolate the price
     df.loc[:, "price"] = df.loc[:, "price"].interpolate(
         method="time", limit_direction="both"
