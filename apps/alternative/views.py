@@ -2,7 +2,7 @@ import json
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views import generic
 from django.views.generic.detail import SingleObjectMixin
@@ -14,16 +14,18 @@ from apps.alternative.forms import (
     DepotForm,
     DepotSelectForm,
     FlowForm,
-    SubmitForm,
     ValueForm,
 )
 from apps.alternative.mixins import CustomGetFormMixin
 from apps.alternative.models import Alternative, Depot, Flow, Value
-from apps.core.mixins import AjaxResponseMixin, CustomAjaxDeleteMixin, CustomGetFormUserMixin, TabContextMixin
+from apps.core.mixins import (
+    AjaxResponseMixin,
+    CustomAjaxDeleteMixin,
+    CustomGetFormUserMixin,
+    TabContextMixin,
+)
 from apps.users.mixins import GetUserMixin
 from apps.users.models import StandardUser
-
-
 
 
 ###
@@ -206,24 +208,24 @@ class DeleteFlowView(LoginRequiredMixin, CustomAjaxDeleteMixin, generic.DeleteVi
     # def delete(self, request, *args, **kwargs):
     #     flow = self.get_object()
 
-        # test that calculations are not being fucked up by deleting some random flow
-        # if (
-        #     Value.objects.filter(
-        #         alternative=flow.alternative, date__gt=flow.date
-        #     ).exists()
-        #     or Flow.objects.filter(
-        #         alternative=flow.alternative, date__gt=flow.date
-        #     ).exists()
-        # ):
-        #     message = (
-        #         "You can only delete this flow if there is no flow or value afterwards."
-        #     )
-        #     messages.error(request, message)
-        # else:
-        #     flow.delete()
-        # return HttpResponse(
-        #     json.dumps({"valid": True}), content_type="application/json"
-        # )
+    # test that calculations are not being fucked up by deleting some random flow
+    # if (
+    #     Value.objects.filter(
+    #         alternative=flow.alternative, date__gt=flow.date
+    #     ).exists()
+    #     or Flow.objects.filter(
+    #         alternative=flow.alternative, date__gt=flow.date
+    #     ).exists()
+    # ):
+    #     message = (
+    #         "You can only delete this flow if there is no flow or value afterwards."
+    #     )
+    #     messages.error(request, message)
+    # else:
+    #     flow.delete()
+    # return HttpResponse(
+    #     json.dumps({"valid": True}), content_type="application/json"
+    # )
 
 
 ###

@@ -93,7 +93,9 @@ def get_current_return_df(
         pd.to_numeric, downcast="float"
     )
     # df.loc[:, "invested_capital"] = df.loc[:, "invested_capital"].replace(0, np.nan)
-    df.loc[:, "current_return"] = df.loc[:, "value"] / df.loc[:, "invested_capital"].replace(0, np.nan)
+    df.loc[:, "current_return"] = df.loc[:, "value"] / df.loc[
+        :, "invested_capital"
+    ].replace(0, np.nan)
     # return the df
     return df
 

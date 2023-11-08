@@ -6,8 +6,6 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.views import generic
 
-from apps.users.mixins import GetUserMixin
-
 from .forms import (
     BankForm,
     BankSelectForm,
@@ -33,6 +31,7 @@ from apps.core.mixins import (
     GetFormWithDepotMixin,
     TabContextMixin,
 )
+from apps.users.mixins import GetUserMixin
 from apps.users.models import StandardUser
 
 
@@ -151,7 +150,11 @@ class AddStockView(
 
 
 class EditStockView(
-    GetUserMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.UpdateView
+    GetUserMixin,
+    GetDepotMixin,
+    GetFormWithDepotMixin,
+    AjaxResponseMixin,
+    generic.UpdateView,
 ):
     model = Stock
     form_class = EditStockForm
@@ -228,9 +231,7 @@ class EditPriceFetcherView(
     template_name = "symbols/form_snippet.j2"
 
 
-class DeletePriceFetcherView(
-    GetUserMixin, CustomAjaxDeleteMixin, generic.DeleteView
-):
+class DeletePriceFetcherView(GetUserMixin, CustomAjaxDeleteMixin, generic.DeleteView):
     model = PriceFetcher
     template_name = "symbols/delete_snippet.j2"
 
@@ -287,7 +288,11 @@ class AddBankView(
 
 
 class EditBankView(
-    GetUserMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.UpdateView
+    GetUserMixin,
+    GetDepotMixin,
+    GetFormWithDepotMixin,
+    AjaxResponseMixin,
+    generic.UpdateView,
 ):
     model = Bank
     form_class = BankForm

@@ -1,8 +1,7 @@
-from typing import Any
+
 from django import forms
 from django.utils import timezone
 
-import apps.core.utils as utils
 from apps.alternative.models import Alternative, Depot, Flow, Value
 
 

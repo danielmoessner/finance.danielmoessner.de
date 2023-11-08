@@ -124,7 +124,9 @@ class Depot(CoreDepot):
         self.current_return = rc.get_current_return(df)
 
     def reset_all(self):
-        for stats in list(AccountAssetStats.objects.filter(account__in=self.accounts.all())):
+        for stats in list(
+            AccountAssetStats.objects.filter(account__in=self.accounts.all())
+        ):
             stats.reset()
         for asset in list(Asset.objects.filter(depot=self)):
             asset.reset()
@@ -294,13 +296,15 @@ class Asset(models.Model):
         return df
 
     def __get_account_stats(self, account: Account):
-        stats, created = AccountAssetStats.objects.get_or_create(asset=self, account=account)
+        stats, created = AccountAssetStats.objects.get_or_create(
+            asset=self, account=account
+        )
         return stats
 
     def get_amount_account(self, account: Account):
         stats = self.__get_account_stats(account)
         return stats.get_amount_display()
-    
+
     def get_value_account(self, account: Account):
         stats = self.__get_account_stats(account)
         return stats.get_value_display()
@@ -337,7 +341,7 @@ class Asset(models.Model):
         if self.amount is None:
             return "404"
         return "{:.8f}".format(self.amount)
-    
+
     def get_amount_display_short(self) -> str:
         if self.amount is None:
             return "404"
@@ -436,7 +440,7 @@ class AccountAssetStats(models.Model):
         if self.amount is None:
             return "404"
         return "{:.8f}".format(self.amount)
-    
+
     def get_value_display(self) -> str:
         if self.value is None:
             return "404"
