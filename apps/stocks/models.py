@@ -345,7 +345,7 @@ class Stock(models.Model):
         "Price", null=True, on_delete=models.SET_NULL, related_name="top_price_stocks"
     )
     price = models.ForeignKey(
-        "Price", null=True, on_delete=models.CASCADE, related_name="price_stocks"
+        "Price", null=True, on_delete=models.SET_NULL, related_name="price_stocks"
     )
     amount = models.DecimalField(max_digits=10, decimal_places=3, null=True)
     value = models.FloatField(null=True)
@@ -812,6 +812,9 @@ class Price(models.Model):
             stock.reset(self)
             stock.depot.reset()
             [bank.reset() for bank in list(stock.depot.banks.all())]
+
+    def delete(self, *args, **kwargs):
+        return super().delete(*args, **kwargs)
 
     # getters
     def get_date(self):
