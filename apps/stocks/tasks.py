@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from apps.core.fetchers.selenium import SeleniumFetcher
 from apps.core.fetchers.website import WebsiteFetcher
 from apps.stocks.fetchers.marketstack import MarketstackFetcher
-from apps.stocks.models import Price, PriceFetcher
+from apps.stocks.models import PriceFetcher
 
 FETCHER_FUNCTION = Callable[[PriceFetcher], tuple[bool, str]]
 
@@ -13,10 +13,7 @@ FETCHER_FUNCTION = Callable[[PriceFetcher], tuple[bool, str]]
 def get_fetchers_to_be_run(fetcher_type: str) -> dict[str, BaseModel]:
     fetchers_to_be_run: list[PriceFetcher] = []
     for fetcher in list(PriceFetcher.objects.filter(fetcher_type=fetcher_type)):
-        price = (
-            Price.objects.filter(ticker=fetcher.stock.ticker).order_by("-date").first()
-        )
-        if price and not price.is_old:
+        if fetcher.has_a_current_price:
             continue
         fetchers_to_be_run.append(fetcher)
     return {str(fetcher.pk): fetcher.fetcher_input for fetcher in fetchers_to_be_run}

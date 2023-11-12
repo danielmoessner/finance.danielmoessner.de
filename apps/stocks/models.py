@@ -676,6 +676,13 @@ class PriceFetcher(models.Model):
             return MarketstackFetcherInput(**self.data)
         raise ValueError("unknown type {}".format(self.fetcher_type))
 
+    @property
+    def has_a_current_price(self) -> bool:
+        price = Price.objects.filter(ticker=self.stock.ticker).order_by("-date").first()
+        if price and not price.is_old:
+            return True
+        return False
+
     def run(self):
         fetcher: Fetcher = self.fetcher_class()
         success, result = fetcher.fetch_single(self.fetcher_input)
