@@ -5,21 +5,18 @@ from django.http import JsonResponse
 from django.views import View, generic
 
 from apps.core.mixins import TabContextMixin
-
-# views
 from apps.core.utils import (
     change_time_of_date_index_in_df,
     get_merged_value_df_from_queryset,
     sum_up_columns_in_a_dataframe,
 )
-from apps.users.models import StandardUser
+from apps.users.mixins import GetUserMixin
 
 
-class IndexView(LoginRequiredMixin, TabContextMixin, generic.TemplateView):
+class IndexView(
+    GetUserMixin, LoginRequiredMixin, TabContextMixin, generic.TemplateView
+):
     template_name = "overview/index.j2"
-
-    def get_user(self) -> StandardUser:
-        return self.request.user  # type: ignore
 
     def get_stats(self):
         total = 0
@@ -71,9 +68,9 @@ class IndexView(LoginRequiredMixin, TabContextMixin, generic.TemplateView):
         return context
 
 
-class DataApiView(View):
+class DataApiView(GetUserMixin, View):
     def get(self, *args, **kwargs):
-        active_depots = self.request.user.get_all_active_depots()
+        active_depots = self.get_user().get_all_active_depots()
         # get the df with all values
         df = get_merged_value_df_from_queryset(active_depots)
         # make the date normal
@@ -83,6 +80,7 @@ class DataApiView(View):
         df = sum_up_columns_in_a_dataframe(df, drop=False)
         # remove all the rows where the value is 0 as it
         # doesn't make sense in the calculations
+        assert df is not None
         df = df.loc[df.loc[:, "value"] != 0]
         # remove duplicate dates and keep the last
         df = df.loc[~df.index.duplicated(keep="last")]
