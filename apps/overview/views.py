@@ -37,6 +37,7 @@ class IndexView(
         df = sum_up_columns_in_a_dataframe(df, drop=False)
         # remove all the rows where the value is 0 as it
         # doesn't make sense in the calculations
+        assert df is not None
         df = df.loc[df.loc[:, "value"] != 0]
         # remove duplicate dates and keep the last
         df = df.loc[~df.index.duplicated(keep="last")]
