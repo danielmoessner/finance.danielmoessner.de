@@ -245,7 +245,7 @@ class FlowForm(forms.ModelForm):
         super(FlowForm, self).__init__(*args, **kwargs)
         self.instance.asset = depot.assets.get(symbol="EUR")
         self.fields["account"].queryset = depot.accounts.all()
-        self.fields["date"].initial = timezone.now().date
+        self.fields["date"].initial = timezone.now().replace(hour=12, minute=0)
 
     def clean(self):
         date = self.cleaned_data["date"]
