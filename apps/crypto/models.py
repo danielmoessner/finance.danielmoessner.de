@@ -612,10 +612,17 @@ class Trade(models.Model):
 
     # setters
     def reset_deps(self):
-        self.buy_asset.reset()
-        self.sell_asset.reset()
-        self.account.reset()
-        self.account.depot.reset()
+        deps: list[Asset | Account | AccountAssetStats | Depot] = []
+        deps.append(self.buy_asset)
+        deps.append(self.sell_asset)
+        for d in self.account.asset_stats.filter(asset=self.buy_asset):
+            deps.append(d)
+        for d in self.account.asset_stats.filter(asset=self.sell_asset):
+            deps.append(d)
+        deps.append(self.account)
+        deps.append(self.account.depot)
+        for dep in deps:
+            dep.reset()
 
 
 class Transaction(models.Model):
@@ -654,10 +661,16 @@ class Transaction(models.Model):
 
     # setters
     def reset_deps(self):
-        self.asset.reset()
-        self.from_account.reset()
-        self.to_account.reset()
-        self.to_account.depot.reset()
+        deps: list[Asset | Account | AccountAssetStats | Depot] = [self.asset]
+        for d in self.from_account.asset_stats.filter(asset=self.asset):
+            deps.append(d)
+        deps.append(self.from_account)
+        for d in self.to_account.asset_stats.filter(asset=self.asset):
+            deps.append(d)
+        deps.append(self.to_account)
+        deps.append(self.to_account.depot)
+        for dep in deps:
+            dep.reset()
 
 
 class Price(models.Model):
