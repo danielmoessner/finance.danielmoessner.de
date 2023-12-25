@@ -24,7 +24,11 @@ class IndexView(LoginRequiredMixin, TabContextMixin, generic.TemplateView):
     def get_stats(self):
         total = 0
         for depot in self.get_user().get_all_active_depots():
-            total += float(depot.get_value())
+            value = float(getattr(depot, "value", 0) or 0)
+            if not value:
+                value = float(getattr(depot, "balance", 0) or 0)
+            if value:
+                total += value
         return {"Total": round(total, 2)}
 
     def get_value_df(self):

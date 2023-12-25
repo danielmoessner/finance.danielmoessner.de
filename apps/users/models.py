@@ -1,6 +1,6 @@
 import random
 from datetime import timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
@@ -77,7 +77,9 @@ class StandardUser(AbstractUser):
             self.alternative_depots.update(is_active=False)
         return None
 
-    def get_all_active_depots(self):
+    def get_all_active_depots(
+        self,
+    ) -> list[Union["BankingDepot", "AlternativeDepot", "CryptoDepto", "StockDepot"]]:
         depots = []
         depot = self.get_active_banking_depot()
         if depot:
