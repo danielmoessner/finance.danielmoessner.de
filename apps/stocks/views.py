@@ -5,6 +5,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.views import generic
+from django.views.generic.detail import SingleObjectMixin
 
 from .forms import (
     BankForm,
@@ -100,12 +101,15 @@ class ResetDepotView(GetUserMixin, generic.View):
         return HttpResponseRedirect(reverse_lazy("stocks:index"))
 
 
-class SetActiveDepotView(GetUserMixin, generic.View):
+class SetActiveDepotView(GetUserMixin, SingleObjectMixin, generic.View):
     http_method_names = ["get", "head", "options"]
+
+    def get_queryset(self):
+        return self.get_user().stock_depots.all()
 
     def get(self, request, pk, *args, **kwargs):
         self.get_user().stock_depots.update(is_active=False)
-        depot = get_object_or_404(self.get_user().stock_depots.all(), pk=pk)
+        depot = self.get_object()
         form = DepotActiveForm(data={"is_active": True}, instance=depot)
         if form.is_valid():
             depot = form.save()

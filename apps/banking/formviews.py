@@ -76,6 +76,7 @@ class SetActiveDepotView(GetUserMixin, SingleObjectMixin, generic.View):
         return self.get_user().banking_depots.all()
 
     def get(self, request, *args, **kwargs):
+        self.get_user().banking_depots.update(is_active=False)
         depot = self.get_object()
         form = DepotActiveForm(data={"is_active": True}, instance=depot)
         if form.is_valid():

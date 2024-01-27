@@ -6,6 +6,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.views import generic
+from django.views.generic.detail import SingleObjectMixin
 
 from apps.core.mixins import (
     AjaxResponseMixin,
@@ -38,6 +39,7 @@ from apps.crypto.models import (
     Trade,
     Transaction,
 )
+from apps.users.mixins import GetUserMixin
 
 
 # mixins
@@ -89,11 +91,15 @@ class DeleteDepotView(
         )
 
 
-class SetActiveDepotView(LoginRequiredMixin, generic.View):
+class SetActiveDepotView(GetUserMixin, SingleObjectMixin, generic.View):
     http_method_names = ["get", "head", "options"]
 
+    def get_queryset(self):
+        return self.get_user().crypto_depots.all()
+
     def get(self, request, pk, *args, **kwargs):
-        depot = get_object_or_404(self.request.user.crypto_depots.all(), pk=pk)
+        self.get_user().crypto_depots.update(is_active=False)
+        depot = self.get_object()
         form = DepotActiveForm(data={"is_active": True}, instance=depot)
         if form.is_valid():
             form.save()

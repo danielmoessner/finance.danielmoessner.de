@@ -29,20 +29,6 @@ class Depot(CoreDepot):
         accounts: QuerySet["Account"]
         categories: QuerySet["Category"]
 
-    def save(
-        self, force_insert=False, force_update=False, using=None, update_fields=None
-    ):
-        super().save(
-            force_insert=force_insert,
-            force_update=force_update,
-            using=using,
-            update_fields=update_fields,
-        )
-        if self.is_active:
-            self.user.banking_depots.filter(is_active=True).exclude(pk=self.pk).update(
-                is_active=False
-            )
-
     # getters
     def get_date_name_value_chart_data(self, statement):
         cursor = connection.cursor()
