@@ -98,4 +98,4 @@ class DataApiView(GetUserMixin, View):
         # make a json object
         json_df = json.loads(df.to_json(orient="records"))
         # return the df
-        return JsonResponse(json_df)
+        return JsonResponse(json_df, safe=False)
