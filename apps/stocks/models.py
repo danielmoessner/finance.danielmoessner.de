@@ -729,6 +729,13 @@ class Flow(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
+        self.reset()
+
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+        self.reset()
+
+    def reset(self):
         self.bank.reset()
         self.bank.depot.reset()
 
@@ -753,6 +760,13 @@ class Dividend(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
+        self.reset()
+
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+        self.reset()
+
+    def reset(self):
         self.stock.reset()
         self.bank.reset()
         self.stock.depot.reset()
@@ -781,6 +795,13 @@ class Trade(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
+        self.reset()
+
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+        self.reset()
+
+    def reset(self):
         self.bank.reset()
         self.bank.depot.reset()
         self.stock.reset()
@@ -810,6 +831,13 @@ class Price(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
+        self.reset()
+
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+        self.reset()
+
+    def reset(self):
         affected_stocks = (
             Stock.objects.filter(ticker=self.ticker, exchange=self.exchange)
             .select_related("depot")
@@ -819,9 +847,6 @@ class Price(models.Model):
             stock.reset(self)
             stock.depot.reset()
             [bank.reset() for bank in list(stock.depot.banks.all())]
-
-    def delete(self, *args, **kwargs):
-        return super().delete(*args, **kwargs)
 
     # getters
     def get_date(self):
