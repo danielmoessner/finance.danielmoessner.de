@@ -187,40 +187,40 @@ class FlowForm(forms.ModelForm):
                 "on this particular date and time. "
                 "Choose a different date."
             )
-        if flow < 0:
-            # check that enough money is available if money is withdrawn
-            if self.instance:
-                bank_balance = bank.get_balance_on_date(
-                    date, exclude_flow=self.instance
-                )
-            else:
-                bank_balance = bank.get_balance_on_date(date)
-            if (bank_balance + flow) < 0:
-                msg = (
-                    "There is not enough money on this bank to support this flow. "
-                    "There are only {} € available.".format(bank_balance)
-                )
-                raise forms.ValidationError(msg)
-            # check that enough money is available after the money was withdrawn
-            flow_or_trade = utils.get_closest_object_in_two_querysets(
-                bank.flows.all(), bank.trades.all(), date, direction="next"
-            )
-            date = flow_or_trade.date if flow_or_trade else timezone.now()
-            if self.instance:
-                bank_balance = bank.get_balance_on_date(
-                    date, exclude_trade=self.instance
-                )
-            else:
-                bank_balance = bank.get_balance_on_date(date)
-            if bank_balance + flow < 0:
-                msg = (
-                    "After this flow the balance would be {} on date {}."
-                    " That is not possible. "
-                    "You need to change the money amount.".format(
-                        (bank_balance + flow), date.strftime("%d.%m.%Y")
-                    )
-                )
-                raise forms.ValidationError(msg)
+        # if flow < 0:
+        #     # check that enough money is available if money is withdrawn
+        #     if self.instance:
+        #         bank_balance = bank.get_balance_on_date(
+        #             date, exclude_flow=self.instance
+        #         )
+        #     else:
+        #         bank_balance = bank.get_balance_on_date(date)
+        #     if (bank_balance + flow) < 0:
+        #         msg = (
+        #             "There is not enough money on this bank to support this flow. "
+        #             "There are only {} € available.".format(bank_balance)
+        #         )
+        #         raise forms.ValidationError(msg)
+        #     # check that enough money is available after the money was withdrawn
+        #     flow_or_trade = utils.get_closest_object_in_two_querysets(
+        #         bank.flows.all(), bank.trades.all(), date, direction="next"
+        #     )
+        #     date = flow_or_trade.date if flow_or_trade else timezone.now()
+        #     if self.instance:
+        #         bank_balance = bank.get_balance_on_date(
+        #             date, exclude_trade=self.instance
+        #         )
+        #     else:
+        #         bank_balance = bank.get_balance_on_date(date)
+        #     if bank_balance + flow < 0:
+        #         msg = (
+        #             "After this flow the balance would be {} on date {}."
+        #             " That is not possible. "
+        #             "You need to change the money amount.".format(
+        #                 (bank_balance + flow), date.strftime("%d.%m.%Y")
+        #             )
+        #         )
+        #         raise forms.ValidationError(msg)
         # return
         return self.cleaned_data
 

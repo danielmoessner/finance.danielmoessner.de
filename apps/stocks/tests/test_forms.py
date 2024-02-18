@@ -46,9 +46,9 @@ class FormValidationTestCase(StandardSetUpTestCase):
             name="Test Stock", exchange="TEST", ticker="TST", depot=self.depot
         )
 
-    def test_no_negative_flow_can_be_added_when_balance_zero(self):
-        with self.assertRaises(ValueError):
-            self.create_flow("2020-05-05T12:40", -1, self.bank)
+    # def test_no_negative_flow_can_be_added_when_balance_zero(self):
+    #     with self.assertRaises(ValueError):
+    #         self.create_flow("2020-05-05T12:40", -1, self.bank)
 
     def test_negative_flow_can_be_added_when_balance_is_sufficient(self):
         self.create_flow("2020-05-05T12:40", 1, self.bank)
@@ -92,9 +92,9 @@ class FormValidationTestCase(StandardSetUpTestCase):
         with self.assertRaises(ValueError):
             self.create_trade("2020-05-06T12:23", self.bank, 1, 1, self.stock, "BUY")
 
-    def test_flow_can_not_be_inserted_before_flow_and_turn_balance_negative(self):
-        self.create_flow("2020-05-05T12:40", 1, self.bank)
-        self.create_flow("2020-05-07T12:40", -1, self.bank)
-        self.create_flow("2020-05-09T12:40", 1, self.bank)
-        with self.assertRaises(ValueError):
-            self.create_flow("2020-05-06T12:40", -1, self.bank)
+    # def test_flow_can_not_be_inserted_before_flow_and_turn_balance_negative(self):
+    #     self.create_flow("2020-05-05T12:40", 1, self.bank)
+    #     self.create_flow("2020-05-07T12:40", -1, self.bank)
+    #     self.create_flow("2020-05-09T12:40", 1, self.bank)
+    #     with self.assertRaises(ValueError):
+    #         self.create_flow("2020-05-06T12:40", -1, self.bank)
