@@ -20,11 +20,34 @@ class IndexView(
 
     def get_stats(self):
         total = 0
-        for depot in self.get_user().get_all_active_depots():
-            value = getattr(depot, "value", 0) or getattr(depot, "balance", 0) or 0
-            if value:
-                total += float(value)
-        return {"Total": round(total, 2)}
+        stats = {}
+        depots = self.get_user().get_all_active_depots()
+
+        def get_value(depot) -> float:
+            v1 = getattr(depot, "value", 0) or getattr(depot, "balance", 0) or 0
+            v2 = round(float(v1), 2)
+            return v2
+        
+        def format_number(number: float) -> str:
+            return "{:,.2f}".format(number)
+        
+        def format_percentage(number: float) -> str:
+            return "{:,.2f}%".format(number)
+
+        for depot in depots:
+            if _value := get_value(depot):
+                total += _value
+                stats[depot.name] = format_number(_value)
+        
+        for depot in depots:
+            if _value := get_value(depot):
+                percentage = round(_value / total * 100, 2)
+                stats[f"{depot.name}_percentage"] = format_percentage(percentage)
+
+        stats["Total"] = format_number(round(total, 2))
+
+
+        return stats
 
     def get_value_df(self):
         active_depots = self.get_user().get_all_active_depots()
