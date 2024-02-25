@@ -4,12 +4,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.views import View, generic
 
-from apps.core.mixins import TabContextMixin
+from apps.core.mixins import AjaxResponseMixin, CustomAjaxDeleteMixin, GetFormWithDepotAndInitialDataMixin, GetFormWithUserMixin, TabContextMixin
 from apps.core.utils import (
     change_time_of_date_index_in_df,
     get_merged_value_df_from_queryset,
     sum_up_columns_in_a_dataframe,
 )
+from apps.overview.forms import BucketForm
+from apps.overview.models import Bucket
 from apps.users.mixins import GetUserMixin
 
 
@@ -88,6 +90,8 @@ class IndexView(
             context["value_df"] = self.get_value_df()
         if context["tab"] == "charts":
             context["active_depots"] = self.get_user().get_all_active_depots()
+        if context["tab"] == "buckets":
+            context["buckets"] = Bucket.objects.filter(user=self.get_user())
         # return
         return context
 
@@ -122,3 +126,36 @@ class DataApiView(GetUserMixin, View):
         json_df = json.loads(df.to_json(orient="records"))
         # return the df
         return JsonResponse(json_df, safe=False)
+
+
+class AddBucketView(
+    GetUserMixin,
+    GetFormWithUserMixin,
+    AjaxResponseMixin,
+    generic.CreateView,
+):
+    model = Bucket
+    form_class = BucketForm
+    template_name = "symbols/form_snippet.j2"
+
+
+class EditBucketView(
+    GetUserMixin,
+    GetFormWithUserMixin,
+    AjaxResponseMixin,
+    generic.UpdateView,
+):
+    model = Bucket
+    form_class = BucketForm
+    template_name = "symbols/form_snippet.j2"
+
+    def get_queryset(self):
+        return Bucket.objects.filter(user=self.get_user())
+
+
+class DeleteBucketView(GetUserMixin, CustomAjaxDeleteMixin, generic.DeleteView):
+    model = Bucket
+    template_name = "symbols/delete_snippet.j2"
+
+    def get_queryset(self):
+        return Bucket.objects.filter(user=self.get_user())

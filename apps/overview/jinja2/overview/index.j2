@@ -7,10 +7,12 @@
 {% block main %}
 
     {% import "symbols/button.j2" as bg %}
+    {% import "symbols/modal.j2" as mg %}
 
     <div class="d-flex justify-content-center mt-2 mb-5">
         <div class="btn-group" role="group" aria-label="Console">
             {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
+            {{ bg.hrefButton("Buckets", request.path + '?tab=buckets', active=(tab=='buckets')) }}
             {{ bg.hrefButton("Charts", request.path + '?tab=charts', active=(tab=='charts')) }}
             {{ bg.dropdownButton("Calculations", active=(tab=="values" or tab=="flows")) }}
             <div class="dropdown-menu dropdown-menu-dark py-1">
@@ -42,6 +44,44 @@
             {% endfor %}
             </tbody>
         </table>
+    {% endif %}
+
+    {% if tab=='buckets' %}
+    {{ mg.djangoModal("Edit Bucket", "editBucket") }}
+    {{ mg.djangoModal("Delete Bucket", "deleteBucket") }}
+    <table class="table rounded table-responsive-md table-dark mb-5">
+        <thead>
+            <tr>
+                <th scope="col">Bucket</th>
+                <th class="text-end" scope="col">Amount</th>
+                <th class="text-end" scope="col">Percentage</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bucket in buckets %}
+            <tr>
+                <td>{{ bucket.name }}</td>
+                <td class="text-end">{{ bucket.get_amount() }}</td>
+                <td class="text-end">{{ bucket.get_percentage() }}</td>
+                <td>
+                    <div class="d-flex align-items-center justify-content-end">
+                        {{ bg.modalButton("Edit", "#editBucket", url("overview:edit_bucket", args=[bucket.pk])) }}
+                        {{ bg.modalButton("Delete", "#deleteBucket", url("overview:delete_bucket", args=[bucket.pk])) }}
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="4">
+                <div class="d-flex">
+                    {{ mg.djangoModal("Add Bucket", "addBucket", url("overview:add_bucket")) }}
+                    {{ bg.modalButton("Add Bucket", "#addBucket") }}
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
     {% endif %}
 
     {% if tab=='charts' %}
