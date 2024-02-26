@@ -146,7 +146,7 @@ class AddAssetView(
 
 
 class EditAssetView(
-    GetUserMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.UpdateView
+    GetUserMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.UpdateView
 ):
     model = Asset
     template_name = "symbols/form_snippet.j2"
