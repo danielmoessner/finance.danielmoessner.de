@@ -5,7 +5,7 @@ from apps.users.models import StandardUser
 
 class Bucket(models.Model):
     name = models.CharField(max_length=255)
-    user = models.ForeignKey(StandardUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(StandardUser, on_delete=models.CASCADE, related_name="buckets")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

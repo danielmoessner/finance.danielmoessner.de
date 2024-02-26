@@ -7,6 +7,7 @@ from apps.core import utils
 from apps.core.models import Account as CoreAccount
 from apps.core.models import Depot as CoreDepot
 from apps.core.utils import turn_dict_of_dicts_into_list_of_dicts
+from apps.overview.models import Bucket
 from apps.users.models import StandardUser
 
 if TYPE_CHECKING:
@@ -114,6 +115,8 @@ class Account(CoreAccount):
     balance = models.DecimalField(
         max_digits=15, decimal_places=2, null=True, blank=True
     )
+    # overview
+    bucket = models.ForeignKey(Bucket, on_delete=models.SET_NULL, null=True, blank=True, related_name="banking_items")
 
     if TYPE_CHECKING:
         changes: QuerySet["Change"]

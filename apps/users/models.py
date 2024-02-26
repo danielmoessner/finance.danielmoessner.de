@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from apps.banking.models import Depot as BankingDepot
     from apps.crypto.models import Depot as CryptoDepto
     from apps.stocks.models import Depot as StockDepot
-
+    from apps.overview.models import Bucket
 
 class StandardUser(AbstractUser):
     # general
@@ -39,6 +39,7 @@ class StandardUser(AbstractUser):
         stock_depots: QuerySet[StockDepot]
         alternative_depots: QuerySet[AlternativeDepot]
         banking_depots: QuerySet[BankingDepot]
+        buckets: QuerySet["Bucket"]
 
     # getters
     def get_active_crypto_depot(self):

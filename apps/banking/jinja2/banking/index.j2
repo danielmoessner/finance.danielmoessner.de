@@ -30,7 +30,7 @@
     <table class="table rounded table-responsive-md table-dark mb-5">
         <thead>
         <tr>
-           <th scope="col">Account</th>
+            <th scope="col">Account</th>
             <th class="text-end" scope="col">Balance</th>
             <th class="text-end" scope="col"></th>
         </tr>
@@ -38,7 +38,14 @@
         <tbody>
         {% for account in accounts %}
             <tr>
-                <td>{{ account.name }}</td>
+                <td>
+                    {{ account.name }}
+                    {% if account.bucket %}
+                        <span class="badge bg-success">{{ account.bucket.name }}</span>
+                    {% else %}
+                        {{ bg.modalButton("Set Bucket", "#editAccount", url("banking:edit_account", args=[account.pk])) }}
+                    {% endif %}
+                </td>
                 <td class="text-end">{{ account.get_stats()['Balance'] }}</td>
                 <td>
                     <div class="d-flex align-items-center justify-content-end">

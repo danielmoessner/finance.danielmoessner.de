@@ -64,7 +64,7 @@ class AccountSelectForm(forms.Form):
 class AssetForm(forms.ModelForm):
     class Meta:
         model = Asset
-        fields = ("symbol",)
+        fields = ("symbol", "bucket",)
         help_texts = {
             "symbol": (
                 "It's not advised to change the symbol of"
@@ -72,9 +72,10 @@ class AssetForm(forms.ModelForm):
             ),
         }
 
-    def __init__(self, depot, *args, **kwargs):
+    def __init__(self, depot: Depot, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.instance.depot = depot
+        self.fields["bucket"].queryset = depot.user.buckets.all()
 
 
 class AssetSelectForm(forms.Form):
@@ -83,7 +84,7 @@ class AssetSelectForm(forms.Form):
     class Meta:
         fields = ("asset",)
 
-    def __init__(self, depot, *args, **kwargs):
+    def __init__(self, depot: Depot, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["asset"].queryset = depot.assets.all()
 

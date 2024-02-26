@@ -44,7 +44,7 @@
                     <td>{{ change.get_description() }}</td>
                     <td class="text-end">{{ change.change }}</td>
                     <td>
-                        <div class="d-flex">
+                        <div class="d-flex justify-content-end">
                             {{ bg.modalButton("Edit", "#editChange", url("banking:edit_change", args=[change.pk])) }}
                             {{ bg.modalButton("Delete", "#deleteChange", url("banking:delete_change", args=[change.pk])) }}
                         </div>

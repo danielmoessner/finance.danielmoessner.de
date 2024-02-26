@@ -40,11 +40,12 @@ class DepotActiveForm(forms.ModelForm):
 class AlternativeForm(forms.ModelForm):
     class Meta:
         model = Alternative
-        fields = ("name",)
+        fields = ("name", "bucket",)
 
-    def __init__(self, depot, *args, **kwargs):
+    def __init__(self, depot: Depot, *args, **kwargs):
         super(AlternativeForm, self).__init__(*args, **kwargs)
         self.instance.depot = depot
+        self.fields["bucket"].queryset = depot.user.buckets.all()
 
 
 class AlternativeSelectForm(forms.Form):

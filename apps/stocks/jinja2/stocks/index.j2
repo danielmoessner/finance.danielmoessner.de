@@ -46,7 +46,9 @@
             <tbody>
             {% for bank in banks %}
                 <tr>
-                    <td>{{ bank.name }}</td>
+                    <td>
+                        {{ bank.name }}
+                    </td>
                     <td class="text-end">{{ bank.get_balance_display() }}</td>
                     <td class="text-end">{{ bank.get_value_display() }}</td>
                     <td>
@@ -72,6 +74,7 @@
     {% endif %}
 
     {% if tab=='stocks' %}
+        {{ mg.djangoModal("Edit Stock", "editStock") }}
         <table class="table rounded table-responsive-md table-dark mb-5">
             <thead>
             <tr>
@@ -86,15 +89,21 @@
             <tbody>
             {% for stock in stocks %}
                 <tr>
-                    <td>{{ stock.name }}</td>
+                    <td>
+                        {{ stock.name }}
+                        {% if stock.bucket %}
+                            <span class="badge bg-success">{{ stock.bucket.name }}</span>
+                        {% else %}
+                            {{ bg.modalButton("Set Bucket", "#editStock", url("stocks:edit_stock", args=[stock.pk])) }}
+                        {% endif %}
+                    </td>
                     <td class="text-end">{{ stock.get_price_display() }}</td>
                     <td class="text-end">{{ stock.get_top_price_display() }}</td>
                     <td class="text-end">{{ stock.get_amount_display() }}</td>
                     <td class="text-end">{{ stock.get_value_display() }}</td>
                     <td>
                         <div class="d-flex align-items-center">
-                            {{ mg.djangoModal("Edit Stock", "editStock"+stock.pk|string, url("stocks:edit_stock", args=[stock.pk])) }}
-                            {{ bg.modalButton("Edit", "#editStock"+stock.pk|string) }}
+                            {{ bg.modalButton("Edit", "#editStock", url("stocks:edit_stock", args=[stock.pk])) }}
                             {{ bg.hrefButton("Open", url("stocks:stocks", args=[stock.pk])) }}
                         </div>
                     </td>

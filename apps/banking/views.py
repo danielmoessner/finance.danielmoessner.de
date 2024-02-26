@@ -18,11 +18,9 @@ class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
         # general
         context = super(IndexView, self).get_context_data(**kwargs)
         context["user"] = self.get_user()
-        context["accounts"] = self.object.accounts.order_by("name")
-        context["categories"] = self.object.categories.order_by("name")
         # specific
         context["stats"] = self.object.get_stats()
-        context["accounts"] = self.object.accounts.order_by("name")
+        context["accounts"] = self.object.accounts.order_by("name").select_related("bucket")
         context["categories"] = self.object.categories.order_by("name")
         # return
         return context
@@ -39,8 +37,6 @@ class AccountView(GetUserMixin, TabContextMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super(AccountView, self).get_context_data(**kwargs)
         context["depot"] = self.object.depot
-        context["accounts"] = context["depot"].accounts.order_by("name")
-        context["categories"] = context["depot"].categories.order_by("name")
         context["account"] = self.object
         context["stats"] = self.object.get_stats()
         context["changes"] = self.object.changes.order_by(
@@ -60,8 +56,6 @@ class CategoryView(GetUserMixin, TabContextMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super(CategoryView, self).get_context_data(**kwargs)
         context["depot"] = self.object.depot
-        context["accounts"] = context["depot"].accounts.order_by("name")
-        context["categories"] = context["depot"].categories.order_by("name")
         context["category"] = self.object
         context["stats"] = self.object.get_stats()
         context["changes"] = self.object.changes.order_by(

@@ -8,6 +8,7 @@ from django.utils import timezone
 import apps.core.return_calculation as rc
 import apps.core.utils as utils
 from apps.core.models import Depot as CoreDepot
+from apps.overview.models import Bucket
 from apps.users.models import StandardUser
 
 
@@ -82,6 +83,8 @@ class Alternative(models.Model):
     invested_capital = models.FloatField(null=True)
     current_return = models.FloatField(null=True)
     profit = models.FloatField(null=True)
+    # overview
+    bucket = models.ForeignKey(Bucket, on_delete=models.SET_NULL, null=True, blank=True, related_name="alternative_items")
 
     if TYPE_CHECKING:
         values: QuerySet["Value"]

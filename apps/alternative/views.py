@@ -41,7 +41,7 @@ class DetailDepotView(GetUserMixin, TabContextMixin, generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(DetailDepotView, self).get_context_data(**kwargs)
-        context["alternatives"] = self.object.alternatives.order_by("name")
+        context["alternatives"] = self.object.alternatives.order_by("name").select_related("bucket")
         context["stats"] = self.object.get_stats()
         return context
 

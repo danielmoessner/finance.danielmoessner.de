@@ -79,7 +79,7 @@ class StockForm(forms.ModelForm):
         model = Stock
         fields = ("name", "ticker", "exchange")
 
-    def __init__(self, depot, *args, **kwargs):
+    def __init__(self, depot: Depot, *args, **kwargs):
         super(StockForm, self).__init__(*args, **kwargs)
         self.instance.depot = depot
 
@@ -87,11 +87,12 @@ class StockForm(forms.ModelForm):
 class EditStockForm(forms.ModelForm):
     class Meta:
         model = Stock
-        fields = ("name", "ticker", "exchange")
+        fields = ("name", "ticker", "exchange", "bucket")
 
-    def __init__(self, depot, *args, **kwargs):
+    def __init__(self, depot: Depot, *args, **kwargs):
         super(EditStockForm, self).__init__(*args, **kwargs)
         self.instance.depot = depot
+        self.fields["bucket"].queryset = depot.user.buckets.all()
 
 
 class StockSelectForm(forms.Form):

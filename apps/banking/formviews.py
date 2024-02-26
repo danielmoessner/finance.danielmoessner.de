@@ -1,4 +1,5 @@
 import json
+from typing import Callable
 
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
@@ -21,12 +22,25 @@ from apps.core.mixins import (
     AjaxResponseMixin,
     CustomAjaxDeleteMixin,
     CustomGetFormUserMixin,
+    GetFormWithDepotMixin,
 )
 from apps.users.mixins import GetUserMixin
+from apps.users.models import StandardUser
 
 
 # mixins
-class CustomGetFormMixin(FormMixin):
+class GetDepotMixin:
+    get_user: Callable[[], StandardUser]
+
+    def get_depot(self):
+        return self.get_user().banking_depots.get(is_active=True)
+
+
+class CustomGetFormMixin:
+    get_form_class: Callable[[], type]
+    get_form_kwargs: Callable[[], dict]
+    get_user: Callable[[], StandardUser]
+
     def get_form(self, form_class=None):
         if form_class is None:
             form_class = self.get_form_class()
@@ -96,7 +110,7 @@ class AddAccountView(
     template_name = "symbols/form_snippet.j2"
 
 
-class EditAccountView(CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
+class EditAccountView(GetUserMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.UpdateView):
     model = Account
     form_class = AccountForm
     template_name = "symbols/form_snippet.j2"

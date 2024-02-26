@@ -17,6 +17,7 @@ from apps.core.models import Account as CoreAccount
 from apps.core.models import Depot as CoreDepot
 from apps.core.utils import get_df_from_database
 from apps.crypto.fetchers.coingecko import CoinGeckoFetcher, CoinGeckoFetcherInput
+from apps.overview.models import Bucket
 from apps.users.models import StandardUser
 
 
@@ -208,6 +209,8 @@ class Asset(models.Model):
     value = models.FloatField(null=True)
     amount = models.FloatField(null=True)
     price = models.FloatField(null=True)
+    # overview
+    bucket = models.ForeignKey(Bucket, on_delete=models.SET_NULL, null=True, blank=True, related_name="crypto_items")
 
     if TYPE_CHECKING:
         buy_trades: QuerySet["Trade"]

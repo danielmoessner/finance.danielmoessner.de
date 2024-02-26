@@ -51,6 +51,10 @@ class GetFormWithUserMixin:
 
 
 class GetFormWithDepotMixin:
+    get_depot: Callable[[], models.Model]
+    get_form_class: Callable[[], type]
+    get_form_kwargs: Callable[[], dict]
+    
     def get_form(self, form_class=None):
         depot = self.get_depot()
         if form_class is None:

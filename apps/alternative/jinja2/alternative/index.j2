@@ -27,6 +27,7 @@
 {% include 'symbols/stats.j2' %}
 
 {% if tab == 'alternatives' %}
+{{ mg.djangoModal("Edit Alternative", "editAlternative") }}
 <table class="table table-responsive-md rounded table-dark mb-5">
     <thead>
         <tr>
@@ -40,16 +41,21 @@
     <tbody>
         {% for alternative in alternatives %}
         <tr>
-            <td>{{ alternative.name }}</td>
+            <td>
+                {{ alternative.name }}
+                {% if alternative.bucket %}
+                    <span class="badge bg-success">{{ alternative.bucket.name }}</span>
+                {% else %}
+                    {{ bg.modalButton("Set Bucket", "#editAlternative", url("alternative:edit_alternative", args=[alternative.pk])) }}
+                {% endif %}
+            </td>
             <td class="text-end">{{ alternative.get_invested_capital_display() }}</td>
             <td class="text-end">{{ alternative.get_value_display() }}</td>
             <td class="text-end">{{ alternative.get_profit_display() }}</td>
             <td>
                 <div class="d-flex justify-content-end">
                     {{ bg.hrefButton("Open", url('alternative:alternative', args=[alternative.pk])) }}
-                    {{ mg.djangoModal("Edit Alternative", "editAlternative"+alternative.pk|string,
-                    url("alternative:edit_alternative", args=[alternative.pk])) }}
-                    {{ bg.modalButton("Edit", "#editAlternative"+alternative.pk|string) }}
+                    {{ bg.modalButton("Edit", "#editAlternative", url("alternative:edit_alternative", args=[alternative.pk])) }}
                 </div>
             </td>
         </tr>

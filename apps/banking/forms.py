@@ -37,11 +37,12 @@ class DepotActiveForm(forms.ModelForm):
 class AccountForm(forms.ModelForm):
     class Meta:
         model = Account
-        fields = ("name",)
+        fields = ("name", "bucket",)
 
-    def __init__(self, depot, *args, **kwargs):
+    def __init__(self, depot: Depot, *args, **kwargs):
         super(AccountForm, self).__init__(*args, **kwargs)
         self.instance.depot = depot
+        self.fields["bucket"].queryset = depot.user.buckets.all()
 
 
 class AccountSelectForm(forms.Form):
@@ -50,7 +51,7 @@ class AccountSelectForm(forms.Form):
     class Meta:
         fields = ("account",)
 
-    def __init__(self, depot, *args, **kwargs):
+    def __init__(self, depot: Depot, *args, **kwargs):
         super(AccountSelectForm, self).__init__(*args, **kwargs)
         self.fields["account"].queryset = depot.accounts.all()
 

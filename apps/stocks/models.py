@@ -11,6 +11,7 @@ from apps.core.fetchers.base import Fetcher
 from apps.core.fetchers.selenium import SeleniumFetcher, SeleniumFetcherInput
 from apps.core.fetchers.website import WebsiteFetcher, WebsiteFetcherInput
 from apps.core.utils import get_df_from_database
+from apps.overview.models import Bucket
 from apps.stocks.fetchers.marketstack import MarketstackFetcher, MarketstackFetcherInput
 from apps.users.models import StandardUser
 
@@ -353,6 +354,8 @@ class Stock(models.Model):
     invested_capital = models.FloatField(null=True)
     dividends_amount = models.FloatField(null=True)
     sold_total = models.FloatField(null=True)
+    # overview
+    bucket = models.ForeignKey(Bucket, on_delete=models.SET_NULL, null=True, blank=True, related_name="stocks_items")
 
     if TYPE_CHECKING:
         trades: QuerySet["Trade"]
