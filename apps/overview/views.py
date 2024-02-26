@@ -1,6 +1,7 @@
 import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import models
 from django.http import JsonResponse
 from django.views import View, generic
 
@@ -14,40 +15,72 @@ from apps.overview.models import Bucket
 from apps.users.mixins import GetUserMixin
 
 
+def get_value(depot: models.Model) -> float:
+    v1 = getattr(depot, "value", 0) or getattr(depot, "balance", 0) or 0
+    v2 = round(float(v1), 2)
+    return v2
+
+
+def format_number(number: float) -> str:
+    return "{:,.2f}".format(number)
+
+
+def format_percentage(number: float) -> str:
+    return "{:,.2f}%".format(number)
+
+
+def get_value_stats(depots: list[models.Model]) -> tuple[dict[str, str], float]:
+    stats = {}
+    total = 0
+    for depot in depots:
+        if _value := get_value(depot):
+            total += _value
+            stats[getattr(depot, "name", "---")] = format_number(_value)
+    return stats, total
+
+
+def get_percentage_stats(depots: list[models.Model], total: float) -> dict[str, str]:
+    stats = {}
+    for depot in depots:
+        if _value := get_value(depot):
+            percentage = round(_value / total * 100, 2) if total else 0
+            stats[f"{getattr(depot, 'name', '')}_percentage"] = format_percentage(
+                percentage
+            )
+    return stats
+
+
+def get_stats(depots) -> tuple[dict[str, str], str]:
+    total = 0
+    stats, total = get_value_stats(depots)
+    stats.update(get_percentage_stats(depots, total))
+    stats["Total"] = format_number(round(total, 2))
+    return stats, format_number(total)
+
+
 class IndexView(
     GetUserMixin, LoginRequiredMixin, TabContextMixin, generic.TemplateView
 ):
     template_name = "overview/index.j2"
 
-    def get_stats(self):
-        total = 0
-        stats = {}
-        depots = self.get_user().get_all_active_depots()
+    def get_queryset(self):
+        return self.get_user().banking_depots.all()
 
-        def get_value(depot) -> float:
-            v1 = getattr(depot, "value", 0) or getattr(depot, "balance", 0) or 0
-            v2 = round(float(v1), 2)
-            return v2
-
-        def format_number(number: float) -> str:
-            return "{:,.2f}".format(number)
-
-        def format_percentage(number: float) -> str:
-            return "{:,.2f}%".format(number)
-
-        for depot in depots:
-            if _value := get_value(depot):
-                total += _value
-                stats[depot.name] = format_number(_value)
-
-        for depot in depots:
-            if _value := get_value(depot):
-                percentage = round(_value / total * 100, 2)
-                stats[f"{depot.name}_percentage"] = format_percentage(percentage)
-
-        stats["Total"] = format_number(round(total, 2))
-
-        return stats
+    def get_context_data(self, **kwargs):
+        context = super(IndexView, self).get_context_data(**kwargs)
+        context["user"] = self.get_user()
+        user = self.get_user()
+        depots = user.get_all_active_depots()
+        context["stats"], total = get_stats(depots)
+        if context["tab"] == "values":
+            context["value_df"] = self.get_value_df()
+        if context["tab"] == "charts":
+            context["active_depots"] = self.get_user().get_all_active_depots()
+        if context["tab"] == "buckets":
+            context["buckets"] = Bucket.objects.filter(user=self.get_user())
+            context["total"] = total + " €"
+        # return
+        return context
 
     def get_value_df(self):
         active_depots = self.get_user().get_all_active_depots()
@@ -74,24 +107,6 @@ class IndexView(
         df = df.loc[:, new_column_order]
         # set the df
         return df
-
-    def get_queryset(self):
-        return self.get_user().banking_depots.all()
-
-    def get_context_data(self, **kwargs):
-        # general
-        context = super(IndexView, self).get_context_data(**kwargs)
-        context["user"] = self.request.user
-        # specific
-        context["stats"] = self.get_stats()
-        if context["tab"] == "values":
-            context["value_df"] = self.get_value_df()
-        if context["tab"] == "charts":
-            context["active_depots"] = self.get_user().get_all_active_depots()
-        if context["tab"] == "buckets":
-            context["buckets"] = Bucket.objects.filter(user=self.get_user())
-        # return
-        return context
 
 
 class DataApiView(GetUserMixin, View):
