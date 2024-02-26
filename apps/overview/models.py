@@ -53,4 +53,6 @@ class Bucket(models.Model):
         buckets = list(Bucket.objects.filter(user=self.user))
         amount = self.__get_amount()
         total = sum([bucket.__get_amount() for bucket in buckets])
+        if total == 0:
+            return "0.00 %"
         return "{:,.2f} %".format(amount / total * 100)
