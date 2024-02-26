@@ -116,7 +116,13 @@ class Account(CoreAccount):
         max_digits=15, decimal_places=2, null=True, blank=True
     )
     # overview
-    bucket = models.ForeignKey(Bucket, on_delete=models.SET_NULL, null=True, blank=True, related_name="banking_items")
+    bucket = models.ForeignKey(
+        Bucket,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="banking_items",
+    )
 
     if TYPE_CHECKING:
         changes: QuerySet["Change"]
@@ -126,6 +132,9 @@ class Account(CoreAccount):
         return super().delete(using=using, keep_parents=keep_parents)
 
     # getters
+    def get_bucket_value(self) -> float:
+        return float(self.balance or 0)
+
     def get_balance(self):
         if self.balance is None:
             changes = Change.objects.filter(account=self)

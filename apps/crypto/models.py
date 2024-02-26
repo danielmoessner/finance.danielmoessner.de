@@ -210,7 +210,13 @@ class Asset(models.Model):
     amount = models.FloatField(null=True)
     price = models.FloatField(null=True)
     # overview
-    bucket = models.ForeignKey(Bucket, on_delete=models.SET_NULL, null=True, blank=True, related_name="crypto_items")
+    bucket = models.ForeignKey(
+        Bucket,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="crypto_items",
+    )
 
     if TYPE_CHECKING:
         buy_trades: QuerySet["Trade"]
@@ -233,6 +239,9 @@ class Asset(models.Model):
             Price.objects.create(symbol="EUR", price=1, date=timezone.now())
 
     # getters
+    def get_bucket_value(self) -> float:
+        return float(self.value or 0)
+
     def get_df_from_database(self, statement, columns):
         assert str(self.pk) in statement or (self.symbol in statement)
         return utils.get_df_from_database(statement, columns)

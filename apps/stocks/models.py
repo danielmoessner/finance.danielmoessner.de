@@ -355,7 +355,13 @@ class Stock(models.Model):
     dividends_amount = models.FloatField(null=True)
     sold_total = models.FloatField(null=True)
     # overview
-    bucket = models.ForeignKey(Bucket, on_delete=models.SET_NULL, null=True, blank=True, related_name="stocks_items")
+    bucket = models.ForeignKey(
+        Bucket,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="stocks_items",
+    )
 
     if TYPE_CHECKING:
         trades: QuerySet["Trade"]
@@ -448,6 +454,9 @@ class Stock(models.Model):
         self.value = float(self.price.price) * float(self.amount)
 
     # getters
+    def get_bucket_value(self) -> float:
+        return float(self.value or 0)
+
     def __get_latest_price(self) -> Union["Price", None]:
         return (
             Price.objects.filter(ticker=self.ticker, exchange=self.exchange)

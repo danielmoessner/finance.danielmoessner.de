@@ -40,7 +40,10 @@ class DepotActiveForm(forms.ModelForm):
 class AlternativeForm(forms.ModelForm):
     class Meta:
         model = Alternative
-        fields = ("name", "bucket",)
+        fields = (
+            "name",
+            "bucket",
+        )
 
     def __init__(self, depot: Depot, *args, **kwargs):
         super(AlternativeForm, self).__init__(*args, **kwargs)

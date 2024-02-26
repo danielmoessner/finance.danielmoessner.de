@@ -5,7 +5,6 @@ from apps.core.mixins import TabContextMixin
 from apps.users.mixins import GetUserMixin
 
 
-# views
 class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
     template_name = "banking/index.j2"
     model = Depot
@@ -20,7 +19,9 @@ class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
         context["user"] = self.get_user()
         # specific
         context["stats"] = self.object.get_stats()
-        context["accounts"] = self.object.accounts.order_by("name").select_related("bucket")
+        context["accounts"] = self.object.accounts.order_by("name").select_related(
+            "bucket"
+        )
         context["categories"] = self.object.categories.order_by("name")
         # return
         return context

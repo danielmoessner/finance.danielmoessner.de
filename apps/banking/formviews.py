@@ -5,7 +5,6 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views import generic
 from django.views.generic.detail import SingleObjectMixin
-from django.views.generic.edit import FormMixin
 
 from apps.banking.forms import (
     AccountForm,
@@ -22,13 +21,13 @@ from apps.core.mixins import (
     AjaxResponseMixin,
     CustomAjaxDeleteMixin,
     CustomGetFormUserMixin,
+    GetFormWithDepotAndInitialDataMixin,
     GetFormWithDepotMixin,
 )
 from apps.users.mixins import GetUserMixin
 from apps.users.models import StandardUser
 
 
-# mixins
 class GetDepotMixin:
     get_user: Callable[[], StandardUser]
 
@@ -48,7 +47,6 @@ class CustomGetFormMixin:
         return form_class(depot, **self.get_form_kwargs())
 
 
-# depot
 class AddDepotView(
     GetUserMixin, CustomGetFormUserMixin, AjaxResponseMixin, generic.CreateView
 ):
@@ -101,7 +99,6 @@ class SetActiveDepotView(GetUserMixin, SingleObjectMixin, generic.View):
         return HttpResponseRedirect(url)
 
 
-# account
 class AddAccountView(
     GetUserMixin, CustomGetFormMixin, AjaxResponseMixin, generic.CreateView
 ):
@@ -110,7 +107,13 @@ class AddAccountView(
     template_name = "symbols/form_snippet.j2"
 
 
-class EditAccountView(GetUserMixin, GetDepotMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.UpdateView):
+class EditAccountView(
+    GetUserMixin,
+    GetDepotMixin,
+    GetFormWithDepotMixin,
+    AjaxResponseMixin,
+    generic.UpdateView,
+):
     model = Account
     form_class = AccountForm
     template_name = "symbols/form_snippet.j2"
@@ -134,7 +137,6 @@ class DeleteAccountView(
         )
 
 
-# category
 class AddCategoryView(
     GetUserMixin, CustomGetFormMixin, AjaxResponseMixin, generic.CreateView
 ):
@@ -167,21 +169,16 @@ class DeleteCategoryView(
         )
 
 
-# change
-class AddChangeView(GetUserMixin, AjaxResponseMixin, generic.CreateView):
+class AddChangeView(
+    GetUserMixin,
+    GetDepotMixin,
+    GetFormWithDepotAndInitialDataMixin,
+    AjaxResponseMixin,
+    generic.CreateView,
+):
     model = Change
     form_class = ChangeForm
     template_name = "symbols/form_snippet.j2"
-
-    def get_form(self, form_class=None):
-        depot = self.get_user().banking_depots.get(is_active=True)
-        if form_class is None:
-            form_class = self.get_form_class()
-        if self.request.method == "GET":
-            return form_class(
-                depot, initial=self.request.GET, **self.get_form_kwargs().pop("initial")
-            )
-        return form_class(depot, **self.get_form_kwargs())
 
 
 class EditChangeView(

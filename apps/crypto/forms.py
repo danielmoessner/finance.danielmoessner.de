@@ -64,7 +64,10 @@ class AccountSelectForm(forms.Form):
 class AssetForm(forms.ModelForm):
     class Meta:
         model = Asset
-        fields = ("symbol", "bucket",)
+        fields = (
+            "symbol",
+            "bucket",
+        )
         help_texts = {
             "symbol": (
                 "It's not advised to change the symbol of"

@@ -13,8 +13,9 @@ if TYPE_CHECKING:
     from apps.alternative.models import Depot as AlternativeDepot
     from apps.banking.models import Depot as BankingDepot
     from apps.crypto.models import Depot as CryptoDepto
-    from apps.stocks.models import Depot as StockDepot
     from apps.overview.models import Bucket
+    from apps.stocks.models import Depot as StockDepot
+
 
 class StandardUser(AbstractUser):
     # general

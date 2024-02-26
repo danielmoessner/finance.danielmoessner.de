@@ -15,7 +15,7 @@ from apps.users.models import StandardUser
 class RedirectView(generic.RedirectView):
     def get_redirect_url(self, *args, **kwargs):
         if self.request.user.is_authenticated:
-            user = self.request.user
+            user: StandardUser = self.request.user  # type: ignore
             front_page = user.front_page
             if front_page == "BANKING":
                 return reverse_lazy("banking:index")
@@ -49,6 +49,7 @@ class SignOutView(LogoutView):
 class IndexView(UserPassesTestMixin, TabContextMixin, generic.DetailView):
     template_name = "users/index.j2"
     model = StandardUser
+    object: StandardUser
 
     def test_func(self):
         return self.get_object() == self.request.user

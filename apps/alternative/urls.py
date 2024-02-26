@@ -1,46 +1,56 @@
 from django.urls import path
 
-from apps.alternative import views
+from apps.alternative import formviews, views
 
 app_name = "alternative"
 
 urlpatterns = [
     # depot
-    path("depots/add/", views.CreateDepotView.as_view(), name="add_depot"),
-    path("depots/<int:pk>/edit/", views.UpdateDepotView.as_view(), name="edit_depot"),
-    path("depots/<int:pk>/reset/", views.ResetDepotView.as_view(), name="reset_depot"),
-    path("depots/delete/", views.DeleteDepotView.as_view(), name="delete_depot"),
+    path("depots/add/", formviews.CreateDepotView.as_view(), name="add_depot"),
+    path(
+        "depots/<int:pk>/edit/", formviews.UpdateDepotView.as_view(), name="edit_depot"
+    ),
+    path(
+        "depots/<int:pk>/reset/", formviews.ResetDepotView.as_view(), name="reset_depot"
+    ),
+    path("depots/delete/", formviews.DeleteDepotView.as_view(), name="delete_depot"),
     path(
         "depots/<int:pk>/set-active/",
-        views.SetActiveDepotView.as_view(),
+        formviews.SetActiveDepotView.as_view(),
         name="set_depot",
     ),
     # alternative
     path(
         "alternatives/add/",
-        views.CreateAlternativeView.as_view(),
+        formviews.CreateAlternativeView.as_view(),
         name="add_alternative",
     ),
     path(
         "alternatives/<int:pk>/edit/",
-        views.UpdateAlternativeView.as_view(),
+        formviews.UpdateAlternativeView.as_view(),
         name="edit_alternative",
     ),
     path(
         "alternatives/delete/",
-        views.DeleteAlternativeView.as_view(),
+        formviews.DeleteAlternativeView.as_view(),
         name="delete_alternative",
     ),
     # value
-    path("values/add/", views.CreateValueView.as_view(), name="add_value"),
-    path("values/<int:pk>/edit/", views.UpdateValueView.as_view(), name="edit_value"),
+    path("values/add/", formviews.CreateValueView.as_view(), name="add_value"),
     path(
-        "values/<int:pk>/delete/", views.DeleteValueView.as_view(), name="delete_value"
+        "values/<int:pk>/edit/", formviews.UpdateValueView.as_view(), name="edit_value"
+    ),
+    path(
+        "values/<int:pk>/delete/",
+        formviews.DeleteValueView.as_view(),
+        name="delete_value",
     ),
     # flow
-    path("flows/add/", views.CreateFlowView.as_view(), name="add_flow"),
-    path("flows/<int:pk>/edit/", views.UpdateFlowView.as_view(), name="edit_flow"),
-    path("flows/<int:pk>/delete/", views.DeleteFlowView.as_view(), name="delete_flow"),
+    path("flows/add/", formviews.CreateFlowView.as_view(), name="add_flow"),
+    path("flows/<int:pk>/edit/", formviews.UpdateFlowView.as_view(), name="edit_flow"),
+    path(
+        "flows/<int:pk>/delete/", formviews.DeleteFlowView.as_view(), name="delete_flow"
+    ),
     # pages
     path("depot/", views.DetailDepotView.as_view(), name="index"),
     path(

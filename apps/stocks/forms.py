@@ -173,7 +173,6 @@ class FlowForm(forms.ModelForm):
     def clean(self):
         super().clean()
         date = self.cleaned_data["date"]
-        flow = self.cleaned_data["flow"]
         bank = self.cleaned_data["bank"]
 
         # check that there doesn't already exist a flow or trade on this particular date
@@ -188,6 +187,8 @@ class FlowForm(forms.ModelForm):
                 "on this particular date and time. "
                 "Choose a different date."
             )
+
+        # flow = self.cleaned_data["flow"]
         # if flow < 0:
         #     # check that enough money is available if money is withdrawn
         #     if self.instance:

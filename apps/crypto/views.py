@@ -1,5 +1,3 @@
-from django.http import HttpResponseRedirect
-from django.urls import reverse_lazy
 from django.views import generic
 
 from apps.core.mixins import TabContextMixin
@@ -20,7 +18,9 @@ class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["stats"] = self.object.get_stats()
-        context["assets"] = self.object.assets.order_by("-value", "symbol").select_related("bucket")
+        context["assets"] = self.object.assets.order_by(
+            "-value", "symbol"
+        ).select_related("bucket")
         context["accounts"] = self.object.accounts.order_by("name")
         context["trades"] = Trade.objects.filter(
             account__in=self.object.accounts.all()
@@ -95,10 +95,3 @@ class AssetView(GetUserMixin, TabContextMixin, generic.DetailView):
         context["fetchers"] = self.object.price_fetchers.all()
         context["asset"] = self.object
         return context
-
-
-class ResetDepotView(GetUserMixin, generic.View):
-    def post(self, request, pk, *args, **kwargs):
-        depot = self.get_user().crypto_depots.get(pk=pk)
-        depot.reset_all()
-        return HttpResponseRedirect(reverse_lazy("crypto:index"))

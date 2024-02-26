@@ -37,7 +37,10 @@ class DepotActiveForm(forms.ModelForm):
 class AccountForm(forms.ModelForm):
     class Meta:
         model = Account
-        fields = ("name", "bucket",)
+        fields = (
+            "name",
+            "bucket",
+        )
 
     def __init__(self, depot: Depot, *args, **kwargs):
         super(AccountForm, self).__init__(*args, **kwargs)

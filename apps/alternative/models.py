@@ -84,7 +84,13 @@ class Alternative(models.Model):
     current_return = models.FloatField(null=True)
     profit = models.FloatField(null=True)
     # overview
-    bucket = models.ForeignKey(Bucket, on_delete=models.SET_NULL, null=True, blank=True, related_name="alternative_items")
+    bucket = models.ForeignKey(
+        Bucket,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="alternative_items",
+    )
 
     if TYPE_CHECKING:
         values: QuerySet["Value"]
@@ -97,6 +103,10 @@ class Alternative(models.Model):
         return "{}".format(self.name)
 
     # getters
+    def get_bucket_value(self) -> float:
+        value = self.get_value()
+        return float(value or 0)
+
     def get_stats(self):
         return {
             "Value": self.get_value_display(),

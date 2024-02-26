@@ -1,21 +1,25 @@
 import json
 from typing import Callable
 
+from django.db import models
 from django.http import HttpRequest, HttpResponse
 from django.template.loader import render_to_string
 
 from apps.users.models import StandardUser
-from django.db import models
+
 
 ###
 # Form Mixins
 ###
 class CustomGetFormUserMixin:
+    get_form_class: Callable[[], type]
+    get_form_kwargs: Callable[[], dict]
+    get_user: Callable[[], StandardUser]
+
     def get_form(self, form_class=None):
         if form_class is None:
             form_class = self.get_form_class()
-        user = self.request.user
-        return form_class(user, **self.get_form_kwargs())
+        return form_class(self.get_user(), **self.get_form_kwargs())
 
 
 class AjaxResponseMixin:
@@ -54,7 +58,7 @@ class GetFormWithDepotMixin:
     get_depot: Callable[[], models.Model]
     get_form_class: Callable[[], type]
     get_form_kwargs: Callable[[], dict]
-    
+
     def get_form(self, form_class=None):
         depot = self.get_depot()
         if form_class is None:
@@ -63,6 +67,11 @@ class GetFormWithDepotMixin:
 
 
 class GetFormWithDepotAndInitialDataMixin:
+    get_depot: Callable[[], models.Model]
+    get_form_class: Callable[[], type]
+    get_form_kwargs: Callable[[], dict]
+    request: HttpRequest
+
     def get_form(self, form_class=None):
         depot = self.get_depot()
         if form_class is None:
@@ -78,8 +87,10 @@ class GetFormWithDepotAndInitialDataMixin:
 # Other Mixins
 ###
 class TabContextMixin:
+    request: HttpRequest
+
     def get_context_data(self, **kwargs):
-        context = super(TabContextMixin, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)  # type: ignore
         context["tab"] = self.request.GET.get("tab", "stats")
         return context
 
