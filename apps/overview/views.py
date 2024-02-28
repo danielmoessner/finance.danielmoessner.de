@@ -2,6 +2,7 @@ import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
+from django.db.models import Sum
 from django.http import JsonResponse
 from django.views import View, generic
 
@@ -13,6 +14,7 @@ from apps.core.utils import (
 )
 from apps.overview.models import Bucket
 from apps.users.mixins import GetUserMixin
+from apps.users.models import StandardUser
 
 
 def get_value(depot: models.Model) -> float:
@@ -58,6 +60,15 @@ def get_stats(depots) -> tuple[dict[str, str], str]:
     return stats, format_number(total)
 
 
+def get_total_values(user: StandardUser, total: str) -> dict[str, str]:
+    context = {}
+    context["amount"] = total + " €"
+    wanted = Bucket.objects.filter(user=user).aggregate(Sum("wanted_percentage"))
+    context["wanted"] = "{:,.2f} %".format(wanted.get("wanted_percentage__sum", 0) or 0)
+    context["percentage"] = "100.00 %"
+    return context
+
+
 class IndexView(
     GetUserMixin, LoginRequiredMixin, TabContextMixin, generic.TemplateView
 ):
@@ -77,8 +88,8 @@ class IndexView(
         if context["tab"] == "charts":
             context["active_depots"] = self.get_user().get_all_active_depots()
         if context["tab"] == "buckets":
-            context["buckets"] = Bucket.objects.filter(user=self.get_user())
-            context["total"] = total + " €"
+            context["buckets"] = Bucket.objects.filter(user=user)
+            context["total"] = get_total_values(user, total)
         # return
         return context
 
