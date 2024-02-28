@@ -55,6 +55,8 @@
                 <th scope="col">Bucket</th>
                 <th class="text-end" scope="col">Amount</th>
                 <th class="text-end" scope="col">Percentage</th>
+                <th class="text-end" scope="col">Wanted</th>
+                <th class="text-end" scope="col">Diff</th>
                 <th scope="col"></th>
             </tr>
         </thead>
@@ -64,6 +66,8 @@
                 <td>{{ bucket.name }}</td>
                 <td class="text-end">{{ bucket.get_amount() }}</td>
                 <td class="text-end">{{ bucket.get_percentage() }}</td>
+                <td class="text-end">{{ bucket.wanted_percentage_str }}</td>
+                <td class="text-end">{{ bucket.get_diff() }}</td>
                 <td>
                     <div class="d-flex align-items-center justify-content-end">
                         {{ bg.modalButton("Edit", "#editBucket", url("overview:edit_bucket", args=[bucket.pk])) }}
@@ -77,9 +81,11 @@
                 <td class="text-end">{{ total }}</td>
                 <td class="text-end">100.00 %</td>
                 <td></td>
+                <td></td>
+                <td></td>
             </tr>
         <tr>
-            <td colspan="4">
+            <td colspan="6">
                 <div class="d-flex">
                     {{ mg.djangoModal("Add Bucket", "addBucket", url("overview:add_bucket")) }}
                     {{ bg.modalButton("Add Bucket", "#addBucket") }}
