@@ -19,8 +19,8 @@ class Bucket(models.Model):
     user = models.ForeignKey(
         StandardUser, on_delete=models.CASCADE, related_name="buckets"
     )
-    wanted_percentage = models.IntegerField(
-        default=0, validators=[MinValueValidator(1), MaxValueValidator(100)]
+    wanted_percentage = models.FloatField(
+        default=0, validators=[MinValueValidator(0), MaxValueValidator(100)]
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
