@@ -64,14 +64,20 @@ class Bucket(models.Model):
             self._total = sum([bucket.__get_amount() for bucket in buckets])
         return self._total
 
-    def get_percentage(self) -> str:
+    def __get_percentage(self) -> float:
         total = self.__get_total()
         amount = self.__get_amount()
         if total == 0:
-            return "0.00 %"
-        return "{:,.2f} %".format(amount / total * 100)
+            return 0
+        return amount / total * 100
+
+    def get_percentage(self) -> str:
+        percentage = self.__get_percentage()
+        return "{:,.2f} %".format(percentage)
 
     def get_diff(self) -> str:
+        if abs(self.wanted_percentage - self.__get_percentage()) < 1:
+            return "OK"
         wanted = self.wanted_percentage * self.__get_total() / 100
         amount = self.__get_amount()
         diff = wanted - amount
