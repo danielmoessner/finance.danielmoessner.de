@@ -6,6 +6,7 @@ app_name = "overview"
 
 urlpatterns = [
     path("dashboard/", views.IndexView.as_view(), name="index"),
+    path("bucket/<path:path>/", views.BucketView.as_view(), name="bucket"),
     path("api/data/", views.DataApiView.as_view(), name="api_data"),
     # bucket
     path("buckets/add/", formviews.AddBucketView.as_view(), name="add_bucket"),

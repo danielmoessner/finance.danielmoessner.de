@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from apps.overview.domain import DBucket
 from apps.users.models import StandardUser
 
 if TYPE_CHECKING:
@@ -38,6 +39,15 @@ class Bucket(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def dbucket(self) -> DBucket:
+        return DBucket(
+            pk=self.pk,
+            path=self.name,
+            value=self.__get_amount(),
+            wanted_percentage=self.wanted_percentage,
+        )
+
     def get_items(self):
         i1 = self.banking_items.all()
         i2 = self.crypto_items.all()
@@ -53,32 +63,3 @@ class Bucket(models.Model):
                 return 0
             self._amount = sum([item.get_bucket_value() for item in items])
         return self._amount
-
-    def get_amount(self) -> str:
-        amount = self.__get_amount()
-        return "{:,.2f} €".format(amount)
-
-    def __get_total(self) -> float:
-        if not hasattr(self, "_total"):
-            buckets = list(Bucket.objects.filter(user=self.user))
-            self._total = sum([bucket.__get_amount() for bucket in buckets])
-        return self._total
-
-    def __get_percentage(self) -> float:
-        total = self.__get_total()
-        amount = self.__get_amount()
-        if total == 0:
-            return 0
-        return amount / total * 100
-
-    def get_percentage(self) -> str:
-        percentage = self.__get_percentage()
-        return "{:,.2f} %".format(percentage)
-
-    def get_diff(self) -> str:
-        if abs(self.wanted_percentage - self.__get_percentage()) < 1:
-            return "OK"
-        wanted = self.wanted_percentage * self.__get_total() / 100
-        amount = self.__get_amount()
-        diff = wanted - amount
-        return "{:,.2f} €".format(diff)

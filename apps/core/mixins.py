@@ -90,7 +90,7 @@ class TabContextMixin:
     request: HttpRequest
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)  # type: ignore
+        context = super().get_context_data(**kwargs)
         context["tab"] = self.request.GET.get("tab", "stats")
         return context
 

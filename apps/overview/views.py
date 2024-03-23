@@ -2,7 +2,6 @@ import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
-from django.db.models import Sum
 from django.http import JsonResponse
 from django.views import View, generic
 
@@ -12,9 +11,9 @@ from apps.core.utils import (
     get_merged_value_df_from_queryset,
     sum_up_columns_in_a_dataframe,
 )
+from apps.overview.builder import build_context_from_buckets
 from apps.overview.models import Bucket
 from apps.users.mixins import GetUserMixin
-from apps.users.models import StandardUser
 
 
 def get_value(depot: models.Model) -> float:
@@ -60,15 +59,6 @@ def get_stats(depots) -> tuple[dict[str, str], str]:
     return stats, format_number(total)
 
 
-def get_total_values(user: StandardUser, total: str) -> dict[str, str]:
-    context = {}
-    context["amount"] = total + " €"
-    wanted = Bucket.objects.filter(user=user).aggregate(Sum("wanted_percentage"))
-    context["wanted"] = "{:,.2f} %".format(wanted.get("wanted_percentage__sum", 0) or 0)
-    context["percentage"] = "100.00 %"
-    return context
-
-
 class IndexView(
     GetUserMixin, LoginRequiredMixin, TabContextMixin, generic.TemplateView
 ):
@@ -77,8 +67,11 @@ class IndexView(
     def get_queryset(self):
         return self.get_user().banking_depots.all()
 
+    def get_buckets(self):
+        return Bucket.objects.filter(user=self.get_user())
+
     def get_context_data(self, **kwargs):
-        context = super(IndexView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context["user"] = self.get_user()
         user = self.get_user()
         depots = user.get_all_active_depots()
@@ -88,9 +81,7 @@ class IndexView(
         if context["tab"] == "charts":
             context["active_depots"] = self.get_user().get_all_active_depots()
         if context["tab"] == "buckets":
-            context["buckets"] = Bucket.objects.filter(user=user)
-            context["total"] = get_total_values(user, total)
-        # return
+            context.update(**build_context_from_buckets(self.get_buckets()))
         return context
 
     def get_value_df(self):
@@ -100,7 +91,7 @@ class IndexView(
         # make the date normal
         df = change_time_of_date_index_in_df(df, 12)
         # sums up all the values
-        df = df.fillna(method="ffill").fillna(0)
+        df = df.ffill().fillna(0)
         df = sum_up_columns_in_a_dataframe(df, drop=False)
         # remove all the rows where the value is 0 as it
         # doesn't make sense in the calculations
@@ -120,6 +111,25 @@ class IndexView(
         return df
 
 
+class BucketView(GetUserMixin, LoginRequiredMixin, generic.TemplateView):
+    template_name = "overview/bucket.j2"
+    context_object_name = "buckets"
+
+    def get_buckets(self):
+        path = self.kwargs.get("path")
+        buckets = Bucket.objects.filter(user=self.get_user()).filter(
+            name__startswith=path
+        )
+        return buckets
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        path: str = self.kwargs.get("path")
+        layers = path.count("/") + 2
+        context.update(**build_context_from_buckets(self.get_buckets(), layers))
+        return context
+
+
 class DataApiView(GetUserMixin, View):
     def get(self, *args, **kwargs):
         active_depots = self.get_user().get_all_active_depots()
@@ -128,7 +138,7 @@ class DataApiView(GetUserMixin, View):
         # make the date normal
         df = change_time_of_date_index_in_df(df, 12)
         # sums up all the values
-        df = df.fillna(method="ffill").fillna(0)
+        df = df.ffill().fillna(0)
         df = sum_up_columns_in_a_dataframe(df, drop=False)
         # remove all the rows where the value is 0 as it
         # doesn't make sense in the calculations
