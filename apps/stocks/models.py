@@ -349,7 +349,7 @@ class Bank(models.Model):
         )
         # return the available balance
         return balance
-    
+
     def get_value_df(self):
         if not hasattr(self, "value_df"):
             statement = """
@@ -389,7 +389,9 @@ class Bank(models.Model):
             )
             where bank_id = {}
             order by date asc
-            """.format(self.pk)
+            """.format(
+                self.pk
+            )
             self.value_df = utils.get_df_from_database(statement, ["date", "value"])
         return self.value_df
 

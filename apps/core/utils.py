@@ -63,9 +63,6 @@ def sum_up_value_dfs_from_items(items, column="value"):
     return df
 
 
-
-
-
 def create_value_df_from_amount_and_price(item) -> pd.DataFrame | None:
     price_df = item.get_price_df()
     amount_df = item.get_amount_df()
