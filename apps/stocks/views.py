@@ -51,7 +51,9 @@ class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["stats"] = self.object.get_stats()
-        context["banks"] = self.object.banks.order_by("-value", "name")
+        context["banks"] = self.object.banks.select_related("bucket").order_by(
+            "-value", "name"
+        )
         context["stocks"] = self.object.stocks.select_related(
             "price", "top_price", "bucket"
         ).order_by("-value", "name")

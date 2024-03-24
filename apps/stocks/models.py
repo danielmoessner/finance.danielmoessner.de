@@ -214,6 +214,14 @@ class Bank(models.Model):
     # query optimization
     balance = models.FloatField(null=True)
     value = models.FloatField(null=True)
+    # overview
+    bucket = models.ForeignKey(
+        Bucket,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="stocks_banks",
+    )
 
     if TYPE_CHECKING:
         stocks: QuerySet["Stock"]
@@ -228,6 +236,9 @@ class Bank(models.Model):
 
     def __str__(self):
         return "{}".format(self.name)
+
+    def get_bucket_value(self) -> float:
+        return float(self.balance or 0)
 
     def reset(self):
         self.balance = None
@@ -360,7 +371,7 @@ class Stock(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="stocks_items",
+        related_name="stocks_stocks",
     )
 
     if TYPE_CHECKING:

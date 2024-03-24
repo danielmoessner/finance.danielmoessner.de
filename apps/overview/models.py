@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from apps.alternative.models import Alternative
     from apps.banking.models import Account
     from apps.crypto.models import Asset
-    from apps.stocks.models import Stock
+    from apps.stocks.models import Bank, Stock
 
 
 class Bucket(models.Model):
@@ -30,7 +30,8 @@ class Bucket(models.Model):
         banking_items: QuerySet["Account"]
         crypto_items: QuerySet["Asset"]
         alternative_items: QuerySet["Alternative"]
-        stocks_items: QuerySet["Stock"]
+        stocks_stocks: QuerySet["Stock"]
+        stocks_banks: QuerySet["Bank"]
 
     @property
     def wanted_percentage_str(self) -> str:
@@ -52,9 +53,10 @@ class Bucket(models.Model):
         i1 = self.banking_items.all()
         i2 = self.crypto_items.all()
         i3 = self.alternative_items.all()
-        i4 = self.stocks_items.all()
-        i5 = list(i1) + list(i2) + list(i3) + list(i4)
-        return i5
+        i4 = self.stocks_stocks.all()
+        i5 = self.stocks_banks.all()
+        items = list(i1) + list(i2) + list(i3) + list(i4) + list(i5)
+        return items
 
     def __get_amount(self) -> float:
         if not hasattr(self, "_amount"):

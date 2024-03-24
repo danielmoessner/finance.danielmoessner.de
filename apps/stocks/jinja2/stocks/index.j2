@@ -48,6 +48,11 @@
                 <tr>
                     <td>
                         {{ bank.name }}
+                        {% if bank.bucket %}
+                            <span class="badge bg-success">{{ bank.bucket.name }}</span>
+                        {% else %}
+                            {{ bg.modalButton("Set Bucket", "#editBank", url("stocks:edit_bank", args=[bank.pk])) }}
+                        {% endif %}
                     </td>
                     <td class="text-end">{{ bank.get_balance_display() }}</td>
                     <td class="text-end">{{ bank.get_value_display() }}</td>
