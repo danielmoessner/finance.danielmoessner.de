@@ -205,7 +205,8 @@ class Depot(models.Model):
 
     def get_value_df(self):
         if not hasattr(self, "value_df"):
-            self.value_df = utils.sum_up_value_dfs_from_items(self.stocks.all())
+            items = list(self.stocks.all()) + list(self.banks.all())
+            self.value_df = utils.sum_up_value_dfs_from_items(items)
         return self.value_df
 
 
@@ -348,6 +349,49 @@ class Bank(models.Model):
         )
         # return the available balance
         return balance
+    
+    def get_value_df(self):
+        if not hasattr(self, "value_df"):
+            statement = """
+            select 
+            date,
+            -- flow,
+            -- dividend,
+            -- money,
+            sum(flow + dividend + money) over (order by date rows between unbounded preceding and current row) as value
+            from (
+                select 
+                b.id as bank_id,
+                date, 
+                flow,
+                0 as dividend,
+                0 as money
+                from stocks_bank b
+                join stocks_flow f on f.bank_id = b.id
+                union
+                select 
+                b.id as bank_id,
+                date,
+                0 as flow,
+                0 as money,
+                dividend
+                from stocks_bank b
+                join stocks_dividend d on d.bank_id = b.id
+                union 
+                select
+                b.id as bank_id,
+                date, 
+                0 as flow,
+                0 as dividend,
+                case when buy_or_sell = 'SELL' then money_amount else money_amount * -1 end as money 
+                from stocks_bank b
+                join stocks_trade t on t.bank_id = b.id
+            )
+            where bank_id = {}
+            order by date asc
+            """.format(self.pk)
+            self.value_df = utils.get_df_from_database(statement, ["date", "value"])
+        return self.value_df
 
 
 class Stock(models.Model):

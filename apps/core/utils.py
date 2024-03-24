@@ -30,7 +30,7 @@ def remove_all_nans_at_beginning_and_end(df, column):
     return df
 
 
-def get_merged_value_df_from_queryset(queryset):
+def get_merged_value_df_from_queryset(queryset, column="value"):
     # instantiate a new dataframe
     df = pd.DataFrame(columns=["date", "value"])
     df.set_index("date", inplace=True)
@@ -40,16 +40,16 @@ def get_merged_value_df_from_queryset(queryset):
         if item_df is None:
             continue
         item_df.rename(
-            columns={"value": "value__{}-{}".format(index, item.pk)}, inplace=True
+            columns={column: "value__{}-{}".format(index, item.pk)}, inplace=True
         )
         df = df.merge(item_df, how="outer", sort=True, on="date")
     # return the df
     return df
 
 
-def sum_up_value_dfs_from_items(items):
+def sum_up_value_dfs_from_items(items, column="value"):
     # get the df with all values
-    df = get_merged_value_df_from_queryset(items)
+    df = get_merged_value_df_from_queryset(items, column=column)
     # fill na values for sum to work correctly
     df = df.ffill().fillna(0)
     # sums up all the values of the assets and interpolates
@@ -58,12 +58,15 @@ def sum_up_value_dfs_from_items(items):
     # make sense in the calculations
     if df is None:
         return None
-    df = df.loc[df.loc[:, "value"] != 0]
+    df = df.loc[df.loc[:, column] != 0]
     # return the df
     return df
 
 
-def create_value_df_from_amount_and_price(item) -> Union[pd.DataFrame, None]:
+
+
+
+def create_value_df_from_amount_and_price(item) -> pd.DataFrame | None:
     price_df = item.get_price_df()
     amount_df = item.get_amount_df()
     # return none if there is nothing to be calculated
