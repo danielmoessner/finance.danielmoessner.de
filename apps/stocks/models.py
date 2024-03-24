@@ -123,6 +123,9 @@ class Depot(models.Model):
             "info": "*Calculated with the calculated flows and values.",
         }
 
+    def get_total_value(self) -> float:
+        return float(self.value or 0) + float(self.balance or 0)
+
     def get_value(self) -> float | None:
         return self.value
 

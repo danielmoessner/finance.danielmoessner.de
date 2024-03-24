@@ -43,6 +43,9 @@ class Depot(CoreDepot):
         data = turn_dict_of_dicts_into_list_of_dicts(data, "date")
         return data
 
+    def get_total_value(self) -> float:
+        return float(self.balance or 0)
+
     def get_income_and_expenditure_data(self):
         statement = (
             "select "

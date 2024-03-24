@@ -1,7 +1,7 @@
 import json
+from typing import Protocol, Sequence
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db import models
 from django.http import JsonResponse
 from django.views import View, generic
 
@@ -16,10 +16,13 @@ from apps.overview.models import Bucket
 from apps.users.mixins import GetUserMixin
 
 
-def get_value(depot: models.Model) -> float:
-    v1 = getattr(depot, "value", 0) or getattr(depot, "balance", 0) or 0
-    v2 = round(float(v1), 2)
-    return v2
+class PDepot(Protocol):
+    def get_total_value(self) -> float:
+        ...
+
+
+def get_value(depot: PDepot) -> float:
+    return depot.get_total_value()
 
 
 def format_number(number: float) -> str:
@@ -30,7 +33,7 @@ def format_percentage(number: float) -> str:
     return "{:,.2f}%".format(number)
 
 
-def get_value_stats(depots: list[models.Model]) -> tuple[dict[str, str], float]:
+def get_value_stats(depots: Sequence[PDepot]) -> tuple[dict[str, str], float]:
     stats = {}
     total = 0
     for depot in depots:
@@ -40,7 +43,7 @@ def get_value_stats(depots: list[models.Model]) -> tuple[dict[str, str], float]:
     return stats, total
 
 
-def get_percentage_stats(depots: list[models.Model], total: float) -> dict[str, str]:
+def get_percentage_stats(depots: Sequence[PDepot], total: float) -> dict[str, str]:
     stats = {}
     for depot in depots:
         if _value := get_value(depot):
@@ -51,7 +54,7 @@ def get_percentage_stats(depots: list[models.Model], total: float) -> dict[str, 
     return stats
 
 
-def get_stats(depots) -> tuple[dict[str, str], str]:
+def get_stats(depots: Sequence[PDepot]) -> tuple[dict[str, str], str]:
     total = 0
     stats, total = get_value_stats(depots)
     stats.update(get_percentage_stats(depots, total))

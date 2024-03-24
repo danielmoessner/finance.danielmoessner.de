@@ -45,6 +45,9 @@ class Depot(CoreDepot):
             self.assets.create(symbol="EUR")
 
     # getters
+    def get_total_value(self) -> float:
+        return float(self.value or 0)
+
     def __get_flow_df(self):
         statement = """
             select 
