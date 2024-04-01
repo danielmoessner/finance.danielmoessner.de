@@ -185,7 +185,11 @@ class AddTradeView(
 
 
 class EditTradeView(
-    GetUserMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.UpdateView
+    GetUserMixin,
+    GetDepotMixin,
+    GetFormWithDepotMixin,
+    AjaxResponseMixin,
+    generic.UpdateView,
 ):
     model = Trade
     form_class = TradeForm

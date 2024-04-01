@@ -11942,4 +11942,8 @@ tbody > tr:last-child td {
   border: 0 !important;
 }
 
+td {
+  text-wrap: nowrap;
+}
+
 /*# sourceMappingURL=main.css.map */
