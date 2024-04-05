@@ -11,7 +11,7 @@ from apps.core.utils import (
     get_merged_value_df_from_queryset,
     sum_up_columns_in_a_dataframe,
 )
-from apps.overview.builder import build_context_from_buckets
+from apps.overview.builder import build_context_from_buckets, calc_total
 from apps.overview.models import Bucket
 from apps.users.mixins import GetUserMixin
 
@@ -84,7 +84,8 @@ class IndexView(
         if context["tab"] == "charts":
             context["active_depots"] = self.get_user().get_all_active_depots()
         if context["tab"] == "buckets":
-            context.update(**build_context_from_buckets(self.get_buckets()))
+            total = calc_total(user)
+            context.update(**build_context_from_buckets(total, self.get_buckets()))
         return context
 
     def get_value_df(self):
@@ -129,7 +130,8 @@ class BucketView(GetUserMixin, LoginRequiredMixin, generic.TemplateView):
         context = super().get_context_data(**kwargs)
         path: str = self.kwargs.get("path")
         layers = path.count("/") + 2
-        context.update(**build_context_from_buckets(self.get_buckets(), layers))
+        total = calc_total(self.get_user())
+        context.update(**build_context_from_buckets(total, self.get_buckets(), layers))
         return context
 
 

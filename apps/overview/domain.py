@@ -14,7 +14,8 @@ class DBucket(BaseModel):
     def __add__(self, other) -> "DBucket":
         if not isinstance(other, DBucket):
             return NotImplemented
-        common_name = os.path.commonprefix([self.path, other.path])[:-2]
+        common_name = os.path.commonprefix([self.path, other.path])
+        common_name = common_name.strip().rstrip("/").strip()
         if common_name == "":
             raise ValueError("buckets must have a common prefix")
         wanted_percentage = self.wanted_percentage + other.wanted_percentage
@@ -66,20 +67,12 @@ class VBucket(BaseModel):
         return self.path
 
     @property
-    def wanted_percentage(self) -> float:
-        return (
-            self.actual_wanted_percentage / self.total_percentage * 100
-            if self.percentage
-            else 0
-        )
-
-    @property
     def percentage(self) -> float:
         return self.value / self.total_value * 100 if self.total_value else 0
 
     @property
     def is_ok(self) -> bool:
-        return abs(self.wanted_percentage - self.percentage) < 1
+        return abs(self.actual_wanted_percentage - self.percentage) < 1
 
     def get_amount(self) -> str:
         amount = self.value
@@ -91,14 +84,12 @@ class VBucket(BaseModel):
 
     def get_wanted_percentage(self) -> str:
         ret = "{:,.2f} %".format(self.actual_wanted_percentage)
-        if self.actual_wanted_percentage != self.wanted_percentage:
-            ret += " ({:,.2f} %)".format(self.wanted_percentage)
         return ret
 
     def get_diff(self) -> str:
         if self.is_ok:
             return "OK"
-        wanted = self.wanted_percentage * self.total_value / 100
+        wanted = self.actual_wanted_percentage * self.total_value / 100
         amount = self.value
         diff = wanted - amount
         return "{:,.2f} €".format(diff)
