@@ -759,6 +759,8 @@ class Flow(models.Model):
 
     # setters
     def reset_deps(self):
+        for d in self.account.asset_stats.filter(asset=self.asset):
+            d.reset()
         self.asset.reset()
         self.account.reset()
         self.account.depot.reset()
