@@ -23,6 +23,7 @@
 {% if tab=='accounts' %}
     
     {{ mg.djangoModal("Add Change", "addChange") }}
+    {{ mg.djangoModal("Move Money", "moveMoney") }}
     {{ mg.djangoModal("Edit Account", "editAccount") }}
     {{ mg.djangoModal("Add Account", "addAccount") }}
     {{ mg.djangoModal("Delete Account", "deleteAccount") }}
@@ -32,7 +33,9 @@
         <tr>
             <th scope="col">Account</th>
             <th class="text-end" scope="col">Balance</th>
-            <th class="text-end" scope="col"></th>
+            <th class="text-end" scope="col">
+                {{ bg.modalButton("Move Money", "#moveMoney", url("banking:move_money")) }}
+            </th>
         </tr>
         </thead>
         <tbody>

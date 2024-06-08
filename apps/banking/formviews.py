@@ -15,6 +15,7 @@ from apps.banking.forms import (
     DepotActiveForm,
     DepotForm,
     DepotSelectForm,
+    MoveMoneyForm,
 )
 from apps.banking.models import Account, Category, Change, Depot
 from apps.core.mixins import (
@@ -199,3 +200,10 @@ class EditChangeView(
 class DeleteChangeView(GetUserMixin, CustomAjaxDeleteMixin, generic.DeleteView):
     model = Change
     template_name = "symbols/delete_snippet.j2"
+
+
+class MoneyMoveView(
+    GetUserMixin, CustomGetFormMixin, AjaxResponseMixin, generic.FormView
+):
+    template_name = "symbols/form_snippet.j2"
+    form_class = MoveMoneyForm

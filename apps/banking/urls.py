@@ -58,6 +58,11 @@ urlpatterns = [
         formviews.DeleteChangeView.as_view(),
         name="delete_change",
     ),
+    path(
+        "changes/money-move/",
+        formviews.MoneyMoveView.as_view(),
+        name="move_money",
+    ),
     # pages
     path("depot/", views.IndexView.as_view(), name="index"),
     path("accounts/<int:pk>/", views.AccountView.as_view(), name="account"),
