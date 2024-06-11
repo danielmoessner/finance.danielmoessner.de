@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from django.db import connection, models
@@ -42,6 +43,9 @@ class Depot(CoreDepot):
             data[date][name] = value
         data = turn_dict_of_dicts_into_list_of_dicts(data, "date")
         return data
+
+    def get_accounts(self):
+        return self.accounts.all()
 
     def get_total_value(self) -> float:
         return float(self.balance or 0)
@@ -113,6 +117,7 @@ class Depot(CoreDepot):
 
 
 class Account(CoreAccount):
+    TYPE = "Banking"
     depot = models.ForeignKey(Depot, on_delete=models.CASCADE, related_name="accounts")
     # query optimzation
     balance = models.DecimalField(
@@ -134,7 +139,6 @@ class Account(CoreAccount):
         self.depot.set_balances_to_none()
         return super().delete(using=using, keep_parents=keep_parents)
 
-    # getters
     def get_bucket_value(self) -> float:
         return float(self.balance or 0)
 
@@ -144,6 +148,16 @@ class Account(CoreAccount):
             banking_duplicated_code.set_balance(self, changes)
         assert self.balance is not None
         return round(self.balance, 2)
+
+    def transfer_value(self, val: float, date: datetime, description: str):
+        category, _ = Category.objects.get_or_create(name="Money Movement")
+        Change.objects.create(
+            account=self,
+            date=date,
+            change=val,
+            description=description,
+            category=category,
+        )
 
     def get_stats(self):
         balance = self.get_balance()

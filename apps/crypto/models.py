@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import TYPE_CHECKING, Union
 
@@ -62,6 +62,9 @@ class Depot(CoreDepot):
         )
         assert str(self.pk) in statement
         return get_df_from_database(statement, ["date", "flow"])
+
+    def get_accounts(self):
+        return self.accounts.all()
 
     def get_flow_df(self):
         if not hasattr(self, "flow_df"):
@@ -141,6 +144,7 @@ class Depot(CoreDepot):
 
 
 class Account(CoreAccount):
+    TYPE = "Crypto"
     depot = models.ForeignKey(Depot, on_delete=models.CASCADE, related_name="accounts")
     # query optimization
     value = models.FloatField(null=True)
@@ -159,6 +163,10 @@ class Account(CoreAccount):
         if self.value is None:
             return "404"
         return "{:.2f} €".format(self.value)
+
+    def transfer_value(self, val: float, date: datetime, description: str):
+        asset, _ = Asset.objects.get_or_create(depot=self.depot, symbol="EUR")
+        Flow.objects.create(account=self, date=date, flow=val, asset=asset)
 
     def get_asset_stats(self, asset):
         stats, created = AccountAssetStats.objects.get_or_create(

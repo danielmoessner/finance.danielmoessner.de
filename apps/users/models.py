@@ -79,6 +79,13 @@ class StandardUser(AbstractUser):
             self.alternative_depots.update(is_active=False)
         return None
 
+    def get_active_accounts(self):
+        depots = self.get_all_active_depots()
+        accounts = []
+        for depot in depots:
+            accounts += depot.get_accounts()
+        return accounts
+
     def get_all_active_depots(
         self,
     ) -> list[Union["BankingDepot", "AlternativeDepot", "CryptoDepto", "StockDepot"]]:

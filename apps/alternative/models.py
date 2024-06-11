@@ -26,6 +26,9 @@ class Depot(CoreDepot):
         alternatives: QuerySet["Alternative"]
 
     # getters
+    def get_accounts(self):
+        return []
+
     def get_total_value(self) -> float:
         return float(self.value or 0)
 

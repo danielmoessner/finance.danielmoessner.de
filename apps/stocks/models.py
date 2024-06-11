@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Union
 
 from django.db import models
@@ -51,6 +51,9 @@ class Depot(models.Model):
         for stock in list(self.stocks.all()):
             stock.reset()
         self.reset()
+
+    def get_accounts(self):
+        return self.banks.all()
 
     def reset(self):
         self.balance = None
@@ -211,6 +214,7 @@ class Depot(models.Model):
 
 
 class Bank(models.Model):
+    TYPE = "Stocks"
     name = models.CharField(max_length=200)
     depot = models.ForeignKey(
         Depot, on_delete=models.CASCADE, related_name="banks", editable=False
@@ -260,6 +264,14 @@ class Bank(models.Model):
             amount = stock.get_amount_bank(self)
             price = stock.get_price()
             self.value += float(amount) * float(price)
+
+    def transfer_value(self, val: float, date: datetime, description: str):
+        Flow.objects.create(
+            bank=self,
+            date=date,
+            flow=val,
+            short_description=description,
+        )
 
     def calculate_balance(self, in_decimal=False):
         self.balance = 0

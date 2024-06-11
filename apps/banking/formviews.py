@@ -6,6 +6,7 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django.views.generic.detail import SingleObjectMixin
 
+from apps.banking.dirty_forms import MoveMoneyForm
 from apps.banking.forms import (
     AccountForm,
     AccountSelectForm,
@@ -15,7 +16,6 @@ from apps.banking.forms import (
     DepotActiveForm,
     DepotForm,
     DepotSelectForm,
-    MoveMoneyForm,
 )
 from apps.banking.models import Account, Category, Change, Depot
 from apps.core.mixins import (

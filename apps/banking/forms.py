@@ -1,12 +1,10 @@
 from datetime import datetime
 
 from django import forms
-from django.db import transaction
 
 from apps.banking.models import Account, Category, Change, Depot
 
 
-# depot
 class DepotForm(forms.ModelForm):
     class Meta:
         model = Depot
@@ -34,7 +32,6 @@ class DepotActiveForm(forms.ModelForm):
         fields = ("is_active",)
 
 
-# account
 class AccountForm(forms.ModelForm):
     class Meta:
         model = Account
@@ -60,7 +57,6 @@ class AccountSelectForm(forms.Form):
         self.fields["account"].queryset = depot.accounts.all()
 
 
-# category
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
@@ -85,7 +81,6 @@ class CategorySelectForm(forms.Form):
         self.fields["category"].queryset = depot.categories.all()
 
 
-# change
 class ChangeField(forms.DecimalField):
     def __init__(self, *args, **kwargs):
         attrs = {
@@ -126,52 +121,3 @@ class ChangeForm(forms.ModelForm):
         self.fields["category"].queryset = depot.categories.all()
         self.fields["date"].initial = datetime.now()
         self.fields["description"].widget.attrs.update({"class": "small"})
-
-
-class MoveMoneyForm(forms.Form):
-    date = forms.DateTimeField(
-        widget=forms.DateTimeInput(
-            attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
-        ),
-        input_formats=["%Y-%m-%dT%H:%M"],
-        label="Date",
-    )
-    from_account = forms.ModelChoiceField(widget=forms.Select, queryset=None)
-    to_account = forms.ModelChoiceField(widget=forms.Select, queryset=None)
-    change = ChangeField()
-
-    def __init__(self, depot, *args, **kwargs):
-        super(MoveMoneyForm, self).__init__(*args, **kwargs)
-        self.fields["from_account"].queryset = depot.accounts.all()
-        self.fields["to_account"].queryset = depot.accounts.all()
-        self.fields["date"].initial = datetime.now()
-
-    def clean(self):
-        cleaned_data = super().clean()
-        if cleaned_data.get("from_account") == cleaned_data.get("to_account"):
-            raise forms.ValidationError("The accounts must be different.")
-        return cleaned_data
-
-    def save(self, commit=True):
-        from_account = self.cleaned_data.get("from_account")
-        to_account = self.cleaned_data.get("to_account")
-        change = self.cleaned_data.get("change")
-        date = self.cleaned_data.get("date")
-        description = f"From {from_account} to {to_account}"
-        category, _ = Category.objects.get_or_create(name="Money Movement")
-        with transaction.atomic():
-            Change.objects.create(
-                account=from_account,
-                date=date,
-                change=-change,
-                description=description,
-                category=category,
-            )
-            Change.objects.create(
-                account=to_account,
-                date=date,
-                change=change,
-                description=description,
-                category=category,
-            )
-        return True
