@@ -1,109 +1,96 @@
 {% extends "layout/lm.j2" %}
-
-{% set headingCategory="Dashboard" %}
-{% set headingHeading="Overview" %}
-{% set title="Overview" %}
-
+{% set headingCategory = "Dashboard" %}
+{% set headingHeading = "Overview" %}
+{% set title = "Overview" %}
 {% block main %}
-
     {% import "symbols/button.j2" as bg %}
     {% import "symbols/modal.j2" as mg %}
-
     <div class="d-flex justify-content-center mt-2 mb-5">
         <div class="btn-group" role="group" aria-label="Console">
-            {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
-            {{ bg.hrefButton("Buckets", request.path + '?tab=buckets', active=(tab=='buckets')) }}
-            {{ bg.hrefButton("Charts", request.path + '?tab=charts', active=(tab=='charts')) }}
-            {{ bg.dropdownButton("Calculations", active=(tab=="values" or tab=="flows")) }}
+            {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats') ) }}
+            {{ bg.hrefButton("Buckets", request.path + '?tab=buckets', active=(tab=='buckets') ) }}
+            {{ bg.hrefButton("Charts", request.path + '?tab=charts', active=(tab=='charts') ) }}
+            {{ bg.dropdownButton("Calculations", active=(tab=="values" or tab=="flows") ) }}
             <div class="dropdown-menu dropdown-menu-dark py-1">
                 <a class="dropdown-item btn-sm" href="?tab=values">Values</a>
             </div>
         </div>
     </div>
-
     {% include 'symbols/stats.j2' %}
-
     {% if tab=='values' %}
         <table class="table table-dark table-responsive rounded">
             <thead>
-            <tr>
-               <th scope="col">Date</th>
-                {% for column in value_df.columns %}
-                    <th class="text-end" scope="col">{{ column }}</th>
-                {% endfor %}
-            </tr>
+                <tr>
+                    <th scope="col">Date</th>
+                    {% for column in value_df.columns %}<th class="text-end" scope="col">{{ column }}</th>{% endfor %}
+                </tr>
             </thead>
             <tbody>
-            {% for index, row in value_df.iterrows() %}
-                <tr>
-                    <td>{{ index.strftime('%d.%m.%Y') }}</td>
-                    {% for value in row %}
-                        <td class="text-end">{{ "%.2f"|format(value) }}</td>
-                    {% endfor %}
-                </tr>
-            {% endfor %}
+                {% for index, row in value_df.iterrows() %}
+                    <tr>
+                        <td>{{ index.strftime("%d.%m.%Y") }}</td>
+                        {% for value in row %}
+                            <td class="text-end">{{ "%.2f"|format(value) }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
             </tbody>
         </table>
     {% endif %}
-
     {% if tab=='buckets' %}
-    {{ mg.djangoModal("Edit Bucket", "editBucket") }}
-    {{ mg.djangoModal("Delete Bucket", "deleteBucket") }}
-    <table class="table rounded table-responsive-md table-dark mb-5">
-        <thead>
-            <tr>
-                <th scope="col">Bucket</th>
-                <th class="text-end" scope="col">Amount</th>
-                <th class="text-end" scope="col">Percentage</th>
-                <th class="text-end" scope="col">Wanted</th>
-                <th class="text-end" scope="col">Diff</th>
-                <th scope="col"></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for bucket in buckets %}
-            <tr>
-                <td>
-                    {{ bucket.name }}
-                </td>
-                <td class="text-end">{{ bucket.get_amount() }}</td>
-                <td class="text-end">{{ bucket.get_percentage() }}</td>
-                <td class="text-end">{{ bucket.get_wanted_percentage() }}</td>
-                <td class="text-end">{{ bucket.get_diff() }}</td>
-                <td>
-                    <div class="d-flex align-items-center justify-content-end">
-                        {% if bucket.pk %}
-                        {{ bg.modalButton("Edit", "#editBucket", url("overview:edit_bucket", args=[bucket.pk])) }}
-                        {{ bg.modalButton("Delete", "#deleteBucket", url("overview:delete_bucket", args=[bucket.pk])) }}
-                        {% else %}
-                        {{ bg.hrefButton("Open", url("overview:bucket", args=[bucket.name])) }}
-                        {% endif %}
-                    </div>
-                </td>
-            </tr>
-            {% endfor %}
-            <tr>
-                <td>Total</td>
-                <td class="text-end">{{ total.amount }}</td>
-                <td class="text-end">{{ total.percentage }}</td>
-                <td class="text-end">{{ total.wanted }}</td>
-                <td></td>
-                <td></td>
-            </tr>
-        <tr>
-            <td colspan="6">
-                <div class="d-flex">
-                    {{ mg.djangoModal("Add Bucket", "addBucket", url("overview:add_bucket")) }}
-                    {{ bg.modalButton("Add Bucket", "#addBucket") }}
-                </div>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+        {{ mg.djangoModal('Edit Bucket', 'editBucket') }}
+        {{ mg.djangoModal('Delete Bucket', 'deleteBucket') }}
+        <table class="table rounded table-responsive-md table-dark mb-5">
+            <thead>
+                <tr>
+                    <th scope="col">Bucket</th>
+                    <th class="text-end" scope="col">Amount</th>
+                    <th class="text-end" scope="col">Percentage</th>
+                    <th class="text-end" scope="col">Wanted</th>
+                    <th class="text-end" scope="col">Diff</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bucket in buckets %}
+                    <tr>
+                        <td>{{ bucket.name }}</td>
+                        <td class="text-end">{{ bucket.get_amount() }}</td>
+                        <td class="text-end">{{ bucket.get_percentage() }}</td>
+                        <td class="text-end">{{ bucket.get_wanted_percentage() }}</td>
+                        <td class="text-end">{{ bucket.get_diff() }}</td>
+                        <td>
+                            <div class="d-flex align-items-center justify-content-end">
+                                {% if bucket.pk %}
+                                    {{ bg.modalButton("Edit", "#editBucket", url("overview:edit_bucket", args=[bucket.pk]) ) }}
+                                    {{ bg.modalButton("Delete", "#deleteBucket", url("overview:delete_bucket", args=[bucket.pk]) ) }}
+                                {% else %}
+                                    {{ bg.hrefButton("Open", url("overview:bucket", args=[bucket.name]) ) }}
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                <tr>
+                    <td>Total</td>
+                    <td class="text-end">{{ total.amount }}</td>
+                    <td class="text-end">{{ total.percentage }}</td>
+                    <td class="text-end">{{ total.wanted }}</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td colspan="6">
+                        <div class="d-flex">
+                            {{ mg.djangoModal("Add Bucket", "addBucket", url("overview:add_bucket") ) }}
+                            {{ bg.modalButton('Add Bucket', '#addBucket') }}
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     {% endif %}
-
     {% if tab=='charts' %}
         {% include 'overview/symbols/total_chart.html' %}
     {% endif %}
-
 {% endblock %}

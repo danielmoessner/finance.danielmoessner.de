@@ -1,98 +1,90 @@
 {% extends "layout/lm.j2" %}
-
-{% set headingCategory="Stock" %}
-{% set headingHeading=stock.name %}
-{% set title="Stock " + stock.name + " | Stocks" %}
-
+{% set headingCategory = "Stock" %}
+{% set headingHeading = stock.name %}
+{% set title = "Stock " + stock.name + " | Stocks" %}
 {% block main %}
-
     {% import "symbols/button.j2" as bg %}
     {% import "symbols/modal.j2" as mg %}
-
     <div class="d-flex justify-content-center mt-2 mb-5">
         <div class="btn-group" role="group" aria-label="Console">
-            {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
-            {{ bg.hrefButton("Prices", request.path + '?tab=prices', active=(tab=='prices')) }}
-            {{ bg.hrefButton("Trades", request.path + '?tab=trades', active=(tab=='trades')) }}
-            {{ bg.hrefButton("Dividends", request.path + "?tab=dividends", active=(tab=="dividends")) }}
-            {{ bg.dropdownButton("Calculations", active=(tab=="values" or tab=="flows")) }}
+            {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats') ) }}
+            {{ bg.hrefButton("Prices", request.path + '?tab=prices', active=(tab=='prices') ) }}
+            {{ bg.hrefButton("Trades", request.path + '?tab=trades', active=(tab=='trades') ) }}
+            {{ bg.hrefButton("Dividends", request.path + "?tab=dividends", active=(tab=="dividends") ) }}
+            {{ bg.dropdownButton("Calculations", active=(tab=="values" or tab=="flows") ) }}
             <div class="dropdown-menu dropdown-menu-dark py-1">
                 <a class="dropdown-item btn-sm" href="?tab=flows">Flows</a>
                 <a class="dropdown-item btn-sm" href="?tab=values">Values</a>
             </div>
         </div>
     </div>
-
     {% include 'symbols/stats.j2' %}
-
     {% include 'stocks/symbols/trades.j2' %}
-
     {% if tab=='prices' %}
-        {{ mg.djangoModal("Add Fetcher", "addFetcher") }}
-        {{ mg.djangoModal("Edit Fetcher", "editFetcher") }}
-        {{ mg.djangoModal("Delete Fetcher", "deleteFetcher") }}
-        {{ mg.djangoModal("Edit Price", "editPrice") }}
-        {{ mg.djangoModal("Delete Price", "deletePrice") }}
-
+        {{ mg.djangoModal('Add Fetcher', 'addFetcher') }}
+        {{ mg.djangoModal('Edit Fetcher', 'editFetcher') }}
+        {{ mg.djangoModal('Delete Fetcher', 'deleteFetcher') }}
+        {{ mg.djangoModal('Edit Price', 'editPrice') }}
+        {{ mg.djangoModal('Delete Price', 'deletePrice') }}
         <table class="table table-dark table-responsive-md rounded mb-5">
             <thead>
-            <tr>
-               <th scope="col">Fetcher</th>
-               <th scope="col"></th>
-            </tr>
+                <tr>
+                    <th scope="col">Fetcher</th>
+                    <th scope="col"></th>
+                </tr>
             </thead>
             <tbody>
-            {% for fetcher in fetchers %}
+                {% for fetcher in fetchers %}
+                    <tr>
+                        <td class="text-truncate w-75" style="max-width: 300px;">
+                            {{ fetcher }}
+                            {% if fetcher.error %}
+                                <abbr title="{{ fetcher.error }}">
+                                    <br>
+                                Error: {{ fetcher.error }}</abbr>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            {{ bg.hrefButton("Run", url("stocks:run_price_fetcher", args=[fetcher.pk]) ) }}
+                            {{ bg.modalButton("Edit", "#editFetcher", action=url("stocks:edit_price_fetcher", args=[fetcher.pk]) ) }}
+                            {{ bg.modalButton("Delete", "#deleteFetcher", action=url("stocks:delete_price_fetcher", args=[fetcher.pk]) ) }}
+                        </td>
+                    </tr>
+                {% endfor %}
                 <tr>
-                    <td class="text-truncate w-75" style="max-width: 300px;">
-                        {{ fetcher }}
-                        {% if fetcher.error %}<abbr title="{{ fetcher.error }}"><br>Error: {{ fetcher.error }}</abbr>{% endif %}
-                    </td>
-                    <td class="text-end">
-                        {{ bg.hrefButton("Run", url("stocks:run_price_fetcher", args=[fetcher.pk])) }}
-                        {{ bg.modalButton("Edit", "#editFetcher", action=url("stocks:edit_price_fetcher", args=[fetcher.pk])) }}
-                        {{ bg.modalButton("Delete", "#deleteFetcher", action=url("stocks:delete_price_fetcher", args=[fetcher.pk])) }}
+                    <td colspan="2">
+                        <div class="d-flex">
+                            {{ bg.modalButton("Add Fetcher", "#addFetcher", action=url("stocks:add_price_fetcher") +"?stock="+object.pk|string) }}
+                        </div>
                     </td>
                 </tr>
-            {% endfor %}
-            <tr>
-                <td colspan="2">
-                    <div class="d-flex">
-                        {{ bg.modalButton("Add Fetcher", "#addFetcher", action=url("stocks:add_price_fetcher")+"?stock="+object.pk|string) }}
-                    </div>
-                </td>
-            </tr>
             </tbody>
         </table>
         <table class="table table-dark table-responsive-md rounded mb-5">
             <thead>
-            <tr>
-                <th scope="col">Date</th>
-                <th class="text-end" scope="col">Price</th>
-                <th scope="col"></th>
-            </tr>
+                <tr>
+                    <th scope="col">Date</th>
+                    <th class="text-end" scope="col">Price</th>
+                    <th scope="col"></th>
+                </tr>
             </thead>
             <tbody>
-            {% for price in prices %}
-                <tr>
-                    <td>{{ localtime(price.date).strftime('%d.%m.%Y %H:%M') }}</td>
-                    <td class="text-end">{{ price.price }}</td>
-                    <td class="text-end">
-                        {{ bg.modalButton("Edit", "#editPrice", action=url("stocks:edit_price", args=[price.pk])) }}
-                        {{ bg.modalButton("Delete", "#deletePrice", action=url("stocks:delete_price", args=[price.pk])) }}
-                    </td>
-                </tr>
-            {% endfor %}
+                {% for price in prices %}
+                    <tr>
+                        <td>{{ localtime(price.date).strftime('%d.%m.%Y %H:%M') }}</td>
+                        <td class="text-end">{{ price.price }}</td>
+                        <td class="text-end">
+                            {{ bg.modalButton("Edit", "#editPrice", action=url("stocks:edit_price", args=[price.pk]) ) }}
+                            {{ bg.modalButton("Delete", "#deletePrice", action=url("stocks:delete_price", args=[price.pk]) ) }}
+                        </td>
+                    </tr>
+                {% endfor %}
             </tbody>
         </table>
     {% endif %}
-
     {% include 'stocks/symbols/dividends.j2' %}
-
     {% with price_and_amount=False %}
         {% include 'symbols/values.j2' %}
     {% endwith %}
-
     {% include 'symbols/flows.j2' %}
-
 {% endblock %}

@@ -15,7 +15,5 @@
             </div>
         {% endfor %}
     </div>
-    {% if 'info' in stats %}
-        <p class="text-white-50">{{ stats['info']|safe() }}</p>
-    {% endif %}
+    {% if 'info' in stats %}<p class="text-white-50">{{ stats['info']|safe() }}</p>{% endif %}
 {% endif %}

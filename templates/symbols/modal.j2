@@ -1,17 +1,20 @@
 {% import "symbols/button.j2" as buttons %}
-
 {% macro djangoModal(title, id, action="") %}
     <div class="modal text-darker" id="{{ id }}">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h4 class="modal-title">{{ title }}</h4>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                    </button>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
                 </div>
-                <form action="{{ action|safe }}" method="post" novalidate class="djangoform">
-                    <div class="modal-body">
-                    </div>
+                <form action="{{ action|safe }}"
+                      method="post"
+                      novalidate
+                      class="djangoform">
+                    <div class="modal-body"></div>
                     <div class="modal-footer">
                         {{ buttons.submitButton() }}
                         {{ buttons.dismissButton() }}

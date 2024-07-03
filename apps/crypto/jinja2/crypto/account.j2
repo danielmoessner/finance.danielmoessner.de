@@ -1,53 +1,43 @@
 {% extends "layout/lm.j2" %}
-
-{% set headingCategory="Account" %}
-{% set headingHeading=account.name %}
-{% set title="Account " + account.name + " | Crypto" %}
-
+{% set headingCategory = "Account" %}
+{% set headingHeading = account.name %}
+{% set title = "Account " + account.name + " | Crypto" %}
 {% block main %}
-
     {% import "symbols/button.j2" as bg %}
     {% import "symbols/modal.j2" as mg %}
-
     <div class="d-flex justify-content-center mt-2 mb-5">
         <div class="btn-group" role="group" aria-label="Console">
-            {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
-            {{ bg.hrefButton("Assets", request.path + '?tab=assets', active=(tab=='assets')) }}
-            {{ bg.hrefButton("Trades", request.path + '?tab=trades', active=(tab=='trades')) }}
-            {{ bg.hrefButton("Transactions", request.path + '?tab=transactions', active=(tab=='transactions')) }}
-            {{ bg.hrefButton("Flows", request.path + '?tab=flows', active=(tab=='flows')) }}
+            {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats') ) }}
+            {{ bg.hrefButton("Assets", request.path + '?tab=assets', active=(tab=='assets') ) }}
+            {{ bg.hrefButton("Trades", request.path + '?tab=trades', active=(tab=='trades') ) }}
+            {{ bg.hrefButton("Transactions", request.path + '?tab=transactions', active=(tab=='transactions') ) }}
+            {{ bg.hrefButton("Flows", request.path + '?tab=flows', active=(tab=='flows') ) }}
         </div>
     </div>
-
     {% include "symbols/stats.j2" %}
-
     {% if tab=="assets" %}
         <table class="table table-dark table-responsive-md rounded mb-5">
             <thead>
-            <tr>
-               <th scope="col">Asset</th>
-               <th class="text-end" scope="col">Price</th>
-               <th class="text-end" scope="col">Amount</th>
-               <th class="text-end" scope="col">Value</th>
-            </tr>
+                <tr>
+                    <th scope="col">Asset</th>
+                    <th class="text-end" scope="col">Price</th>
+                    <th class="text-end" scope="col">Amount</th>
+                    <th class="text-end" scope="col">Value</th>
+                </tr>
             </thead>
             <tbody>
-            {% for asset in assets %}
-                <tr>
-                    <td>{{ asset.symbol }}</td>
-                    <td class="text-end">{{ asset.get_price_display() }}</td>
-                    <td class="text-end">{{ asset.get_amount_account(object) }}</td>
-                    <td class="text-end">{{ asset.get_value_account(object) }}</td>
-                </tr>
-            {% endfor %}
+                {% for asset in assets %}
+                    <tr>
+                        <td>{{ asset.symbol }}</td>
+                        <td class="text-end">{{ asset.get_price_display() }}</td>
+                        <td class="text-end">{{ asset.get_amount_account(object) }}</td>
+                        <td class="text-end">{{ asset.get_value_account(object) }}</td>
+                    </tr>
+                {% endfor %}
             </tbody>
         </table>
     {% endif %}
-
     {% include 'crypto/symbols/trades.j2' %}
-
     {% include 'crypto/symbols/transactions.j2' %}
-
     {% include 'crypto/symbols/flows.j2' %}
-
 {% endblock %}

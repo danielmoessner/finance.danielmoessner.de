@@ -1,121 +1,105 @@
 {% extends "layout/lm.j2" %}
-
-{% set headingCategory="Dashboard" %}
-{% set headingHeading="Banking" %}
-{% set title="Banking" %}
-
+{% set headingCategory = "Dashboard" %}
+{% set headingHeading = "Banking" %}
+{% set title = "Banking" %}
 {% block main %}
-
-{% import "symbols/button.j2" as bg %}
-{% import "symbols/modal.j2" as mg %}
-
-<div class="d-flex justify-content-center mt-2 mb-5">
-    <div class="btn-group" role="group" aria-label="Console">
-        {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
-        {{ bg.hrefButton("Accounts", request.path + '?tab=accounts', active=(tab=='accounts')) }}
-        {{ bg.hrefButton("Categories", request.path + '?tab=categories', active=(tab=='categories')) }}
-        {{ bg.hrefButton("Charts", request.path + '?tab=charts', active=(tab=='charts')) }}
+    {% import "symbols/button.j2" as bg %}
+    {% import "symbols/modal.j2" as mg %}
+    <div class="d-flex justify-content-center mt-2 mb-5">
+        <div class="btn-group" role="group" aria-label="Console">
+            {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats') ) }}
+            {{ bg.hrefButton("Accounts", request.path + '?tab=accounts', active=(tab=='accounts') ) }}
+            {{ bg.hrefButton("Categories", request.path + '?tab=categories', active=(tab=='categories') ) }}
+            {{ bg.hrefButton("Charts", request.path + '?tab=charts', active=(tab=='charts') ) }}
+        </div>
     </div>
-</div>
-
-{% include 'symbols/stats.j2' %}
-
-{% if tab=='accounts' %}
-    
-    {{ mg.djangoModal("Add Change", "addChange") }}
-    {{ mg.djangoModal("Move Money", "moveMoney") }}
-    {{ mg.djangoModal("Edit Account", "editAccount") }}
-    {{ mg.djangoModal("Add Account", "addAccount") }}
-    {{ mg.djangoModal("Delete Account", "deleteAccount") }}
-
-    <table class="table rounded table-responsive-md table-dark mb-5">
-        <thead>
-        <tr>
-            <th scope="col">Account</th>
-            <th class="text-end" scope="col">Balance</th>
-            <th class="text-end" scope="col">
-                {{ bg.modalButton("Move Money", "#moveMoney", url("banking:move_money")) }}
-            </th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for account in accounts %}
-            <tr>
-                <td>
-                    {{ account.name }}
-                    {% if account.bucket %}
-                        <span class="badge bg-success">{{ account.bucket.name }}</span>
-                    {% else %}
-                        {{ bg.modalButton("Set Bucket", "#editAccount", url("banking:edit_account", args=[account.pk])) }}
-                    {% endif %}
-                </td>
-                <td class="text-end">{{ account.get_stats()['Balance'] }}</td>
-                <td>
-                    <div class="d-flex align-items-center justify-content-end">
-                        {{ bg.modalButton("Add Change", "#addChange", url("banking:add_change")+"?account="+account.pk|string) }}
-                        {{ bg.modalButton("Edit", "#editAccount", url("banking:edit_account", args=[account.pk])) }}
-                        {{ bg.hrefButton("Open", url("banking:account", args=[account.pk])) }}
-                    </div>
-                </td>
-            </tr>
-        {% endfor %}
-        <tr>
-            <td colspan="3">
-                <div class="d-flex">
-                    {{ bg.modalButton("Add Account", "#addAccount", url("banking:add_account")) }}
-                    {{ bg.modalButton("Delete Account", "#deleteAccount", url("banking:delete_account")) }}
-                </div>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-{% endif %}
-
-{% if tab=='categories' %}
-    <table class="table rounded table-responsive-md table-dark mb-5">
-        <thead>
-        <tr>
-           <th scope="col">Category</th>
-           {% for year in years %}
-           <th class="text-end" scope="col">{{ year }}</th>
-          {% endfor %}
-           <th scope="col"></th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for category in categories %}
-            <tr>
-                <td>{{ category.name }}</td>
-                {% for year in years %}
-
-                <td class="text-end" scope="col">{{ category.get_stats().get(year, "0.00 €") }}</td>
-               {% endfor %}
-                <td>
-                    <div class="d-flex justify-content-end">
-                        {{ bg.modalButton("Edit", "#editCategory"+category.pk|string) }}
-                        {{ mg.djangoModal("Edit Category", "editCategory"+category.pk|string, url("banking:edit_category", args=[category.pk])) }}
-                        {{ bg.hrefButton("Open", url("banking:category", args=[category.pk])) }}
-                    </div>
-                </td>
-            </tr>
-        {% endfor %}
-        <tr>
-            <td colspan="{{ years|length + 2 }}">
-                <div class="d-flex">
-                    {{ mg.djangoModal("Add Category", "addCategory", url("banking:add_category")) }}
-                    {{ bg.modalButton("Add Category", "#addCategory") }}
-                    {{ mg.djangoModal("Delete Category", "deleteCategory", url("banking:delete_category")) }}
-                    {{ bg.modalButton("Delete Category", "#deleteCategory") }}
-                </div>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-{% endif %}
-
-{% if tab=='charts' %}
-    {% include 'banking/symbols/balance_chart.html' %}
-    {% include 'banking/symbols/income_and_expenditure_chart.html' %}
-{% endif %}
-
+    {% include 'symbols/stats.j2' %}
+    {% if tab=='accounts' %}
+        {{ mg.djangoModal('Add Change', 'addChange') }}
+        {{ mg.djangoModal('Move Money', 'moveMoney') }}
+        {{ mg.djangoModal('Edit Account', 'editAccount') }}
+        {{ mg.djangoModal('Add Account', 'addAccount') }}
+        {{ mg.djangoModal('Delete Account', 'deleteAccount') }}
+        <table class="table rounded table-responsive-md table-dark mb-5">
+            <thead>
+                <tr>
+                    <th scope="col">Account</th>
+                    <th class="text-end" scope="col">Balance</th>
+                    <th class="text-end" scope="col">{{ bg.modalButton("Move Money", "#moveMoney", url("banking:move_money") ) }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for account in accounts %}
+                    <tr>
+                        <td>
+                            {{ account.name }}
+                            {% if account.bucket %}
+                                <span class="badge bg-success">{{ account.bucket.name }}</span>
+                            {% else %}
+                                {{ bg.modalButton("Set Bucket", "#editAccount", url("banking:edit_account", args=[account.pk]) ) }}
+                            {% endif %}
+                        </td>
+                        <td class="text-end">{{ account.get_stats()['Balance'] }}</td>
+                        <td>
+                            <div class="d-flex align-items-center justify-content-end">
+                                {{ bg.modalButton("Add Change", "#addChange", url("banking:add_change") +"?account="+account.pk|string) }}
+                                {{ bg.modalButton("Edit", "#editAccount", url("banking:edit_account", args=[account.pk]) ) }}
+                                {{ bg.hrefButton("Open", url("banking:account", args=[account.pk]) ) }}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="3">
+                        <div class="d-flex">
+                            {{ bg.modalButton("Add Account", "#addAccount", url("banking:add_account") ) }}
+                            {{ bg.modalButton("Delete Account", "#deleteAccount", url("banking:delete_account") ) }}
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    {% endif %}
+    {% if tab=='categories' %}
+        <table class="table rounded table-responsive-md table-dark mb-5">
+            <thead>
+                <tr>
+                    <th scope="col">Category</th>
+                    {% for year in years %}<th class="text-end" scope="col">{{ year }}</th>{% endfor %}
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category in categories %}
+                    <tr>
+                        <td>{{ category.name }}</td>
+                        {% for year in years %}
+                            <td class="text-end" scope="col">{{ category.get_stats().get(year, "0.00 €") }}</td>
+                        {% endfor %}
+                        <td>
+                            <div class="d-flex justify-content-end">
+                                {{ bg.modalButton("Edit", "#editCategory"+category.pk|string) }}
+                                {{ mg.djangoModal("Edit Category", "editCategory"+category.pk|string, url("banking:edit_category", args=[category.pk]) ) }}
+                                {{ bg.hrefButton("Open", url("banking:category", args=[category.pk]) ) }}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="{{ years|length + 2 }}">
+                        <div class="d-flex">
+                            {{ mg.djangoModal("Add Category", "addCategory", url("banking:add_category") ) }}
+                            {{ bg.modalButton('Add Category', '#addCategory') }}
+                            {{ mg.djangoModal("Delete Category", "deleteCategory", url("banking:delete_category") ) }}
+                            {{ bg.modalButton('Delete Category', '#deleteCategory') }}
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    {% endif %}
+    {% if tab=='charts' %}
+        {% include 'banking/symbols/balance_chart.html' %}
+        {% include 'banking/symbols/income_and_expenditure_chart.html' %}
+    {% endif %}
 {% endblock %}

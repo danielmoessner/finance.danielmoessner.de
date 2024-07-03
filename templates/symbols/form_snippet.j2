@@ -1,30 +1,17 @@
-{% for hidden_field in form.hidden_fields() %}
-    {{ hidden_field }}
-{% endfor %}
-
+{% for hidden_field in form.hidden_fields() %}{{ hidden_field }}{% endfor %}
 {% with errors=form.non_field_errors() %}
     {% if errors %}
         <p>
-            {% for error in errors %}
-                <span class="form-child--errors">
-                    {{ error }}
-                </span>
-            {% endfor %}
+            {% for error in errors %}<span class="form-child--errors">{{ error }}</span>{% endfor %}
         </p>
     {% endif %}
 {% endwith %}
-
 {% for field in form.visible_fields() %}
     <p>
         {{ field.label_tag() }}
         {{ field }}
-        <span class="text-danger">
-            {{ field.errors|striptags|replace(".", ". ")|replace(".  ", ". ") }}
-        </span>
-        <span class="text-secondary">
-            {{ field.help_text|striptags|replace(".", ". ")|replace(".  ", ". ") }}
-        </span>
+        <span class="text-danger">{{ field.errors|striptags|replace('.', '. ') |replace(".  ", ". ") }}</span>
+        <span class="text-secondary">{{ field.help_text|striptags|replace('.', '. ') |replace(".  ", ". ") }}</span>
     </p>
 {% endfor %}
-
 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">

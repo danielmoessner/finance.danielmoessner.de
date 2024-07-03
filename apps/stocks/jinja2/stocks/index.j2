@@ -1,139 +1,124 @@
 {% extends "layout/lm.j2" %}
-
-{% set headingCategory="Dashboard" %}
-{% set headingHeading="Stocks" %}
-{% set title="Stocks" %}
-
+{% set headingCategory = "Dashboard" %}
+{% set headingHeading = "Stocks" %}
+{% set title = "Stocks" %}
 {% block main %}
-
     {% import "symbols/button.j2" as bg %}
     {% import "symbols/modal.j2" as mg %}
-
     <div class="d-flex justify-content-center mt-2 mb-5">
         <div class="btn-group" role="group" aria-label="Console">
-            {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
-            {{ bg.hrefButton("Banks", request.path + '?tab=banks', active=(tab=='banks')) }}
-            {{ bg.hrefButton("Stocks", request.path + '?tab=stocks', active=(tab=='stocks')) }}
-            {{ bg.hrefButton("Charts", request.path + '?tab=charts', active=(tab=='charts')) }}
-            {{ bg.dropdownButton("Calculations", active=(tab=="values" or tab=="flows")) }}
+            {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats') ) }}
+            {{ bg.hrefButton("Banks", request.path + '?tab=banks', active=(tab=='banks') ) }}
+            {{ bg.hrefButton("Stocks", request.path + '?tab=stocks', active=(tab=='stocks') ) }}
+            {{ bg.hrefButton("Charts", request.path + '?tab=charts', active=(tab=='charts') ) }}
+            {{ bg.dropdownButton("Calculations", active=(tab=="values" or tab=="flows") ) }}
             <div class="dropdown-menu dropdown-menu-dark py-1">
                 <a class="dropdown-item btn-sm" href="?tab=flows">Flows</a>
                 <a class="dropdown-item btn-sm" href="?tab=values">Values</a>
             </div>
         </div>
     </div>
-
     {% if tab == 'stats' %}
-    <div class="d-flex mb-2">
-        <div class="ms-auto">
-            {{ bg.postButton("Reset Stats", url("stocks:reset_depot", args=[depot.pk]), csrf_token) }}
+        <div class="d-flex mb-2">
+            <div class="ms-auto">{{ bg.postButton("Reset Stats", url("stocks:reset_depot", args=[depot.pk]) , csrf_token) }}</div>
         </div>
-    </div>
     {% endif %}
     {% include 'symbols/stats.j2' %}
-
     {% if tab=='banks' %}
-        {{ mg.djangoModal("Edit Bank", "editBank") }}
+        {{ mg.djangoModal('Edit Bank', 'editBank') }}
         <table class="table rounded table-responsive-md table-dark mb-5">
             <thead>
-            <tr>
-               <th scope="col">Bank</th>
-                <th class="text-end" scope="col">Balance</th>
-                <th class="text-end" scope="col">Value</th>
-               <th scope="col"></th>
-            </tr>
+                <tr>
+                    <th scope="col">Bank</th>
+                    <th class="text-end" scope="col">Balance</th>
+                    <th class="text-end" scope="col">Value</th>
+                    <th scope="col"></th>
+                </tr>
             </thead>
             <tbody>
-            {% for bank in banks %}
+                {% for bank in banks %}
+                    <tr>
+                        <td>
+                            {{ bank.name }}
+                            {% if bank.bucket %}
+                                <span class="badge bg-success">{{ bank.bucket.name }}</span>
+                            {% else %}
+                                {{ bg.modalButton("Set Bucket", "#editBank", url("stocks:edit_bank", args=[bank.pk]) ) }}
+                            {% endif %}
+                        </td>
+                        <td class="text-end">{{ bank.get_balance_display() }}</td>
+                        <td class="text-end">{{ bank.get_value_display() }}</td>
+                        <td>
+                            <div class="d-flex align-items-center justify-content-end">
+                                {{ bg.modalButton("Edit", "#editBank", url("stocks:edit_bank", args=[bank.pk]) ) }}
+                                {{ bg.hrefButton("Open", url("stocks:banks", args=[bank.pk]) ) }}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
                 <tr>
-                    <td>
-                        {{ bank.name }}
-                        {% if bank.bucket %}
-                            <span class="badge bg-success">{{ bank.bucket.name }}</span>
-                        {% else %}
-                            {{ bg.modalButton("Set Bucket", "#editBank", url("stocks:edit_bank", args=[bank.pk])) }}
-                        {% endif %}
-                    </td>
-                    <td class="text-end">{{ bank.get_balance_display() }}</td>
-                    <td class="text-end">{{ bank.get_value_display() }}</td>
-                    <td>
-                        <div class="d-flex align-items-center justify-content-end">
-                            {{ bg.modalButton("Edit", "#editBank", url("stocks:edit_bank", args=[bank.pk])) }}
-                            {{ bg.hrefButton("Open", url("stocks:banks", args=[bank.pk])) }}
+                    <td colspan="4">
+                        <div class="d-flex">
+                            {{ mg.djangoModal("Add Bank", "addBank", url("stocks:add_bank") ) }}
+                            {{ bg.modalButton('Add Bank', '#addBank') }}
+                            {{ mg.djangoModal("Delete Bank", "deleteBank", url("stocks:delete_bank") ) }}
+                            {{ bg.modalButton('Delete Bank', '#deleteBank') }}
                         </div>
                     </td>
                 </tr>
-            {% endfor %}
-            <tr>
-                <td colspan="4">
-                    <div class="d-flex">
-                        {{ mg.djangoModal("Add Bank", "addBank", url("stocks:add_bank")) }}
-                        {{ bg.modalButton("Add Bank", "#addBank") }}
-                        {{ mg.djangoModal("Delete Bank", "deleteBank", url("stocks:delete_bank")) }}
-                        {{ bg.modalButton("Delete Bank", "#deleteBank") }}
-                    </div>
-                </td>
-            </tr>
             </tbody>
         </table>
     {% endif %}
-
     {% if tab=='stocks' %}
-        {{ mg.djangoModal("Edit Stock", "editStock") }}
+        {{ mg.djangoModal('Edit Stock', 'editStock') }}
         <table class="table rounded table-responsive-md table-dark mb-5">
             <thead>
-            <tr>
-                <th scope="col">Name</th>
-                <th class="text-end" scope="col">Price</th>
-                <th class="text-end" scope="col">Top</th>
-                <th class="text-end" scope="col">Amount</th>
-                <th class="text-end" scope="col">Value</th>
-                <th scope="col"></th>
-            </tr>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th class="text-end" scope="col">Price</th>
+                    <th class="text-end" scope="col">Top</th>
+                    <th class="text-end" scope="col">Amount</th>
+                    <th class="text-end" scope="col">Value</th>
+                    <th scope="col"></th>
+                </tr>
             </thead>
             <tbody>
-            {% for stock in stocks %}
+                {% for stock in stocks %}
+                    <tr>
+                        <td>
+                            {{ stock.name }}
+                            {% if stock.bucket %}
+                                <span class="badge bg-success">{{ stock.bucket.name }}</span>
+                            {% else %}
+                                {{ bg.modalButton("Set Bucket", "#editStock", url("stocks:edit_stock", args=[stock.pk]) ) }}
+                            {% endif %}
+                        </td>
+                        <td class="text-end">{{ stock.get_price_display() }}</td>
+                        <td class="text-end">{{ stock.get_top_price_display() }}</td>
+                        <td class="text-end">{{ stock.get_amount_display() }}</td>
+                        <td class="text-end">{{ stock.get_value_display() }}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                {{ bg.modalButton("Edit", "#editStock", url("stocks:edit_stock", args=[stock.pk]) ) }}
+                                {{ bg.hrefButton("Open", url("stocks:stocks", args=[stock.pk]) ) }}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
                 <tr>
-                    <td>
-                        {{ stock.name }}
-                        {% if stock.bucket %}
-                            <span class="badge bg-success">{{ stock.bucket.name }}</span>
-                        {% else %}
-                            {{ bg.modalButton("Set Bucket", "#editStock", url("stocks:edit_stock", args=[stock.pk])) }}
-                        {% endif %}
-                    </td>
-                    <td class="text-end">{{ stock.get_price_display() }}</td>
-                    <td class="text-end">{{ stock.get_top_price_display() }}</td>
-                    <td class="text-end">{{ stock.get_amount_display() }}</td>
-                    <td class="text-end">{{ stock.get_value_display() }}</td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            {{ bg.modalButton("Edit", "#editStock", url("stocks:edit_stock", args=[stock.pk])) }}
-                            {{ bg.hrefButton("Open", url("stocks:stocks", args=[stock.pk])) }}
+                    <td colspan="7">
+                        <div class="d-flex">
+                            {{ mg.djangoModal("Add Stock", "addStock", url("stocks:add_stock") ) }}
+                            {{ bg.modalButton('Add Stock', '#addStock') }}
+                            {{ mg.djangoModal("Delete Stock", "deleteStock", url("stocks:delete_stock") ) }}
+                            {{ bg.modalButton('Delete Stock', '#deleteStock') }}
                         </div>
                     </td>
                 </tr>
-            {% endfor %}
-            <tr>
-                <td colspan="7">
-                    <div class="d-flex">
-                        {{ mg.djangoModal("Add Stock", "addStock", url("stocks:add_stock")) }}
-                        {{ bg.modalButton("Add Stock", "#addStock") }}
-                        {{ mg.djangoModal("Delete Stock", "deleteStock", url("stocks:delete_stock")) }}
-                        {{ bg.modalButton("Delete Stock", "#deleteStock") }}
-                    </div>
-                </td>
-            </tr>
             </tbody>
         </table>
     {% endif %}
-
-    {% if tab=="charts" %}
-        charts todo
-    {% endif %}
-
+    {% if tab=="charts" %}charts todo{% endif %}
     {% include 'symbols/values.j2' %}
-
     {% include 'symbols/flows.j2' %}
-
 {% endblock %}

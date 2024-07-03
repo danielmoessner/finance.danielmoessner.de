@@ -1,192 +1,190 @@
 {% extends "layout/lm.j2" %}
-
-{% set headingCategory="User" %}
-{% set headingHeading="Hello "+object.username %}
-{% set title="Settings" %}
-
+{% set headingCategory = "User" %}
+{% set headingHeading = "Hello "+object.username %}
+{% set title = "Settings" %}
 {% import "symbols/button.j2" as bg %}
 {% import "symbols/heading.j2" as hg %}
 {% import "symbols/modal.j2" as mg %}
-
 {% block main %}
-
     <div class="d-flex justify-content-center mt-2 mb-5">
         <div class="btn-group" role="group" aria-label="Console">
-            {{ bg.hrefButton("Start", request.path + '?tab=stats', active=(tab=='stats')) }}
-            {{ bg.hrefButton("Banking", request.path + '?tab=banking', active=(tab=='banking')) }}
-            {{ bg.hrefButton("Crypto", request.path + '?tab=crypto', active=(tab=='crypto')) }}
-            {{ bg.hrefButton("Alternative", request.path + '?tab=alternative', active=(tab=='alternative')) }}
-            {{ bg.hrefButton('Stocks', request.path + '?tab=stocks', active=(tab=='stocks')) }}
+            {{ bg.hrefButton("Start", request.path + '?tab=stats', active=(tab=='stats') ) }}
+            {{ bg.hrefButton("Banking", request.path + '?tab=banking', active=(tab=='banking') ) }}
+            {{ bg.hrefButton("Crypto", request.path + '?tab=crypto', active=(tab=='crypto') ) }}
+            {{ bg.hrefButton("Alternative", request.path + '?tab=alternative', active=(tab=='alternative') ) }}
+            {{ bg.hrefButton('Stocks', request.path + '?tab=stocks', active=(tab=='stocks') ) }}
         </div>
     </div>
-
     {% if tab=="stats" %}
         <div class="rounded bg-dark p-3 mb-5">
             <div class="mb-4">
                 <dl class="row mb-0">
                     <dt class="col-12 col-sm-4 mb-sm-1">Username:</dt>
-                    <dd class="col-12 col-sm-8 mb-2 mb-sm-1">{{ object.username }}</dd>
+                    <dd class="col-12 col-sm-8 mb-2 mb-sm-1">
+                        {{ object.username }}
+                    </dd>
                     <dt class="col-12 col-sm-4 mb-sm-1">E-Mail:</dt>
-                    <dd class="col-12 col-sm-8 mb-2 mb-sm-1">{{ object.email }}</dd>
+                    <dd class="col-12 col-sm-8 mb-2 mb-sm-1">
+                        {{ object.email }}
+                    </dd>
                     <dt class="col-12 col-sm-4 mb-sm-1">Frontpage:</dt>
-                    <dd class="col-12 col-sm-8 mb-2 mb-sm-1">{{ object.get_front_page_display() }}</dd>
+                    <dd class="col-12 col-sm-8 mb-2 mb-sm-1">
+                        {{ object.get_front_page_display() }}
+                    </dd>
                     <dt class="col-12 col-sm-4 mb-sm-1">Dateformat:</dt>
-                    <dd class="col-12 col-sm-8 mb-2 mb-sm-1">{{ object.get_date_format_display() }}</dd>
+                    <dd class="col-12 col-sm-8 mb-2 mb-sm-1">
+                        {{ object.get_date_format_display() }}
+                    </dd>
                 </dl>
             </div>
             <div class="d-flex overflow-x-scroll overflow-x-md-auto">
-                {{ mg.djangoModal("Edit Username & E-Mail", "editUser", url('users:edit_user', args=[object.pk])) }}
-                {{ bg.modalButton("Edit Username & E-Mail", "#editUser") }}
-                {{ mg.djangoModal("Edit Password", "editPassword", url('users:edit_user_password', args=[object.pk])) }}
-                {{ bg.modalButton("Edit Passwort", "#editPassword") }}
-                {{ mg.djangoModal("Edit Preferences", "editPreferences", url('users:edit_user_general', args=[object.pk])) }}
-                {{ bg.modalButton("Edit Preferences", "#editPreferences") }}
+                {{ mg.djangoModal("Edit Username & E-Mail", "editUser", url('users:edit_user', args=[object.pk]) ) }}
+                {{ bg.modalButton('Edit Username & E-Mail', '#editUser') }}
+                {{ mg.djangoModal("Edit Password", "editPassword", url('users:edit_user_password', args=[object.pk]) ) }}
+                {{ bg.modalButton('Edit Passwort', '#editPassword') }}
+                {{ mg.djangoModal("Edit Preferences", "editPreferences", url('users:edit_user_general', args=[object.pk]) ) }}
+                {{ bg.modalButton('Edit Preferences', '#editPreferences') }}
             </div>
         </div>
     {% endif %}
-
     {% if tab=="banking" %}
         <table class="table table-dark table-responsive-md rounded mb-5">
             <thead>
-            <tr>
-               <th scope="col">Depot</th>
-               <th scope="col"></th>
-            </tr>
+                <tr>
+                    <th scope="col">Depot</th>
+                    <th scope="col"></th>
+                </tr>
             </thead>
             <tbody>
-            {% for depot in banking_depots %}
+                {% for depot in banking_depots %}
+                    <tr>
+                        <td>{{ depot.name }}</td>
+                        <td>
+                            <div class="d-flex justify-content-end">
+                                {{ bg.hrefButton(text="Set Active", url=url("banking:set_depot", args=[depot.pk]) , disabled=(depot.is_active)) }}
+                                {{ mg.djangoModal("Edit Depot", "editBankingDepot"+depot.pk|string, url("banking:edit_depot", args=[depot.pk]) ) }}
+                                {{ bg.modalButton("Edit", "#editBankingDepot"+depot.pk|string) }}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
                 <tr>
-                    <td>{{ depot.name }}</td>
-                    <td>
-                        <div class="d-flex justify-content-end">
-                            {{ bg.hrefButton(text="Set Active", url=url("banking:set_depot", args=[depot.pk]), disabled=(depot.is_active)) }}
-                            {{ mg.djangoModal("Edit Depot", "editBankingDepot"+depot.pk|string, url("banking:edit_depot", args=[depot.pk])) }}
-                            {{ bg.modalButton("Edit", "#editBankingDepot"+depot.pk|string) }}
+                    <td colspan="2">
+                        <div class="d-flex">
+                            {{ mg.djangoModal("Add Depot", "addBankingDepot", url("banking:add_depot") ) }}
+                            {{ bg.modalButton('Add Depot', '#addBankingDepot') }}
+                            {{ mg.djangoModal("Delete Depot", "deleteBankingDepot", url("banking:delete_depot") ) }}
+                            {{ bg.modalButton('Delete Depot', '#deleteBankingDepot') }}
+                            {{ bg.hrefButton("Generate Example Depot", url("users:init_banking", args=[object.pk]) ) }}
                         </div>
                     </td>
                 </tr>
-            {% endfor %}
-            <tr>
-                <td colspan="2">
-                    <div class="d-flex">
-                        {{ mg.djangoModal("Add Depot", "addBankingDepot", url("banking:add_depot")) }}
-                        {{ bg.modalButton("Add Depot", "#addBankingDepot") }}
-                        {{ mg.djangoModal("Delete Depot", "deleteBankingDepot", url("banking:delete_depot")) }}
-                        {{ bg.modalButton("Delete Depot", "#deleteBankingDepot") }}
-                        {{ bg.hrefButton("Generate Example Depot", url("users:init_banking", args=[object.pk])) }}
-                    </div>
-                </td>
-            </tr>
             </tbody>
         </table>
     {% endif %}
-
     {% if tab=="crypto" %}
         <table class="table table-dark table-responsive-md rounded mb-5">
             <thead>
-            <tr>
-               <th scope="col">Depot</th>
-               <th scope="col"></th>
-            </tr>
+                <tr>
+                    <th scope="col">Depot</th>
+                    <th scope="col"></th>
+                </tr>
             </thead>
             <tbody>
-            {% for depot in crypto_depots %}
+                {% for depot in crypto_depots %}
+                    <tr>
+                        <td>{{ depot.name }}</td>
+                        <td>
+                            <div class="d-flex justify-content-end">
+                                {{ bg.hrefButton(text="Set Active", url=url("crypto:set_depot", args=[depot.pk]) , disabled=(depot.is_active)) }}
+                                {{ mg.djangoModal("Edit Depot", "editCryptoDepot"+depot.pk|string, url("crypto:edit_depot", args=[depot.pk]) ) }}
+                                {{ bg.modalButton("Edit", "#editCryptoDepot"+depot.pk|string) }}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
                 <tr>
-                    <td>{{ depot.name }}</td>
-                    <td>
-                        <div class="d-flex justify-content-end">
-                            {{ bg.hrefButton(text="Set Active", url=url("crypto:set_depot", args=[depot.pk]), disabled=(depot.is_active)) }}
-                            {{ mg.djangoModal("Edit Depot", "editCryptoDepot"+depot.pk|string, url("crypto:edit_depot", args=[depot.pk])) }}
-                            {{ bg.modalButton("Edit", "#editCryptoDepot"+depot.pk|string) }}
+                    <td colspan="2">
+                        <div class="d-flex">
+                            {{ mg.djangoModal("Add Depot", "addCryptoDepot", url("crypto:add_depot") ) }}
+                            {{ bg.modalButton('Add Depot', '#addCryptoDepot') }}
+                            {{ mg.djangoModal("Delete Depot", "deleteCryptoDepot", url("crypto:delete_depot") ) }}
+                            {{ bg.modalButton('Delete Depot', '#deleteCryptoDepot') }}
+                            {{ bg.hrefButton("Generate Example Depot", url("users:init_crypto", args=[object.pk]) ) }}
                         </div>
                     </td>
                 </tr>
-            {% endfor %}
-            <tr>
-                <td colspan="2">
-                    <div class="d-flex">
-                        {{ mg.djangoModal("Add Depot", "addCryptoDepot", url("crypto:add_depot")) }}
-                        {{ bg.modalButton("Add Depot", "#addCryptoDepot") }}
-                        {{ mg.djangoModal("Delete Depot", "deleteCryptoDepot", url("crypto:delete_depot")) }}
-                        {{ bg.modalButton("Delete Depot", "#deleteCryptoDepot") }}
-                        {{ bg.hrefButton("Generate Example Depot", url("users:init_crypto", args=[object.pk])) }}
-                    </div>
-                </td>
-            </tr>
             </tbody>
         </table>
     {% endif %}
-
     {% if tab=="alternative" %}
         <table class="table table-dark table-responsive-md rounded mb-5">
             <thead>
-            <tr>
-               <th scope="col">Depot</th>
-               <th scope="col"></th>
-            </tr>
+                <tr>
+                    <th scope="col">Depot</th>
+                    <th scope="col"></th>
+                </tr>
             </thead>
             <tbody>
-            {% for depot in alternative_depots %}
+                {% for depot in alternative_depots %}
+                    <tr>
+                        <td>{{ depot.name }}</td>
+                        <td>
+                            <div class="d-flex justify-content-end">
+                                {{ bg.hrefButton(text="Set Active", url=url("alternative:set_depot", args=[depot.pk]) , disabled=(depot.is_active)) }}
+                                {{ mg.djangoModal("Edit Depot", "editAlternativeDepot"+depot.pk|string, url("alternative:edit_depot", args=[depot.pk]) ) }}
+                                {{ bg.modalButton("Edit", "#editAlternativeDepot"+depot.pk|string) }}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
                 <tr>
-                    <td>{{ depot.name }}</td>
-                    <td>
-                        <div class="d-flex justify-content-end">
-                            {{ bg.hrefButton(text="Set Active", url=url("alternative:set_depot", args=[depot.pk]), disabled=(depot.is_active)) }}
-                            {{ mg.djangoModal("Edit Depot", "editAlternativeDepot"+depot.pk|string, url("alternative:edit_depot", args=[depot.pk])) }}
-                            {{ bg.modalButton("Edit", "#editAlternativeDepot"+depot.pk|string) }}
+                    <td colspan="2">
+                        <div class="d-flex">
+                            {{ mg.djangoModal("Add Depot", "addAlternativeDepot", url("alternative:add_depot") ) }}
+                            {{ bg.modalButton('Add Depot', '#addAlternativeDepot') }}
+                            {{ mg.djangoModal("Delete Depot", "deleteAlternativeDepot", url("alternative:delete_depot") ) }}
+                            {{ bg.modalButton('Delete Depot', '#deleteAlternativeDepot') }}
+                            {{ bg.hrefButton("Generate Example Depot", url("users:init_alternative", args=[object.pk]) ) }}
                         </div>
                     </td>
                 </tr>
-            {% endfor %}
-            <tr>
-                <td colspan="2">
-                    <div class="d-flex">
-                        {{ mg.djangoModal("Add Depot", "addAlternativeDepot", url("alternative:add_depot")) }}
-                        {{ bg.modalButton("Add Depot", "#addAlternativeDepot") }}
-                        {{ mg.djangoModal("Delete Depot", "deleteAlternativeDepot", url("alternative:delete_depot")) }}
-                        {{ bg.modalButton("Delete Depot", "#deleteAlternativeDepot") }}
-                        {{ bg.hrefButton("Generate Example Depot", url("users:init_alternative", args=[object.pk])) }}
-                    </div>
-                </td>
-            </tr>
             </tbody>
         </table>
     {% endif %}
-
     {% if tab=='stocks' %}
         <table class="table table-dark table-responsive-md rounded mb-5">
             <thead>
-            <tr>
-               <th scope="col">Depot</th>
-               <th scope="col"></th>
-            </tr>
+                <tr>
+                    <th scope="col">Depot</th>
+                    <th scope="col"></th>
+                </tr>
             </thead>
             <tbody>
-            {% for depot in stock_depots %}
+                {% for depot in stock_depots %}
+                    <tr>
+                        <td>{{ depot.name }}</td>
+                        <td>
+                            <div class="d-flex justify-content-end">
+                                {{ bg.hrefButton(text="Set Active", url=url("stocks:set_depot", args=[depot.pk]) , disabled=(depot.is_active)) }}
+                                {{ mg.djangoModal("Edit Depot", "editStocksDepot"+depot.pk|string, url("stocks:edit_depot", args=[depot.pk]) ) }}
+                                {{ bg.modalButton("Edit", "#editStocksDepot"+depot.pk|string) }}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
                 <tr>
-                    <td>{{ depot.name }}</td>
-                    <td>
-                        <div class="d-flex justify-content-end">
-                            {{ bg.hrefButton(text="Set Active", url=url("stocks:set_depot", args=[depot.pk]), disabled=(depot.is_active)) }}
-                            {{ mg.djangoModal("Edit Depot", "editStocksDepot"+depot.pk|string, url("stocks:edit_depot", args=[depot.pk])) }}
-                            {{ bg.modalButton("Edit", "#editStocksDepot"+depot.pk|string) }}
+                    <td colspan="2">
+                        <div class="d-flex">
+                            {{ mg.djangoModal("Add Depot", "addStocksDepot", url("stocks:add_depot") ) }}
+                            {{ bg.modalButton('Add Depot', '#addStocksDepot') }}
+                            {{ mg.djangoModal("Delete Depot", "deleteStocksDepot", url("stocks:delete_depot") ) }}
+                            {{ bg.modalButton('Delete Depot', '#deleteStocksDepot') }}
+                            {{ bg.hrefButton("Generate Example Depot", url("users:init_stocks", args=[object.pk]) ) }}
                         </div>
                     </td>
                 </tr>
-            {% endfor %}
-            <tr>
-                <td colspan="2">
-                    <div class="d-flex">
-                        {{ mg.djangoModal("Add Depot", "addStocksDepot", url("stocks:add_depot")) }}
-                        {{ bg.modalButton("Add Depot", "#addStocksDepot") }}
-                        {{ mg.djangoModal("Delete Depot", "deleteStocksDepot", url("stocks:delete_depot")) }}
-                        {{ bg.modalButton("Delete Depot", "#deleteStocksDepot") }}
-                        {{ bg.hrefButton("Generate Example Depot", url("users:init_stocks", args=[object.pk])) }}
-                    </div>
-                </td>
-            </tr>
             </tbody>
         </table>
     {% endif %}
-
 {% endblock %}

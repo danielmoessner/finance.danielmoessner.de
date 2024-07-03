@@ -1,7 +1,9 @@
 {% import 'symbols/button.j2' as buttons %}
-
 {% macro formGenerator(form, url, csrf_token, form_classes='', submit_button_text='', submit_button_classes='') %}
-    <form method="post" action="{{ url }}" novalidate class="djangoform {{ form_classes }}">
+    <form method="post"
+          action="{{ url }}"
+          novalidate
+          class="djangoform {{ form_classes }}">
         {% include 'symbols/form_snippet.j2' %}
         {{ buttons.submitButton(text=submit_button_text, classes=submit_button_classes) }}
     </form>

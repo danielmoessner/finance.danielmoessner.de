@@ -1,18 +1,18 @@
 {% if tab=="flows" %}
     <table class="table table-dark table-responsive-md rounded">
         <thead>
-        <tr>
-           <th scope="col">Date</th>
-            <th class="text-end" scope="col">Flow</th>
-        </tr>
+            <tr>
+                <th scope="col">Date</th>
+                <th class="text-end" scope="col">Flow</th>
+            </tr>
         </thead>
         <tbody>
-        {% for flow in flows() %}
-            <tr>
-                <td>{{ flow[0].strftime('%d.%m.%Y') }}</td>
-                <td class="text-end">{{ "%.2f"|format(flow[1]) }}</td>
-            </tr>
-        {% endfor %}
+            {% for flow in flows() %}
+                <tr>
+                    <td>{{ flow[0].strftime("%d.%m.%Y") }}</td>
+                    <td class="text-end">{{ "%.2f"|format(flow[1]) }}</td>
+                </tr>
+            {% endfor %}
         </tbody>
     </table>
 {% endif %}

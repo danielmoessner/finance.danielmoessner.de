@@ -1,37 +1,37 @@
 {% macro modalButton(text, target, action="") %}
-    <a class="btn btn-sm btn-info modal-button" type="button" data-bs-toggle="modal"
-       data-bs-target="{{ target }}" data-action="{{ action }}">{{ text }}</a>
+    <a class="btn btn-sm btn-info modal-button"
+       type="button"
+       data-bs-toggle="modal"
+       data-bs-target="{{ target }}"
+       data-action="{{ action }}">{{ text }}</a>
 {% endmacro %}
-
 {% macro postButton(text, action, csrf_token) %}
     <form action="{{ action }}" method="post">
         <button class="btn btn-sm btn-secondary" type="submit">{{ text }}</button>
         <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
     </form>
 {% endmacro %}
-
 {% macro hrefButton(text, url, classes="btn-sm", active=False, disabled=False) %}
     <a class="btn btn-secondary {{ classes }} {{ 'disabled' if disabled else '' }} {{ 'active' if active else '' }}"
-       type="button" href="{{ url }}">{{ text }}</a>
+       type="button"
+       href="{{ url }}">{{ text }}</a>
 {% endmacro %}
-
 {% macro dropdownButton(text, classes="btn-sm", active=False, disabled=False) %}
-    <button type="button" class="btn btn-secondary dropdown-toggle {{ classes }} {{ "disabled" if disabled else "" }}
-{{ "active" if active else "" }}" data-bs-toggle="dropdown"
-            aria-haspopup="true" aria-expanded="false">
-        {{ text }}
-    </button>
+    <button type="button"
+            class="btn btn-secondary dropdown-toggle {{ classes }} {{ "disabled" if disabled else "" }} {{ "active" if active else "" }}"
+            data-bs-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false">{{ text }}</button>
 {% endmacro %}
-
 {% macro submitButton(text="Submit", classes="btn-sm") %}
     <button type="submit" class="btn btn-light {{ classes }}" role="button">{{ text }}</button>
 {% endmacro %}
-
 {% macro navigationButton(text, url, classes="", active=False) %}
     <a class="btn w-100 text-start {% if active %}btn-secondary active{% else %}btn-link text-white text-decoration-none{% endif %} {{ classes }}"
        href="{{ url }}">{{ text }}</a>
 {% endmacro %}
-
 {% macro dismissButton(text="Cancel", classes="") %}
-    <button class="btn btn-dark {{ classes }}" type="button" data-bs-dismiss="modal">{{ text }}</button>
+    <button class="btn btn-dark {{ classes }}"
+            type="button"
+            data-bs-dismiss="modal">{{ text }}</button>
 {% endmacro %}

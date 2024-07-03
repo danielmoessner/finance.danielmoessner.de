@@ -1,63 +1,52 @@
 {% extends "layout/lm.j2" %}
-
-{% set headingCategory="Category" %}
-{% set headingHeading=category.name %}
-{% set title="Category " + category.name + " | Banking" %}
-
+{% set headingCategory = "Category" %}
+{% set headingHeading = category.name %}
+{% set title = "Category " + category.name + " | Banking" %}
 {% block main %}
-
     {% import "symbols/button.j2" as bg %}
     {% import "symbols/modal.j2" as mg %}
-
     <div class="d-flex justify-content-center mt-2 mb-5">
         <div class="btn-group" role="group" aria-label="Console">
-            {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
-            {{ bg.hrefButton("Changes", request.path + '?tab=changes', active=(tab=='changes')) }}
+            {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats') ) }}
+            {{ bg.hrefButton("Changes", request.path + '?tab=changes', active=(tab=='changes') ) }}
         </div>
     </div>
-
     {% include 'symbols/stats.j2' %}
-
     {% if tab=='changes' %}
-
-        {{ mg.djangoModal("Edit Change", "editChange") }}
-        {{ mg.djangoModal("Delete Change", "deleteChange") }}
-        {{ mg.djangoModal("Add Change", "addChange") }}
-
+        {{ mg.djangoModal('Edit Change', 'editChange') }}
+        {{ mg.djangoModal('Delete Change', 'deleteChange') }}
+        {{ mg.djangoModal('Add Change', 'addChange') }}
         <table class="table table-responsive-md rounded table-dark mb-5">
             <thead>
-            <tr>
-               <th scope="col">Date</th>
-               <th scope="col">Account</th>
-               <th scope="col">Description</th>
-                <th class="text-end" scope="col">Change</th>
-                <th class="text-end" scope="col">
-                    {{ bg.modalButton("Add Change", "#addChange") }}
-                </th>
-            </tr>
+                <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Account</th>
+                    <th scope="col">Description</th>
+                    <th class="text-end" scope="col">Change</th>
+                    <th class="text-end" scope="col">{{ bg.modalButton('Add Change', '#addChange') }}</th>
+                </tr>
             </thead>
             <tbody>
-            {% for change in changes %}
+                {% for change in changes %}
+                    <tr>
+                        <td>{{ localtime(change.date).strftime('%d.%m.%Y %H:%M') }}</td>
+                        <td>{{ change.account }}</td>
+                        <td>{{ change.get_description() }}</td>
+                        <td class="text-end">{{ change.change }}</td>
+                        <td>
+                            <div class="d-flex justify-content-end">
+                                {{ bg.modalButton("Edit", "#editChange", url("banking:edit_change", args=[change.pk]) ) }}
+                                {{ bg.modalButton("Delete", "#deleteChange", url("banking:delete_change", args=[change.pk]) ) }}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
                 <tr>
-                    <td>{{ localtime(change.date).strftime('%d.%m.%Y %H:%M') }}</td>
-                    <td>{{ change.account }}</td>
-                    <td>{{ change.get_description() }}</td>
-                    <td class="text-end">{{ change.change }}</td>
-                    <td>
-                        <div class="d-flex justify-content-end">
-                            {{ bg.modalButton("Edit", "#editChange", url("banking:edit_change", args=[change.pk])) }}
-                            {{ bg.modalButton("Delete", "#deleteChange", url("banking:delete_change", args=[change.pk])) }}
-                        </div>
+                    <td colspan="5">
+                        {{ bg.modalButton("Add Change", "#addChange", url("banking:add_change") +"?category="+category.pk|string) }}
                     </td>
                 </tr>
-            {% endfor %}
-            <tr>
-                <td colspan="5">
-                    {{ bg.modalButton("Add Change", "#addChange", url("banking:add_change")+"?category="+category.pk|string) }}
-                </td>
-            </tr>
             </tbody>
         </table>
     {% endif %}
-
 {% endblock %}

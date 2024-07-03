@@ -1,33 +1,21 @@
 {% extends "layout/lm.j2" %}
-
-{% set headingCategory="Bank" %}
-{% set headingHeading=bank.name %}
-{% set title="Bank " + bank.name + " | Stocks" %}
-
+{% set headingCategory = "Bank" %}
+{% set headingHeading = bank.name %}
+{% set title = "Bank " + bank.name + " | Stocks" %}
 {% block main %}
-
     {% import "symbols/button.j2" as bg %}
     {% import "symbols/modal.j2" as mg %}
-
     <div class="d-flex justify-content-center mt-2 mb-5">
         <div class="btn-group" role="group" aria-label="Console">
-            {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats')) }}
-            {{ bg.hrefButton("Flows", request.path + '?tab=flows', active=(tab=='flows')) }}
-            {{ bg.hrefButton("Trades", request.path + '?tab=trades', active=(tab=='trades')) }}
-            {{ bg.hrefButton("Dividends", request.path + "?tab=dividends", active=(tab=="dividends")) }}
+            {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats') ) }}
+            {{ bg.hrefButton("Flows", request.path + '?tab=flows', active=(tab=='flows') ) }}
+            {{ bg.hrefButton("Trades", request.path + '?tab=trades', active=(tab=='trades') ) }}
+            {{ bg.hrefButton("Dividends", request.path + "?tab=dividends", active=(tab=="dividends") ) }}
         </div>
     </div>
-
     {% include 'symbols/stats.j2' %}
-
-    {% if tab=='stocks' %}
-    stocks todo
-    {% endif %}
-
+    {% if tab=='stocks' %}stocks todo{% endif %}
     {% include 'stocks/symbols/flows.j2' %}
-
     {% include 'stocks/symbols/trades.j2' %}
-
     {% include 'stocks/symbols/dividends.j2' %}
-
 {% endblock %}

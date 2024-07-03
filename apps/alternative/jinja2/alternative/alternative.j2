@@ -1,69 +1,62 @@
 {% extends "layout/lm.j2" %}
-
-{% set activePage="alternative" %}
-{% set headingCategory="Alternative" %}
-{% set headingHeading=object.name %}
-{% set title="Alternative " + object.name + " | Alternative" %}
-
+{% set activePage = "alternative" %}
+{% set headingCategory = "Alternative" %}
+{% set headingHeading = object.name %}
+{% set title = "Alternative " + object.name + " | Alternative" %}
 {% block main %}
-
     {% import "symbols/button.j2" as bg %}
     {% import "symbols/modal.j2" as mg %}
-
     <div class="d-flex justify-content-center mt-2 mb-5">
         <div class="btn-group" role="group" aria-label="Console">
-            {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=="stats")) }}
-            {{ bg.hrefButton("Data", request.path + '?tab=data', active=(tab=="data")) }}
+            {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=="stats") ) }}
+            {{ bg.hrefButton("Data", request.path + '?tab=data', active=(tab=="data") ) }}
         </div>
     </div>
-
     {% include 'symbols/stats.j2' %}
-
     {% if tab == 'data' %}
         <table class="table rounded table-dark mb-5">
             <thead>
-            <tr>
-               <th scope="col">Date</th>
-               <th class="text-end" scope="col">Flow</th>
-               <th class="text-end" scope="col">Value</th>
-               <th scope="col"></th>
-            </tr>
+                <tr>
+                    <th scope="col">Date</th>
+                    <th class="text-end" scope="col">Flow</th>
+                    <th class="text-end" scope="col">Value</th>
+                    <th scope="col"></th>
+                </tr>
             </thead>
             <tbody>
-            {% for data in flows_and_values %}
+                {% for data in flows_and_values %}
+                    <tr>
+                        <td>{{ localtime(data.date).strftime('%d.%m.%Y %H:%M') }}</td>
+                        <td class="text-end">{{ data.flow if "flow" in data else "" }}</td>
+                        <td class="text-end">{{ data.value if 'value' in data else "" }}</td>
+                        <td>
+                            <div class="d-flex justify-content-end">
+                                {% if 'flow' in data %}
+                                    {{ bg.modalButton("Edit", "#editFlow"+data.pk|string) }}
+                                    {{ bg.modalButton("Delete", "#deleteFlow"+data.pk|string) }}
+                                    {{ mg.djangoModal("Edit Flow", "editFlow"+data.pk|string, url("alternative:edit_flow", args=[data.pk]) ) }}
+                                    {{ mg.djangoModal("Delete Flow", "deleteFlow"+data.pk|string, url("alternative:delete_flow", args=[data.pk]) ) }}
+                                {% elif 'value' in data %}
+                                    {{ bg.modalButton("Edit", "#editValue"+data.pk|string) }}
+                                    {{ bg.modalButton("Delete", "#deleteValue"+data.pk|string) }}
+                                    {{ mg.djangoModal("Edit Value", "editValue"+data.pk|string, url("alternative:edit_value", args=[data.pk]) ) }}
+                                    {{ mg.djangoModal("Delete Value", "deleteValue"+data.pk|string, url("alternative:delete_value", args=[data.pk]) ) }}
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
                 <tr>
-                    <td>{{ localtime(data.date).strftime('%d.%m.%Y %H:%M') }}</td>
-                    <td class="text-end">{{ data.flow if "flow" in data else "" }}</td>
-                    <td class="text-end">{{ data.value if 'value' in data else "" }}</td>
-                    <td>
-                        <div class="d-flex justify-content-end">
-                            {% if 'flow' in data %}
-                                {{ bg.modalButton("Edit", "#editFlow"+data.pk|string) }}
-                                {{ bg.modalButton("Delete", "#deleteFlow"+data.pk|string) }}
-                                {{ mg.djangoModal("Edit Flow", "editFlow"+data.pk|string, url("alternative:edit_flow", args=[data.pk])) }}
-                                {{ mg.djangoModal("Delete Flow", "deleteFlow"+data.pk|string, url("alternative:delete_flow", args=[data.pk])) }}
-                            {% elif 'value' in data %}
-                                {{ bg.modalButton("Edit", "#editValue"+data.pk|string) }}
-                                {{ bg.modalButton("Delete", "#deleteValue"+data.pk|string) }}
-                                {{ mg.djangoModal("Edit Value", "editValue"+data.pk|string, url("alternative:edit_value", args=[data.pk])) }}
-                                {{ mg.djangoModal("Delete Value", "deleteValue"+data.pk|string, url("alternative:delete_value", args=[data.pk])) }}
-                            {% endif %}
+                    <td colspan="5">
+                        <div class="d-flex">
+                            {{ mg.djangoModal("Add Flow", "addFlow", url("alternative:add_flow") +"?alternative="+object.pk|string) }}
+                            {{ bg.modalButton('Add FLow', '#addFlow') }}
+                            {{ mg.djangoModal("Add Value", "addValue", url("alternative:add_value") +"?alternative="+object.pk|string) }}
+                            {{ bg.modalButton('Add Value', '#addValue') }}
                         </div>
                     </td>
                 </tr>
-            {% endfor %}
-            <tr>
-                <td colspan="5">
-                    <div class="d-flex">
-                        {{ mg.djangoModal("Add Flow", "addFlow", url("alternative:add_flow")+"?alternative="+object.pk|string) }}
-                        {{ bg.modalButton("Add FLow", "#addFlow") }}
-                        {{ mg.djangoModal("Add Value", "addValue", url("alternative:add_value")+"?alternative="+object.pk|string) }}
-                        {{ bg.modalButton("Add Value", "#addValue") }}
-                    </div>
-                </td>
-            </tr>
             </tbody>
         </table>
     {% endif %}
-
 {% endblock %}
