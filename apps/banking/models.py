@@ -1,10 +1,12 @@
 from datetime import datetime
+from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from django.db import connection, models
 
 import apps.banking.duplicated_code as banking_duplicated_code
 from apps.core import utils
+from apps.core.functional import list_map, list_sort
 from apps.core.models import Account as CoreAccount
 from apps.core.models import Depot as CoreDepot
 from apps.core.utils import turn_dict_of_dicts_into_list_of_dicts
@@ -233,10 +235,33 @@ class Category(models.Model):
         return round(self.balance, 2)
 
     def get_stats(self):
+        stats: dict[str, str | float | int | Decimal] = {"Change": "Not calculated"}
         balance = self.get_balance()
-        if balance is None:
-            return {"Change": "Not calculated"}
-        return {"Change": balance}
+        if balance is not None:
+            stats["Change"] = balance
+        for sums in self.get_yearly_sum():
+            stats[sums["year"]] = sums["balance"]
+        return stats
+
+    def get_yearly_sum(self):
+        if not hasattr(self, "_sums"):
+            sums = (
+                Change.objects.filter(category=self)
+                .annotate(year=models.functions.ExtractYear("date"))
+                .values("year")
+                .annotate(balance=models.Sum("change"))
+                .order_by("year")
+            )
+            sums = list_map(
+                sums,
+                lambda x: {
+                    "year": str(x["year"]),
+                    "balance": "{:.2f} €".format(x["balance"]),
+                },
+            )
+            sums = list_sort(sums, key=lambda x: -int(x["year"]))
+            self._sums = sums
+        return self._sums
 
     @staticmethod
     def get_objects_by_user(user):

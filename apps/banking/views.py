@@ -1,6 +1,7 @@
 from django.views import generic
 
 from apps.banking.models import Account, Category, Depot
+from apps.banking.utils import get_latest_years
 from apps.core.mixins import TabContextMixin
 from apps.users.mixins import GetUserMixin
 
@@ -19,10 +20,13 @@ class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
         context["user"] = self.get_user()
         # specific
         context["stats"] = self.object.get_stats()
-        context["accounts"] = self.object.accounts.order_by("name").select_related(
-            "bucket"
-        )
-        context["categories"] = self.object.categories.order_by("name")
+        if self.tab == "accounts":
+            context["accounts"] = self.object.accounts.order_by("name").select_related(
+                "bucket"
+            )
+        elif self.tab == "categories":
+            context["categories"] = self.object.categories.order_by("name")
+            context["years"] = get_latest_years(5)
         # return
         return context
 

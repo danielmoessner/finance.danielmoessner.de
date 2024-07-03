@@ -76,7 +76,9 @@
         <thead>
         <tr>
            <th scope="col">Category</th>
-            <th class="text-end" scope="col">Change</th>
+           {% for year in years %}
+           <th class="text-end" scope="col">{{ year }}</th>
+          {% endfor %}
            <th scope="col"></th>
         </tr>
         </thead>
@@ -84,7 +86,10 @@
         {% for category in categories %}
             <tr>
                 <td>{{ category.name }}</td>
-                <td class="text-end">{{ category.get_stats()['Change'] }}</td>
+                {% for year in years %}
+
+                <td class="text-end" scope="col">{{ category.get_stats().get(year, "0.00 €") }}</td>
+               {% endfor %}
                 <td>
                     <div class="d-flex justify-content-end">
                         {{ bg.modalButton("Edit", "#editCategory"+category.pk|string) }}
@@ -95,7 +100,7 @@
             </tr>
         {% endfor %}
         <tr>
-            <td colspan="3">
+            <td colspan="{{ years|length + 2 }}">
                 <div class="d-flex">
                     {{ mg.djangoModal("Add Category", "addCategory", url("banking:add_category")) }}
                     {{ bg.modalButton("Add Category", "#addCategory") }}

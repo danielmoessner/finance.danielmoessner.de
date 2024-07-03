@@ -91,7 +91,8 @@ class TabContextMixin:
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["tab"] = self.request.GET.get("tab", "stats")
+        self.tab = self.request.GET.get("tab", "stats")
+        context["tab"] = self.tab
         return context
 
 

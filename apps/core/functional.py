@@ -1,4 +1,11 @@
-from typing import Any, Callable, Iterable, Mapping, Protocol, TypeVar
+from typing import Any, Callable, Iterable, Mapping, Protocol, Sequence, TypeVar
+
+
+def to_list(obj):
+    if isinstance(obj, list):
+        return obj
+    return list(obj)
+
 
 group_by_I = TypeVar("group_by_I")
 group_by_G = TypeVar("group_by_G")
@@ -106,6 +113,34 @@ def list_reduce(
     for item in items:
         ret = fn(ret, item)
     return ret
+
+
+list_unique_I = TypeVar("list_unique_I")
+
+
+def list_unique(items: Sequence[list_unique_I]) -> list[list_unique_I]:
+    return list(set(items))
+
+
+list_sort_I = TypeVar("list_sort_I")
+
+
+def list_sort(
+    items: list[list_sort_I], key: Callable[[list_sort_I], Any | list[Any]]
+) -> list[list_sort_I]:
+    return sorted(items, key=key)
+
+
+list_find_I = TypeVar("list_find_I")
+
+
+def list_find(
+    items: Sequence[list_find_I], key: Callable[[list_find_I], bool]
+) -> list_find_I | None:
+    for item in items:
+        if key(item):
+            return item
+    return None
 
 
 class SupportsAdd(Protocol):
