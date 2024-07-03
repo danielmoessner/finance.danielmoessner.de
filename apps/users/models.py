@@ -24,15 +24,7 @@ class StandardUser(AbstractUser):
         ("%m/%d/%Y", "Month/Date/Year"),
     )
     date_format = models.CharField(max_length=20, choices=DATE_FORMAT_CHOICES)
-    FRONT_PAGE_CHOICES = (
-        ("BANKING", "Banking"),
-        ("ALTERNATIVE", "Alternative"),
-        ("CRYPTO", "Crypto"),
-        ("SETTINGS", "Settings"),
-    )
-    front_page = models.CharField(
-        max_length=20, choices=FRONT_PAGE_CHOICES, default="SETTINGS"
-    )
+    front_page = models.CharField(max_length=200, default="/overview/dashboard/")
     rounded_numbers = models.BooleanField(default=True)
 
     if TYPE_CHECKING:

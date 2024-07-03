@@ -24,7 +24,7 @@ class RedirectView(generic.RedirectView):
             elif front_page == "ALTERNATIVE":
                 return reverse_lazy("alternative:index")
             else:
-                return reverse_lazy("users:settings", args=[user.pk])
+                return user.front_page
         else:
             return reverse_lazy("users:signin")
 

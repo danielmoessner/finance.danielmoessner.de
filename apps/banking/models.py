@@ -235,10 +235,10 @@ class Category(models.Model):
         return round(self.balance, 2)
 
     def get_stats(self):
-        stats: dict[str, str | float | int | Decimal] = {"Change": "Not calculated"}
+        stats: dict[str, str | float | int | Decimal] = {"Total": "Not calculated"}
         balance = self.get_balance()
         if balance is not None:
-            stats["Change"] = balance
+            stats["Total"] = balance
         for sums in self.get_yearly_sum():
             stats[sums["year"]] = sums["balance"]
         return stats

@@ -15,11 +15,10 @@ class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
         return self.get_user().get_active_banking_depot()
 
     def get_context_data(self, **kwargs):
-        # general
         context = super(IndexView, self).get_context_data(**kwargs)
         context["user"] = self.get_user()
-        # specific
-        context["stats"] = self.object.get_stats()
+        if self.tab == "stats":
+            context["stats"] = self.object.get_stats()
         if self.tab == "accounts":
             context["accounts"] = self.object.accounts.order_by("name").select_related(
                 "bucket"
@@ -27,7 +26,6 @@ class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
         elif self.tab == "categories":
             context["categories"] = self.object.categories.order_by("name")
             context["years"] = get_latest_years(5)
-        # return
         return context
 
 
