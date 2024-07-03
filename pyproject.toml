@@ -1,66 +1,58 @@
 [tool.black]
 line-length = 88
-
 [tool.mypy]
 ignore_missing_imports = true
 check_untyped_defs = true
 exclude = ["migrations", "__pypackages__", "venv"]
-
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings.local"
 addopts = "--ignore=__pypackages__"
-
 [tool.django-stubs]
 django_settings_module = "config.settings.local"
 ignore_missing_settings = true
-
 [tool.isort]
 known_local_folder = ["apps", "config"]
 profile = "black"
-
 [tool.ruff]
 # Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
 # select = ["F"]
 exclude = [
-    "config/settings"
+"config/settings"
 ]
-
 [project]
 name = "finance.danielmoessner.de"
 version = "0.0.0"
 description = ""
 authors = [
-    {name = "danielmoessner", email = "github@danielmoessner.de"},
+{name = "danielmoessner", email = "github@danielmoessner.de"},
 ]
 dependencies = [
-    "beautifulsoup4>=4.12.2",
-    "django>=4.2.7",
-    "django-debug-toolbar>=4.2.0",
-    "Jinja2>=3.1.2",
-    "pandas>=2.1.2",
-    "pytz>=2023.3.post1",
-    "requests>=2.31.0",
-    "pydantic>=2.1.1",
-    "selenium>=4.10.0",
-    "webdriver-manager>=4.0.0",
-    "isort>=5.12.0",
-    "black>=23.11.0",
-    "ruff>=0.1.4",
-    "mypy>=1.10.0",
-    "types-requests>=2.31.0.10",
-    "pytest>=7.4.3",
-    "pytest-django>=4.7.0",
-    "django-types>=0.19.1",
-    "numpy>=1.26.1",
-    "djlint>=1.34.1",
+"beautifulsoup4>=4.12.2",
+"django>=4.2.7",
+"django-debug-toolbar>=4.2.0",
+"Jinja2>=3.1.2",
+"pandas>=2.1.2",
+"pytz>=2023.3.post1",
+"requests>=2.31.0",
+"pydantic>=2.1.1",
+"selenium>=4.10.0",
+"webdriver-manager>=4.0.0",
+"isort>=5.12.0",
+"black>=23.11.0",
+"ruff>=0.1.4",
+"mypy>=1.10.0",
+"types-requests>=2.31.0.10",
+"pytest>=7.4.3",
+"pytest-django>=4.7.0",
+"django-types>=0.19.1",
+"numpy>=1.26.1",
+"djlint>=1.34.1",
 ]
 requires-python = "==3.11.*"
 license = {text = "MIT"}
-
 [[tool.pdm.autoexport]]
 filename = "requirements.txt"
 groups = ["default"]
-
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"

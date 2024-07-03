@@ -1,7 +1,7 @@
 #!/bin/bash
 
 printf "djlint:\n"
-pdm run djlint . ./pyproject.toml --max-line-length=120 --profile=jinja --reformat
+pdm run djlint . --max-line-length=120 --profile=jinja --reformat --include="*.j2"
 printf "\nisort:\n" && pdm run isort . --profile black
 printf "\n\n"
 printf "black:\n" && pdm run black .
