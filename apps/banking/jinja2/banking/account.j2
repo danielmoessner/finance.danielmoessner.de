@@ -45,6 +45,11 @@
                         </td>
                     </tr>
                 {% endfor %}
+                <tr id="load-more">
+                    {% if year %}
+                        <td colspan="6">{{ bg.hrefButton("Load More", request.path + '?tab=changes&year=' + year + '#load-more') }}</td>
+                    {% endif %}
+                </tr>
                 <tr>
                     <td colspan="6">{{ bg.modalButton('Add Change', '#addChange') }}</td>
                 </tr>

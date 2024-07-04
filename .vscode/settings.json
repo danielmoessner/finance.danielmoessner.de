@@ -4,6 +4,10 @@
     "python.analysis.typeCheckingMode": "basic",
     "python.terminal.activateEnvInCurrentTerminal": true,
     "files.associations": {
-        "*.j2": "html"
-    }
+        "*.j2": "jinja-html"
+    },
+    "emmet.includeLanguages": {
+        "j2": "html"
+    },
+    "emmet.triggerExpansionOnTab": true,
 }

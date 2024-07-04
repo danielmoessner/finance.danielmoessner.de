@@ -32,7 +32,10 @@ class MoveMoneyForm(forms.Form):
         self.fields["date"].initial = datetime.now()
 
     def get_choices_for_account(self):
-        return [(self._get_acc_key(a), self._get_acc_name(a)) for a in self.accounts]
+        return [
+            (None, "---------"),
+            *[(self._get_acc_key(a), self._get_acc_name(a)) for a in self.accounts],
+        ]
 
     def _get_acc_name(self, account: A):
         return f"{account.TYPE}: {account.name}"
