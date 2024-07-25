@@ -142,4 +142,5 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 CRONJOBS = [
     "apps.stocks.tasks.fetch_prices",
     "apps.crypto.tasks.fetch_prices",
+    "apps.banking.tasks.calculate_change_counts",
 ]

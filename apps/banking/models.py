@@ -3,6 +3,7 @@ from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from django.db import connection, models
+from django.utils import timezone
 
 import apps.banking.duplicated_code as banking_duplicated_code
 from apps.core import utils
@@ -99,10 +100,6 @@ class Depot(CoreDepot):
             self.value_df = utils.sum_up_value_dfs_from_items(self.accounts.all())
         return self.value_df
 
-    @staticmethod
-    def get_objects_by_user(user):
-        return Depot.objects.filter(user=user)
-
     def get_stats(self):
         balance = self.get_balance()
         if balance is None:
@@ -133,9 +130,23 @@ class Account(CoreAccount):
         blank=True,
         related_name="banking_items",
     )
+    changes_count = models.IntegerField(default=0)
 
     if TYPE_CHECKING:
         changes: QuerySet["Change"]
+
+    class Meta:
+        ordering = ["-changes_count"]
+
+    def __str__(self):
+        return f"{self.name}"
+
+    def calculate_changes_count(self):
+        month_ago = timezone.now() - timezone.timedelta(days=30)
+        self.changes_count = Change.objects.filter(
+            account=self, date__gte=month_ago
+        ).count()
+        self.save()
 
     def delete(self, using=None, keep_parents=False):
         self.depot.set_balances_to_none()
@@ -195,14 +206,6 @@ class Account(CoreAccount):
             df = self.get_df_from_database(statement, ["date", "value"])
             self.value_df = df
         return self.value_df
-
-    @staticmethod
-    def get_objects_by_user(user):
-        return Account.objects.filter(depot__in=Depot.objects.filter(user=user))
-
-    @staticmethod
-    def get_objects_by_depot(depot):
-        return Account.objects.filter(depot=depot)
 
 
 class Category(models.Model):
@@ -264,10 +267,6 @@ class Category(models.Model):
         return self._sums
 
     @staticmethod
-    def get_objects_by_user(user):
-        return Category.objects.filter(depot__in=Depot.objects.filter(user=user))
-
-    @staticmethod
     def get_objects_by_depot(depot):
         return Category.objects.filter(depot=depot)
 
@@ -323,10 +322,6 @@ class Change(models.Model):
         return super().delete(using=using, keep_parents=keep_parents)
 
     # getters
-    @staticmethod
-    def get_objects_by_user(user):
-        return Change.objects.filter(account__in=Account.get_objects_by_user(user))
-
     def get_date(self, user):
         # user in args because of sql query optimization
         return self.date.strftime(user.date_format)

@@ -21,9 +21,7 @@ class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
         if self.tab == "stats":
             context["stats"] = self.object.get_stats()
         if self.tab == "accounts":
-            context["accounts"] = self.object.accounts.order_by("name").select_related(
-                "bucket"
-            )
+            context["accounts"] = self.object.accounts.select_related("bucket")
         elif self.tab == "categories":
             context["categories"] = self.object.categories.order_by("name")
             context["years"] = get_latest_years(5)

@@ -32,7 +32,7 @@
                 {% for account in accounts %}
                     <tr>
                         <td>
-                            {{ account.name }}
+                            {{ account }}
                             {% if account.bucket %}
                                 <span class="badge bg-success">{{ account.bucket.name }}</span>
                             {% else %}
