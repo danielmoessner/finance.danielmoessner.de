@@ -30,6 +30,14 @@ class MoveMoneyForm(forms.Form):
         self.fields["from_account"].queryset = depot.accounts.all()
         self.fields["to_account"].choices = self.get_choices_for_account()
         self.fields["date"].initial = datetime.now()
+        if depot.most_money_moved_away:
+            self.fields["from_account"].initial = depot.most_money_moved_away.pk
+        print(depot.most_money_moved_away)
+        print(depot.most_money_moved_to)
+        if depot.most_money_moved_to:
+            self.fields["to_account"].initial = self._get_acc_key(
+                depot.most_money_moved_to
+            )
 
     def get_choices_for_account(self):
         return [

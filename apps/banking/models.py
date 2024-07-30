@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, Union
 
 from django.db import connection, models
 from django.utils import timezone
@@ -28,6 +28,20 @@ class Depot(CoreDepot):
     # query optimzation
     balance = models.DecimalField(
         max_digits=15, decimal_places=2, null=True, blank=True
+    )
+    most_money_moved_away = models.ForeignKey(
+        "Account",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="most_money_moved_away",
+    )
+    most_money_moved_to = models.ForeignKey(
+        "Account",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="most_money_moved_to",
     )
 
     if TYPE_CHECKING:
@@ -106,6 +120,27 @@ class Depot(CoreDepot):
             return {"Balance": "Not calculated"}
         return {"Balance": balance}
 
+    def _get_most_money_moved(
+        self, direction: Literal["away", "to"]
+    ) -> Union["Account", None]:
+        if direction == "away":
+            filters = {"change__lt": 0}
+        else:
+            filters = {"change__gt": 0}
+        month_ago = timezone.now() - timezone.timedelta(days=30)
+        accounts = list(self.accounts.all())
+        max_account: tuple[Account, int] | None = None
+        for account in accounts:
+            changes_count = Change.objects.filter(
+                account=account,
+                category__name="Money Movement",
+                date__gt=month_ago,
+                **filters,
+            ).count()
+            if not max_account or changes_count > max_account[1]:
+                max_account = (account, changes_count)
+        return max_account[0] if max_account else None
+
     # setters
     def set_balances_to_none(self):
         Depot.objects.filter(pk=self.pk).update(balance=None)
@@ -113,6 +148,10 @@ class Depot(CoreDepot):
         accounts.update(balance=None)
         Category.objects.filter(depot=self).update(balance=None)
         Change.objects.filter(account__in=accounts).update(balance=None)
+
+    def calculate_changes_count(self):
+        self.most_money_moved_away = self._get_most_money_moved("away")
+        self.most_money_moved_to = self._get_most_money_moved("to")
 
 
 class Account(CoreAccount):
