@@ -257,7 +257,11 @@ class AddFlowView(
 
 
 class EditFlowView(
-    GetUserMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.UpdateView
+    GetUserMixin,
+    GetDepotMixin,
+    GetFormWithDepotMixin,
+    AjaxResponseMixin,
+    generic.UpdateView,
 ):
     model = Flow
     form_class = FlowForm
