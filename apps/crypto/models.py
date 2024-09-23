@@ -629,11 +629,24 @@ class Trade(models.Model):
         super().delete(using=using, keep_parents=keep_parents)
         self.reset_deps()
 
-    # getters
+    @property
+    def price(self) -> tuple[Decimal, str]:
+        if self.sell_amount == 0 or self.buy_amount == 0:
+            return Decimal(0), "N/A"
+        if self.buy_asset.symbol == "EUR":
+            return self.buy_amount / self.sell_amount, self.buy_asset.symbol
+        if self.sell_asset.symbol == "EUR":
+            return self.sell_amount / self.buy_amount, self.sell_asset.symbol
+        return self.sell_amount / self.buy_amount, self.sell_asset.symbol
+
+    @property
+    def price_str(self):
+        price, symbol = self.price
+        return "{:.2f} {}".format(price, symbol)
+
     def get_date(self):
         return timezone.localtime(self.date).strftime("%d.%m.%Y %H:%M")
 
-    # setters
     def reset_deps(self):
         deps: list[Asset | Account | AccountAssetStats | Depot] = []
         deps.append(self.buy_asset)

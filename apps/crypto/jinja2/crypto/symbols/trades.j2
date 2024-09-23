@@ -16,6 +16,7 @@
                 <th scope="col">Account</th>
                 <th class="text-end" scope="col">Buy</th>
                 <th class="text-end" scope="col">Sell</th>
+                <th class="text-end" scope="col">Price</th>
                 <th class="text-end" scope="col">
                     {{ bg.modalButton("Add Trade", "#addTrade", url("crypto:add_trade")+defaults) }}
                 </th>
@@ -32,6 +33,9 @@
                     <td class="text-end">
                         {{ trade.sell_amount }} {{ trade.sell_asset.symbol }}
                     </td>
+                    <td class="text-end">
+                        {{ trade.price_str }}
+                    </td>
                     <td>
                         <div class="d-flex justify-content-end">
                             {{ bg.modalButton("Edit", "#editTrade", url("crypto:edit_trade", args=[trade.pk])) }}
@@ -41,7 +45,7 @@
                 </tr>
             {% endfor %}
             <tr>
-                <td colspan="5">
+                <td colspan="6">
                     <div class="f-flex">
                         {{ bg.modalButton("Add Trade", "#addTrade", url("crypto:add_trade")+defaults) }}
                     </div>

@@ -7,7 +7,8 @@
         "*.j2": "jinja-html"
     },
     "emmet.includeLanguages": {
-        "j2": "html"
+        "j2": "html",
+        "jinja-html": "html"
     },
     "emmet.triggerExpansionOnTab": true,
 }
