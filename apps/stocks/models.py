@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from decimal import Decimal
 from typing import TYPE_CHECKING, Union
 
 from django.db import models
@@ -876,6 +877,14 @@ class Trade(models.Model):
 
     def __str__(self):
         return "{} - {} - {}".format(self.get_date(), self.bank, self.stock)
+
+    @property
+    def price(self) -> Decimal:
+        return self.money_amount / self.stock_amount
+
+    @property
+    def price_str(self):
+        return "{:.2f} EUR".format(self.price)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

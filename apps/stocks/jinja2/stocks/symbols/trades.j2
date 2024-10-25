@@ -8,6 +8,7 @@
            <th scope="col">Stock</th>
             <th class="text-end" scope="col">Stock Amount</th>
             <th class="text-end" scope="col">Money Amount</th>
+            <th class="text-end" scope="col">Price</th>
             <th class="text-end" scope="col">
                 {{ bg.modalButton("Add Trade", "#addTrade") }}
             </th>
@@ -22,6 +23,7 @@
                 <td>{{ trade.stock }}</td>
                 <td class="text-end">{{ trade.stock_amount }}</td>
                 <td class="text-end">{{ trade.money_amount }}</td>
+                <td class="text-end">{{ trade.price_str }}</td>
                 <td>
                     <div class="d-flex">
                         {{ mg.djangoModal("Edit Trade", "editTrade"+trade.pk|string, url("stocks:edit_trade", args=[trade.pk])) }}
