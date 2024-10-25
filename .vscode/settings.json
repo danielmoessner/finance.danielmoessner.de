@@ -11,4 +11,5 @@
         "jinja-html": "html"
     },
     "emmet.triggerExpansionOnTab": true,
+    "CodeGPT.apiKey": "Nvidia",
 }
