@@ -22,7 +22,7 @@
                     {{ buttons.navigationButton("Overview", url("overview:index") , active=("overview" in request.path)) }}
                 </li>
                 <li class="nav-item">
-                    {{ buttons.navigationButton("Banking", url("banking:index")+"?tab=accounts" , active=("banking" in request.path)) }}
+                    {{ buttons.navigationButton("Banking", url("banking:index") +"?tab=accounts" , active=("banking" in request.path)) }}
                 </li>
                 <li class="nav-item">
                     {{ buttons.navigationButton("Crypto", url('crypto:index') , active=("crypto" in request.path)) }}
