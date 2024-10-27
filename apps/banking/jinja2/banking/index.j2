@@ -42,9 +42,9 @@
                         <td class="text-end">{{ account.get_stats()['Balance'] }}</td>
                         <td>
                             <div class="d-flex align-items-center justify-content-end">
-                                {{ bg.modalButton("Add Change", "#addChange", url("banking:add_change") +"?account="+account.pk|string) }}
+                                {{ bg.modalButton("Add Change", "#addChange", url("banking:add_change")+"?account="+account.pk|string) }}
                                 {{ bg.modalButton("Edit", "#editAccount", url("banking:edit_account", args=[account.pk]) ) }}
-                                {{ bg.hrefButton("Open", url("banking:account", args=[account.pk]) ) }}
+                                {{ bg.hrefButton("Open", url("banking:account", args=[account.pk])+"?tab=changes" ) }}
                             </div>
                         </td>
                     </tr>
