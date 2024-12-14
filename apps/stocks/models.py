@@ -866,7 +866,7 @@ class Trade(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name="trades")
     date = models.DateTimeField()
     money_amount = models.DecimalField(max_digits=20, decimal_places=2)
-    stock_amount = models.DecimalField(max_digits=10, decimal_places=3)
+    stock_amount = models.DecimalField(max_digits=10, decimal_places=4)
     TRADE_TYPES = (("BUY", "Buy"), ("SELL", "Sell"))
     buy_or_sell = models.CharField(max_length=50, choices=TRADE_TYPES)
 
