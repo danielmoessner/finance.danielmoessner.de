@@ -144,11 +144,9 @@ def list_find(
 
 
 class SupportsAdd(Protocol):
-    def __add__(self, other: Any) -> Any:
-        ...
+    def __add__(self, other: Any) -> Any: ...
 
-    def __radd__(self, other: Any) -> Any:
-        ...
+    def __radd__(self, other: Any) -> Any: ...
 
 
 list_sum_I = TypeVar("list_sum_I", bound=SupportsAdd)

@@ -17,8 +17,7 @@ from apps.users.mixins import GetUserMixin
 
 
 class PDepot(Protocol):
-    def get_total_value(self) -> float:
-        ...
+    def get_total_value(self) -> float: ...
 
 
 def get_value(depot: PDepot) -> float:

@@ -135,9 +135,7 @@ class StandardUser(AbstractUser):
             category = (
                 category1
                 if random_number == 1
-                else category2
-                if random_number == 2
-                else category3
+                else category2 if random_number == 2 else category3
             )
             random_number = random.randint(-400, 600)
             change = random_number
