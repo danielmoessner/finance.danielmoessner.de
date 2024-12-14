@@ -35,7 +35,7 @@
             </tr>
         {% endfor %}
         <tr>
-            <td colspan="7">
+            <td colspan="8">
                 <div class="f-flex">
                     {% if object.ticker %} {# this tests if the object is of type stock or a bank #}
                         {%- set tradeUrl="?stock="+object.pk|string -%}
