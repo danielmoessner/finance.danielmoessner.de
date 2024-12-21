@@ -4,7 +4,8 @@ from selenium.webdriver.chrome.service import Service
 
 
 def get_chrome_driver() -> webdriver.Chrome:
-    service = Service(executable_path="/usr/bin/chromedriver")
+    # service = Service(executable_path="/usr/bin/chromedriver")
+    service = Service()
     options = Options()
     options.add_argument("--headless")
     options.add_argument("--disable-gpu")

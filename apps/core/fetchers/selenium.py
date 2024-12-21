@@ -51,6 +51,7 @@ class SeleniumFetcher(Fetcher):
     ) -> dict[str, tuple[bool, str | float]]:
         results = {}
         for fetcher, input in data.items():
+            print(fetcher, input)
             result = self.fetch_single(input)
             results[fetcher] = result
         return results
