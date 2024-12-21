@@ -7,6 +7,8 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django.views.generic.detail import SingleObjectMixin
 
+from apps.core.selenium import get_chrome_driver
+
 from .forms import (
     BankForm,
     BankSelectForm,
@@ -442,3 +444,11 @@ class DeleteTradeView(GetUserMixin, CustomAjaxDeleteMixin, generic.DeleteView):
                 depot=self.get_user().get_active_stocks_depot()
             )
         )
+
+
+def test_view(request):
+    driver = get_chrome_driver()
+    driver.get("https://www.google.com/")
+    title = driver.title
+    driver.quit()
+    return HttpResponse(f"Title: {title}")
