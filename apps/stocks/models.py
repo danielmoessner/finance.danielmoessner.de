@@ -749,7 +749,9 @@ class PriceFetcher(models.Model):
         return self.fetcher_type
 
     @property
-    def url(self):
+    def url(self) -> None | str:
+        if "website" not in self.data:
+            return None
         return self.data["website"]
 
     @property
