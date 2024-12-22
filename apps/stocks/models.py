@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import TYPE_CHECKING, Union
 
+from django.core.validators import MinLengthValidator
 from django.db import models
 from django.db.models import QuerySet, Sum
 from django.utils import timezone
@@ -414,6 +415,12 @@ class Stock(models.Model):
     depot = models.ForeignKey(Depot, on_delete=models.CASCADE, related_name="stocks")
     ticker = models.CharField(max_length=10)
     exchange = models.CharField(max_length=20, default="XETRA")
+    isin = models.CharField(
+        max_length=12,
+        null=True,
+        validators=[MinLengthValidator(12)],
+        verbose_name="ISIN",
+    )
     # query optimization
     top_price = models.ForeignKey(
         "Price", null=True, on_delete=models.SET_NULL, related_name="top_price_stocks"

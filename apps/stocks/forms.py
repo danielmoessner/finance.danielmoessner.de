@@ -77,7 +77,7 @@ class BankSelectForm(forms.Form):
 class StockForm(forms.ModelForm):
     class Meta:
         model = Stock
-        fields = ("name", "ticker", "exchange")
+        fields = ("name", "ticker", "exchange", "isin")
 
     def __init__(self, depot: Depot, *args, **kwargs):
         super(StockForm, self).__init__(*args, **kwargs)
@@ -87,7 +87,7 @@ class StockForm(forms.ModelForm):
 class EditStockForm(forms.ModelForm):
     class Meta:
         model = Stock
-        fields = ("name", "ticker", "exchange", "bucket")
+        fields = ("name", "ticker", "exchange", "isin", "bucket")
 
     def __init__(self, depot: Depot, *args, **kwargs):
         super(EditStockForm, self).__init__(*args, **kwargs)
