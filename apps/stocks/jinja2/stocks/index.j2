@@ -92,6 +92,7 @@
                             {% else %}
                                 {{ bg.modalButton("Set Bucket", "#editStock", url("stocks:edit_stock", args=[stock.pk]) ) }}
                             {% endif %}
+                            {% if stock.no_isin %}<span class="badge bg-danger">no isin</span>{% endif %}
                         </td>
                         <td class="text-end">{{ stock.get_price_display() }}</td>
                         <td class="text-end">{{ stock.get_top_price_display() }}</td>

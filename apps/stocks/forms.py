@@ -94,6 +94,15 @@ class EditStockForm(forms.ModelForm):
         self.instance.depot = depot
         self.fields["bucket"].queryset = depot.user.buckets.all()
 
+    def save(self, *args, **kwargs):
+        ret = super().save(*args, **kwargs)
+        assert isinstance(ret, Stock)
+        if ret.isin:
+            Price.objects.filter(exchange=ret.exchange, ticker=ret.ticker).update(
+                isin=ret.isin
+            )
+        return ret
+
 
 class StockSelectForm(forms.Form):
     stock = forms.ModelChoiceField(widget=forms.Select, queryset=None)

@@ -17,6 +17,13 @@ from apps.overview.models import Bucket
 from apps.stocks.fetchers.marketstack import MarketstackFetcher, MarketstackFetcherInput
 from apps.users.models import StandardUser
 
+ISIN = models.CharField(
+    max_length=12,
+    null=True,
+    validators=[MinLengthValidator(12)],
+    verbose_name="ISIN",
+)
+
 
 class Depot(models.Model):
     name = models.CharField(max_length=200)
@@ -415,12 +422,7 @@ class Stock(models.Model):
     depot = models.ForeignKey(Depot, on_delete=models.CASCADE, related_name="stocks")
     ticker = models.CharField(max_length=10)
     exchange = models.CharField(max_length=20, default="XETRA")
-    isin = models.CharField(
-        max_length=12,
-        null=True,
-        validators=[MinLengthValidator(12)],
-        verbose_name="ISIN",
-    )
+    isin = ISIN
     # query optimization
     top_price = models.ForeignKey(
         "Price", null=True, on_delete=models.SET_NULL, related_name="top_price_stocks"
@@ -452,6 +454,10 @@ class Stock(models.Model):
         verbose_name = "Stock"
         verbose_name_plural = "Stocks"
         ordering = ["name"]
+
+    @property
+    def no_isin(self):
+        return self.isin is None
 
     def __str__(self):
         return "{}".format(self.name)
@@ -913,6 +919,7 @@ class Trade(models.Model):
 
 class Price(models.Model):
     date = models.DateTimeField()
+    isin = ISIN
     ticker = models.CharField(max_length=20)
     price = models.DecimalField(max_digits=20, decimal_places=2)
     exchange = models.CharField(max_length=20)

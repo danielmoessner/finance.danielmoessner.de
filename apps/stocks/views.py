@@ -134,8 +134,8 @@ class StockView(GetUserMixin, TabContextMixin, generic.DetailView):
         context = super().get_context_data(**kwargs)
         context["trades"] = self.object.trades.all().select_related("bank", "stock")
         context["stats"] = self.object.get_stats()
-        context["prices"] = Price.objects.filter(
-            ticker=self.object.ticker, exchange=self.object.exchange
+        context["prices"] = (
+            Price.objects.filter(isin=self.object.isin) if self.object.isin else []
         )
         context["dividends"] = self.object.dividends.all()
         context["values"] = self.object.get_values()
