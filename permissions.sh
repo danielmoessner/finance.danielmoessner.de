@@ -7,3 +7,4 @@ chmod 770 ./tmp/logs
 chmod -R 760 ./tmp/logs/*
 chmod 770 ./tmp
 chmod -R 760 ./tmp/db.sqlite3
+chmod 755 ./tmp/venv/lib/python3.11/site-packages/selenium/webdriver/common/linux/selenium-manager

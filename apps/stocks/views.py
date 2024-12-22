@@ -1,13 +1,12 @@
 import json
 
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.views import generic
 from django.views.generic.detail import SingleObjectMixin
-
-from apps.core.selenium import get_chrome_driver
 
 from .forms import (
     BankForm,
@@ -34,6 +33,7 @@ from apps.core.mixins import (
     GetFormWithDepotMixin,
     TabContextMixin,
 )
+from apps.core.selenium import get_chrome_driver
 from apps.users.mixins import GetUserMixin
 from apps.users.models import StandardUser
 
@@ -446,6 +446,7 @@ class DeleteTradeView(GetUserMixin, CustomAjaxDeleteMixin, generic.DeleteView):
         )
 
 
+@login_required
 def test_view(request):
     driver = get_chrome_driver()
     driver.get("https://www.google.com/")
