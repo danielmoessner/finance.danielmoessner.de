@@ -420,8 +420,6 @@ class Bank(models.Model):
 class Stock(models.Model):
     name = models.CharField(max_length=50)
     depot = models.ForeignKey(Depot, on_delete=models.CASCADE, related_name="stocks")
-    ticker = models.CharField(max_length=10)
-    exchange = models.CharField(max_length=20, default="XETRA")
     isin = ISIN
     # query optimization
     top_price = models.ForeignKey(
@@ -494,9 +492,7 @@ class Stock(models.Model):
     def calculate_top_price(self):
         date = timezone.now() - timedelta(days=365 * 2)
         top_price = (
-            Price.objects.filter(
-                ticker=self.ticker, exchange=self.exchange, date__gt=date
-            )
+            Price.objects.filter(isin=self.isin, date__gt=date)
             .order_by("-price")
             .first()
         )
@@ -544,18 +540,11 @@ class Stock(models.Model):
         return float(self.value or 0)
 
     def __get_latest_price(self) -> Union["Price", None]:
-        return (
-            Price.objects.filter(ticker=self.ticker, exchange=self.exchange)
-            .order_by("-date")
-            .first()
-        )
-
-    def get_marketstack_symbol(self):
-        return "{}.{}".format(self.ticker, self.exchange)
+        return Price.objects.filter(isin=self.isin).order_by("-date").first()
 
     def get_stats(self):
         return {
-            "Symbol": f"{self.ticker}.{self.exchange}",
+            "Isin": f"{self.isin}",
             "Price": self.get_price_display(),
             "Top Price": self.get_top_price_display(),
             "Value": self.get_value_display(),
@@ -643,9 +632,7 @@ class Stock(models.Model):
         return float(self.price.price) if self.price else 0
 
     def get_df_from_database(self, statement, columns):
-        assert str(self.pk) in statement or (
-            self.ticker in statement and self.exchange in statement
-        )
+        assert str(self.pk) in statement or (self.isin in statement)
         return get_df_from_database(statement, columns)
 
     def get_flow_df(self):
@@ -717,10 +704,10 @@ class Stock(models.Model):
                 date(date) as date, 
                 max(price) as price 
             from stocks_price
-            where exchange='{}' and ticker='{}'
+            where isin='{}'
             group by date(date)
         """.format(
-            self.exchange, self.ticker
+            self.isin
         )
         # get and return the df
         df = self.get_df_from_database(statement, ["date", "price"])
@@ -778,7 +765,7 @@ class PriceFetcher(models.Model):
 
     @property
     def has_a_current_price(self) -> bool:
-        price = Price.objects.filter(ticker=self.stock.ticker).order_by("-date").first()
+        price = Price.objects.filter(isin=self.stock.isin).order_by("-date").first()
         if price and not price.is_old:
             return True
         return False
@@ -796,14 +783,7 @@ class PriceFetcher(models.Model):
 
     def save_price(self, price):
         stock = self.stock
-        price = Price(
-            **{
-                "ticker": stock.ticker,
-                "exchange": stock.exchange,
-                "date": timezone.now(),
-                "price": price,
-            }
-        )
+        price = Price(isin=stock.isin, date=timezone.now(), price=price)
         price.save()
         self.error = ""
         self.save()
@@ -922,9 +902,7 @@ class Trade(models.Model):
 class Price(models.Model):
     date = models.DateTimeField()
     isin = ISIN
-    ticker = models.CharField(max_length=20)
     price = models.DecimalField(max_digits=20, decimal_places=2)
-    exchange = models.CharField(max_length=20)
 
     class Meta:
         verbose_name = "Price"
@@ -932,7 +910,7 @@ class Price(models.Model):
         ordering = ["-date"]
 
     def __str__(self):
-        return "{} - {} - {}".format(self.ticker, self.get_date(), self.price)
+        return "{} - {} - {}".format(self.isin, self.get_date(), self.price)
 
     @property
     def is_old(self) -> bool:
@@ -948,7 +926,7 @@ class Price(models.Model):
 
     def reset(self):
         affected_stocks = (
-            Stock.objects.filter(ticker=self.ticker, exchange=self.exchange)
+            Stock.objects.filter(isin=self.isin)
             .select_related("depot")
             .prefetch_related("depot__banks")
         )

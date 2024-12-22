@@ -77,7 +77,7 @@ class BankSelectForm(forms.Form):
 class StockForm(forms.ModelForm):
     class Meta:
         model = Stock
-        fields = ("name", "ticker", "exchange", "isin")
+        fields = ("name", "isin")
 
     def __init__(self, depot: Depot, *args, **kwargs):
         super(StockForm, self).__init__(*args, **kwargs)
@@ -87,21 +87,12 @@ class StockForm(forms.ModelForm):
 class EditStockForm(forms.ModelForm):
     class Meta:
         model = Stock
-        fields = ("name", "ticker", "exchange", "isin", "bucket")
+        fields = ("name", "isin", "bucket")
 
     def __init__(self, depot: Depot, *args, **kwargs):
         super(EditStockForm, self).__init__(*args, **kwargs)
         self.instance.depot = depot
         self.fields["bucket"].queryset = depot.user.buckets.all()
-
-    def save(self, *args, **kwargs):
-        ret = super().save(*args, **kwargs)
-        assert isinstance(ret, Stock)
-        if ret.isin:
-            Price.objects.filter(exchange=ret.exchange, ticker=ret.ticker).update(
-                isin=ret.isin
-            )
-        return ret
 
 
 class StockSelectForm(forms.Form):
@@ -394,35 +385,6 @@ class TradeForm(forms.ModelForm):
 ###
 # Price
 ###
-class PriceForm(forms.ModelForm):
-    date = forms.DateTimeField(
-        widget=forms.DateTimeInput(
-            attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
-        ),
-        input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%dT%H:%M:%S%z"],
-        label="Date",
-    )
-
-    class Meta:
-        model = Price
-        fields = ("date", "ticker", "exchange", "price")
-
-    def clean(self):
-        cleaned_data = super().clean()
-        if Price.objects.filter(
-            ticker=cleaned_data["ticker"], date=cleaned_data["date"]
-        ).exists():
-            raise forms.ValidationError(
-                "There exists already a price for this stock on this date."
-            )
-        return cleaned_data
-
-    def clean_ticker(self):
-        ticker = self.cleaned_data["ticker"]
-        ticker = ticker.split(".")[0]
-        return ticker
-
-
 class PriceEditForm(forms.ModelForm):
     class Meta:
         model = Price
