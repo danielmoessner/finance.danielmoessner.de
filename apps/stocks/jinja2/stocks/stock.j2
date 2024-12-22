@@ -37,7 +37,11 @@
                 {% for fetcher in fetchers %}
                     <tr>
                         <td class="text-truncate w-75" style="max-width: 300px;">
-                            {{ fetcher }}
+                            {% if fetcher.url %}
+                                {{ fetcher.fetcher_type }} - <a target="_blank" href="{{ fetcher.url }}">{{ fetcher.url }}</a>
+                            {% else %}
+                                {{ fetcher }}
+                            {% endif %}
                             {% if fetcher.error %}
                                 <abbr title="{{ fetcher.error }}">
                                     <br>
