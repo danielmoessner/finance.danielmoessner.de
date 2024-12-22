@@ -446,7 +446,6 @@ class DeleteTradeView(GetUserMixin, CustomAjaxDeleteMixin, generic.DeleteView):
         )
 
 
-@login_required
 def test_view(request):
     driver = get_chrome_driver()
     driver.get("https://www.google.com/")
