@@ -19,7 +19,6 @@ from apps.users.models import StandardUser
 
 ISIN = models.CharField(
     max_length=12,
-    null=True,
     validators=[MinLengthValidator(12)],
     verbose_name="ISIN",
 )
@@ -636,7 +635,7 @@ class Stock(models.Model):
         return float(self.price.price) if self.price else 0
 
     def get_df_from_database(self, statement, columns):
-        assert str(self.pk) in statement or (self.isin in statement)
+        assert (str(self.pk) in statement) or (self.isin in statement)
         return get_df_from_database(statement, columns)
 
     def get_flow_df(self):
@@ -710,9 +709,7 @@ class Stock(models.Model):
             from stocks_price
             where isin='{}'
             group by date(date)
-        """.format(
-            self.isin
-        )
+        """.format(self.isin)
         # get and return the df
         df = self.get_df_from_database(statement, ["date", "price"])
         return df
