@@ -29,7 +29,7 @@
         <tr>
             <td colspan="5">
                 <div class="d-flex">
-                    {% if object.ticker %} {# this tests if the object is of type stock or a bank #}
+                    {% if object.is_stock %}
                         {%- set dividendUrl="?stock="+object.pk|string -%}
                     {% else %}
                         {%- set dividendUrl="?bank="+object.pk|string -%}

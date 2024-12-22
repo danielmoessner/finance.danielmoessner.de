@@ -42,9 +42,7 @@ class FormValidationTestCase(StandardSetUpTestCase):
     def setUp(self):
         super().setUp()
         self.bank = Bank.objects.create(depot=self.depot, name="Test Bank")
-        self.stock = Stock.objects.create(
-            name="Test Stock", exchange="TEST", ticker="TST", depot=self.depot
-        )
+        self.stock = Stock.objects.create(name="Test Stock", depot=self.depot)
 
     # def test_no_negative_flow_can_be_added_when_balance_zero(self):
     #     with self.assertRaises(ValueError):

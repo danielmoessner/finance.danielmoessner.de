@@ -457,6 +457,10 @@ class Stock(models.Model):
     def no_isin(self):
         return self.isin is None
 
+    @property
+    def is_stock(self):
+        return True
+
     def __str__(self):
         return "{}".format(self.name)
 

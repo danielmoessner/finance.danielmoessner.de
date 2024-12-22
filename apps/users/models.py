@@ -328,9 +328,7 @@ class StandardUser(AbstractUser):
         # bank
         bank = Bank.objects.create(name="Big Bank", depot=depot)
         # stock
-        stock = Stock.objects.create(
-            depot=depot, name="Varta AG", ticker="VAR1", exchange="XETRA"
-        )
+        stock = Stock.objects.create(depot=depot, name="Varta AG", isin="123456789123")
         # flow
         create_flow(depot, "2020-03-03T13:45", 10000, bank)
         # trade
