@@ -245,7 +245,6 @@ class DividendForm(forms.ModelForm):
         fields = ("bank", "stock", "date", "dividend")
 
     def __init__(self, depot, *args, **kwargs):
-        print(args, kwargs)
         super(DividendForm, self).__init__(*args, **kwargs)
         self.fields["bank"].queryset = depot.banks.order_by("name")
         self.fields["stock"].queryset = depot.stocks.order_by("name")
