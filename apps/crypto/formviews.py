@@ -232,7 +232,11 @@ class AddTransactionView(
 
 
 class EditTransactionView(
-    GetUserMixin, GetFormWithDepotMixin, AjaxResponseMixin, generic.UpdateView
+    GetUserMixin,
+    GetDepotMixin,
+    GetFormWithDepotMixin,
+    AjaxResponseMixin,
+    generic.UpdateView,
 ):
     model = Transaction
     form_class = TransactionForm

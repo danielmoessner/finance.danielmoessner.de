@@ -709,7 +709,9 @@ class Stock(models.Model):
             from stocks_price
             where isin='{}'
             group by date(date)
-        """.format(self.isin)
+        """.format(
+            self.isin
+        )
         # get and return the df
         df = self.get_df_from_database(statement, ["date", "price"])
         return df

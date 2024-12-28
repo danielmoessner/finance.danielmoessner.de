@@ -15,5 +15,5 @@ class Command(BaseCommand):
             job: Callable[[], None] = getattr(module, function_name)
             jobs.append(job)
         for job in jobs:
-            self.stdout.write(f"running {job}")
+j            self.stdout.write(f"running {job}")
             job()
