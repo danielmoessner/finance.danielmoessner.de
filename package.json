@@ -6,14 +6,14 @@
   "author": "danielmoessner",
   "license": "UNLICENSED",
   "dependencies": {
-    "@amcharts/amcharts4": "^4.10.21",
-    "@rollup/plugin-commonjs": "^25.0.3",
-    "@rollup/plugin-node-resolve": "^15.1.0",
-    "@rollup/plugin-terser": "^0.4.3",
-    "bootstrap": "^5.3.0",
-    "cross-env": "^7.0.3",
-    "rollup": "^3.26.3",
-    "sass": "^1.64.0"
+    "@amcharts/amcharts4": "==4.10.*",
+    "@rollup/plugin-commonjs": "==28.0.*",
+    "@rollup/plugin-node-resolve": "==16.0.*",
+    "@rollup/plugin-terser": "==0.4.*",
+    "bootstrap": "==5.3.*",
+    "cross-env": "==7.0.*",
+    "rollup": "==4.29.*",
+    "sass": "==1.83.*"
   },
   "scripts": {
     "css": "sass static/scss/main.scss static/app/css/main.css --load-path=node_modules",

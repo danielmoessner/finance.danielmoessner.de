@@ -11,3 +11,5 @@ tmp/*
 **/.idea
 **/__pycache__
 .pdm-python
+
+.codegpt
