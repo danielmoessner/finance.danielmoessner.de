@@ -36,15 +36,14 @@ class AccountView(GetUserMixin, TabContextMixin, generic.DetailView):
     def get_queryset(self):
         return Account.objects.filter(depot__in=self.get_user().banking_depots.all())
 
-    def get_year(self) -> int:
-        current_year = str(timezone.now().year)
-        year = self.request.GET.get("year", current_year)
-        return int(year)
+    def get_show(self) -> int:
+        show = self.request.GET.get("show", 30)
+        return int(show)
 
-    def get_context_year(self, year: int, changes: list[Change]) -> str | None:
-        if len(changes) == 0:
-            return str(year - 1)
-        return str(int(year) - 1) if changes[-1].date.year == int(year) else None
+    def get_context_show(self, show: int) -> str | None:
+        if show >= self.object.changes.count():
+            return None
+        return str(show + 100)
 
     def get_context_data(self, **kwargs):
         context = super(AccountView, self).get_context_data(**kwargs)
@@ -52,13 +51,9 @@ class AccountView(GetUserMixin, TabContextMixin, generic.DetailView):
         if self.tab == "stats":
             context["stats"] = self.object.get_stats()
         if self.tab == "changes":
-            year = self.get_year()
-            context["changes"] = list(
-                self.object.changes.filter(date__year__gte=str(year))
-                .order_by("-date", "-pk")
-                .select_related("category")
-            )
-            context["year"] = self.get_context_year(year, context["changes"])
+            show = self.get_show()
+            context["changes"] = list(self.object.changes.order_by("-date", "-pk").select_related("category")[:show])
+            context["show"] = self.get_context_show(show)
         return context
 
 

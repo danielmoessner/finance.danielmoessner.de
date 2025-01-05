@@ -46,8 +46,8 @@
                     </tr>
                 {% endfor %}
                 <tr id="load-more">
-                    {% if year %}
-                        <td colspan="6">{{ bg.hrefButton("Load More", request.path + '?tab=changes&year=' + year + '#load-more') }}</td>
+                    {% if show %}
+                        <td colspan="6">{{ bg.hrefButton("Load More", request.path + '?tab=changes&show=' + show + '#load-more') }}</td>
                     {% endif %}
                 </tr>
                 <tr>
