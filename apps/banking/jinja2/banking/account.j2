@@ -51,7 +51,9 @@
                     {% endif %}
                 </tr>
                 <tr>
-                    <td colspan="6">{{ bg.modalButton("Add Change", "#addChange", url("banking:add_change") +"?account="+account.pk|string) }}</td>
+                    <td colspan="6">
+                        {{ bg.modalButton("Add Change", "#addChange", url("banking:add_change") +"?account="+account.pk|string) }}
+                    </td>
                 </tr>
             </tbody>
         </table>

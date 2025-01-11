@@ -1,7 +1,6 @@
-from django.utils import timezone
 from django.views import generic
 
-from apps.banking.models import Account, Category, Change, Depot
+from apps.banking.models import Account, Category, Depot
 from apps.banking.utils import get_latest_years
 from apps.core.mixins import TabContextMixin
 from apps.users.mixins import GetUserMixin
@@ -52,7 +51,11 @@ class AccountView(GetUserMixin, TabContextMixin, generic.DetailView):
             context["stats"] = self.object.get_stats()
         if self.tab == "changes":
             show = self.get_show()
-            context["changes"] = list(self.object.changes.order_by("-date", "-pk").select_related("category")[:show])
+            context["changes"] = list(
+                self.object.changes.order_by("-date", "-pk").select_related("category")[
+                    :show
+                ]
+            )
             context["show"] = self.get_context_show(show)
         return context
 
