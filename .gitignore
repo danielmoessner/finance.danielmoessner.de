@@ -11,5 +11,6 @@ tmp/*
 **/.idea
 **/__pycache__
 .pdm-python
-
+finance.danielmoessner.de.egg-info
 .codegpt
+build
