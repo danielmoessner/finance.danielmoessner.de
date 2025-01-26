@@ -30,6 +30,13 @@
     <a class="btn w-100 text-start {% if active %}btn-secondary active{% else %}btn-link text-white text-decoration-none{% endif %} {{ classes }}"
        href="{{ url }}">{{ text }}</a>
 {% endmacro %}
+{% macro navigationPostButton(text, url, csrf_token) %}
+    <form action="{{ url }}" method="post">
+        <button class="btn w-100 text-start btn-link text-white text-decoration-none"
+                type="submit">{{ text }}</button>
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    </form>
+{% endmacro %}
 {% macro dismissButton(text="Cancel", classes="") %}
     <button class="btn btn-dark {{ classes }}"
             type="button"

@@ -1,6 +1,5 @@
 {% extends "layout/base.j2" %}
 {% import "symbols/heading.j2" as hg %}
-{% import "symbols/left.j2" as lg %}
 {% import "symbols/messages.j2" as messages %}
 {% block body %}
     <body class="bg-black">
@@ -8,7 +7,7 @@
             <div class="d-flex flex-column flex-lg-row">
                 <div class="row flex-grow-1 pt-4">
                     <aside class="col-12 col-lg-3">
-                        {{ lg.left(request) }}
+                        {% include 'symbols/left.j2' %}
                     </aside>
                     <main class="col-12 col-lg-9 mt-5 mt-lg-0">
                         {{ hg.bigLmHeading(headingCategory, headingHeading) }}

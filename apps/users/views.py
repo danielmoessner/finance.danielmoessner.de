@@ -1,9 +1,7 @@
 from django.contrib import messages
-from django.contrib.auth import logout
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.http import HttpResponseRedirect
-from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views import generic
 
@@ -41,9 +39,7 @@ class SignInView(LoginView):
 
 
 class SignOutView(LogoutView):
-    def get(self, request, *args, **kwargs):
-        logout(request)
-        return redirect("users:redirect")
+    pass
 
 
 class IndexView(UserPassesTestMixin, TabContextMixin, generic.DetailView):

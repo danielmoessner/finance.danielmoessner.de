@@ -1,49 +1,45 @@
 {% import "symbols/button.j2" as buttons %}
-{% macro left(request) %}
-    <nav class="navbar navbar-expand-lg p-2 rounded p-lg-0 bg-dark bg-lg-transparent navbar-dark flex flex-lg-column align-items-lg-baseline">
-        <a class="navbar-brand p-0" href="/">
-            <img src="{{ static('img/owl.svg') }}" width="40" height="40" alt="Owl">
-        </a>
-        <button class="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#navbar"
-                aria-controls="navbar"
-                aria-expanded="false"
-                aria-label="Toggle Navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="navbar-collapse collapse w-100" id="navbar">
-            <ul class="navbar-nav flex-column pt-3 pb-3 mt-lg-0 flex-grow-1">
-                <li class="nav-item">
-                    <p class="font-weight-bold m-0 mb-2">Dashboards</p>
-                </li>
-                <li class="nav-item">
-                    {{ buttons.navigationButton("Overview", url("overview:index") , active=("overview" in request.path)) }}
-                </li>
-                <li class="nav-item">
-                    {{ buttons.navigationButton("Banking", url("banking:index") +"?tab=accounts" , active=("banking" in request.path)) }}
-                </li>
-                <li class="nav-item">
-                    {{ buttons.navigationButton("Crypto", url('crypto:index') , active=("crypto" in request.path)) }}
-                </li>
-                <li class="nav-item">
-                    {{ buttons.navigationButton("Alternative", url('alternative:index') , active=("alternative" in request.path)) }}
-                </li>
-                <li class="nav-item">
-                    {{ buttons.navigationButton("Stocks", url('stocks:index') , active=("stocks" in request.path)) }}
-                </li>
-                <li class="nav-item">
-                    <p class="font-weight-bold m-0 mb-2 mt-3">User</p>
-                </li>
-                <li class="nav-item">
-                    {{ buttons.navigationButton("Settings", url('users:settings', args=[request.user.pk]) , active=("user" in request.path)) }}
-                </li>
-                <li class="nav-item">
-                    <p class="font-weight-bold m-0 mb-2 mt-3">Finance</p>
-                </li>
-                <li class="nav-item">{{ buttons.navigationButton("Log Out", url('users:logout') , active=False) }}</li>
-            </ul>
-        </div>
-    </nav>
-{% endmacro %}
+{% import "symbols/button.j2" as bg %}
+<nav class="navbar navbar-expand-lg p-2 rounded p-lg-0 bg-dark bg-lg-transparent navbar-dark flex flex-lg-column align-items-lg-baseline">
+    <a class="navbar-brand p-0" href="/">
+        <img src="{{ static('img/owl.svg') }}" width="40" height="40" alt="Owl">
+    </a>
+    <button class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbar"
+            aria-controls="navbar"
+            aria-expanded="false"
+            aria-label="Toggle Navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="navbar-collapse collapse w-100" id="navbar">
+        <ul class="navbar-nav flex-column pt-3 pb-3 mt-lg-0 flex-grow-1">
+            <li class="nav-item">
+                <p class="font-weight-bold m-0 mb-2">Dashboards</p>
+            </li>
+            <li class="nav-item">
+                {{ buttons.navigationButton("Overview", url("overview:index") , active=("overview" in request.path)) }}
+            </li>
+            <li class="nav-item">
+                {{ buttons.navigationButton("Banking", url("banking:index") +"?tab=accounts" , active=("banking" in request.path)) }}
+            </li>
+            <li class="nav-item">
+                {{ buttons.navigationButton("Crypto", url('crypto:index') , active=("crypto" in request.path)) }}
+            </li>
+            <li class="nav-item">
+                {{ buttons.navigationButton("Alternative", url('alternative:index') , active=("alternative" in request.path)) }}
+            </li>
+            <li class="nav-item">
+                {{ buttons.navigationButton("Stocks", url('stocks:index') , active=("stocks" in request.path)) }}
+            </li>
+            <li class="nav-item">
+                <p class="font-weight-bold m-0 mb-2 mt-3">User</p>
+            </li>
+            <li class="nav-item">
+                {{ buttons.navigationButton("Settings", url('users:settings', args=[request.user.pk]) , active=("user" in request.path)) }}
+            </li>
+            <li class="nav-item">{{ buttons.navigationPostButton("Log Out", url('users:logout') , csrf_token) }}</li>
+        </ul>
+    </div>
+</nav>
