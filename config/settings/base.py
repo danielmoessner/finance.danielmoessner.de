@@ -144,3 +144,5 @@ CRONJOBS = [
     "apps.crypto.tasks.fetch_prices",
     "apps.banking.tasks.calculate_change_counts",
 ]
+
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 365  # 1 year
