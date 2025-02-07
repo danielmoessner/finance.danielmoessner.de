@@ -2,6 +2,7 @@ from django.views import generic
 
 from apps.banking.models import Account, Category, Depot
 from apps.banking.utils import get_latest_years
+from apps.core.functional import list_sort
 from apps.core.mixins import TabContextMixin
 from apps.users.mixins import GetUserMixin
 
@@ -22,7 +23,11 @@ class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
         if self.tab == "accounts":
             context["accounts"] = self.object.accounts.select_related("bucket")
         elif self.tab == "categories":
-            context["categories"] = self.object.categories.order_by("name")
+            categories = list(self.object.categories.all())
+            categories = list_sort(
+                categories, lambda c: c.get_latest_years_sum(), reverse=True
+            )
+            context["categories"] = categories
             context["years"] = get_latest_years(5)
         return context
 

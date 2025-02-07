@@ -1,13 +1,13 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import TYPE_CHECKING, Literal, Union
+from typing import TYPE_CHECKING, Literal, TypedDict, Union
 
 from django.db import connection, models
 from django.utils import timezone
 
 import apps.banking.duplicated_code as banking_duplicated_code
 from apps.core import utils
-from apps.core.functional import list_map, list_sort
+from apps.core.functional import list_create, list_map, list_sort
 from apps.core.models import Account as CoreAccount
 from apps.core.models import Depot as CoreDepot
 from apps.core.utils import turn_dict_of_dicts_into_list_of_dicts
@@ -247,6 +247,11 @@ class Account(CoreAccount):
         return self.value_df
 
 
+class YearBalance(TypedDict):
+    year: int
+    balance: float
+
+
 class Category(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
@@ -285,9 +290,16 @@ class Category(models.Model):
             stats[sums["year"]] = sums["balance"]
         return stats
 
-    def get_yearly_sum(self):
+    def get_latest_years_sum(self) -> list[float]:
+        sums = {x["year"]: x["balance"] for x in self._get_yearly_sum()}
+        now_year = timezone.now().year
+        years = list_create(3, now_year, lambda x: x - 1)
+        latest_sums = list_map(years, lambda y: sums.get(y, -999999))
+        return latest_sums
+
+    def _get_yearly_sum(self) -> list[YearBalance]:
         if not hasattr(self, "_sums"):
-            sums = (
+            sumsqs = (
                 Change.objects.filter(category=self)
                 .annotate(year=models.functions.ExtractYear("date"))
                 .values("year")
@@ -295,15 +307,21 @@ class Category(models.Model):
                 .order_by("year")
             )
             sums = list_map(
-                sums,
-                lambda x: {
-                    "year": str(x["year"]),
-                    "balance": "{:.2f} €".format(x["balance"]),
-                },
+                sumsqs,
+                lambda x: YearBalance(year=x["year"], balance=x["balance"]),
             )
             sums = list_sort(sums, key=lambda x: -int(x["year"]))
-            self._sums = sums
+            self._sums: list[YearBalance] = sums
         return self._sums
+
+    def get_yearly_sum(self):
+        return list_map(
+            self._get_yearly_sum(),
+            lambda x: {
+                "year": str(x["year"]),
+                "balance": "{:.2f} €".format(x["balance"]),
+            },
+        )
 
     @staticmethod
     def get_objects_by_depot(depot):

@@ -82,6 +82,15 @@ def list_map(
     return list(map(fn, items))
 
 
+list_create_I = TypeVar("list_create_I")
+
+
+def list_create(
+    count: int, start: list_create_I, fn: Callable[[list_create_I], list_create_I]
+) -> list[list_create_I]:
+    return [start, *[fn(start) for _ in range(count - 1)]]
+
+
 list_filter_I = TypeVar("list_filter_I")
 
 
@@ -126,9 +135,11 @@ list_sort_I = TypeVar("list_sort_I")
 
 
 def list_sort(
-    items: list[list_sort_I], key: Callable[[list_sort_I], Any | list[Any]]
+    items: list[list_sort_I],
+    key: Callable[[list_sort_I], Any | list[Any]],
+    reverse=False,
 ) -> list[list_sort_I]:
-    return sorted(items, key=key)
+    return sorted(items, key=key, reverse=reverse)
 
 
 list_find_I = TypeVar("list_find_I")

@@ -6,6 +6,7 @@ from django.utils import timezone
 
 from apps.banking.forms import AccountForm, CategoryForm, ChangeForm, DepotForm
 from apps.banking.models import Account, Category, Change, Depot
+from apps.core.functional import list_sort
 from apps.users.models import StandardUser as User
 
 
@@ -176,3 +177,12 @@ class BalanceUpdateTestCase(TestCase):
         assert self.get_account().balance is not None
         assert self.get_category().balance is not None
         assert self.get_depot().balance is not None
+
+    def test_category_sort(self):
+        a = {"n": "a", "s": [1, 2, 3]}
+        b = {"n": "b", "s": [2, 3, 4]}
+        c = {"n": "c", "s": [0, 0, 5]}
+        d = {"n": "d", "s": [-4, -5, -6]}
+        e = {"n": "e", "s": [-4, 1, 2]}
+        res = list_sort([a, b, c, d, e], lambda x: x["s"], reverse=True)
+        assert res == [b, a, c, e, d]
