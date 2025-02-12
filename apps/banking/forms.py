@@ -38,6 +38,7 @@ class AccountForm(forms.ModelForm):
         fields = (
             "name",
             "bucket",
+            "is_archived",
         )
 
     def __init__(self, depot: Depot, *args, **kwargs):

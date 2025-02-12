@@ -59,6 +59,8 @@
                 </tr>
             </tbody>
         </table>
+        <a class="btn btn-sm btn-link"
+           href="{% url 'banking:index' %}?tab=accounts&show_archived">Include Archived</a>
     {% endif %}
     {% if tab=='categories' %}
         <table class="table rounded table-responsive-md table-dark mb-5">

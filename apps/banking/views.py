@@ -21,7 +21,11 @@ class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
         if self.tab == "stats":
             context["stats"] = self.object.get_stats()
         if self.tab == "accounts":
-            context["accounts"] = self.object.accounts.select_related("bucket")
+            show_archived = self.request.GET.get("show_archived", False)
+            accounts = self.object.accounts.all()
+            if not show_archived:
+                accounts = accounts.filter(is_archived=False)
+            context["accounts"] = accounts.select_related("bucket")
         elif self.tab == "categories":
             categories = list(self.object.categories.all())
             categories = list_sort(

@@ -157,6 +157,7 @@ class Depot(CoreDepot):
 class Account(CoreAccount):
     TYPE = "Banking"
     depot = models.ForeignKey(Depot, on_delete=models.CASCADE, related_name="accounts")
+    is_archived = models.BooleanField(default=False)
     # query optimzation
     balance = models.DecimalField(
         max_digits=15, decimal_places=2, null=True, blank=True
