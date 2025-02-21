@@ -99,10 +99,7 @@ class Depot(CoreDepot):
 
     def get_balance(self):
         if self.balance is None:
-            changes = Change.objects.filter(
-                account__in=self.accounts.all(), category__in=self.categories.all()
-            )
-            banking_duplicated_code.set_balance(self, changes)
+            self.set_balance()
         assert self.balance is not None
         return round(self.balance, 2)
 
@@ -152,6 +149,16 @@ class Depot(CoreDepot):
     def calculate_changes_count(self):
         self.most_money_moved_away = self._get_most_money_moved("away")
         self.most_money_moved_to = self._get_most_money_moved("to")
+
+    def reset_balance(self):
+        self.balance = None
+        self.set_balance()
+
+    def set_balance(self):
+        changes = Change.objects.filter(
+            account__in=self.accounts.all(), category__in=self.categories.all()
+        )
+        banking_duplicated_code.set_balance(self, changes)
 
 
 class Account(CoreAccount):
@@ -335,7 +342,7 @@ class Change(models.Model):
     )
     date = models.DateTimeField()
     category = models.ForeignKey(
-        Category, related_name="changes", null=True, on_delete=models.SET_NULL
+        Category, related_name="changes", on_delete=models.PROTECT
     )
     description = models.TextField(blank=True)
     change = models.DecimalField(decimal_places=2, max_digits=15)
@@ -405,10 +412,9 @@ class Change(models.Model):
 
     # setters
     def set_balances_of_affected_objects_to_null(self):
-        if self.category is not None:
-            Category.objects.filter(pk=self.category.pk).update(balance=None)
+        Category.objects.filter(pk=self.category.pk).update(balance=None)
         Account.objects.filter(pk=self.account.pk).update(balance=None)
         Change.objects.filter(account=self.account, date__gte=self.date).update(
             balance=None
         )
-        Depot.objects.filter(pk=self.account.depot.pk).update(balance=None)
+        Depot.objects.get(pk=self.account.depot.pk).reset_balance()

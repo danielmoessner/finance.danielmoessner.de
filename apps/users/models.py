@@ -7,6 +7,8 @@ from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db import models
 from django.utils import timezone
 
+from apps.core.functional import list_filter
+
 if TYPE_CHECKING:
     from django.db.models.query import QuerySet
 
@@ -81,19 +83,13 @@ class StandardUser(AbstractUser):
     def get_all_active_depots(
         self,
     ) -> list[Union["BankingDepot", "AlternativeDepot", "CryptoDepto", "StockDepot"]]:
-        depots = []
-        depot = self.get_active_banking_depot()
-        if depot:
-            depots.append(depot)
-        depot = self.get_active_alternative_depot()
-        if depot:
-            depots.append(depot)
-        depot = self.get_active_crypto_depot()
-        if depot:
-            depots.append(depot)
-        depot = self.get_active_stocks_depot()
-        if depot:
-            depots.append(depot)
+        depots_all = [
+            self.get_active_banking_depot(),
+            self.get_active_alternative_depot(),
+            self.get_active_crypto_depot(),
+            self.get_active_stocks_depot(),
+        ]
+        depots = list_filter(depots_all, lambda x: x is not None)
         return depots
 
     # create

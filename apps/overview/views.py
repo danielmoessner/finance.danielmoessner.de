@@ -25,7 +25,7 @@ def get_value(depot: PDepot) -> float:
 
 
 def format_number(number: float) -> str:
-    return "{:,.2f}".format(number)
+    return "{:,.2f} €".format(number)
 
 
 def format_percentage(number: float) -> str:
@@ -36,20 +36,20 @@ def get_value_stats(depots: Sequence[PDepot]) -> tuple[dict[str, str], float]:
     stats = {}
     total = 0
     for depot in depots:
-        if _value := get_value(depot):
-            total += _value
-            stats[getattr(depot, "name", "---")] = format_number(_value)
+        _value = get_value(depot)
+        total += _value
+        stats[getattr(depot, "name", "---")] = format_number(_value)
     return stats, total
 
 
 def get_percentage_stats(depots: Sequence[PDepot], total: float) -> dict[str, str]:
     stats = {}
     for depot in depots:
-        if _value := get_value(depot):
-            percentage = round(_value / total * 100, 2) if total else 0
-            stats[f"{getattr(depot, 'name', '')}_percentage"] = format_percentage(
-                percentage
-            )
+        _value = get_value(depot)
+        percentage = round(_value / total * 100, 2) if total else 0
+        stats[f"{getattr(depot, 'name', '')}_percentage"] = format_percentage(
+            percentage
+        )
     return stats
 
 
