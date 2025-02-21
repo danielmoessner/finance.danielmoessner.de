@@ -62,10 +62,10 @@
                 <tr>
                     <td colspan="6">
                         <div class="d-flex">
-                            {{ mg.djangoModal("Add Asset", "addAsset", url("crypto:add_asset") ) }}
-                            {{ bg.modalButton('Add Asset', '#addAsset') }}
-                            {{ mg.djangoModal("Delete Asset", "removeAsset", url("crypto:remove_asset") ) }}
-                            {{ bg.modalButton('Delete Asset', '#removeAsset') }}
+                            {{ mg.djangoModal('Add Asset', 'addAsset') }}
+                            {{ bg.modalButton('Add Asset', '#addAsset', url("crypto:add_asset") ) }}
+                            {{ mg.djangoModal('Delete Asset', 'removeAsset') }}
+                            {{ bg.modalButton('Delete Asset', '#removeAsset', url("crypto:remove_asset") ) }}
                         </div>
                     </td>
                 </tr>
@@ -88,12 +88,10 @@
                         <td class="text-end">{{ account.get_value_display() }}</td>
                         <td>
                             <div class="d-flex justify-content-end">
-                                {{ mg.djangoModal("Deposit / Withdraw", "addFlow"+account.pk|string,
-                                                                url("crypto:add_flow") +"?account="+account.pk|string) }}
-                                {{ bg.modalButton("Deposit / Withdraw", "#addFlow"+account.pk|string) }}
-                                {{ bg.modalButton("Edit", "#editAccount"+account.pk|string) }}
-                                {{ mg.djangoModal("Edit Account", "editAccount"+account.pk|string, url("crypto:edit_account",
-                                                                args=[account.pk]) ) }}
+                                {{ mg.djangoModal('Deposit / Withdraw', 'addFlow') }}
+                                {{ bg.modalButton("Deposit / Withdraw", "#addFlow", url("crypto:add_flow") +"?account="+account.pk|string) }}
+                                {{ bg.modalButton("Edit", "#editAccount", url("crypto:edit_account", args=[account.pk]) ) }}
+                                {{ mg.djangoModal('Edit Account', 'editAccount') }}
                                 {{ bg.hrefButton("Open", url=url("crypto:account", args=[account.pk]) ) }}
                             </div>
                         </td>
@@ -102,10 +100,10 @@
                 <tr>
                     <td colspan="3">
                         <div class="d-flex">
-                            {{ mg.djangoModal("Add Account", "addAccount", url("crypto:add_account") ) }}
-                            {{ bg.modalButton('Add Account', '#addAccount') }}
-                            {{ mg.djangoModal("Delete Account", "deleteAccount", url("crypto:delete_account") ) }}
-                            {{ bg.modalButton('Delete Account', '#deleteAccount') }}
+                            {{ mg.djangoModal('Add Account', 'addAccount') }}
+                            {{ bg.modalButton('Add Account', '#addAccount', url("crypto:add_account") ) }}
+                            {{ mg.djangoModal('Delete Account', 'deleteAccount') }}
+                            {{ bg.modalButton('Delete Account', '#deleteAccount', url("crypto:delete_account") ) }}
                         </div>
                     </td>
                 </tr>

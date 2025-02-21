@@ -82,8 +82,8 @@
                 <tr>
                     <td colspan="6">
                         <div class="d-flex">
-                            {{ mg.djangoModal("Add Bucket", "addBucket", url("overview:add_bucket") ) }}
-                            {{ bg.modalButton('Add Bucket', '#addBucket') }}
+                            {{ mg.djangoModal('Add Bucket', 'addBucket') }}
+                            {{ bg.modalButton('Add Bucket', '#addBucket', url("overview:add_bucket") ) }}
                         </div>
                     </td>
                 </tr>

@@ -10,7 +10,12 @@
             <th class="text-end" scope="col">Money Amount</th>
             <th class="text-end" scope="col">Price</th>
             <th class="text-end" scope="col">
-                {{ bg.modalButton("Add Trade", "#addTrade") }}
+            {% if object.ticker %} {# this tests if the object is of type stock or a bank #}
+                        {%- set tradeUrl="?stock="+object.pk|string -%}
+                    {% else %}
+                        {%- set tradeUrl="?bank="+object.pk|string -%}
+                    {% endif %}
+                {{ bg.modalButton("Add Trade", "#addTrade", url("stocks:add_trade")+tradeUrl) }}
             </th>
         </tr>
         </thead>
@@ -26,10 +31,10 @@
                 <td class="text-end">{{ trade.price_str }}</td>
                 <td>
                     <div class="d-flex">
-                        {{ mg.djangoModal("Edit Trade", "editTrade"+trade.pk|string, url("stocks:edit_trade", args=[trade.pk])) }}
-                        {{ bg.modalButton("Edit", "#editTrade"+trade.pk|string) }}
-                        {{ mg.djangoModal("Delete Trade", "deleteTrade"+trade.pk|string, url("stocks:delete_trade", args=[trade.pk])) }}
-                        {{ bg.modalButton("Delete", "#deleteTrade"+trade.pk|string) }}
+                        {{ mg.djangoModal("Edit Trade", "editTrade") }}
+                        {{ bg.modalButton("Edit", "#editTrade", url("stocks:edit_trade", args=[trade.pk])) }}
+                        {{ mg.djangoModal("Delete Trade", "deleteTrade") }}
+                        {{ bg.modalButton("Delete", "#deleteTrade", url("stocks:delete_trade", args=[trade.pk])) }}
                     </div>
                 </td>
             </tr>
@@ -37,13 +42,8 @@
         <tr>
             <td colspan="8">
                 <div class="f-flex">
-                    {% if object.ticker %} {# this tests if the object is of type stock or a bank #}
-                        {%- set tradeUrl="?stock="+object.pk|string -%}
-                    {% else %}
-                        {%- set tradeUrl="?bank="+object.pk|string -%}
-                    {% endif %}
-                    {{ mg.djangoModal("Add Trade", "addTrade", url("stocks:add_trade")+tradeUrl) }}
-                    {{ bg.modalButton("Add Trade", "#addTrade") }}
+                    {{ mg.djangoModal("Add Trade", "addTrade") }}
+                    {{ bg.modalButton("Add Trade", "#addTrade", url("stocks:add_trade")+tradeUrl) }}
                 </div>
             </td>
         </tr>

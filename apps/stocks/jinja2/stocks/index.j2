@@ -59,10 +59,10 @@
                 <tr>
                     <td colspan="4">
                         <div class="d-flex">
-                            {{ mg.djangoModal("Add Bank", "addBank", url("stocks:add_bank") ) }}
-                            {{ bg.modalButton('Add Bank', '#addBank') }}
-                            {{ mg.djangoModal("Delete Bank", "deleteBank", url("stocks:delete_bank") ) }}
-                            {{ bg.modalButton('Delete Bank', '#deleteBank') }}
+                            {{ mg.djangoModal('Add Bank', 'addBank') }}
+                            {{ bg.modalButton('Add Bank', '#addBank', url("stocks:add_bank") ) }}
+                            {{ mg.djangoModal('Delete Bank', 'deleteBank') }}
+                            {{ bg.modalButton('Delete Bank', '#deleteBank', url("stocks:delete_bank") ) }}
                         </div>
                     </td>
                 </tr>
@@ -109,10 +109,10 @@
                 <tr>
                     <td colspan="7">
                         <div class="d-flex">
-                            {{ mg.djangoModal("Add Stock", "addStock", url("stocks:add_stock") ) }}
-                            {{ bg.modalButton('Add Stock', '#addStock') }}
-                            {{ mg.djangoModal("Delete Stock", "deleteStock", url("stocks:delete_stock") ) }}
-                            {{ bg.modalButton('Delete Stock', '#deleteStock') }}
+                            {{ mg.djangoModal('Add Stock', 'addStock') }}
+                            {{ bg.modalButton('Add Stock', '#addStock', url("stocks:add_stock") ) }}
+                            {{ mg.djangoModal('Delete Stock', 'deleteStock') }}
+                            {{ bg.modalButton('Delete Stock', '#deleteStock', url("stocks:delete_stock") ) }}
                         </div>
                     </td>
                 </tr>

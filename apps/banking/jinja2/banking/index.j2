@@ -82,8 +82,8 @@
                         {% endfor %}
                         <td>
                             <div class="d-flex justify-content-end">
-                                {{ bg.modalButton("Edit", "#editCategory"+category.pk|string) }}
-                                {{ mg.djangoModal("Edit Category", "editCategory"+category.pk|string, url("banking:edit_category", args=[category.pk]) ) }}
+                                {{ bg.modalButton("Edit", "#editCategory", url("banking:edit_category", args=[category.pk]) ) }}
+                                {{ mg.djangoModal('Edit Category', 'editCategory') }}
                                 {{ bg.hrefButton("Open", url("banking:category", args=[category.pk]) ) }}
                             </div>
                         </td>
@@ -92,10 +92,10 @@
                 <tr>
                     <td colspan="{{ years|length + 2 }}">
                         <div class="d-flex">
-                            {{ mg.djangoModal("Add Category", "addCategory", url("banking:add_category") ) }}
-                            {{ bg.modalButton('Add Category', '#addCategory') }}
-                            {{ mg.djangoModal("Delete Category", "deleteCategory", url("banking:delete_category") ) }}
-                            {{ bg.modalButton('Delete Category', '#deleteCategory') }}
+                            {{ mg.djangoModal('Add Category', 'addCategory') }}
+                            {{ bg.modalButton('Add Category', '#addCategory', url("banking:add_category") ) }}
+                            {{ mg.djangoModal('Delete Category', 'deleteCategory') }}
+                            {{ bg.modalButton('Delete Category', '#deleteCategory', url("banking:delete_category") ) }}
                         </div>
                     </td>
                 </tr>

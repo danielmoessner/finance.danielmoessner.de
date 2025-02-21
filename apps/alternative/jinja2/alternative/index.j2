@@ -57,10 +57,10 @@
                 <tr>
                     <td colspan="5">
                         <div class="d-flex">
-                            {{ bg.modalButton('Add Alternative', '#addAlternative') }}
-                            {{ bg.modalButton('Delete Alternative', '#deleteAlternative') }}
-                            {{ mg.djangoModal("Add Alternative", "addAlternative", url("alternative:add_alternative") ) }}
-                            {{ mg.djangoModal("Delete Alternative", "deleteAlternative", url("alternative:delete_alternative") )
+                            {{ bg.modalButton('Add Alternative', '#addAlternative', url("alternative:add_alternative") ) }}
+                            {{ bg.modalButton('Delete Alternative', '#deleteAlternative', url("alternative:delete_alternative") ) }}
+                            {{ mg.djangoModal('Add Alternative', 'addAlternative') }}
+                            {{ mg.djangoModal('Delete Alternative', 'deleteAlternative') 
                             }}
                         </div>
                     </td>

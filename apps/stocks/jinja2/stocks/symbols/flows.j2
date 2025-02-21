@@ -7,7 +7,7 @@
            <th scope="col">Bank</th>
             <th class="text-end" scope="col">Flow</th>
             <th class="text-end" scope="col">
-                {{ bg.modalButton("Add Flow", "#addFlow") }}
+                {{ bg.modalButton("Add Flow", "#addFlow", url("stocks:add_flow")+"?bank="+object.pk|string) }}
             </th>
         </tr>
         </thead>
@@ -20,10 +20,10 @@
                 <td class="text-end">{{ flow.flow }}</td>
                 <td>
                     <div class="d-flex justify-content-end">
-                        {{ mg.djangoModal("Edit Flow", "editFlow"+flow.pk|string, url("stocks:edit_flow", args=[flow.pk])) }}
-                        {{ bg.modalButton("Edit", "#editFlow"+flow.pk|string) }}
-                        {{ mg.djangoModal("Delete Flow", "deleteFlow"+flow.pk|string, url("stocks:delete_flow", args=[flow.pk])) }}
-                        {{ bg.modalButton("Delete", "#deleteFlow"+flow.pk|string) }}
+                        {{ mg.djangoModal("Edit Flow", "editFlow") }}
+                        {{ bg.modalButton("Edit", "#editFlow", url("stocks:edit_flow", args=[flow.pk])) }}
+                        {{ mg.djangoModal("Delete Flow", "deleteFlow") }}
+                        {{ bg.modalButton("Delete", "#deleteFlow", url("stocks:delete_flow", args=[flow.pk])) }}
                     </div>
                 </td>
             </tr>
@@ -31,8 +31,8 @@
         <tr>
             <td colspan="5">
                 <div class="d-flex">
-                    {{ mg.djangoModal("Add Flow", "addFlow", url("stocks:add_flow")+"?bank="+object.pk|string) }}
-                    {{ bg.modalButton("Add Flow", "#addFlow") }}
+                    {{ mg.djangoModal("Add Flow", "addFlow") }}
+                    {{ bg.modalButton("Add Flow", "#addFlow", url("stocks:add_flow")+"?bank="+object.pk|string) }}
                 </div>
             </td>
         </tr>

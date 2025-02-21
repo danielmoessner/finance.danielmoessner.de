@@ -7,7 +7,12 @@
            <th scope="col">Stock</th>
             <th class="text-end" scope="col">Dividend</th>
             <th class="text-end" scope="col">
-                {{ bg.modalButton("Add Dividend", "#addDividend") }}
+            {% if object.is_stock %}
+                        {%- set dividendUrl="?stock="+object.pk|string -%}
+                    {% else %}
+                        {%- set dividendUrl="?bank="+object.pk|string -%}
+                    {% endif %}
+                {{ bg.modalButton("Add Dividend", "#addDividend", url("stocks:add_dividend") + dividendUrl) }}
             </th>
         </tr>
         </thead>
@@ -19,23 +24,19 @@
                 <td>{{ dividend.stock }}</td>
                 <td class="text-end">{{ dividend.dividend }}</td>
                 <td class="d-flex justify-content-end">
-                    {{ mg.djangoModal("Edit Dividend", "editDividend"+dividend.pk|string, url("stocks:edit_dividend", args=[dividend.pk])) }}
-                    {{ bg.modalButton("Edit", "#editDividend"+dividend.pk|string) }}
-                    {{ mg.djangoModal("Delete Dividend", "deleteDividend"+dividend.pk|string, url("stocks:delete_dividend", args=[dividend.pk])) }}
-                    {{ bg.modalButton("Delete", "#deleteDividend"+dividend.pk|string) }}
+                    {{ mg.djangoModal("Edit Dividend", "editDividend") }}
+                    {{ bg.modalButton("Edit", "#editDividend", url("stocks:edit_dividend", args=[dividend.pk])) }}
+                    {{ mg.djangoModal("Delete Dividend", "deleteDividend") }}
+                    {{ bg.modalButton("Delete", "#deleteDividend", url("stocks:delete_dividend", args=[dividend.pk])) }}
                 </td>
             </tr>
         {% endfor %}
         <tr>
             <td colspan="5">
                 <div class="d-flex">
-                    {% if object.is_stock %}
-                        {%- set dividendUrl="?stock="+object.pk|string -%}
-                    {% else %}
-                        {%- set dividendUrl="?bank="+object.pk|string -%}
-                    {% endif %}
-                    {{ mg.djangoModal("Add Dividend", "addDividend", url("stocks:add_dividend")+dividendUrl) }}
-                    {{ bg.modalButton("Add Dividend", "#addDividend") }}
+                    
+                    {{ mg.djangoModal("Add Dividend", "addDividend") }}
+                    {{ bg.modalButton("Add Dividend", "#addDividend", url("stocks:add_dividend") + dividendUrl) }}
                 </div>
             </td>
         </tr>
