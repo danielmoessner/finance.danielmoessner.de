@@ -2105,7 +2105,7 @@ progress {
   color: var(--bs-secondary-color);
 }
 
-.form-control, .djangoform p textarea, .djangoform p input {
+.form-control, .djangoform p textarea, .djangoform p input:not([type=checkbox]) {
   display: block;
   width: 100%;
   padding: 0.375rem 0.75rem;
@@ -2121,41 +2121,41 @@ progress {
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 @media (prefers-reduced-motion: reduce) {
-  .form-control, .djangoform p textarea, .djangoform p input {
+  .form-control, .djangoform p textarea, .djangoform p input:not([type=checkbox]) {
     transition: none;
   }
 }
-.form-control[type=file], .djangoform p textarea[type=file], .djangoform p input[type=file] {
+.form-control[type=file], .djangoform p textarea[type=file], .djangoform p input[type=file]:not([type=checkbox]) {
   overflow: hidden;
 }
-.form-control[type=file]:not(:disabled):not([readonly]), .djangoform p textarea[type=file]:not(:disabled):not([readonly]), .djangoform p input[type=file]:not(:disabled):not([readonly]) {
+.form-control[type=file]:not(:disabled):not([readonly]), .djangoform p textarea[type=file]:not(:disabled):not([readonly]), .djangoform p input[type=file]:not(:disabled):not([readonly]):not([type=checkbox]) {
   cursor: pointer;
 }
-.form-control:focus, .djangoform p textarea:focus, .djangoform p input:focus {
+.form-control:focus, .djangoform p textarea:focus, .djangoform p input:focus:not([type=checkbox]) {
   color: var(--bs-body-color);
   background-color: var(--bs-body-bg);
   border-color: rgb(134, 182.5, 254);
   outline: 0;
   box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
-.form-control::-webkit-date-and-time-value, .djangoform p textarea::-webkit-date-and-time-value, .djangoform p input::-webkit-date-and-time-value {
+.form-control::-webkit-date-and-time-value, .djangoform p textarea::-webkit-date-and-time-value, .djangoform p input:not([type=checkbox])::-webkit-date-and-time-value {
   min-width: 85px;
   height: 1.5em;
   margin: 0;
 }
-.form-control::-webkit-datetime-edit, .djangoform p textarea::-webkit-datetime-edit, .djangoform p input::-webkit-datetime-edit {
+.form-control::-webkit-datetime-edit, .djangoform p textarea::-webkit-datetime-edit, .djangoform p input:not([type=checkbox])::-webkit-datetime-edit {
   display: block;
   padding: 0;
 }
-.form-control::placeholder, .djangoform p textarea::placeholder, .djangoform p input::placeholder {
+.form-control::placeholder, .djangoform p textarea::placeholder, .djangoform p input:not([type=checkbox])::placeholder {
   color: var(--bs-secondary-color);
   opacity: 1;
 }
-.form-control:disabled, .djangoform p textarea:disabled, .djangoform p input:disabled {
+.form-control:disabled, .djangoform p textarea:disabled, .djangoform p input:disabled:not([type=checkbox]) {
   background-color: var(--bs-secondary-bg);
   opacity: 1;
 }
-.form-control::file-selector-button, .djangoform p textarea::file-selector-button, .djangoform p input::file-selector-button {
+.form-control::file-selector-button, .djangoform p textarea::file-selector-button, .djangoform p input:not([type=checkbox])::file-selector-button {
   padding: 0.375rem 0.75rem;
   margin: -0.375rem -0.75rem;
   margin-inline-end: 0.75rem;
@@ -2170,11 +2170,11 @@ progress {
   transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 @media (prefers-reduced-motion: reduce) {
-  .form-control::file-selector-button, .djangoform p textarea::file-selector-button, .djangoform p input::file-selector-button {
+  .form-control::file-selector-button, .djangoform p textarea::file-selector-button, .djangoform p input:not([type=checkbox])::file-selector-button {
     transition: none;
   }
 }
-.form-control:hover:not(:disabled):not([readonly])::file-selector-button, .djangoform p textarea:hover:not(:disabled):not([readonly])::file-selector-button, .djangoform p input:hover:not(:disabled):not([readonly])::file-selector-button {
+.form-control:hover:not(:disabled):not([readonly])::file-selector-button, .djangoform p textarea:hover:not(:disabled):not([readonly])::file-selector-button, .djangoform p input:hover:not(:disabled):not([readonly]):not([type=checkbox])::file-selector-button {
   background-color: var(--bs-secondary-bg);
 }
 
@@ -2321,7 +2321,7 @@ textarea.form-control-lg {
   padding-left: 1.5em;
   margin-bottom: 0.125rem;
 }
-.form-check .form-check-input {
+.form-check .form-check-input, .form-check .djangoform p input[type=checkbox], .djangoform p .form-check input[type=checkbox] {
   float: left;
   margin-left: -1.5em;
 }
@@ -2331,13 +2331,13 @@ textarea.form-control-lg {
   padding-left: 0;
   text-align: right;
 }
-.form-check-reverse .form-check-input {
+.form-check-reverse .form-check-input, .form-check-reverse .djangoform p input[type=checkbox], .djangoform p .form-check-reverse input[type=checkbox] {
   float: right;
   margin-right: -1.5em;
   margin-left: 0;
 }
 
-.form-check-input {
+.form-check-input, .djangoform p input[type=checkbox] {
   --bs-form-check-bg: var(--bs-body-bg);
   flex-shrink: 0;
   width: 1em;
@@ -2353,41 +2353,41 @@ textarea.form-control-lg {
   border: var(--bs-border-width) solid var(--bs-border-color);
   print-color-adjust: exact;
 }
-.form-check-input[type=checkbox] {
+.form-check-input[type=checkbox], .djangoform p input[type=checkbox] {
   border-radius: 0.25em;
 }
-.form-check-input[type=radio] {
+.form-check-input[type=radio], .djangoform p input[type=radio][type=checkbox] {
   border-radius: 50%;
 }
-.form-check-input:active {
+.form-check-input:active, .djangoform p input[type=checkbox]:active {
   filter: brightness(90%);
 }
-.form-check-input:focus {
+.form-check-input:focus, .djangoform p input[type=checkbox]:focus {
   border-color: rgb(134, 182.5, 254);
   outline: 0;
   box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
-.form-check-input:checked {
+.form-check-input:checked, .djangoform p input[type=checkbox]:checked {
   background-color: #0d6efd;
   border-color: #0d6efd;
 }
-.form-check-input:checked[type=checkbox] {
+.form-check-input:checked[type=checkbox], .djangoform p input:checked[type=checkbox] {
   --bs-form-check-bg-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
 }
-.form-check-input:checked[type=radio] {
+.form-check-input:checked[type=radio], .djangoform p input[type=checkbox]:checked[type=radio] {
   --bs-form-check-bg-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23fff'/%3e%3c/svg%3e");
 }
-.form-check-input[type=checkbox]:indeterminate {
+.form-check-input[type=checkbox]:indeterminate, .djangoform p input[type=checkbox]:indeterminate {
   background-color: #0d6efd;
   border-color: #0d6efd;
   --bs-form-check-bg-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10h8'/%3e%3c/svg%3e");
 }
-.form-check-input:disabled {
+.form-check-input:disabled, .djangoform p input[type=checkbox]:disabled {
   pointer-events: none;
   filter: none;
   opacity: 0.5;
 }
-.form-check-input[disabled] ~ .form-check-label, .form-check-input:disabled ~ .form-check-label {
+.form-check-input[disabled] ~ .form-check-label, .djangoform p input[disabled][type=checkbox] ~ .form-check-label, .form-check-input:disabled ~ .form-check-label, .djangoform p input[type=checkbox]:disabled ~ .form-check-label {
   cursor: default;
   opacity: 0.5;
 }
@@ -2395,7 +2395,7 @@ textarea.form-control-lg {
 .form-switch {
   padding-left: 2.5em;
 }
-.form-switch .form-check-input {
+.form-switch .form-check-input, .form-switch .djangoform p input[type=checkbox], .djangoform p .form-switch input[type=checkbox] {
   --bs-form-switch-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%280, 0, 0, 0.25%29'/%3e%3c/svg%3e");
   width: 2em;
   margin-left: -2.5em;
@@ -2405,14 +2405,14 @@ textarea.form-control-lg {
   transition: background-position 0.15s ease-in-out;
 }
 @media (prefers-reduced-motion: reduce) {
-  .form-switch .form-check-input {
+  .form-switch .form-check-input, .form-switch .djangoform p input[type=checkbox], .djangoform p .form-switch input[type=checkbox] {
     transition: none;
   }
 }
-.form-switch .form-check-input:focus {
+.form-switch .form-check-input:focus, .form-switch .djangoform p input[type=checkbox]:focus, .djangoform p .form-switch input[type=checkbox]:focus {
   --bs-form-switch-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgb%28134, 182.5, 254%29'/%3e%3c/svg%3e");
 }
-.form-switch .form-check-input:checked {
+.form-switch .form-check-input:checked, .form-switch .djangoform p input[type=checkbox]:checked, .djangoform p .form-switch input[type=checkbox]:checked {
   background-position: right center;
   --bs-form-switch-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
 }
@@ -2420,7 +2420,7 @@ textarea.form-control-lg {
   padding-right: 2.5em;
   padding-left: 0;
 }
-.form-switch.form-check-reverse .form-check-input {
+.form-switch.form-check-reverse .form-check-input, .form-switch.form-check-reverse .djangoform p input[type=checkbox], .djangoform p .form-switch.form-check-reverse input[type=checkbox] {
   margin-right: -2.5em;
   margin-left: 0;
 }
@@ -2441,7 +2441,7 @@ textarea.form-control-lg {
   opacity: 0.65;
 }
 
-[data-bs-theme=dark] .form-switch .form-check-input:not(:checked):not(:focus) {
+[data-bs-theme=dark] .form-switch .form-check-input:not(:checked):not(:focus), [data-bs-theme=dark] .form-switch .djangoform p input[type=checkbox]:not(:checked):not(:focus), .djangoform p [data-bs-theme=dark] .form-switch input[type=checkbox]:not(:checked):not(:focus) {
   --bs-form-switch-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%28255, 255, 255, 0.25%29'/%3e%3c/svg%3e");
 }
 
@@ -2530,7 +2530,7 @@ textarea.form-control-lg {
 .form-floating {
   position: relative;
 }
-.form-floating > .form-control, .djangoform p .form-floating > textarea, .djangoform p .form-floating > input,
+.form-floating > .form-control, .djangoform p .form-floating > textarea, .djangoform p .form-floating > input:not([type=checkbox]),
 .form-floating > .form-control-plaintext,
 .form-floating > .form-select,
 .djangoform p .form-floating > select {
@@ -2559,21 +2559,21 @@ textarea.form-control-lg {
     transition: none;
   }
 }
-.form-floating > .form-control, .djangoform p .form-floating > textarea, .djangoform p .form-floating > input,
+.form-floating > .form-control, .djangoform p .form-floating > textarea, .djangoform p .form-floating > input:not([type=checkbox]),
 .form-floating > .form-control-plaintext {
   padding: 1rem 0.75rem;
 }
-.form-floating > .form-control::placeholder, .djangoform p .form-floating > textarea::placeholder, .djangoform p .form-floating > input::placeholder,
+.form-floating > .form-control::placeholder, .djangoform p .form-floating > textarea::placeholder, .djangoform p .form-floating > input:not([type=checkbox])::placeholder,
 .form-floating > .form-control-plaintext::placeholder {
   color: transparent;
 }
-.form-floating > .form-control:focus, .djangoform p .form-floating > textarea:focus, .djangoform p .form-floating > input:focus, .form-floating > .form-control:not(:placeholder-shown), .djangoform p .form-floating > textarea:not(:placeholder-shown), .djangoform p .form-floating > input:not(:placeholder-shown),
+.form-floating > .form-control:focus, .djangoform p .form-floating > textarea:focus, .djangoform p .form-floating > input:focus:not([type=checkbox]), .form-floating > .form-control:not(:placeholder-shown), .djangoform p .form-floating > textarea:not(:placeholder-shown), .djangoform p .form-floating > input:not(:placeholder-shown):not([type=checkbox]),
 .form-floating > .form-control-plaintext:focus,
 .form-floating > .form-control-plaintext:not(:placeholder-shown) {
   padding-top: 1.625rem;
   padding-bottom: 0.625rem;
 }
-.form-floating > .form-control:-webkit-autofill, .djangoform p .form-floating > textarea:-webkit-autofill, .djangoform p .form-floating > input:-webkit-autofill,
+.form-floating > .form-control:-webkit-autofill, .djangoform p .form-floating > textarea:-webkit-autofill, .djangoform p .form-floating > input:-webkit-autofill:not([type=checkbox]),
 .form-floating > .form-control-plaintext:-webkit-autofill {
   padding-top: 1.625rem;
   padding-bottom: 0.625rem;
@@ -2582,20 +2582,20 @@ textarea.form-control-lg {
   padding-top: 1.625rem;
   padding-bottom: 0.625rem;
 }
-.form-floating > .form-control:focus ~ label, .djangoform p .form-floating > textarea:focus ~ label, .djangoform p .form-floating > input:focus ~ label,
+.form-floating > .form-control:focus ~ label, .djangoform p .form-floating > textarea:focus ~ label, .djangoform p .form-floating > input:focus:not([type=checkbox]) ~ label,
 .form-floating > .form-control:not(:placeholder-shown) ~ label,
 .djangoform p .form-floating > textarea:not(:placeholder-shown) ~ label,
-.djangoform p .form-floating > input:not(:placeholder-shown) ~ label,
+.djangoform p .form-floating > input:not(:placeholder-shown):not([type=checkbox]) ~ label,
 .form-floating > .form-control-plaintext ~ label,
 .form-floating > .form-select ~ label,
 .djangoform p .form-floating > select ~ label {
   color: rgba(var(--bs-body-color-rgb), 0.65);
   transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
 }
-.form-floating > .form-control:focus ~ label::after, .djangoform p .form-floating > textarea:focus ~ label::after, .djangoform p .form-floating > input:focus ~ label::after,
+.form-floating > .form-control:focus ~ label::after, .djangoform p .form-floating > textarea:focus ~ label::after, .djangoform p .form-floating > input:focus:not([type=checkbox]) ~ label::after,
 .form-floating > .form-control:not(:placeholder-shown) ~ label::after,
 .djangoform p .form-floating > textarea:not(:placeholder-shown) ~ label::after,
-.djangoform p .form-floating > input:not(:placeholder-shown) ~ label::after,
+.djangoform p .form-floating > input:not(:placeholder-shown):not([type=checkbox]) ~ label::after,
 .form-floating > .form-control-plaintext ~ label::after,
 .form-floating > .form-select ~ label::after,
 .djangoform p .form-floating > select ~ label::after {
@@ -2607,7 +2607,7 @@ textarea.form-control-lg {
   background-color: var(--bs-body-bg);
   border-radius: var(--bs-border-radius);
 }
-.form-floating > .form-control:-webkit-autofill ~ label, .djangoform p .form-floating > textarea:-webkit-autofill ~ label, .djangoform p .form-floating > input:-webkit-autofill ~ label {
+.form-floating > .form-control:-webkit-autofill ~ label, .djangoform p .form-floating > textarea:-webkit-autofill ~ label, .djangoform p .form-floating > input:-webkit-autofill:not([type=checkbox]) ~ label {
   color: rgba(var(--bs-body-color-rgb), 0.65);
   transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
 }
@@ -2615,7 +2615,9 @@ textarea.form-control-lg {
   border-width: var(--bs-border-width) 0;
 }
 .form-floating > :disabled ~ label,
-.form-floating > .form-control:disabled ~ label {
+.form-floating > .form-control:disabled ~ label,
+.djangoform p .form-floating > textarea:disabled ~ label,
+.djangoform p .form-floating > input:disabled:not([type=checkbox]) ~ label {
   color: #6c757d;
 }
 .form-floating > :disabled ~ label::after,
@@ -2630,7 +2632,7 @@ textarea.form-control-lg {
   align-items: stretch;
   width: 100%;
 }
-.input-group > .form-control, .djangoform p .input-group > textarea, .djangoform p .input-group > input,
+.input-group > .form-control, .djangoform p .input-group > textarea, .djangoform p .input-group > input:not([type=checkbox]),
 .input-group > .form-select,
 .djangoform p .input-group > select,
 .input-group > .form-floating {
@@ -2639,7 +2641,7 @@ textarea.form-control-lg {
   width: 1%;
   min-width: 0;
 }
-.input-group > .form-control:focus, .djangoform p .input-group > textarea:focus, .djangoform p .input-group > input:focus,
+.input-group > .form-control:focus, .djangoform p .input-group > textarea:focus, .djangoform p .input-group > input:focus:not([type=checkbox]),
 .input-group > .form-select:focus,
 .djangoform p .input-group > select:focus,
 .input-group > .form-floating:focus-within {
@@ -2668,7 +2670,7 @@ textarea.form-control-lg {
   border-radius: var(--bs-border-radius);
 }
 
-.input-group-lg > .form-control, .djangoform p .input-group-lg > textarea, .djangoform p .input-group-lg > input,
+.input-group-lg > .form-control, .djangoform p .input-group-lg > textarea, .djangoform p .input-group-lg > input:not([type=checkbox]),
 .input-group-lg > .form-select,
 .djangoform p .input-group-lg > select,
 .input-group-lg > .input-group-text,
@@ -2678,7 +2680,7 @@ textarea.form-control-lg {
   border-radius: var(--bs-border-radius-lg);
 }
 
-.input-group-sm > .form-control, .djangoform p .input-group-sm > textarea, .djangoform p .input-group-sm > input,
+.input-group-sm > .form-control, .djangoform p .input-group-sm > textarea, .djangoform p .input-group-sm > input:not([type=checkbox]),
 .input-group-sm > .form-select,
 .djangoform p .input-group-sm > select,
 .input-group-sm > .input-group-text,
@@ -2698,7 +2700,7 @@ textarea.form-control-lg {
 .input-group:not(.has-validation) > .dropdown-toggle:nth-last-child(n+3),
 .input-group:not(.has-validation) > .form-floating:not(:last-child) > .form-control,
 .djangoform p .input-group:not(.has-validation) > .form-floating:not(:last-child) > textarea,
-.djangoform p .input-group:not(.has-validation) > .form-floating:not(:last-child) > input,
+.djangoform p .input-group:not(.has-validation) > .form-floating:not(:last-child) > input:not([type=checkbox]),
 .input-group:not(.has-validation) > .form-floating:not(:last-child) > .form-select,
 .djangoform p .input-group:not(.has-validation) > .form-floating:not(:last-child) > select {
   border-top-right-radius: 0;
@@ -2708,7 +2710,7 @@ textarea.form-control-lg {
 .input-group.has-validation > .dropdown-toggle:nth-last-child(n+4),
 .input-group.has-validation > .form-floating:nth-last-child(n+3) > .form-control,
 .djangoform p .input-group.has-validation > .form-floating:nth-last-child(n+3) > textarea,
-.djangoform p .input-group.has-validation > .form-floating:nth-last-child(n+3) > input,
+.djangoform p .input-group.has-validation > .form-floating:nth-last-child(n+3) > input:not([type=checkbox]),
 .input-group.has-validation > .form-floating:nth-last-child(n+3) > .form-select,
 .djangoform p .input-group.has-validation > .form-floating:nth-last-child(n+3) > select {
   border-top-right-radius: 0;
@@ -2719,7 +2721,7 @@ textarea.form-control-lg {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
 }
-.input-group > .form-floating:not(:first-child) > .form-control, .djangoform p .input-group > .form-floating:not(:first-child) > textarea, .djangoform p .input-group > .form-floating:not(:first-child) > input,
+.input-group > .form-floating:not(:first-child) > .form-control, .djangoform p .input-group > .form-floating:not(:first-child) > textarea, .djangoform p .input-group > .form-floating:not(:first-child) > input:not([type=checkbox]),
 .input-group > .form-floating:not(:first-child) > .form-select,
 .djangoform p .input-group > .form-floating:not(:first-child) > select {
   border-top-left-radius: 0;
@@ -2755,7 +2757,7 @@ textarea.form-control-lg {
   display: block;
 }
 
-.was-validated .form-control:valid, .was-validated .djangoform p textarea:valid, .djangoform p .was-validated textarea:valid, .was-validated .djangoform p input:valid, .djangoform p .was-validated input:valid, .form-control.is-valid, .djangoform p textarea.is-valid, .djangoform p input.is-valid {
+.was-validated .form-control:valid, .was-validated .djangoform p textarea:valid, .djangoform p .was-validated textarea:valid, .was-validated .djangoform p input:valid:not([type=checkbox]), .djangoform p .was-validated input:valid:not([type=checkbox]), .form-control.is-valid, .djangoform p textarea.is-valid, .djangoform p input.is-valid:not([type=checkbox]) {
   border-color: var(--bs-form-valid-border-color);
   padding-right: calc(1.5em + 0.75rem);
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
@@ -2763,7 +2765,7 @@ textarea.form-control-lg {
   background-position: right calc(0.375em + 0.1875rem) center;
   background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
 }
-.was-validated .form-control:valid:focus, .was-validated .djangoform p textarea:valid:focus, .djangoform p .was-validated textarea:valid:focus, .was-validated .djangoform p input:valid:focus, .djangoform p .was-validated input:valid:focus, .form-control.is-valid:focus, .djangoform p textarea.is-valid:focus, .djangoform p input.is-valid:focus {
+.was-validated .form-control:valid:focus, .was-validated .djangoform p textarea:valid:focus, .djangoform p .was-validated textarea:valid:focus, .was-validated .djangoform p input:valid:focus:not([type=checkbox]), .djangoform p .was-validated input:valid:focus:not([type=checkbox]), .form-control.is-valid:focus, .djangoform p textarea.is-valid:focus, .djangoform p input.is-valid:focus:not([type=checkbox]) {
   border-color: var(--bs-form-valid-border-color);
   box-shadow: 0 0 0 0.25rem rgba(var(--bs-success-rgb), 0.25);
 }
@@ -2791,24 +2793,24 @@ textarea.form-control-lg {
   width: calc(3rem + calc(1.5em + 0.75rem));
 }
 
-.was-validated .form-check-input:valid, .form-check-input.is-valid {
+.was-validated .form-check-input:valid, .was-validated .djangoform p input[type=checkbox]:valid, .djangoform p .was-validated input[type=checkbox]:valid, .form-check-input.is-valid, .djangoform p input.is-valid[type=checkbox] {
   border-color: var(--bs-form-valid-border-color);
 }
-.was-validated .form-check-input:valid:checked, .form-check-input.is-valid:checked {
+.was-validated .form-check-input:valid:checked, .was-validated .djangoform p input[type=checkbox]:valid:checked, .djangoform p .was-validated input[type=checkbox]:valid:checked, .form-check-input.is-valid:checked, .djangoform p input.is-valid[type=checkbox]:checked {
   background-color: var(--bs-form-valid-color);
 }
-.was-validated .form-check-input:valid:focus, .form-check-input.is-valid:focus {
+.was-validated .form-check-input:valid:focus, .was-validated .djangoform p input[type=checkbox]:valid:focus, .djangoform p .was-validated input[type=checkbox]:valid:focus, .form-check-input.is-valid:focus, .djangoform p input.is-valid[type=checkbox]:focus {
   box-shadow: 0 0 0 0.25rem rgba(var(--bs-success-rgb), 0.25);
 }
-.was-validated .form-check-input:valid ~ .form-check-label, .form-check-input.is-valid ~ .form-check-label {
+.was-validated .form-check-input:valid ~ .form-check-label, .was-validated .djangoform p input[type=checkbox]:valid ~ .form-check-label, .djangoform p .was-validated input[type=checkbox]:valid ~ .form-check-label, .form-check-input.is-valid ~ .form-check-label, .djangoform p input.is-valid[type=checkbox] ~ .form-check-label {
   color: var(--bs-form-valid-color);
 }
 
-.form-check-inline .form-check-input ~ .valid-feedback {
+.form-check-inline .form-check-input ~ .valid-feedback, .form-check-inline .djangoform p input[type=checkbox] ~ .valid-feedback, .djangoform p .form-check-inline input[type=checkbox] ~ .valid-feedback {
   margin-left: 0.5em;
 }
 
-.was-validated .input-group > .form-control:not(:focus):valid, .was-validated .djangoform p .input-group > textarea:not(:focus):valid, .djangoform p .was-validated .input-group > textarea:not(:focus):valid, .was-validated .djangoform p .input-group > input:not(:focus):valid, .djangoform p .was-validated .input-group > input:not(:focus):valid, .input-group > .form-control:not(:focus).is-valid, .djangoform p .input-group > textarea:not(:focus).is-valid, .djangoform p .input-group > input:not(:focus).is-valid,
+.was-validated .input-group > .form-control:not(:focus):valid, .was-validated .djangoform p .input-group > textarea:not(:focus):valid, .djangoform p .was-validated .input-group > textarea:not(:focus):valid, .was-validated .djangoform p .input-group > input:not(:focus):valid:not([type=checkbox]), .djangoform p .was-validated .input-group > input:not(:focus):valid:not([type=checkbox]), .input-group > .form-control:not(:focus).is-valid, .djangoform p .input-group > textarea:not(:focus).is-valid, .djangoform p .input-group > input:not(:focus).is-valid:not([type=checkbox]),
 .was-validated .input-group > .form-select:not(:focus):valid,
 .was-validated .djangoform p .input-group > select:not(:focus):valid,
 .djangoform p .was-validated .input-group > select:not(:focus):valid,
@@ -2848,7 +2850,7 @@ textarea.form-control-lg {
   display: block;
 }
 
-.was-validated .form-control:invalid, .was-validated .djangoform p textarea:invalid, .djangoform p .was-validated textarea:invalid, .was-validated .djangoform p input:invalid, .djangoform p .was-validated input:invalid, .form-control.is-invalid, .djangoform p textarea.is-invalid, .djangoform p input.is-invalid {
+.was-validated .form-control:invalid, .was-validated .djangoform p textarea:invalid, .djangoform p .was-validated textarea:invalid, .was-validated .djangoform p input:invalid:not([type=checkbox]), .djangoform p .was-validated input:invalid:not([type=checkbox]), .form-control.is-invalid, .djangoform p textarea.is-invalid, .djangoform p input.is-invalid:not([type=checkbox]) {
   border-color: var(--bs-form-invalid-border-color);
   padding-right: calc(1.5em + 0.75rem);
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
@@ -2856,7 +2858,7 @@ textarea.form-control-lg {
   background-position: right calc(0.375em + 0.1875rem) center;
   background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
 }
-.was-validated .form-control:invalid:focus, .was-validated .djangoform p textarea:invalid:focus, .djangoform p .was-validated textarea:invalid:focus, .was-validated .djangoform p input:invalid:focus, .djangoform p .was-validated input:invalid:focus, .form-control.is-invalid:focus, .djangoform p textarea.is-invalid:focus, .djangoform p input.is-invalid:focus {
+.was-validated .form-control:invalid:focus, .was-validated .djangoform p textarea:invalid:focus, .djangoform p .was-validated textarea:invalid:focus, .was-validated .djangoform p input:invalid:focus:not([type=checkbox]), .djangoform p .was-validated input:invalid:focus:not([type=checkbox]), .form-control.is-invalid:focus, .djangoform p textarea.is-invalid:focus, .djangoform p input.is-invalid:focus:not([type=checkbox]) {
   border-color: var(--bs-form-invalid-border-color);
   box-shadow: 0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25);
 }
@@ -2884,24 +2886,24 @@ textarea.form-control-lg {
   width: calc(3rem + calc(1.5em + 0.75rem));
 }
 
-.was-validated .form-check-input:invalid, .form-check-input.is-invalid {
+.was-validated .form-check-input:invalid, .was-validated .djangoform p input[type=checkbox]:invalid, .djangoform p .was-validated input[type=checkbox]:invalid, .form-check-input.is-invalid, .djangoform p input.is-invalid[type=checkbox] {
   border-color: var(--bs-form-invalid-border-color);
 }
-.was-validated .form-check-input:invalid:checked, .form-check-input.is-invalid:checked {
+.was-validated .form-check-input:invalid:checked, .was-validated .djangoform p input[type=checkbox]:invalid:checked, .djangoform p .was-validated input[type=checkbox]:invalid:checked, .form-check-input.is-invalid:checked, .djangoform p input.is-invalid[type=checkbox]:checked {
   background-color: var(--bs-form-invalid-color);
 }
-.was-validated .form-check-input:invalid:focus, .form-check-input.is-invalid:focus {
+.was-validated .form-check-input:invalid:focus, .was-validated .djangoform p input[type=checkbox]:invalid:focus, .djangoform p .was-validated input[type=checkbox]:invalid:focus, .form-check-input.is-invalid:focus, .djangoform p input.is-invalid[type=checkbox]:focus {
   box-shadow: 0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25);
 }
-.was-validated .form-check-input:invalid ~ .form-check-label, .form-check-input.is-invalid ~ .form-check-label {
+.was-validated .form-check-input:invalid ~ .form-check-label, .was-validated .djangoform p input[type=checkbox]:invalid ~ .form-check-label, .djangoform p .was-validated input[type=checkbox]:invalid ~ .form-check-label, .form-check-input.is-invalid ~ .form-check-label, .djangoform p input.is-invalid[type=checkbox] ~ .form-check-label {
   color: var(--bs-form-invalid-color);
 }
 
-.form-check-inline .form-check-input ~ .invalid-feedback {
+.form-check-inline .form-check-input ~ .invalid-feedback, .form-check-inline .djangoform p input[type=checkbox] ~ .invalid-feedback, .djangoform p .form-check-inline input[type=checkbox] ~ .invalid-feedback {
   margin-left: 0.5em;
 }
 
-.was-validated .input-group > .form-control:not(:focus):invalid, .was-validated .djangoform p .input-group > textarea:not(:focus):invalid, .djangoform p .was-validated .input-group > textarea:not(:focus):invalid, .was-validated .djangoform p .input-group > input:not(:focus):invalid, .djangoform p .was-validated .input-group > input:not(:focus):invalid, .input-group > .form-control:not(:focus).is-invalid, .djangoform p .input-group > textarea:not(:focus).is-invalid, .djangoform p .input-group > input:not(:focus).is-invalid,
+.was-validated .input-group > .form-control:not(:focus):invalid, .was-validated .djangoform p .input-group > textarea:not(:focus):invalid, .djangoform p .was-validated .input-group > textarea:not(:focus):invalid, .was-validated .djangoform p .input-group > input:not(:focus):invalid:not([type=checkbox]), .djangoform p .was-validated .input-group > input:not(:focus):invalid:not([type=checkbox]), .input-group > .form-control:not(:focus).is-invalid, .djangoform p .input-group > textarea:not(:focus).is-invalid, .djangoform p .input-group > input:not(:focus).is-invalid:not([type=checkbox]),
 .was-validated .input-group > .form-select:not(:focus):invalid,
 .was-validated .djangoform p .input-group > select:not(:focus):invalid,
 .djangoform p .was-validated .input-group > select:not(:focus):invalid,
@@ -7230,7 +7232,7 @@ textarea.form-control-lg {
   display: inline-block !important;
 }
 
-.d-block {
+.d-block, .djangoform p input[type=checkbox] {
   display: block !important;
 }
 
@@ -11899,7 +11901,7 @@ textarea.form-control-lg {
   white-space: nowrap;
 }
 
-.djangoform p input {
+.djangoform p input:not([type=checkbox]) {
   font-size: 16px;
 }
 .djangoform p select {

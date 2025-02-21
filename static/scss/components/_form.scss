@@ -1,8 +1,13 @@
 .djangoform {
   p {
-    input {
+    input:not([type="checkbox"]) {
       @extend .form-control;
       font-size: 16px;
+    }
+
+    input[type="checkbox"] {
+      @extend .form-check-input;
+      @extend .d-block;
     }
 
     select {
