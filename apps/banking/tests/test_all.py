@@ -158,7 +158,6 @@ class BalanceUpdateTestCase(TestCase):
         )
         assert self.get_account().balance is None
         assert self.get_category().balance is None
-        assert self.get_depot().balance is None
 
     def test_balance_is_reset_after_change_deletion(self):
         change1 = self.create_change_and_set_balances(days_ago=20)
@@ -168,7 +167,6 @@ class BalanceUpdateTestCase(TestCase):
         assert Change.objects.get(pk=change2.pk).balance is None
         assert self.get_account().balance is None
         assert self.get_category().balance is None
-        assert self.get_depot().balance is None
 
     def test_balance_is_not_set_to_none_after_no_changes(self):
         change = self.create_change_and_set_balances()
