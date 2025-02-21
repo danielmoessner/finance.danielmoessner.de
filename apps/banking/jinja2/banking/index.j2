@@ -50,17 +50,19 @@
                     </tr>
                 {% endfor %}
                 <tr>
-                    <td colspan="3">
+                    <td colspan="2">
                         <div class="d-flex">
                             {{ bg.modalButton("Add Account", "#addAccount", url("banking:add_account") ) }}
                             {{ bg.modalButton("Delete Account", "#deleteAccount", url("banking:delete_account") ) }}
                         </div>
                     </td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-link text-secondary"
+                           href="{{ url("banking:index") }}?tab=accounts&show_archived=1">Include Archived</a>
+                    </td>
                 </tr>
             </tbody>
         </table>
-        <a class="btn btn-sm btn-link"
-           href="{% url 'banking:index' %}?tab=accounts&show_archived">Include Archived</a>
     {% endif %}
     {% if tab=='categories' %}
         <table class="table rounded table-responsive-md table-dark mb-5">
