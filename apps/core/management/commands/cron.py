@@ -18,5 +18,7 @@ class Command(BaseCommand):
             self.stdout.write(f"running {job}")
             try:
                 job()
+            except AssertionError as e:
+                raise e
             except Exception as e:
-                self.stderr.write(self.style.ERROR(f"{job} failed with {e}"))
+                self.stderr.write(self.style.ERROR(f"{job} failed with \n{e}"))

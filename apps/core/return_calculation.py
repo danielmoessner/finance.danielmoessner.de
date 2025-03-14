@@ -4,6 +4,8 @@ from typing import Union
 import numpy as np
 import pandas as pd
 
+pd.set_option("future.no_silent_downcasting", True)
+
 
 #############
 # standard dfs
@@ -50,7 +52,9 @@ def get_value_with_flow_df(
         method="time", limit_direction="both"
     )
     # fill the nan flow with 0
-    df.loc[:, "flow"].fillna(0, inplace=True)
+    df.loc[:, "flow"] = df.loc[:, "flow"].fillna(0)
+    # cast types
+    df = df.astype({"flow": "float64", "value": "float64"})
     # return the combined df
     return df
 
