@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from django.db import connection
 
-pd.set_option('future.no_silent_downcasting', True)
+pd.set_option("future.no_silent_downcasting", True)
 
 
 ###

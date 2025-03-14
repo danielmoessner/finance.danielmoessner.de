@@ -29,7 +29,9 @@ def _get_merged_flow_and_value_df(
         return None
     # stop calculations if there is no value in the last row
     last_value_cell = df.iloc[-1, df.columns.get_loc("value")]
-    assert isinstance(last_value_cell, (np.float64, np.int64))  # pyright: ignore
+    assert isinstance(
+        last_value_cell, (np.float64, np.int64, int, float)  # pyright: ignore
+    ), type(last_value_cell)
     if np.isnan(last_value_cell):
         return None
     # return the new df
@@ -48,8 +50,10 @@ def get_value_with_flow_df(
     # that make sense based on the time
     # best case scenario: this does nothing;
     # worst case: it fills most of the values
-    df.loc[:, "value"] = df.loc[:, "value"].interpolate(
-        method="time", limit_direction="both"
+    df.loc[:, "value"] = (
+        df.loc[:, "value"]
+        .map(pd.to_numeric)
+        .interpolate(method="time", limit_direction="both")
     )
     # fill the nan flow with 0
     df.loc[:, "flow"] = df.loc[:, "flow"].fillna(0)

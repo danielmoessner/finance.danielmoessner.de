@@ -357,9 +357,7 @@ class Change(models.Model):
     def __str__(self):
         return "{} - {}".format(self.get_date(self.account.depot.user), self.change)
 
-    def save(
-        self, force_insert=False, force_update=False, using=None, update_fields=None
-    ):
+    def save(self, *args, **kwargs):
         something_changed = False
 
         if self.pk is not None:
@@ -377,7 +375,7 @@ class Change(models.Model):
         elif self.pk is None:
             something_changed = True
 
-        super().save(force_insert, force_update, using, update_fields)
+        super().save(*args, **kwargs)
 
         if something_changed:
             self.set_balances_of_affected_objects_to_null()
