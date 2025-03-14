@@ -16,4 +16,7 @@ class Command(BaseCommand):
             jobs.append(job)
         for job in jobs:
             self.stdout.write(f"running {job}")
-            job()
+            try:
+                job()
+            except Exception as e:
+                self.stderr.write(f"{job} failed with {e}")
