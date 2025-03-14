@@ -19,4 +19,4 @@ class Command(BaseCommand):
             try:
                 job()
             except Exception as e:
-                self.stderr.write(f"{job} failed with {e}")
+                self.stderr.write(self.style.ERROR(f"{job} failed with {e}"))
