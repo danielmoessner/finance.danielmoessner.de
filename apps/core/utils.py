@@ -145,8 +145,8 @@ def get_df_from_database(statement: str, columns: list[str]) -> pd.DataFrame:
     cursor.execute(statement)
     data = cursor.fetchall()
     df = pd.DataFrame(data=data, columns=columns)
-    df.loc[:, "date"] = pd.to_datetime(df.loc[:, "date"])
-    df.set_index("date", inplace=True)
+    df.index = pd.Index(df.loc[:, "date"], name="date", dtype="datetime64[ns]")
+    df.drop(columns="date", inplace=True)
     return df
 
 
