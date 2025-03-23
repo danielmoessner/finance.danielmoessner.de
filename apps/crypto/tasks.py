@@ -14,7 +14,7 @@ def get_fetchers_to_be_run(fetcher_type: str):
         price = (
             Price.objects.filter(symbol=fetcher.asset.symbol).order_by("-date").first()
         )
-        if price and not price.is_old:
+        if price and not price.is_almost_old:
             continue
         fetchers_to_be_run.append(fetcher)
     return {str(fetcher.pk): fetcher.fetcher_input for fetcher in fetchers_to_be_run}

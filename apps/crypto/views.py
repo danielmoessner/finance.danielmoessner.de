@@ -1,5 +1,6 @@
 from django.views import generic
 
+from apps.core.functional import list_sort
 from apps.core.mixins import TabContextMixin
 from apps.crypto.models import Account, Asset, Depot, Flow, Price, Trade, Transaction
 from apps.users.mixins import GetUserMixin
@@ -21,7 +22,7 @@ class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
         context["assets"] = self.object.assets.order_by(
             "-value", "symbol"
         ).select_related("bucket")
-        context["accounts"] = self.object.accounts.order_by("name")
+        context["accounts"] = self.object.accounts.order_by("-value")
         context["trades"] = Trade.objects.filter(
             account__in=self.object.accounts.all()
         ).select_related("account", "buy_asset", "sell_asset")
@@ -45,9 +46,12 @@ class AccountView(GetUserMixin, TabContextMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["stats"] = self.object.get_stats()
-        context["assets"] = self.object.depot.assets.prefetch_related(
-            "account_stats"
-        ).order_by("symbol")
+        assets = self.object.depot.assets.prefetch_related("account_stats").order_by(
+            "symbol"
+        )
+        context["assets"] = list_sort(
+            list(assets), lambda a: a._get_value_account(self.object), reverse=True
+        )
         context["trades"] = self.object.trades.order_by("-date").select_related(
             "account", "buy_asset", "sell_asset"
         )

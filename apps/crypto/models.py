@@ -340,6 +340,10 @@ class Asset(models.Model):
         stats = self.__get_account_stats(account)
         return stats.get_amount_display()
 
+    def _get_value_account(self, account: Account):
+        stats = self.__get_account_stats(account)
+        return stats.get_value()
+
     def get_value_account(self, account: Account):
         stats = self.__get_account_stats(account)
         return stats.get_value_display()
@@ -723,6 +727,10 @@ class Price(models.Model):
     @property
     def is_old(self):
         return self.date < timezone.now() - timedelta(days=1)
+
+    @property
+    def is_almost_old(self):
+        return self.date < timezone.now() - timedelta(hours=23)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

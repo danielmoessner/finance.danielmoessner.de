@@ -30,4 +30,6 @@ class Command(BaseCommand):
                     price = Price.objects.create(
                         symbol=asset.symbol, date=date, price=p
                     )
-                    print(f"Saved {asset.symbol} price {price.price} for {date}")
+                    self.stdout.write(
+                        f"Saved {asset.symbol} price {price.price} for {date}"
+                    )

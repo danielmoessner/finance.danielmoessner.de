@@ -110,7 +110,7 @@ def get_current_return_df(
     return df
 
 
-def get_current_return(df):
+def get_current_return(df) -> float | None:
     # return None if something went wrong before
     if df is None or df.empty:
         return None
@@ -124,7 +124,7 @@ def get_current_return(df):
     if abs(current_return) == np.inf or np.isnan(current_return):
         current_return = None
     # return the current return
-    return current_return
+    return float(current_return) if current_return is not None else None
 
 
 def get_invested_capital(df):
