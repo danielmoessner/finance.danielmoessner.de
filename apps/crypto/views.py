@@ -50,7 +50,7 @@ class AccountView(GetUserMixin, TabContextMixin, generic.DetailView):
             "symbol"
         )
         context["assets"] = list_sort(
-            list(assets), lambda a: a._get_value_account(self.object), reverse=True
+            list(assets), lambda a: a._get_value_account(self.object) or 0, reverse=True
         )
         context["trades"] = self.object.trades.order_by("-date").select_related(
             "account", "buy_asset", "sell_asset"
