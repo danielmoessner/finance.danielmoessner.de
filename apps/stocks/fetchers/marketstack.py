@@ -1,8 +1,12 @@
+import logging
+
 import requests
 from django.conf import settings
 from pydantic import BaseModel
 
 from apps.core.fetchers.base import Fetcher
+
+logger = logging.getLogger(__name__)
 
 
 class MarketstackFetcherInput(BaseModel):
@@ -11,7 +15,9 @@ class MarketstackFetcherInput(BaseModel):
 
 class MarketstackFetcher(Fetcher):
     def fetch_single(self, data: MarketstackFetcherInput) -> tuple[bool, str | float]:
-        return self.fetch_multiple({"_": {"symbol": data.symbol}})["_"]
+        return self.fetch_multiple({"": MarketstackFetcherInput(symbol=data.symbol)})[
+            ""
+        ]
 
     def fetch_multiple(
         self, data: dict[str, MarketstackFetcherInput]
@@ -23,6 +29,7 @@ class MarketstackFetcher(Fetcher):
         symbols = ",".join(symbols)
         params = {"access_key": settings.MARKETSTACK_API_KEY}
         url = "http://api.marketstack.com/v1/eod/latest?symbols={}".format(symbols)
+        logger.info(f"fetching prices from marketstack for '{symbols}'")
         api_result = requests.get(url, params)
         api_response = api_result.json()
 

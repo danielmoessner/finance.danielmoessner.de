@@ -13,6 +13,11 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": True,
     "handlers": {
+        "info": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR, "tmp/logs/django.log"),
+        },
         "warning": {
             "level": "WARNING",
             "class": "logging.FileHandler",
@@ -26,7 +31,7 @@ LOGGING = {
     },
     "loggers": {
         "django": {
-            "handlers": ["warning"],
+            "handlers": ["info"],
             "level": "INFO",
             "propagate": True,
         },
