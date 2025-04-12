@@ -769,7 +769,7 @@ class PriceFetcher(models.Model):
     @property
     def has_a_current_price(self) -> bool:
         price = Price.objects.filter(isin=self.stock.isin).order_by("-date").first()
-        if price and not price.is_old:
+        if price and not price.is_almost_old:
             return True
         return False
 
@@ -918,6 +918,10 @@ class Price(models.Model):
     @property
     def is_old(self) -> bool:
         return self.date < timezone.now() - timedelta(days=1)
+
+    @property
+    def is_almost_old(self):
+        return self.date < timezone.now() - timedelta(hours=23)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
