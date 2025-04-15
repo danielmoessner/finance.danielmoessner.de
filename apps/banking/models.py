@@ -205,10 +205,13 @@ class Account(CoreAccount):
 
     def get_balance(self):
         if self.balance is None:
-            changes = Change.objects.filter(account=self)
-            banking_duplicated_code.set_balance(self, changes)
+            self.calculate_balance()
         assert self.balance is not None
         return round(self.balance, 2)
+
+    def calculate_balance(self):
+        changes = Change.objects.filter(account=self)
+        banking_duplicated_code.set_balance(self, changes)
 
     def transfer_value(self, val: float, date: datetime, description: str):
         category, _ = Category.objects.get_or_create(name="Money Movement")
@@ -222,7 +225,7 @@ class Account(CoreAccount):
 
     def get_balance_str(self):
         if self.balance is None:
-            return "Not calculated"
+            self.calculate_balance()
         return f"{format_currency_amount_to_de(self.get_balance())} €"
 
     def get_stats(self):
