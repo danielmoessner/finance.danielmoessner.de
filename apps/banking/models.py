@@ -6,6 +6,7 @@ from django.db import connection, models
 from django.utils import timezone
 
 import apps.banking.duplicated_code as banking_duplicated_code
+from apps.banking.utils import format_currency_amount_to_de
 from apps.core import utils
 from apps.core.functional import list_create, list_map, list_sort
 from apps.core.models import Account as CoreAccount
@@ -219,11 +220,13 @@ class Account(CoreAccount):
             category=category,
         )
 
+    def get_balance_str(self):
+        if self.balance is None:
+            return "Not calculated"
+        return f"{format_currency_amount_to_de(self.get_balance())} €"
+
     def get_stats(self):
-        balance = self.get_balance()
-        if balance is None:
-            return {"Balance": "Not calculated"}
-        return {"Balance": balance}
+        return {"Balance": self.get_balance_str()}
 
     def get_df_from_database(self, statement, columns):
         assert str(self.pk) in statement
