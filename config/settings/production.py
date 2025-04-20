@@ -11,7 +11,7 @@ LOGGING = {
         "info": {
             "level": "INFO",
             "class": "logging.FileHandler",
-            "filename": os.path.join(BASE_DIR, "tmp/logs/django.log"),
+            "filename": os.path.join(BASE_DIR, "tmp/django.log"),
         },
     },
     "loggers": {
