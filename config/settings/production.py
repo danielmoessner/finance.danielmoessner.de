@@ -1,13 +1,8 @@
 from .base import *
 
-# Secret Settings
-
 DEBUG = False
 
 ALLOWED_HOSTS = get_secret("ALLOWED_HOSTS")
-
-
-# Logging
 
 LOGGING = {
     "version": 1,
@@ -18,17 +13,17 @@ LOGGING = {
             "class": "logging.FileHandler",
             "filename": os.path.join(BASE_DIR, "tmp/logs/django.log"),
         },
-        # "warning": {
-        #     "level": "WARNING",
-        #     "class": "logging.FileHandler",
-        #     "filename": os.path.join(BASE_DIR, "tmp/logs/django.log"),
-        # },
     },
     "loggers": {
         "django": {
             "handlers": ["info"],
             "level": "INFO",
             "propagate": True,
-        }
+        },
+        "": {
+            "handlers": ["info"],
+            "level": "INFO",
+            "propagate": False,
+        },
     },
 }
