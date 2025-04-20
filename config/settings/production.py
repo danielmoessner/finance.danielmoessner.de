@@ -11,18 +11,18 @@ ALLOWED_HOSTS = get_secret("ALLOWED_HOSTS")
 
 LOGGING = {
     "version": 1,
-    "disable_existing_loggers": True,
+    "disable_existing_loggers": False,
     "handlers": {
         "info": {
             "level": "INFO",
             "class": "logging.FileHandler",
             "filename": os.path.join(BASE_DIR, "tmp/logs/django.log"),
         },
-        "warning": {
-            "level": "WARNING",
-            "class": "logging.FileHandler",
-            "filename": os.path.join(BASE_DIR, "tmp/logs/django.log"),
-        },
+        # "warning": {
+        #     "level": "WARNING",
+        #     "class": "logging.FileHandler",
+        #     "filename": os.path.join(BASE_DIR, "tmp/logs/django.log"),
+        # },
         "task": {
             "level": "DEBUG",
             "class": "logging.FileHandler",
