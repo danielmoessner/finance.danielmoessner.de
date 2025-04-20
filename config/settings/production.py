@@ -23,22 +23,12 @@ LOGGING = {
         #     "class": "logging.FileHandler",
         #     "filename": os.path.join(BASE_DIR, "tmp/logs/django.log"),
         # },
-        "task": {
-            "level": "DEBUG",
-            "class": "logging.FileHandler",
-            "filename": os.path.join(BASE_DIR, "tmp/logs/task.log"),
-        },
     },
     "loggers": {
         "django": {
             "handlers": ["info"],
             "level": "INFO",
             "propagate": True,
-        },
-        "background_tasks": {
-            "handlers": ["task"],
-            "level": "INFO",
-            "propagate": True,
-        },
+        }
     },
 }
