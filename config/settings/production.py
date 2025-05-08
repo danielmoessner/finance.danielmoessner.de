@@ -20,6 +20,11 @@ LOGGING = {
             "level": "INFO",
             "propagate": True,
         },
+        "django.request": {
+            "handlers": ["info"],
+            "level": "ERROR",
+            "propagate": False,
+        },
         "": {
             "handlers": ["info"],
             "level": "INFO",
