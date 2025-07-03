@@ -1,12 +1,12 @@
 #!/bin/bash
 
 printf "djlint:\n"
-pdm run djlint apps/*/jinja2/**/* templates/**/* --max-line-length=120 --profile=jinja --reformat --include="*.j2"
-printf "\nisort:\n" && pdm run isort . --profile black
+uv run djlint apps/*/jinja2/**/* templates/**/* --max-line-length=120 --profile=jinja --reformat --include="*.j2"
+printf "\nisort:\n" && uv run isort . --profile black
 printf "\n\n"
-printf "black:\n" && pdm run black .
+printf "black:\n" && uv run black .
 printf "\n\n"
-printf "ruff:\n"  && pdm run ruff check . --fix
+printf "ruff:\n"  && uv run ruff check . --fix
 printf "\n\n"
-# printf "mypy:\n"  && pdm run mypy .
+# printf "mypy:\n"  && uv run mypy .
 # printf "\n\n"

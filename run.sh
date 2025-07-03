@@ -1,1 +1,1 @@
-pdm run python manage.py runserver localhost:2000
+uv run python manage.py runserver localhost:2000

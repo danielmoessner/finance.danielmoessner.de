@@ -272,6 +272,9 @@ class Category(models.Model):
     depot = models.ForeignKey(
         Depot, editable=False, related_name="categories", on_delete=models.CASCADE
     )
+    monthly_budget = models.DecimalField(
+        max_digits=15, decimal_places=2, null=True, blank=True
+    )
     # query optimzation
     balance = models.DecimalField(
         max_digits=15, decimal_places=2, null=True, blank=True

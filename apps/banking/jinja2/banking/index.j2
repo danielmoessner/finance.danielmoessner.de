@@ -9,6 +9,7 @@
         <div class="btn-group" role="group" aria-label="Console">
             {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats') ) }}
             {{ bg.hrefButton("Accounts", request.path + '?tab=accounts', active=(tab=='accounts') ) }}
+            {{ bg.hrefButton("Budgets", request.path + '?tab=budgets', active=(tab=='budgets') ) }}
             {{ bg.hrefButton("Categories", request.path + '?tab=categories', active=(tab=='categories') ) }}
             {{ bg.hrefButton("Charts", request.path + '?tab=charts', active=(tab=='charts') ) }}
         </div>
@@ -63,6 +64,9 @@
                 </tr>
             </tbody>
         </table>
+    {% endif %}
+    {% if tab=='budgets' %}
+        budgets
     {% endif %}
     {% if tab=='categories' %}
         <table class="table rounded table-responsive-md table-dark mb-5">
