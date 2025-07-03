@@ -66,27 +66,25 @@
         </table>
     {% endif %}
     {% if tab=='budgets' %}
-        <div class="overflow-hidden">
-            <div class="overflow-x-auto mb-5">
-                <table class="mb-0">
-                    <thead>
-                        <tr>
-                            <th scope="col" class="">Category</th>
-                            {% for dt in months %}
-                                <th class="text-end px-1" style="white-space: nowrap;" scope="col">{{ dt.strftime("%b %y") }}</th>
-                            {% endfor %}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for category in categories %}
-                            <tr>
-                                <td>{{ category.name }}</td>
-                                {% for dt in months %}<td class="text-end" scope="col">{{ category.get_month(dt) }}</td>{% endfor %}
-                            </tr>
+        <div class="overflow-x-auto mb-5">
+            <table class="mb-0 table table-dark rounded">
+                <thead>
+                    <tr>
+                        <th scope="col" class="">Category</th>
+                        {% for dt in months %}
+                            <th class="text-end px-1" style="white-space: nowrap;" scope="col">{{ dt.strftime("%b %y") }}</th>
                         {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                        <tr>
+                            <td>{{ category.name }}</td>
+                            {% for dt in months %}<td class="text-end" scope="col">{{ category.get_month(dt) }}</td>{% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     {% endif %}
     {% if tab=='categories' %}
