@@ -64,6 +64,7 @@ class CategoryForm(forms.ModelForm):
         fields = (
             "name",
             "description",
+            "monthly_budget",
         )
 
     def __init__(self, depot, *args, **kwargs):

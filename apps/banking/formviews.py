@@ -146,7 +146,9 @@ class AddCategoryView(
     template_name = "symbols/form_snippet.j2"
 
 
-class EditCategoryView(CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView):
+class EditCategoryView(
+    GetUserMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView
+):
     model = Category
     form_class = CategoryForm
     template_name = "symbols/form_snippet.j2"

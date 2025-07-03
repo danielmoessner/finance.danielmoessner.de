@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING, Literal, TypedDict, Union
 
@@ -55,10 +55,10 @@ class Depot(CoreDepot):
         assert str(self.pk) in statement
         cursor.execute(statement)
         data = {}
-        for date, name, value in cursor.fetchall():
-            if date not in data:
-                data[date] = {}
-            data[date][name] = value
+        for dt, name, value in cursor.fetchall():
+            if dt not in data:
+                data[dt] = {}
+            data[dt][name] = value
         data = turn_dict_of_dicts_into_list_of_dicts(data, "date")
         return data
 
@@ -339,6 +339,18 @@ class Category(models.Model):
                 "balance": "{:.2f} €".format(x["balance"]),
             },
         )
+
+    def get_month(self, month: date) -> str:
+        if self.monthly_budget is None:
+            return "-"
+        amount = self.changes.filter(
+            date__year=month.year, date__month=month.month
+        ).aggregate(total=models.Sum("change"))["total"]
+        if amount is None:
+            return "✓"
+        if amount <= self.monthly_budget:
+            return "✓"
+        return "{:.2f} €".format(amount - self.monthly_budget)
 
     @staticmethod
     def get_objects_by_depot(depot):

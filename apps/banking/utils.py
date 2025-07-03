@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 
 
@@ -19,3 +19,14 @@ def format_currency_amount_to_de(value: float | Decimal) -> str:
     grouped_rev = ".".join(rev[i : i + 3] for i in range(0, len(rev), 3))
     grouped_integral = grouped_rev[::-1]
     return f"{grouped_integral},{decimal}"
+
+
+def get_12_recent_months() -> list[date]:
+    now = datetime.now()
+    months = []
+    for i in range(12):
+        month = (now.month - i - 1) % 12 + 1
+        year = now.year - ((now.month - i - 1) < 0)
+        dt = date(year=year, month=month, day=1)
+        months.append(dt)
+    return months
