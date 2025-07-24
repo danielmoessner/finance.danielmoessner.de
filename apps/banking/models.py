@@ -166,6 +166,15 @@ class Account(CoreAccount):
     TYPE = "Banking"
     depot = models.ForeignKey(Depot, on_delete=models.CASCADE, related_name="accounts")
     is_archived = models.BooleanField(default=False)
+    DEFAULT_DATE_CHOICES = (
+        ("today", "Today"),
+        ("last_transaction", "Last Transaction"),
+    )
+    default_date = models.CharField(
+        max_length=20,
+        choices=DEFAULT_DATE_CHOICES,
+        default="today",
+    )
     # query optimzation
     balance = models.DecimalField(
         max_digits=15, decimal_places=2, null=True, blank=True

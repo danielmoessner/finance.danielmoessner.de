@@ -39,6 +39,7 @@ class AccountForm(forms.ModelForm):
             "name",
             "bucket",
             "is_archived",
+            "default_date",
         )
 
     def __init__(self, depot: Depot, *args, **kwargs):
@@ -122,4 +123,11 @@ class ChangeForm(forms.ModelForm):
         self.fields["account"].queryset = depot.accounts.all()
         self.fields["category"].queryset = depot.categories.order_by("-changes_count")
         self.fields["date"].initial = datetime.now()
+        account_pk = kwargs.get("initial", {}).get("account", 0)
+        if account_pk:
+            account = depot.accounts.filter(pk=account_pk).first()
+            if account and account.default_date == "last_transaction":
+                last_change = account.changes.order_by("-date").first()
+                if last_change:
+                    self.fields["date"].initial = last_change.date
         self.fields["description"].widget.attrs.update({"class": "small"})
