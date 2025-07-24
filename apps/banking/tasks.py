@@ -1,4 +1,4 @@
-from apps.banking.models import Account, Depot
+from apps.banking.models import Account, Category, Depot
 
 
 def calculate_change_counts():
@@ -10,3 +10,7 @@ def calculate_change_counts():
     for depot in depots:
         depot.calculate_changes_count()
         depot.save()
+    categories = list(Category.objects.all())
+    for category in categories:
+        category.calculate_changes_count()
+        category.save()

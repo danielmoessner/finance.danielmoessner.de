@@ -279,6 +279,7 @@ class Category(models.Model):
     balance = models.DecimalField(
         max_digits=15, decimal_places=2, null=True, blank=True
     )
+    changes_count = models.IntegerField(default=0)
 
     if TYPE_CHECKING:
         changes: QuerySet["Change"]
@@ -351,6 +352,11 @@ class Category(models.Model):
         if amount <= self.monthly_budget:
             return "✓"
         return "{:.2f} €".format(amount - self.monthly_budget)
+
+    def calculate_changes_count(self):
+        ago = timezone.now() - timezone.timedelta(days=90)
+        self.changes_count = Change.objects.filter(category=self, date__gte=ago).count()
+        self.save()
 
     @staticmethod
     def get_objects_by_depot(depot):

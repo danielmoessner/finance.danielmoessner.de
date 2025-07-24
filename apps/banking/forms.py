@@ -120,6 +120,6 @@ class ChangeForm(forms.ModelForm):
     def __init__(self, depot, *args, **kwargs):
         super(ChangeForm, self).__init__(*args, **kwargs)
         self.fields["account"].queryset = depot.accounts.all()
-        self.fields["category"].queryset = depot.categories.all()
+        self.fields["category"].queryset = depot.categories.order_by("-changes_count")
         self.fields["date"].initial = datetime.now()
         self.fields["description"].widget.attrs.update({"class": "small"})
