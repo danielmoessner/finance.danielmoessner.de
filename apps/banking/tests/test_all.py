@@ -11,8 +11,8 @@ from apps.users.models import StandardUser as User
 
 
 def create_account(depot, name=None):
-    form = AccountForm(depot, {"name": name})
-    assert form.is_valid()
+    form = AccountForm(depot, {"name": name, "default_date": "today"})
+    assert form.is_valid(), form.errors
     return form.save()
 
 
