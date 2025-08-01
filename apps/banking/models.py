@@ -357,9 +357,9 @@ class Category(models.Model):
             date__year=month.year, date__month=month.month
         ).aggregate(total=models.Sum("change"))["total"]
         if amount is None:
-            return "✓"
+            return "✓0"
         if amount <= self.monthly_budget:
-            return "✓"
+            return "✓{:.0f}".format(amount)
         return "{:.2f} €".format(amount - self.monthly_budget)
 
     def calculate_changes_count(self):
