@@ -357,9 +357,11 @@ class Category(models.Model):
             date__year=month.year, date__month=month.month
         ).aggregate(total=models.Sum("change"))["total"]
         _amount = abs(amount) if amount is not None else 0
+        # check and exclamation mark
+        # https://www.alt-codes.net/arrow_alt_codes.php
         if _amount <= self.monthly_budget:
             return "✓ {:.0f} €".format(_amount)
-        return "{:.0f} €".format(_amount - self.monthly_budget)
+        return "! {:.0f} €".format(_amount - self.monthly_budget)
 
     def calculate_changes_count(self):
         ago = timezone.now() - timezone.timedelta(days=90)
