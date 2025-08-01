@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django import forms
+from django.utils import timezone
 
 from apps.banking.models import Account, Category, Change, Depot
 
@@ -129,5 +130,10 @@ class ChangeForm(forms.ModelForm):
             if account and account.default_date == "last_transaction":
                 last_change = account.changes.order_by("-date").first()
                 if last_change:
+                    default_date = last_change.date
+                    now = timezone.now()
+                    default_date = default_date.replace(
+                        hour=now.hour, minute=now.minute, second=0, microsecond=0
+                    )
                     self.fields["date"].initial = last_change.date
         self.fields["description"].widget.attrs.update({"class": "small"})
