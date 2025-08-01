@@ -134,6 +134,6 @@ class ChangeForm(forms.ModelForm):
                     now = timezone.now()
                     default_date = default_date.replace(
                         hour=now.hour, minute=now.minute, second=0, microsecond=0
-                    )
+                    ).astimezone(now.tzinfo)
                     self.fields["date"].initial = last_change.date
         self.fields["description"].widget.attrs.update({"class": "small"})
