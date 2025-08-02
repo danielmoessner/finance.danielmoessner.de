@@ -300,6 +300,12 @@ class Category(models.Model):
         self.depot.set_balances_to_none()
         return super().delete(using=using, keep_parents=keep_parents)
 
+    @property
+    def monthly_budget_str(self):
+        if self.monthly_budget is None:
+            return ""
+        return f"({round(self.monthly_budget, 0)} €)"
+
     # getters
     def get_balance(self):
         if self.balance is None:

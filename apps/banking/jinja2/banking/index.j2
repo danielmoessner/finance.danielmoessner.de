@@ -79,7 +79,7 @@
                 <tbody>
                     {% for category in categories %}
                         <tr>
-                            <td>{{ category.name }}</td>
+                            <td>{{ category.name }} {{ category.monthly_budget_str }}</td>
                             {% for dt in months %}<td class="text-end" scope="col">{{ category.get_month(dt) }}</td>{% endfor %}
                         </tr>
                     {% endfor %}
