@@ -11,6 +11,7 @@
             {{ bg.hrefButton("Accounts", request.path + '?tab=accounts', active=(tab=='accounts') ) }}
             {{ bg.hrefButton("Budgets", request.path + '?tab=budgets', active=(tab=='budgets') ) }}
             {{ bg.hrefButton("Categories", request.path + '?tab=categories', active=(tab=='categories') ) }}
+            {{ bg.hrefButton("Statements", request.path + '?tab=statements', active=(tab=='statements') ) }}
             {{ bg.hrefButton("Charts", request.path + '?tab=charts', active=(tab=='charts') ) }}
         </div>
     </div>
@@ -87,12 +88,99 @@
             </table>
         </div>
     {% endif %}
+    {% if tab=='statements' %}
+        <div class="overflow-x-auto mb-5">
+            <table class="mb-0 table table-dark rounded">
+                <thead>
+                    <tr>
+                        <th scope="col" class="">Category</th>
+                        {% for month in statements.months %}
+                            <th class="text-end px-1" style="white-space: nowrap;" scope="col">{{ month }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category, values in statements.data.items() %}
+                        <tr>
+                            <td>
+                                <input type="checkbox"
+                                       class="form-check-input me-2 category-checkbox"
+                                       id="category-{{ loop.index }}"
+                                       {% if not request.session.banking or not request.session.banking.selected_statement_categories %}checked{% elif category in request.session.banking.selected_statement_categories %}checked{% endif %}>
+                                <label for="category-{{ loop.index }}">{{ category }}</label>
+                            </td>
+                            {% for v in values %}
+                                <td class="text-end category-value" data-value="{{ v }}" scope="col">{{ "%.2f"|format(v) }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    <tr class="">
+                        <td>
+                            <strong>Total</strong>
+                        </td>
+                        {% for month in statements.months %}<td class="text-end total-cell" data-month="{{ loop.index0 }}"></td>{% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+        <script>
+            const checkboxes = document.querySelectorAll('.category-checkbox');
+            const totalCells = document.querySelectorAll('.total-cell');
+            
+            
+            function updateTotals() {
+                totalCells.forEach(cell => {
+                    cell.innerHTML = '<strong>0.00</strong>';
+                });
+                
+                const selectedCategories = [];
+
+                checkboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        const label = checkbox.nextElementSibling.textContent.trim();
+                        selectedCategories.push(label);
+
+                        const row = checkbox.closest('tr');
+                        const valueCells = row.querySelectorAll('.category-value');
+                        
+                        valueCells.forEach((cell, index) => {
+                            const value = parseFloat(cell.dataset.value) || 0;
+                            const currentTotal = parseFloat(totalCells[index].textContent) || 0;
+                            const newTotal = currentTotal + value;
+                            totalCells[index].innerHTML = `<strong>${newTotal.toFixed(2)}</strong>`;
+                        });
+                    }
+                });
+           
+                const selectedValue = selectedCategories.join('|');
+                const encoded = encodeURIComponent(selectedValue);
+                const baseUrl = `{{ url('banking:store', args=['selected_statement_categories', 'PLACEHOLDER']) }}`;
+                const finalUrl = baseUrl.replace('PLACEHOLDER', encoded);
+                fetch(finalUrl, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'Content-Type': 'application/json',
+                    },
+                });
+            }
+            
+            updateTotals();
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateTotals);
+            });
+        </script>
+    {% endif %}
     {% if tab=='categories' %}
         <table class="table rounded table-responsive-md table-dark mb-5">
             <thead>
                 <tr>
                     <th scope="col">Category</th>
-                    {% for year in years %}<th class="text-end" scope="col">{{ year }}</th>{% endfor %}
+                    {% for year in years %}
+                        <th class="text-end" scope="col">{{ year }}</th>
+                    {% endfor %}
                     <th scope="col"></th>
                 </tr>
             </thead>

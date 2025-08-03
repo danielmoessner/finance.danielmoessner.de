@@ -1,3 +1,5 @@
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import HttpResponse
 from django.views import generic
 
 from apps.banking.models import Account, Category, Depot
@@ -40,6 +42,8 @@ class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
             )
             context["categories"] = categories
             context["years"] = get_latest_years(5)
+        elif self.tab == "statements":
+            context["statements"] = self.object.get_statements()
         return context
 
 
@@ -93,3 +97,10 @@ class CategoryView(GetUserMixin, TabContextMixin, generic.DetailView):
             "-date", "-pk"
         ).select_related("account")
         return context
+
+
+@login_required
+def store(request, key, value):
+    request.session["banking"] = request.session.get("banking", {})
+    request.session["banking"][key] = value
+    return HttpResponse("OK")

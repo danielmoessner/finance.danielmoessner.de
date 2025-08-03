@@ -2,6 +2,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING, Literal, TypedDict, Union
 
+import pandas as pd
 from django.db import connection, models
 from django.utils import timezone
 
@@ -138,6 +139,44 @@ class Depot(CoreDepot):
             if not max_account or changes_count > max_account[1]:
                 max_account = (account, changes_count)
         return max_account[0] if max_account else None
+
+    def _get_statements_df(self):
+        changes = (
+            Change.objects.filter(
+                account__in=self.accounts.all(),
+            )
+            .filter(date__gte=timezone.now() - timezone.timedelta(days=365))
+            .values_list("date", "category__name", "change")
+            .order_by("category__changes_count")
+        )
+        df = pd.DataFrame(changes, columns=["date", "category", "change"])
+        df["month"] = pd.to_datetime(df["date"]).dt.to_period("M")
+        monthly_summary = (
+            df.groupby(["month", "category"])["change"].sum().reset_index()
+        )
+        monthly_summary = monthly_summary.sort_values("month", ascending=False)
+        monthly_summary["month"] = monthly_summary["month"].dt.strftime("%B %y")
+        return monthly_summary
+
+    def get_statements(self):
+        df = self._get_statements_df()
+        months = df["month"].unique().tolist()
+        categories = df["category"].unique().tolist()
+
+        result = {"months": months, "data": {}}
+
+        for category in categories:
+            result["data"][category] = [0.0] * len(months)
+
+        for _, row in df.iterrows():
+            month = row["month"]
+            category = row["category"]
+            amount = float(row["change"])
+
+            month_index = months.index(month)
+            result["data"][category][month_index] = amount
+
+        return result
 
     # setters
     def set_balances_to_none(self):

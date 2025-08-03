@@ -67,4 +67,6 @@ urlpatterns = [
     path("depot/", views.IndexView.as_view(), name="index"),
     path("accounts/<int:pk>/", views.AccountView.as_view(), name="account"),
     path("categories/<int:pk>/", views.CategoryView.as_view(), name="category"),
+    # frontend
+    path("store/<str:key>/<str:value>/", views.store, name="store"),
 ]
