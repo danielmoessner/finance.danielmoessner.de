@@ -23,7 +23,7 @@
                     <th scope="col">Account</th>
                     <th scope="col">Description</th>
                     <th class="text-end" scope="col">Change</th>
-                    <th class="text-end" scope="col">{{ bg.modalButton('Add Change', '#addChange') }}</th>
+                    <th class="text-end" scope="col">{{ bg.modalButton('Add Change', '#addChange', url("banking:add_change") +"?category="+category.pk|string) }}</th>
                 </tr>
             </thead>
             <tbody>
