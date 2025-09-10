@@ -26,16 +26,17 @@ class MoveMoneyForm(forms.Form):
 
     def __init__(self, depot: Depot, *args, **kwargs):
         super(MoveMoneyForm, self).__init__(*args, **kwargs)
-        self.accounts = depot.user.get_active_accounts()
         self.fields["from_account"].queryset = depot.accounts.all()
+        self.accounts = depot.user.get_active_accounts()
         self.fields["to_account"].choices = self.get_choices_for_account()
         self.fields["date"].initial = datetime.now()
-        if depot.most_money_moved_away:
-            self.fields["from_account"].initial = depot.most_money_moved_away.pk
-        if depot.most_money_moved_to:
-            self.fields["to_account"].initial = self._get_acc_key(
-                depot.most_money_moved_to
-            )
+        if not kwargs.get("initial", {}).keys():
+            if depot.most_money_moved_away:
+                self.fields["from_account"].initial = depot.most_money_moved_away.pk
+            if depot.most_money_moved_to:
+                self.fields["to_account"].initial = self._get_acc_key(
+                    depot.most_money_moved_to
+                )
 
     def get_choices_for_account(self):
         return [
@@ -57,6 +58,12 @@ class MoveMoneyForm(forms.Form):
 
     def clean_to_account(self):
         return self._clean_account(self.cleaned_data["to_account"])
+
+    def clean_change(self):
+        change = self.cleaned_data["change"]
+        if change <= 0:
+            raise forms.ValidationError("The change must be positive.")
+        return change
 
     def clean(self):
         cleaned_data = super().clean()

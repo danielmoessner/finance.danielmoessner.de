@@ -16,6 +16,7 @@
         {{ mg.djangoModal('Edit Change', 'editChange') }}
         {{ mg.djangoModal('Delete Change', 'deleteChange') }}
         {{ mg.djangoModal('Add Change', 'addChange') }}
+        {{ mg.djangoModal('Move Money', 'moveMoney') }}
         <table class="table rounded table-responsive-md table-dark mb-5">
             <thead>
                 <tr>
@@ -25,6 +26,7 @@
                     <th class="text-end" scope="col">Change</th>
                     <th class="text-end" scope="col">Balance</th>
                     <th class="text-end" scope="col">
+                        {{ bg.modalButton("Move Money", "#moveMoney", url("banking:move_money") + "?from_account="+account.pk|string + "&to_account=Account-"+account.pk|string ) }}
                         {{ bg.modalButton("Add Change", "#addChange", url("banking:add_change") +"?account="+account.pk|string) }}
                     </th>
                 </tr>

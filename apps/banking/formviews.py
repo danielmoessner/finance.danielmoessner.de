@@ -205,7 +205,11 @@ class DeleteChangeView(GetUserMixin, CustomAjaxDeleteMixin, generic.DeleteView):
 
 
 class MoneyMoveView(
-    GetUserMixin, CustomGetFormMixin, AjaxResponseMixin, generic.FormView
+    GetUserMixin,
+    GetDepotMixin,
+    GetFormWithDepotAndInitialDataMixin,
+    AjaxResponseMixin,
+    generic.FormView,
 ):
     template_name = "symbols/form_snippet.j2"
     form_class = MoveMoneyForm
