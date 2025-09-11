@@ -1,5 +1,7 @@
+import json
 from datetime import datetime
 
+import pandas as pd
 from django import forms
 from django.utils import timezone
 
@@ -137,3 +139,92 @@ class ChangeForm(forms.ModelForm):
                     )
                     self.fields["date"].initial = default_date
         self.fields["description"].widget.attrs.update({"class": "small"})
+
+
+class ImportForm(forms.Form):
+    account = forms.ModelChoiceField(widget=forms.Select, queryset=None)
+    mapping = forms.CharField(
+        widget=forms.Textarea, label="Category Mapping", required=True
+    )
+    file = forms.FileField(label="CSV File")
+
+    class Meta:
+        fields = (
+            "mapping",
+            "account",
+            "file",
+        )
+
+    def __init__(self, depot, *args, **kwargs):
+        super(ImportForm, self).__init__(*args, **kwargs)
+        self.fields["account"].queryset = depot.accounts.all()
+        if not self.is_bound:
+            initial_account = kwargs.get("initial", {}).get("account", None)
+            assert initial_account is not None
+            account = depot.accounts.get(pk=initial_account)
+            self.import_map, _ = account.import_maps.get_or_create(
+                defaults={"map": "{}"}
+            )
+            self.fields["mapping"].initial = self.import_map.map
+
+    def clean_file(self):
+        file = self.cleaned_data["file"]
+        if not file.name.endswith(".csv"):
+            raise forms.ValidationError("Only CSV files are supported.")
+        if file.size > 5 * 1024 * 1024:
+            raise forms.ValidationError("File size exceeds 5MB.")
+        df = pd.read_csv(file)
+        if df.empty:
+            raise forms.ValidationError("The CSV file is empty.")
+        df.columns = df.columns.str.strip()
+        required_columns = {"Datum", "Kategorie", "Beschreibung", "Cashflow"}
+        if not required_columns.issubset(df.columns):
+            raise forms.ValidationError(
+                f"The CSV file must contain the following columns: {', '.join(required_columns)}."
+            )
+        df = df.dropna(subset=["Cashflow"])
+        categories = df["Kategorie"].unique()
+        for category_name in categories:
+            if category_name not in self.cleaned_data["mapping"]:
+                raise forms.ValidationError(
+                    f"Category '{category_name}' not in mapping."
+                )
+        return df
+
+    def save(self, *args, **kwargs):
+        df = self.cleaned_data["file"]
+        mapping_str = self.cleaned_data["mapping"]
+        account = self.cleaned_data["account"]
+        import_map = account.import_maps.first()
+        import_map.map = mapping_str
+        import_map.save()
+        category_mapping = json.loads(mapping_str)
+        category_map = {c.name: c for c in account.depot.categories.all()}
+        changes = []
+        for row in df.itertuples(index=False):
+            date = getattr(row, "Datum")
+            category_name = getattr(row, "Kategorie")
+            description = getattr(row, "Beschreibung")
+            amount = getattr(row, "Cashflow")
+            date = datetime.strptime(date, "%d.%m.%Y").replace(
+                hour=12, minute=0, tzinfo=timezone.get_current_timezone()
+            )
+            change_amount = float(
+                str(amount)
+                .replace("€", "")
+                .replace(".", "")
+                .replace(",", ".")
+                .replace(" ", "")
+            )
+            category = category_map[category_mapping[category_name]]
+            changes.append(
+                Change(
+                    account=account,
+                    date=date,
+                    change=change_amount,
+                    category=category,
+                    description=description,
+                )
+            )
+        account.changes.all().delete()
+        Change.objects.bulk_create(changes)

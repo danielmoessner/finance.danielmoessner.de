@@ -498,3 +498,17 @@ class Change(models.Model):
             balance=None
         )
         Depot.objects.get(pk=self.account.depot.pk).reset_balance()
+
+
+class ImportMap(models.Model):
+    account = models.ForeignKey(
+        Account, on_delete=models.CASCADE, related_name="import_maps"
+    )
+    map = models.JSONField()
+
+    def __str__(self):
+        return f"{self.account} Import Map"
+
+    class Meta:
+        verbose_name = "Import Map"
+        verbose_name_plural = "Import Maps"

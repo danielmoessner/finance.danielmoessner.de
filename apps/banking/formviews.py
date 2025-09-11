@@ -16,6 +16,7 @@ from apps.banking.forms import (
     DepotActiveForm,
     DepotForm,
     DepotSelectForm,
+    ImportForm,
 )
 from apps.banking.models import Account, Category, Change, Depot
 from apps.core.mixins import (
@@ -213,3 +214,14 @@ class MoneyMoveView(
 ):
     template_name = "symbols/form_snippet.j2"
     form_class = MoveMoneyForm
+
+
+class ImportView(
+    GetUserMixin,
+    GetDepotMixin,
+    GetFormWithDepotAndInitialDataMixin,
+    AjaxResponseMixin,
+    generic.FormView,
+):
+    template_name = "symbols/form_snippet.j2"
+    form_class = ImportForm
