@@ -55,7 +55,7 @@
                     </tr>
                 {% endfor %}
                 <tr>
-                    <td colspan="5">
+                    <td colspan="4">
                         <div class="d-flex">
                             {{ bg.modalButton('Add Alternative', '#addAlternative', url("alternative:add_alternative") ) }}
                             {{ bg.modalButton('Delete Alternative', '#deleteAlternative', url("alternative:delete_alternative") ) }}
@@ -63,6 +63,10 @@
                             {{ mg.djangoModal('Delete Alternative', 'deleteAlternative') 
                             }}
                         </div>
+                    </td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-link text-secondary"
+                           href="{{ url("alternative:index") }}?tab=alternatives&show_archived=1">Include Archived</a>
                     </td>
                 </tr>
             </tbody>

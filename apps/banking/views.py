@@ -36,9 +36,12 @@ class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
             context["categories"] = categories
             context["months"] = get_12_recent_months()
         elif self.tab == "categories":
-            categories = list(self.object.categories.all())
+            show_archived = self.request.GET.get("show_archived", False)
+            categories = self.object.categories.all()
+            if not show_archived:
+                categories = categories.filter(is_archived=False)
             categories = list_sort(
-                categories, lambda c: c.get_latest_years_sum(), reverse=True
+                list(categories), lambda c: c.get_latest_years_sum(), reverse=True
             )
             context["categories"] = categories
             context["years"] = get_latest_years(5)

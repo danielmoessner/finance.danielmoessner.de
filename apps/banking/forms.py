@@ -69,6 +69,7 @@ class CategoryForm(forms.ModelForm):
             "name",
             "description",
             "monthly_budget",
+            "is_archived",
         )
 
     def __init__(self, depot, *args, **kwargs):

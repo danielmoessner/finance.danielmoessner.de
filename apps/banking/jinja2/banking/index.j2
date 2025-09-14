@@ -201,13 +201,17 @@
                     </tr>
                 {% endfor %}
                 <tr>
-                    <td colspan="{{ years|length + 2 }}">
+                    <td colspan="{{ years|length + 1 }}">
                         <div class="d-flex">
                             {{ mg.djangoModal('Add Category', 'addCategory') }}
                             {{ bg.modalButton('Add Category', '#addCategory', url("banking:add_category") ) }}
                             {{ mg.djangoModal('Delete Category', 'deleteCategory') }}
                             {{ bg.modalButton('Delete Category', '#deleteCategory', url("banking:delete_category") ) }}
                         </div>
+                    </td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-link text-secondary"
+                           href="{{ url("banking:index") }}?tab=categories&show_archived=1">Include Archived</a>
                     </td>
                 </tr>
             </tbody>

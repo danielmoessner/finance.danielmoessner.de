@@ -85,6 +85,7 @@ class Alternative(models.Model):
     depot = models.ForeignKey(
         Depot, on_delete=models.CASCADE, related_name="alternatives"
     )
+    is_archived = models.BooleanField(default=False)
     # query optimization
     invested_capital = models.FloatField(null=True)
     current_return = models.FloatField(null=True)

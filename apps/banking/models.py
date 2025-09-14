@@ -323,6 +323,7 @@ class Category(models.Model):
     monthly_budget = models.DecimalField(
         max_digits=15, decimal_places=2, null=True, blank=True
     )
+    is_archived = models.BooleanField(default=False)
     # query optimzation
     balance = models.DecimalField(
         max_digits=15, decimal_places=2, null=True, blank=True
