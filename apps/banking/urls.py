@@ -64,6 +64,31 @@ urlpatterns = [
         name="move_money",
     ),
     path("changes/import/", formviews.ImportView.as_view(), name="import_changes"),
+    path(
+        "changes/import/comdirect/<int:pk>/start-login/",
+        formviews.ComdirectStartLoginView.as_view(),
+        name="start_comdirect_login",
+    ),
+    path(
+        "changes/import/comdirect/<int:pk>/complete-login/",
+        formviews.ComdirectCompleteLoginView.as_view(),
+        name="complete_comdirect_login",
+    ),
+    path(
+        "changes/import/comdirect/<int:pk>/import-changes/",
+        formviews.ComdirectImportChangesView.as_view(),
+        name="import_comdirect_changes",
+    ),
+    path(
+        "changes/import/comdirect/change/<int:pk>/",
+        formviews.ComdirectImportChangeView.as_view(),
+        name="import_comdirect_change",
+    ),
+    path(
+        "changes/import/comdirect/change/<int:pk>/delete/",
+        formviews.DeleteComdirectChangeView.as_view(),
+        name="delete_comdirect_change",
+    ),
     # pages
     path("depot/", views.IndexView.as_view(), name="index"),
     path("accounts/<int:pk>/", views.AccountView.as_view(), name="account"),

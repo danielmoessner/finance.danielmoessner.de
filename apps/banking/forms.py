@@ -3,9 +3,18 @@ from datetime import datetime
 
 import pandas as pd
 from django import forms
+from django.contrib.sessions.backends.base import SessionBase
+from django.db import transaction
 from django.utils import timezone
 
-from apps.banking.models import Account, Category, Change, Depot
+from apps.banking.models import (
+    Account,
+    Category,
+    Change,
+    ComdirectImport,
+    ComdirectImportChange,
+    Depot,
+)
 
 
 class DepotForm(forms.ModelForm):
@@ -229,3 +238,98 @@ class ImportForm(forms.Form):
             )
         account.changes.all().delete()
         Change.objects.bulk_create(changes)
+
+
+class ComdirectStartLoginForm(forms.ModelForm):
+    instance: ComdirectImport
+
+    class Meta:
+        model = ComdirectImport
+        fields = ()
+
+    def __init__(self, depot: Depot, session: SessionBase, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.session = session
+
+    def save(self, commit: bool = True):
+        self.instance.start_login_flow(self.session)
+        return self.instance
+
+
+class ComdirectCompleteLoginForm(forms.ModelForm):
+    instance: ComdirectImport
+
+    class Meta:
+        model = ComdirectImport
+        fields = ()
+
+    def __init__(self, depot: Depot, session: SessionBase, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.session = session
+
+    def save(self, commit: bool = True):
+        self.instance.complete_login_flow(self.session)
+        return self.instance
+
+
+class ComdirectImportChangesForm(forms.ModelForm):
+    instance: ComdirectImport
+
+    class Meta:
+        model = ComdirectImport
+        fields = ()
+
+    def __init__(self, depot: Depot, session: SessionBase, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.session = session
+
+    def save(self, commit: bool = True):
+        self.instance.import_transactions(self.session)
+        return self.instance
+
+
+class ImportComdirectChange(forms.ModelForm):
+    instance: ComdirectImportChange
+    category = forms.ModelChoiceField(
+        widget=forms.Select, queryset=Category.objects.none(), required=True
+    )
+    date = forms.DateTimeField(
+        widget=forms.DateTimeInput(
+            attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
+        ),
+        input_formats=["%Y-%m-%dT%H:%M"],
+        label="Date",
+    )
+
+    class Meta:
+        model = ComdirectImportChange
+        fields = ("date", "change", "category", "description")
+
+    def __init__(self, depot: Depot, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["category"].queryset = depot.categories.all()
+        self.fields["change"].disabled = True
+        self.fields["date"].disabled = True
+
+    def save(self, commit: bool = True):
+        change = self.instance.import_into_account(self.cleaned_data["category"])
+        with transaction.atomic():
+            change.save()
+            self.instance.save()
+        return self.instance
+
+
+class DeleteComdirectChange(forms.ModelForm):
+    instance: ComdirectImportChange
+
+    class Meta:
+        model = ComdirectImportChange
+        fields = ()
+
+    def __init__(self, depot: Depot, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def save(self, commit: bool = True):
+        self.instance.is_deleted = True
+        self.instance.save()
+        return self.instance

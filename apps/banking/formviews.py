@@ -13,12 +13,24 @@ from apps.banking.forms import (
     CategoryForm,
     CategorySelectForm,
     ChangeForm,
+    ComdirectCompleteLoginForm,
+    ComdirectImportChangesForm,
+    ComdirectStartLoginForm,
+    DeleteComdirectChange,
     DepotActiveForm,
     DepotForm,
     DepotSelectForm,
+    ImportComdirectChange,
     ImportForm,
 )
-from apps.banking.models import Account, Category, Change, Depot
+from apps.banking.models import (
+    Account,
+    Category,
+    Change,
+    ComdirectImport,
+    ComdirectImportChange,
+    Depot,
+)
 from apps.core.mixins import (
     AjaxResponseMixin,
     CustomAjaxDeleteMixin,
@@ -225,3 +237,100 @@ class ImportView(
 ):
     template_name = "symbols/form_snippet.j2"
     form_class = ImportForm
+
+
+class ComdirectStartLoginView(
+    GetUserMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView
+):
+    form_class = ComdirectStartLoginForm
+    model = ComdirectImport
+    form_class = ComdirectStartLoginForm
+    template_name = "symbols/form_snippet.j2"
+
+    def get_form(self, form_class=None):
+        if form_class is None:
+            form_class = self.get_form_class()
+        depot = self.get_user().banking_depots.get(is_active=True)
+        session = self.request.session
+        return form_class(depot, session, **self.get_form_kwargs())
+
+    def get_queryset(self):
+        return ComdirectImport.objects.filter(
+            account__in=Account.objects.filter(
+                depot__in=self.get_user().banking_depots.all()
+            )
+        )
+
+
+class ComdirectCompleteLoginView(
+    GetUserMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView
+):
+    model = ComdirectImport
+    form_class = ComdirectCompleteLoginForm
+    template_name = "symbols/form_snippet.j2"
+
+    def get_form(self, form_class=None):
+        if form_class is None:
+            form_class = self.get_form_class()
+        depot = self.get_user().banking_depots.get(is_active=True)
+        session = self.request.session
+        return form_class(depot, session, **self.get_form_kwargs())
+
+    def get_queryset(self):
+        return ComdirectImport.objects.filter(
+            account__in=Account.objects.filter(
+                depot__in=self.get_user().banking_depots.all()
+            )
+        )
+
+
+class ComdirectImportChangesView(
+    GetUserMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView
+):
+    model = ComdirectImport
+    form_class = ComdirectImportChangesForm
+    template_name = "symbols/form_snippet.j2"
+
+    def get_form(self, form_class=None):
+        if form_class is None:
+            form_class = self.get_form_class()
+        depot = self.get_user().banking_depots.get(is_active=True)
+        session = self.request.session
+        return form_class(depot, session, **self.get_form_kwargs())
+
+    def get_queryset(self):
+        return ComdirectImport.objects.filter(
+            account__in=Account.objects.filter(
+                depot__in=self.get_user().banking_depots.all()
+            )
+        )
+
+
+class ComdirectImportChangeView(
+    GetUserMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView
+):
+    model = ComdirectImportChange
+    form_class = ImportComdirectChange
+    template_name = "symbols/form_snippet.j2"
+
+    def get_queryset(self):
+        return ComdirectImportChange.objects.filter(
+            comdirect_import__account__in=Account.objects.filter(
+                depot__in=self.get_user().banking_depots.all()
+            )
+        )
+
+
+class DeleteComdirectChangeView(
+    GetUserMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView
+):
+    model = ComdirectImportChange
+    form_class = DeleteComdirectChange
+    template_name = "symbols/form_snippet.j2"
+
+    def get_queryset(self):
+        return ComdirectImportChange.objects.filter(
+            comdirect_import__account__in=Account.objects.filter(
+                depot__in=self.get_user().banking_depots.all()
+            )
+        )

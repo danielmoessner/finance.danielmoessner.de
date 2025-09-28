@@ -1,10 +1,16 @@
+import hashlib
+import json
 from datetime import date, datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING, Literal, TypedDict, Union
+from uuid import uuid4
 
 import pandas as pd
+import requests
+from django.contrib.sessions.backends.base import SessionBase
 from django.db import connection, models
 from django.utils import timezone
+from pydantic import BaseModel
 
 import apps.banking.duplicated_code as banking_duplicated_code
 from apps.banking.utils import format_currency_amount_to_de
@@ -230,6 +236,7 @@ class Account(CoreAccount):
 
     if TYPE_CHECKING:
         changes: QuerySet["Change"]
+        comdirect_import: Union["ComdirectImport", None]
 
     class Meta:
         ordering = ["-changes_count"]
@@ -513,3 +520,340 @@ class ImportMap(models.Model):
     class Meta:
         verbose_name = "Import Map"
         verbose_name_plural = "Import Maps"
+
+
+class ComdirectImport(models.Model):
+    account = models.OneToOneField(
+        Account, on_delete=models.CASCADE, related_name="comdirect_import"
+    )
+    comdirect_api_client_id = models.CharField(max_length=255)
+    comdirect_api_client_secret = models.CharField(max_length=255)
+    comdirect_zugangsnummer = models.CharField(max_length=255)
+    comdirect_pin = models.CharField(max_length=255)
+    comdirect_account_id = models.CharField(max_length=255)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    OAUTH_URL = "https://api.comdirect.de"
+    API_URL = "https://api.comdirect.de/api"
+
+    if TYPE_CHECKING:
+        changes: QuerySet["ComdirectImportChange"]
+
+    class Meta:
+        verbose_name = "Comdirect Import"
+        verbose_name_plural = "Comdirect Imports"
+
+    def __str__(self):
+        return f"Comdirect Import for {self.account.name}"
+
+    def _get_tokens(self) -> dict[str, str]:
+        resp = requests.post(
+            f"{self.OAUTH_URL}/oauth/token",
+            data={
+                "client_id": self.comdirect_api_client_id,
+                "client_secret": self.comdirect_api_client_secret,
+                "username": self.comdirect_zugangsnummer,
+                "password": self.comdirect_pin,
+                "grant_type": "password",
+            },
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        access_token = data["access_token"]
+        refresh_token = data["refresh_token"]
+        return {"access_token": access_token, "refresh_token": refresh_token}
+
+    def _get_session_identifier(self, access_token: str) -> dict[str, str | int]:
+        request_id = int(datetime.now().timestamp())
+        session_id = uuid4().hex
+        resp = requests.get(
+            f"{self.API_URL}/session/clients/user/v1/sessions",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Accept": "application/json",
+                "x-http-request-info": json.dumps(
+                    {
+                        "clientRequestId": {
+                            "sessionId": session_id,
+                            "requestId": request_id,
+                        }
+                    }
+                ),
+                "Content-Type": "application/json",
+            },
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        identifier = data[0]["identifier"]
+        return {
+            "identifier": identifier,
+            "session_id": session_id,
+            "request_id": request_id,
+        }
+
+    def _validate_session(
+        self, access_token: str, session_id: str, request_id: int, identifier: str
+    ) -> dict[str, str]:
+        resp = requests.post(
+            f"{self.API_URL}/session/clients/user/v1/sessions/{identifier}/validate",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Accept": "application/json",
+                "x-http-request-info": json.dumps(
+                    {
+                        "clientRequestId": {
+                            "sessionId": session_id,
+                            "requestId": request_id,
+                        }
+                    }
+                ),
+                "Content-Type": "application/json",
+            },
+            json={
+                "identifier": identifier,
+                "sessionTanActive": True,
+                "activated2FA": True,
+            },
+        )
+        resp.raise_for_status()
+        challenge_id = json.loads(resp.headers["x-once-authentication-info"])["id"]
+        return {"challenge_id": challenge_id}
+
+    def _activate_session(
+        self,
+        access_token: str,
+        session_id: str,
+        request_id: int,
+        identifier: str,
+        challenge_id: str,
+    ) -> None:
+        resp = requests.patch(
+            f"{self.API_URL}/session/clients/user/v1/sessions/{identifier}",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Accept": "application/json",
+                "x-http-request-info": json.dumps(
+                    {
+                        "clientRequestId": {
+                            "sessionId": session_id,
+                            "requestId": request_id,
+                        }
+                    }
+                ),
+                "Content-Type": "application/json",
+                "x-once-authentication-info": json.dumps({"id": challenge_id}),
+                "x-once-authentication": "000000",
+            },
+            json={
+                "identifier": identifier,
+                "sessionTanActive": True,
+                "activated2FA": True,
+            },
+        )
+        resp.raise_for_status()
+
+    def _get_api_tokens(self, access_token: str) -> dict[str, str]:
+        resp = requests.post(
+            f"{self.OAUTH_URL}/oauth/token",
+            data={
+                "client_id": self.comdirect_api_client_id,
+                "client_secret": self.comdirect_api_client_secret,
+                "token": access_token,
+                "grant_type": "cd_secondary",
+            },
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        api_access_token = data["access_token"]
+        api_refresh_token = data["refresh_token"]
+        return {
+            "api_access_token": api_access_token,
+            "api_refresh_token": api_refresh_token,
+        }
+
+    def _refresh_tokens(self, api_refresh_token: str) -> dict[str, str]:
+        resp = requests.post(
+            f"{self.OAUTH_URL}/oauth/token",
+            data={
+                "client_id": self.comdirect_api_client_id,
+                "client_secret": self.comdirect_api_client_secret,
+                "refresh_token": api_refresh_token,
+                "grant_type": "refresh_token",
+            },
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        access_token = data["access_token"]
+        refresh_token = data["refresh_token"]
+        return {"api_access_token": access_token, "api_refresh_token": refresh_token}
+
+    def get_transactions(
+        self, api_access_token: str, session_id: str, request_id: int
+    ) -> None:
+        resp = requests.get(
+            f"{self.API_URL}/banking/v1/accounts/{self.comdirect_account_id}/transactions?with-attr=account",
+            headers={
+                "Accept": "application/json",
+                "Authorization": f"Bearer {api_access_token}",
+                "x-http-request-info": json.dumps(
+                    {
+                        "clientRequestId": {
+                            "sessionId": session_id,
+                            "requestId": request_id,
+                        }
+                    }
+                ),
+                "Content-Type": "application/json",
+            },
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        return data
+
+    def start_login_flow(self, session: SessionBase):
+        data = {}
+        data.update(self._get_tokens())
+        data.update(self._get_session_identifier(data["access_token"]))
+        data.update(
+            self._validate_session(
+                data["access_token"],
+                data["session_id"],
+                data["request_id"],
+                data["identifier"],
+            )
+        )
+        session.update(data)
+        # wait for user to validate the tan then call complete_login_flow
+
+    def complete_login_flow(self, session: SessionBase):
+        data = {
+            "access_token": session["access_token"],
+            "session_id": session["session_id"],
+            "request_id": session["request_id"],
+            "identifier": session["identifier"],
+            "challenge_id": session["challenge_id"],
+            "refresh_token": session["refresh_token"],
+        }
+        self._activate_session(
+            data["access_token"],
+            data["session_id"],
+            data["request_id"],
+            data["identifier"],
+            data["challenge_id"],
+        )
+        data.update(self._get_api_tokens(data["access_token"]))
+        session.update(data)
+
+    def refresh(self, session: SessionBase):
+        data = self._refresh_tokens(session["api_refresh_token"])
+        session.update(data)
+
+    class Amount(BaseModel):
+        value: Decimal
+        unit: str
+
+    class Remitter(BaseModel):
+        holderName: str = ""
+
+    class Transaction(BaseModel):
+        reference: str
+        bookingStatus: Literal["NOTBOOKED", "BOOKED"]
+        bookingDate: date | None
+        amount: "ComdirectImport.Amount"
+        remittanceInfo: str
+        remitter: Union["ComdirectImport.Remitter", None]
+
+        def get_description(self) -> str:
+            if self.remitter and self.remitter.holderName:
+                return self.remitter.holderName
+            if self.remittanceInfo:
+                return self.remittanceInfo
+            return self.reference
+
+    class Transactions(BaseModel):
+        paging: dict
+        aggregated: dict
+        values: list["ComdirectImport.Transaction"]
+
+    def import_transactions(self, session: SessionBase):
+        raw_data = self.get_transactions(
+            session["api_access_token"], session["session_id"], session["request_id"]
+        )
+        data = self.Transactions.model_validate(raw_data)
+        print(data)
+        existing = set(self.changes.values_list("sha", flat=True))
+        changes = []
+        for transaction in data.values:
+            if transaction.bookingStatus != "BOOKED":
+                continue
+            change = ComdirectImportChange(
+                comdirect_import=self,
+                date=transaction.bookingDate,
+                description=transaction.get_description(),
+                change=transaction.amount.value,
+            )
+            change.sha = change.calculate_sha()
+            if change.sha in existing:
+                continue
+            changes.append(change)
+        ComdirectImportChange.objects.bulk_create(changes)
+
+
+class ComdirectImportChange(models.Model):
+    comdirect_import = models.ForeignKey(
+        ComdirectImport,
+        on_delete=models.CASCADE,
+        related_name="changes",
+    )
+    sha = models.CharField(max_length=64)
+    date = models.DateField()
+    description = models.TextField()
+    change = models.DecimalField(decimal_places=2, max_digits=15)
+    is_deleted = models.BooleanField(default=False)
+
+    linked_change = models.ForeignKey(
+        Change,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="comdirect_import_changes",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Comdirect Import Change"
+        verbose_name_plural = "Comdirect Import Changes"
+        ordering = ["-date", "-created_at"]
+
+    def __str__(self):
+        return f"Comdirect Change for {self.comdirect_import.account.name}"
+
+    def calculate_sha(self):
+        sha_str = f"{self.date}-{self.description}-{self.change}"
+        return hashlib.sha256(sha_str.encode("utf-8")).hexdigest()
+
+    @property
+    def description_str(self):
+        if len(str(self.description)) > 35:
+            return self.description[:35] + "..."
+        return self.description
+
+    def import_into_account(self, category: Category):
+        if self.linked_change is not None:
+            raise ValueError("change is already imported")
+        change = Change(
+            account=self.comdirect_import.account,
+            date=datetime.combine(self.date, datetime.min.time()),
+            category=category,
+            description=self.description,
+            change=self.change,
+        )
+        self.linked_change = change
+        return change

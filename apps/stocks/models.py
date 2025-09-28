@@ -733,6 +733,10 @@ class PriceFetcher(models.Model):
     data = models.JSONField(default=dict)
     error = models.CharField(max_length=1000, blank=True)
 
+    class Meta:
+        verbose_name = "Price Fetcher"
+        verbose_name_plural = "Price Fetchers"
+
     def __str__(self):
         if self.fetcher_type in ["WEBSITE", "SELENIUM"]:
             return "{} - {}".format(self.fetcher_type, self.url)

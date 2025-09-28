@@ -8,10 +8,50 @@
     <div class="d-flex justify-content-center mt-2 mb-5">
         <div class="btn-group" role="group" aria-label="Console">
             {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats') ) }}
+            {% if import %}{{ bg.hrefButton("Import", request.path + '?tab=import', active=(tab=='import') ) }}{% endif %}
             {{ bg.hrefButton("Changes", request.path + '?tab=changes', active=(tab=='changes') ) }}
         </div>
     </div>
     {% include 'symbols/stats.j2' %}
+    {% if tab=='import' %}
+        {{ mg.djangoModal('Start Login', 'startLogin') }}
+        {{ mg.djangoModal('Complete Login', 'completeLogin') }}
+        {{ mg.djangoModal('Import Changes', 'importChanges') }}
+        {{ mg.djangoModal('Import Change', 'importChange') }}
+        {{ mg.djangoModal('Delete Change', 'deleteChange') }}
+        <table class="table rounded table-responsive-md table-dark mb-5">
+            <thead>
+                <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Description</th>
+                    <th class="text-end" scope="col">Change</th>
+                    <th class="text-end" scope="col">
+                        {{ bg.modalButton("Start Login", "#startLogin", url("banking:start_comdirect_login", args=[import.pk]) ) }}
+                        {{ bg.modalButton("Complete Login", "#completeLogin", url("banking:complete_comdirect_login", args=[import.pk]) ) }}
+                        {{ bg.modalButton("Import Changes", "#importChanges", url("banking:import_comdirect_changes", args=[import.pk]) ) }}
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for change in changes %}
+                    <tr>
+                        <td>{{ change.date.strftime("%d.%m.%Y %H:%M") }}</td>
+                        <td>{{ change.description_str }}</td>
+                        <td class="text-end">{{ change.change }}</td>
+                        <td>
+                            <div class="d-flex justify-content-end">
+                                {{ bg.modalButton("Import", "#importChange", url("banking:import_comdirect_change", args=[change.pk]) ) }}
+                                {{ bg.modalButton("Delete", "#deleteChange", url("banking:delete_comdirect_change", args=[change.pk]) ) }}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="6"></td>
+                </tr>
+            </tbody>
+        </table>
+    {% endif %}
     {% if tab=='changes' %}
         {{ mg.djangoModal('Edit Change', 'editChange') }}
         {{ mg.djangoModal('Delete Change', 'deleteChange') }}

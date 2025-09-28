@@ -56,7 +56,9 @@ class AccountView(GetUserMixin, TabContextMixin, generic.DetailView):
     object: Account
 
     def get_queryset(self):
-        return Account.objects.filter(depot__in=self.get_user().banking_depots.all())
+        return Account.objects.filter(
+            depot__in=self.get_user().banking_depots.all()
+        ).select_related("comdirect_import")
 
     def get_show(self) -> int:
         show = self.request.GET.get("show", 30)
@@ -70,6 +72,7 @@ class AccountView(GetUserMixin, TabContextMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super(AccountView, self).get_context_data(**kwargs)
         context["account"] = self.object
+        context["import"] = self.object.comdirect_import
         if self.tab == "stats":
             context["stats"] = self.object.get_stats()
         if self.tab == "changes":
@@ -80,6 +83,14 @@ class AccountView(GetUserMixin, TabContextMixin, generic.DetailView):
                 ]
             )
             context["show"] = self.get_context_show(show)
+        if self.tab == "import":
+            comdirect_import = self.object.comdirect_import
+            assert comdirect_import is not None
+            context["changes"] = list(
+                comdirect_import.changes.filter(
+                    linked_change=None, is_deleted=False
+                ).order_by("-date", "-pk")
+            )
         return context
 
 
