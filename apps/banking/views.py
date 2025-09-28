@@ -72,7 +72,11 @@ class AccountView(GetUserMixin, TabContextMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super(AccountView, self).get_context_data(**kwargs)
         context["account"] = self.object
-        context["import"] = self.object.comdirect_import
+        context["import"] = (
+            self.object.comdirect_import
+            if hasattr(self.object, "comdirect_import")
+            else None
+        )
         if self.tab == "stats":
             context["stats"] = self.object.get_stats()
         if self.tab == "changes":
