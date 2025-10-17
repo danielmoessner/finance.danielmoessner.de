@@ -14,9 +14,7 @@
     </div>
     {% include 'symbols/stats.j2' %}
     {% if tab=='import' %}
-        {{ mg.djangoModal('Start Login', 'startLogin') }}
-        {{ mg.djangoModal('Complete Login', 'completeLogin') }}
-        {{ mg.djangoModal('Import Changes', 'importChanges') }}
+        {{ mg.djangoModal('Run Import', 'runImport') }}
         {{ mg.djangoModal('Import Change', 'importChange') }}
         {{ mg.djangoModal('Delete Change', 'deleteChange') }}
         <table class="table rounded table-responsive-md table-dark mb-5">
@@ -26,9 +24,7 @@
                     <th scope="col">Description</th>
                     <th class="text-end" scope="col">Change</th>
                     <th class="text-end" scope="col">
-                        {{ bg.modalButton("Start Login", "#startLogin", url("banking:start_comdirect_login", args=[import.pk]) ) }}
-                        {{ bg.modalButton("Complete Login", "#completeLogin", url("banking:complete_comdirect_login", args=[import.pk]) ) }}
-                        {{ bg.modalButton("Import Changes", "#importChanges", url("banking:import_comdirect_changes", args=[import.pk]) ) }}
+                        {{ bg.modalButton("Run Import", "#runImport", url("banking:run_comdirect_import", args=[import.pk]) ) }}
                     </th>
                 </tr>
             </thead>

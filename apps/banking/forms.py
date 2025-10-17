@@ -242,6 +242,7 @@ class ImportForm(forms.Form):
 
 class ComdirectStartLoginForm(forms.ModelForm):
     instance: ComdirectImport
+    text = "Click submit to start the login process."
 
     class Meta:
         model = ComdirectImport
@@ -258,6 +259,7 @@ class ComdirectStartLoginForm(forms.ModelForm):
 
 class ComdirectCompleteLoginForm(forms.ModelForm):
     instance: ComdirectImport
+    text = "Please validate the tan and submit again."
 
     class Meta:
         model = ComdirectImport
@@ -274,6 +276,7 @@ class ComdirectCompleteLoginForm(forms.ModelForm):
 
 class ComdirectImportChangesForm(forms.ModelForm):
     instance: ComdirectImport
+    text = "The login was successful please submit again to import the changes."
 
     class Meta:
         model = ComdirectImport

@@ -242,14 +242,22 @@ class ImportView(
 class ComdirectStartLoginView(
     GetUserMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView
 ):
-    form_class = ComdirectStartLoginForm
     model = ComdirectImport
-    form_class = ComdirectStartLoginForm
     template_name = "symbols/form_snippet.j2"
 
+    def get_form_class(self):
+        if self.request.session.get("comdirect_import_step") == "login_completed":
+            return ComdirectImportChangesForm
+        if self.request.session.get("comdirect_import_step") == "login_started":
+            return ComdirectCompleteLoginForm
+        if self.request.session.get("comdirect_import_step") == "import_completed":
+            self.request.session["comdirect_import_step"] = ""
+            return None
+        return ComdirectStartLoginForm
+
     def get_form(self, form_class=None):
-        if form_class is None:
-            form_class = self.get_form_class()
+        form_class = self.get_form_class()
+        assert form_class is not None, "import already completed"
         depot = self.get_user().banking_depots.get(is_active=True)
         session = self.request.session
         return form_class(depot, session, **self.get_form_kwargs())
@@ -261,49 +269,18 @@ class ComdirectStartLoginView(
             )
         )
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        if response.status_code != 200:
+            return response
 
-class ComdirectCompleteLoginView(
-    GetUserMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView
-):
-    model = ComdirectImport
-    form_class = ComdirectCompleteLoginForm
-    template_name = "symbols/form_snippet.j2"
-
-    def get_form(self, form_class=None):
+        form_class = self.get_form_class()
         if form_class is None:
-            form_class = self.get_form_class()
-        depot = self.get_user().banking_depots.get(is_active=True)
-        session = self.request.session
-        return form_class(depot, session, **self.get_form_kwargs())
+            return response
 
-    def get_queryset(self):
-        return ComdirectImport.objects.filter(
-            account__in=Account.objects.filter(
-                depot__in=self.get_user().banking_depots.all()
-            )
-        )
-
-
-class ComdirectImportChangesView(
-    GetUserMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView
-):
-    model = ComdirectImport
-    form_class = ComdirectImportChangesForm
-    template_name = "symbols/form_snippet.j2"
-
-    def get_form(self, form_class=None):
-        if form_class is None:
-            form_class = self.get_form_class()
-        depot = self.get_user().banking_depots.get(is_active=True)
-        session = self.request.session
-        return form_class(depot, session, **self.get_form_kwargs())
-
-    def get_queryset(self):
-        return ComdirectImport.objects.filter(
-            account__in=Account.objects.filter(
-                depot__in=self.get_user().banking_depots.all()
-            )
-        )
+        return self.form_invalid(
+            form=self.get_form(form_class)
+        )  # to get to the next step but kinda hacky to use form invalid response for it
 
 
 class ComdirectImportChangeView(

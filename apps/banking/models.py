@@ -728,6 +728,7 @@ class ComdirectImport(models.Model):
             )
         )
         session.update(data)
+        session["comdirect_import_step"] = "login_started"
         # wait for user to validate the tan then call complete_login_flow
 
     def complete_login_flow(self, session: SessionBase):
@@ -748,6 +749,7 @@ class ComdirectImport(models.Model):
         )
         data.update(self._get_api_tokens(data["access_token"]))
         session.update(data)
+        session["comdirect_import_step"] = "login_completed"
 
     def refresh(self, session: SessionBase):
         data = self._refresh_tokens(session["api_refresh_token"])
@@ -785,7 +787,6 @@ class ComdirectImport(models.Model):
             session["api_access_token"], session["session_id"], session["request_id"]
         )
         data = self.Transactions.model_validate(raw_data)
-        print(data)
         existing = set(self.changes.values_list("sha", flat=True))
         changes = []
         for transaction in data.values:
@@ -802,6 +803,7 @@ class ComdirectImport(models.Model):
                 continue
             changes.append(change)
         ComdirectImportChange.objects.bulk_create(changes)
+        session["comdirect_import_step"] = "import_completed"
 
 
 class ComdirectImportChange(models.Model):
