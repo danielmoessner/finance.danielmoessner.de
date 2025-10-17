@@ -251,13 +251,11 @@ class ComdirectStartLoginView(
         if self.request.session.get("comdirect_import_step") == "login_started":
             return ComdirectCompleteLoginForm
         if self.request.session.get("comdirect_import_step") == "import_completed":
-            self.request.session["comdirect_import_step"] = ""
-            return None
+            return ComdirectImportChangesForm
         return ComdirectStartLoginForm
 
     def get_form(self, form_class=None):
         form_class = self.get_form_class()
-        assert form_class is not None, "import already completed"
         depot = self.get_user().banking_depots.get(is_active=True)
         session = self.request.session
         return form_class(depot, session, **self.get_form_kwargs())
@@ -272,12 +270,13 @@ class ComdirectStartLoginView(
     def form_valid(self, form):
         response = super().form_valid(form)
         if response.status_code != 200:
+            self.request.session["comdirect_import_step"] = ""
+            return response
+
+        if self.request.session.get("comdirect_import_step") == "import_completed":
             return response
 
         form_class = self.get_form_class()
-        if form_class is None:
-            return response
-
         return self.form_invalid(
             form=self.get_form(form_class)
         )  # to get to the next step but kinda hacky to use form invalid response for it

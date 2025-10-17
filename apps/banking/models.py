@@ -693,10 +693,10 @@ class ComdirectImport(models.Model):
         return {"api_access_token": access_token, "api_refresh_token": refresh_token}
 
     def get_transactions(
-        self, api_access_token: str, session_id: str, request_id: int
+        self, api_access_token: str, session_id: str, request_id: int, page: int
     ) -> None:
         resp = requests.get(
-            f"{self.API_URL}/banking/v1/accounts/{self.comdirect_account_id}/transactions?with-attr=account",
+            f"{self.API_URL}/banking/v1/accounts/{self.comdirect_account_id}/transactions",
             headers={
                 "Accept": "application/json",
                 "Authorization": f"Bearer {api_access_token}",
@@ -709,6 +709,11 @@ class ComdirectImport(models.Model):
                     }
                 ),
                 "Content-Type": "application/json",
+            },
+            params={
+                "transactionState": "BOOKED",
+                "paging-first": page * 20,
+                "paging-count": 20,
             },
         )
         resp.raise_for_status()
@@ -782,14 +787,38 @@ class ComdirectImport(models.Model):
         aggregated: dict
         values: list["ComdirectImport.Transaction"]
 
-    def import_transactions(self, session: SessionBase):
-        raw_data = self.get_transactions(
-            session["api_access_token"], session["session_id"], session["request_id"]
-        )
+    def import_transactions(self, session: SessionBase, page: int = 0) -> date | None:
+        self.refresh(session)
+        try:
+            raw_data = self.get_transactions(
+                session["api_access_token"],
+                session["session_id"],
+                session["request_id"],
+                page,
+            )
+        except requests.HTTPError as e:
+            if e.response.status_code == 401:
+                self.refresh(session)
+                raw_data = self.get_transactions(
+                    session["api_access_token"],
+                    session["session_id"],
+                    session["request_id"],
+                    page,
+                )
+            else:
+                raise e
         data = self.Transactions.model_validate(raw_data)
         existing = set(self.changes.values_list("sha", flat=True))
         changes = []
+        earliest_change_date: date | None = None
         for transaction in data.values:
+            if earliest_change_date is None:
+                earliest_change_date = transaction.bookingDate
+            elif (
+                transaction.bookingDate
+                and transaction.bookingDate < earliest_change_date
+            ):
+                earliest_change_date = transaction.bookingDate
             if transaction.bookingStatus != "BOOKED":
                 continue
             change = ComdirectImportChange(
@@ -804,6 +833,7 @@ class ComdirectImport(models.Model):
             changes.append(change)
         ComdirectImportChange.objects.bulk_create(changes)
         session["comdirect_import_step"] = "import_completed"
+        return earliest_change_date
 
 
 class ComdirectImportChange(models.Model):

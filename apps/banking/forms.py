@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pandas as pd
 from django import forms
@@ -287,7 +287,19 @@ class ComdirectImportChangesForm(forms.ModelForm):
         self.session = session
 
     def save(self, commit: bool = True):
-        self.instance.import_transactions(self.session)
+        latest_change = self.instance.account.changes.order_by("-date").first()
+        if latest_change is None:
+            latest = timezone.now().date() - timedelta(days=14)
+        else:
+            latest = latest_change.date.date()
+        page = 0
+        while True:
+            earliest = self.instance.import_transactions(self.session, page=page)
+            if earliest is None:
+                break
+            if earliest < latest:
+                break
+            page += 1
         return self.instance
 
 
