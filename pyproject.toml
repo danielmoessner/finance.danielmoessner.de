@@ -39,7 +39,7 @@ dependencies = [
     "pytz==2023.3.*",
     "requests==2.31.*",
     "pydantic==2.1.*",
-    "selenium==4.27.*",
+    "selenium==4.37.*",
     "webdriver-manager==4.0.*",
     "isort==5.12.*",
     "black==24.2.*",
