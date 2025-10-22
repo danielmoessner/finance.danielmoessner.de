@@ -246,12 +246,13 @@ class ComdirectImportView(
     template_name = "symbols/form_snippet.j2"
 
     def get_form_class(self):
-        # if self.request.session.get("comdirect_import_step") == "login_completed":
-        #     return ComdirectImportChangesForm
-        # if self.request.session.get("comdirect_import_step") == "login_started":
-        #     return ComdirectCompleteLoginForm
-        # if self.request.session.get("comdirect_import_step") == "import_completed":
-        #     return ComdirectImportChangesForm
+        print(self.request.session.get("comdirect_import_step"))
+        if self.request.session.get("comdirect_import_step") == "login_completed":
+            return ComdirectImportChangesForm
+        if self.request.session.get("comdirect_import_step") == "login_started":
+            return ComdirectCompleteLoginForm
+        if self.request.session.get("comdirect_import_step") == "import_completed":
+            return ComdirectImportChangesForm
         return ComdirectStartLoginForm
 
     def get_form(self, form_class=None):
