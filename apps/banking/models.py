@@ -761,6 +761,7 @@ class ComdirectImport(models.Model):
         session.update(data)
 
     def _reset(self, session: SessionBase):
+        session["comdirect_import_step"] = ""
         del session["comdirect_import_step"]
         del session["access_token"]
         del session["refresh_token"]
