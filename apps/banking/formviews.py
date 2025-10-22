@@ -41,6 +41,10 @@ from apps.core.mixins import (
 from apps.users.mixins import GetUserMixin
 from apps.users.models import StandardUser
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class GetDepotMixin:
     get_user: Callable[[], StandardUser]
@@ -246,7 +250,7 @@ class ComdirectImportView(
     template_name = "symbols/form_snippet.j2"
 
     def get_form_class(self):
-        print(self.request.session.get("comdirect_import_step"))
+        logger.warning(self.request.session.get("comdirect_import_step"))
         if self.request.session.get("comdirect_import_step") == "login_completed":
             return ComdirectImportChangesForm
         if self.request.session.get("comdirect_import_step") == "login_started":
