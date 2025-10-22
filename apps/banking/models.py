@@ -808,8 +808,7 @@ class ComdirectImport(models.Model):
                 page,
             )
         except requests.HTTPError as e:
-            if e.response.status_code == 401:
-                self._reset(session)
+            self._reset(session)
             raise e
         data = self.Transactions.model_validate(raw_data)
         existing = set(self.changes.values_list("sha", flat=True))
