@@ -239,7 +239,7 @@ class ImportView(
     form_class = ImportForm
 
 
-class ComdirectStartLoginView(
+class ComdirectImportView(
     GetUserMixin, CustomGetFormMixin, AjaxResponseMixin, generic.UpdateView
 ):
     model = ComdirectImport

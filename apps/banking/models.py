@@ -809,6 +809,7 @@ class ComdirectImport(models.Model):
             )
         except requests.HTTPError as e:
             self._reset(session)
+            raise Exception("session reset")
             raise e
         data = self.Transactions.model_validate(raw_data)
         existing = set(self.changes.values_list("sha", flat=True))

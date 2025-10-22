@@ -66,7 +66,7 @@ urlpatterns = [
     path("changes/import/", formviews.ImportView.as_view(), name="import_changes"),
     path(
         "changes/import/comdirect/<int:pk>/run/",
-        formviews.ComdirectStartLoginView.as_view(),
+        formviews.ComdirectImportView.as_view(),
         name="run_comdirect_import",
     ),
     path(
