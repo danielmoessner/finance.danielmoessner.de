@@ -756,9 +756,20 @@ class ComdirectImport(models.Model):
         session.update(data)
         session["comdirect_import_step"] = "login_completed"
 
-    def refresh(self, session: SessionBase):
+    def _refresh(self, session: SessionBase):
         data = self._refresh_tokens(session["api_refresh_token"])
         session.update(data)
+
+    def _reset(self, session: SessionBase):
+        del session["comdirect_import_step"]
+        del session["access_token"]
+        del session["refresh_token"]
+        del session["identifier"]
+        del session["session_id"]
+        del session["request_id"]
+        del session["challenge_id"]
+        del session["api_access_token"]
+        del session["api_refresh_token"]
 
     class Amount(BaseModel):
         value: Decimal
@@ -788,8 +799,8 @@ class ComdirectImport(models.Model):
         values: list["ComdirectImport.Transaction"]
 
     def import_transactions(self, session: SessionBase, page: int = 0) -> date | None:
-        self.refresh(session)
         try:
+            self._refresh(session)
             raw_data = self.get_transactions(
                 session["api_access_token"],
                 session["session_id"],
@@ -798,15 +809,8 @@ class ComdirectImport(models.Model):
             )
         except requests.HTTPError as e:
             if e.response.status_code == 401:
-                self.refresh(session)
-                raw_data = self.get_transactions(
-                    session["api_access_token"],
-                    session["session_id"],
-                    session["request_id"],
-                    page,
-                )
-            else:
-                raise e
+                self._reset(session)
+            raise e
         data = self.Transactions.model_validate(raw_data)
         existing = set(self.changes.values_list("sha", flat=True))
         changes = []
