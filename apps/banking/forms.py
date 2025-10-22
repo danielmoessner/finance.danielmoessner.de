@@ -252,9 +252,13 @@ class ComdirectStartLoginForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.session = session
 
-    def save(self, commit: bool = True):
-        self.instance.start_login_flow(self.session)
-        return self.instance
+    def is_valid(self):
+        try:
+            self.instance.start_login_flow(self.session)
+        except Exception as e:
+            self.errors["__all__"] = self.error_class([str(e)])
+            return False
+        return True
 
 
 class ComdirectCompleteLoginForm(forms.ModelForm):
@@ -269,9 +273,13 @@ class ComdirectCompleteLoginForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.session = session
 
-    def save(self, commit: bool = True):
-        self.instance.complete_login_flow(self.session)
-        return self.instance
+    def is_valid(self):
+        try:
+            self.instance.complete_login_flow(self.session)
+        except Exception as e:
+            self.errors["__all__"] = self.error_class([str(e)])
+            return False
+        return True
 
 
 class ComdirectImportChangesForm(forms.ModelForm):
@@ -286,7 +294,7 @@ class ComdirectImportChangesForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.session = session
 
-    def save(self, commit: bool = True):
+    def is_valid(self):
         latest_change = self.instance.account.changes.order_by("-date").first()
         if latest_change is None:
             latest = timezone.now().date() - timedelta(days=14)
@@ -294,13 +302,18 @@ class ComdirectImportChangesForm(forms.ModelForm):
             latest = latest_change.date.date()
         page = 0
         while True:
-            earliest = self.instance.import_transactions(self.session, page=page)
+            try:
+                earliest = self.instance.import_transactions(self.session, page=page)
+            except Exception as e:
+                self.instance.reset(self.session)
+                self.errors["__all__"] = self.error_class([str(e)])
+                return False
             if earliest is None:
                 break
             if earliest < latest:
                 break
             page += 1
-        return self.instance
+        return True
 
 
 class ImportComdirectChange(forms.ModelForm):

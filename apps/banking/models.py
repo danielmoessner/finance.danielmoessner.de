@@ -760,8 +760,7 @@ class ComdirectImport(models.Model):
         data = self._refresh_tokens(session["api_refresh_token"])
         session.update(data)
 
-    def _reset(self, session: SessionBase):
-        session["comdirect_import_step"] = ""
+    def reset(self, session: SessionBase):
         del session["comdirect_import_step"]
         del session["access_token"]
         del session["refresh_token"]
@@ -800,18 +799,13 @@ class ComdirectImport(models.Model):
         values: list["ComdirectImport.Transaction"]
 
     def import_transactions(self, session: SessionBase, page: int = 0) -> date | None:
-        try:
-            self._refresh(session)
-            raw_data = self.get_transactions(
-                session["api_access_token"],
-                session["session_id"],
-                session["request_id"],
-                page,
-            )
-        except requests.HTTPError as e:
-            self._reset(session)
-            raise Exception("session reset")
-            raise e
+        self._refresh(session)
+        raw_data = self.get_transactions(
+            session["api_access_token"],
+            session["session_id"],
+            session["request_id"],
+            page,
+        )
         data = self.Transactions.model_validate(raw_data)
         existing = set(self.changes.values_list("sha", flat=True))
         changes = []
