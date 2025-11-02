@@ -29,7 +29,11 @@ class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
                 accounts = accounts.filter(is_archived=False)
             context["accounts"] = accounts.select_related("bucket")
         elif self.tab == "budgets":
-            categories = list(self.object.categories.all())
+            categories = list(
+                self.object.categories.filter(is_archived=False).exclude(
+                    monthly_budget=None
+                )
+            )
             categories = list_sort(
                 categories, lambda c: c.get_latest_years_sum(), reverse=True
             )
