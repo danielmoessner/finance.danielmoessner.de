@@ -10,12 +10,12 @@
             <th class="text-end" scope="col">Money Amount</th>
             <th class="text-end" scope="col">Price</th>
             <th class="text-end" scope="col">
-            {% if object.ticker %} {# this tests if the object is of type stock or a bank #}
-                        {%- set tradeUrl="?stock="+object.pk|string -%}
-                    {% else %}
-                        {%- set tradeUrl="?bank="+object.pk|string -%}
-                    {% endif %}
-                {{ bg.modalButton("Add Trade", "#addTrade", url("stocks:add_trade")+tradeUrl) }}
+            {% if object.is_stock %} {# this tests if the object is of type stock or a bank #}
+                {%- set tradeUrl="?stock="+object.pk|string -%}
+            {% else %}
+                {%- set tradeUrl="?bank="+object.pk|string -%}
+            {% endif %}
+            {{ bg.modalButton("Add Trade", "#addTrade", url("stocks:add_trade")+tradeUrl) }}
             </th>
         </tr>
         </thead>
