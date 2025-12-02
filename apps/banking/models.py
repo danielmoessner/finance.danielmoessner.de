@@ -508,9 +508,9 @@ class Change(models.Model):
         Depot.objects.get(pk=self.account.depot.pk).reset_balance()
 
 
-class ImportMap(models.Model):
-    account = models.ForeignKey(
-        Account, on_delete=models.CASCADE, related_name="import_maps"
+class CsvImport(models.Model):
+    account = models.OneToOneField(
+        Account, on_delete=models.CASCADE, related_name="csv_import"
     )
     map = models.JSONField()
 

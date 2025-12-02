@@ -172,7 +172,7 @@ class ImportForm(forms.Form):
             initial_account = kwargs.get("initial", {}).get("account", None)
             assert initial_account is not None
             account = depot.accounts.get(pk=initial_account)
-            self.import_map, _ = account.import_maps.get_or_create(
+            self.import_map, _ = account.csv_import.get_or_create(
                 defaults={"map": "{}"}
             )
             self.fields["mapping"].initial = self.import_map.map
@@ -205,7 +205,7 @@ class ImportForm(forms.Form):
         df = self.cleaned_data["file"]
         mapping_str = self.cleaned_data["mapping"]
         account = self.cleaned_data["account"]
-        import_map = account.import_maps.first()
+        import_map = account.csv_import.first()
         import_map.map = mapping_str
         import_map.save()
         category_mapping = json.loads(mapping_str)
