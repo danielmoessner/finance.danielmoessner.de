@@ -24,7 +24,11 @@
                     <th scope="col">Description</th>
                     <th class="text-end" scope="col">Change</th>
                     <th class="text-end" scope="col">
-                        {{ bg.modalButton("Run Import", "#runImport", url("banking:run_comdirect_import", args=[import.pk]) ) }}
+                        {% if import_type == "comdirect" %}
+                            {{ bg.modalButton("Run Import", "#runImport", url("banking:run_comdirect_import", args=[import.pk]) ) }}
+                        {% elif import_type == "csv" %}
+                            {{ bg.modalButton("Run Import", "#runImport", url("banking:run_csv_import", args=[import.pk]) ) }}
+                        {% endif %}
                     </th>
                 </tr>
             </thead>
@@ -93,7 +97,6 @@
                     <td colspan="6">
                         {{ bg.modalButton("Add Change", "#addChange", url("banking:add_change") +"?account="+account.pk|string) }}
                         {{ bg.modalButton("Move Money", "#moveMoney", url("banking:move_money") + "?from_account="+account.pk|string + "&to_account=Account-"+account.pk|string ) }}
-                        {{ bg.modalButton("Import Changes", "#importChanges", url("banking:import_changes") + "?account="+account.pk|string) }}
                     </td>
                 </tr>
             </tbody>

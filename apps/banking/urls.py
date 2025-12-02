@@ -63,7 +63,11 @@ urlpatterns = [
         formviews.MoneyMoveView.as_view(),
         name="move_money",
     ),
-    path("changes/import/", formviews.ImportView.as_view(), name="import_changes"),
+    path(
+        "changes/import/csv/<int:pk>/run/",
+        formviews.CsvImportView.as_view(),
+        name="run_csv_import",
+    ),
     path(
         "changes/import/comdirect/<int:pk>/run/",
         formviews.ComdirectImportView.as_view(),

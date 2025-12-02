@@ -237,12 +237,20 @@ class Account(CoreAccount):
     if TYPE_CHECKING:
         changes: QuerySet["Change"]
         comdirect_import: Union["ComdirectImport", None]
+        csv_import: Union["CsvImport", None]
 
     class Meta:
         ordering = ["-changes_count"]
 
     def __str__(self):
         return f"{self.name}"
+
+    def get_import(self) -> Union["ComdirectImport", "CsvImport", None]:
+        if hasattr(self, "comdirect_import"):
+            return self.comdirect_import
+        if hasattr(self, "csv_import"):
+            return self.csv_import
+        return None
 
     def calculate_changes_count(self):
         month_ago = timezone.now() - timezone.timedelta(days=30)

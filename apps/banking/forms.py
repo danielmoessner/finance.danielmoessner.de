@@ -13,6 +13,7 @@ from apps.banking.models import (
     Change,
     ComdirectImport,
     ComdirectImportChange,
+    CsvImport,
     Depot,
 )
 
@@ -151,31 +152,22 @@ class ChangeForm(forms.ModelForm):
         self.fields["description"].widget.attrs.update({"class": "small"})
 
 
-class ImportForm(forms.Form):
-    account = forms.ModelChoiceField(widget=forms.Select, queryset=None)
+class CsvImportForm(forms.ModelForm):
     mapping = forms.CharField(
         widget=forms.Textarea, label="Category Mapping", required=True
     )
     file = forms.FileField(label="CSV File")
 
     class Meta:
+        model = CsvImport
         fields = (
             "mapping",
-            "account",
             "file",
         )
 
-    def __init__(self, depot, *args, **kwargs):
-        super(ImportForm, self).__init__(*args, **kwargs)
-        self.fields["account"].queryset = depot.accounts.all()
-        if not self.is_bound:
-            initial_account = kwargs.get("initial", {}).get("account", None)
-            assert initial_account is not None
-            account = depot.accounts.get(pk=initial_account)
-            self.import_map, _ = account.csv_import.get_or_create(
-                defaults={"map": "{}"}
-            )
-            self.fields["mapping"].initial = self.import_map.map
+    def __init__(self, depot: Depot, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.instance.account = depot.accounts.first()
 
     def clean_file(self):
         file = self.cleaned_data["file"]
@@ -204,7 +196,7 @@ class ImportForm(forms.Form):
     def save(self, *args, **kwargs):
         df = self.cleaned_data["file"]
         mapping_str = self.cleaned_data["mapping"]
-        account = self.cleaned_data["account"]
+        account = self.instance.account
         import_map = account.csv_import.first()
         import_map.map = mapping_str
         import_map.save()

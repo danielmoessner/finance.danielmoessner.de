@@ -62,7 +62,7 @@ class AccountView(GetUserMixin, TabContextMixin, generic.DetailView):
     def get_queryset(self):
         return Account.objects.filter(
             depot__in=self.get_user().banking_depots.all()
-        ).select_related("comdirect_import")
+        ).select_related("comdirect_import", "csv_import")
 
     def get_show(self) -> int:
         show = self.request.GET.get("show", 30)
@@ -76,11 +76,7 @@ class AccountView(GetUserMixin, TabContextMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super(AccountView, self).get_context_data(**kwargs)
         context["account"] = self.object
-        context["import"] = (
-            self.object.comdirect_import
-            if hasattr(self.object, "comdirect_import")
-            else None
-        )
+        context["import"] = self.object.get_import()
         if self.tab == "stats":
             context["stats"] = self.object.get_stats()
         if self.tab == "changes":
@@ -91,7 +87,8 @@ class AccountView(GetUserMixin, TabContextMixin, generic.DetailView):
                 ]
             )
             context["show"] = self.get_context_show(show)
-        if self.tab == "import":
+        if self.tab == "import" and hasattr(self.object, "comdirect_import"):
+            context["import_type"] = "comdirect"
             comdirect_import = self.object.comdirect_import
             assert comdirect_import is not None
             context["changes"] = list(
@@ -99,6 +96,9 @@ class AccountView(GetUserMixin, TabContextMixin, generic.DetailView):
                     linked_change=None, is_deleted=False
                 ).order_by("-date", "-pk")
             )
+        if self.tab == "import" and hasattr(self.object, "csv_import"):
+            context["import_type"] = "csv"
+            context["changes"] = []
         return context
 
 

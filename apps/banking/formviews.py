@@ -16,12 +16,12 @@ from apps.banking.forms import (
     ComdirectCompleteLoginForm,
     ComdirectImportChangesForm,
     ComdirectStartLoginForm,
+    CsvImportForm,
     DeleteComdirectChange,
     DepotActiveForm,
     DepotForm,
     DepotSelectForm,
     ImportComdirectChange,
-    ImportForm,
 )
 from apps.banking.models import (
     Account,
@@ -29,6 +29,7 @@ from apps.banking.models import (
     Change,
     ComdirectImport,
     ComdirectImportChange,
+    CsvImport,
     Depot,
 )
 from apps.core.mixins import (
@@ -228,15 +229,21 @@ class MoneyMoveView(
     form_class = MoveMoneyForm
 
 
-class ImportView(
+class CsvImportView(
     GetUserMixin,
-    GetDepotMixin,
-    GetFormWithDepotAndInitialDataMixin,
+    CustomGetFormMixin,
     AjaxResponseMixin,
-    generic.FormView,
+    generic.UpdateView,
 ):
     template_name = "symbols/form_snippet.j2"
-    form_class = ImportForm
+    form_class = CsvImportForm
+
+    def get_queryset(self):
+        return CsvImport.objects.filter(
+            account__in=Account.objects.filter(
+                depot__in=self.get_user().banking_depots.all()
+            )
+        )
 
 
 class ComdirectImportView(
