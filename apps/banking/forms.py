@@ -153,7 +153,7 @@ class ChangeForm(forms.ModelForm):
 
 
 class CsvImportForm(forms.ModelForm):
-    mapping = forms.CharField(
+    map = forms.CharField(
         widget=forms.Textarea, label="Category Mapping", required=True
     )
     file = forms.FileField(label="CSV File")
@@ -161,7 +161,7 @@ class CsvImportForm(forms.ModelForm):
     class Meta:
         model = CsvImport
         fields = (
-            "mapping",
+            "map",
             "file",
         )
 
@@ -187,20 +187,18 @@ class CsvImportForm(forms.ModelForm):
         df = df.dropna(subset=["Cashflow"])
         categories = df["Kategorie"].unique()
         for category_name in categories:
-            if category_name not in self.cleaned_data["mapping"]:
-                raise forms.ValidationError(
-                    f"Category '{category_name}' not in mapping."
-                )
+            if category_name not in self.cleaned_data["map"]:
+                raise forms.ValidationError(f"Category '{category_name}' not in map.")
         return df
 
     def save(self, *args, **kwargs):
         df = self.cleaned_data["file"]
-        mapping_str = self.cleaned_data["mapping"]
+        map_str = self.cleaned_data["map"]
         account = self.instance.account
         import_map = account.csv_import.first()
-        import_map.map = mapping_str
+        import_map.map = map_str
         import_map.save()
-        category_mapping = json.loads(mapping_str)
+        category_map = json.loads(map_str)
         category_map = {c.name: c for c in account.depot.categories.all()}
         changes = []
         for row in df.itertuples(index=False):
@@ -218,7 +216,7 @@ class CsvImportForm(forms.ModelForm):
                 .replace(",", ".")
                 .replace(" ", "")
             )
-            category = category_map[category_mapping[category_name]]
+            category = category_map[category_map[category_name]]
             changes.append(
                 Change(
                     account=account,
