@@ -157,6 +157,7 @@ class CsvImportForm(forms.ModelForm):
         widget=forms.Textarea, label="Category Mapping", required=True
     )
     file = forms.FileField(label="CSV File")
+    instance: CsvImport
 
     class Meta:
         model = CsvImport
@@ -167,7 +168,6 @@ class CsvImportForm(forms.ModelForm):
 
     def __init__(self, depot: Depot, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.instance.account = depot.accounts.first()
 
     def clean_file(self):
         file = self.cleaned_data["file"]
@@ -195,15 +195,15 @@ class CsvImportForm(forms.ModelForm):
         df = self.cleaned_data["file"]
         map_str = self.cleaned_data["map"]
         account = self.instance.account
-        import_map = account.csv_import.first()
-        import_map.map = map_str
-        import_map.save()
-        category_map = json.loads(map_str)
-        category_map = {c.name: c for c in account.depot.categories.all()}
+        csv_import = account.csv_import or CsvImport(account=account)
+        csv_import.map = map_str
+        csv_import.save()
+        category_mapping = json.loads(map_str)
+        category_map: dict[str, Category] = {c.name: c for c in account.depot.categories.all()}
         changes = []
         for row in df.itertuples(index=False):
             date = getattr(row, "Datum")
-            category_name = getattr(row, "Kategorie")
+            category_name: str = getattr(row, "Kategorie")
             description = getattr(row, "Beschreibung")
             amount = getattr(row, "Cashflow")
             date = datetime.strptime(date, "%d.%m.%Y").replace(
@@ -216,7 +216,7 @@ class CsvImportForm(forms.ModelForm):
                 .replace(",", ".")
                 .replace(" ", "")
             )
-            category = category_map[category_map[category_name]]
+            category = category_map[category_mapping[category_name]]
             changes.append(
                 Change(
                     account=account,
