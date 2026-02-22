@@ -8,7 +8,7 @@ from uuid import uuid4
 import pandas as pd
 import requests
 from django.contrib.sessions.backends.base import SessionBase
-from django.db import connection, models
+from django.db import connection, models, transaction
 from django.utils import timezone
 from pydantic import BaseModel
 
@@ -449,6 +449,9 @@ class Change(models.Model):
         max_digits=15, decimal_places=2, null=True, blank=True
     )
 
+    if TYPE_CHECKING:
+        comdirect_import_changes: QuerySet["ComdirectImportChange"]
+
     def __init__(self, *args, **kwargs):
         super(Change, self).__init__(*args, **kwargs)
 
@@ -480,7 +483,10 @@ class Change(models.Model):
 
     def delete(self, using=None, keep_parents=False):
         self.set_balances_of_affected_objects_to_null()
-        return super().delete(using=using, keep_parents=keep_parents)
+        with transaction.atomic():
+            self.comdirect_import_changes.update(is_deleted=True)
+            ret = super().delete(using=using, keep_parents=keep_parents)
+        return ret
 
     # getters
     def get_date(self, user):

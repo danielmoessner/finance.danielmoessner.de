@@ -199,7 +199,9 @@ class CsvImportForm(forms.ModelForm):
         csv_import.map = map_str
         csv_import.save()
         category_mapping = json.loads(map_str)
-        category_map: dict[str, Category] = {c.name: c for c in account.depot.categories.all()}
+        category_map: dict[str, Category] = {
+            c.name: c for c in account.depot.categories.all()
+        }
         changes = []
         for row in df.itertuples(index=False):
             date = getattr(row, "Datum")
