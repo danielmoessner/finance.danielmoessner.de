@@ -824,21 +824,21 @@ class ComdirectImport(models.Model):
         existing = set(self.changes.values_list("sha", flat=True))
         changes = []
         earliest_change_date: date | None = None
-        for transaction in data.values:
+        for _transaction in data.values:
             if earliest_change_date is None:
-                earliest_change_date = transaction.bookingDate
+                earliest_change_date = _transaction.bookingDate
             elif (
-                transaction.bookingDate
-                and transaction.bookingDate < earliest_change_date
+                _transaction.bookingDate
+                and _transaction.bookingDate < earliest_change_date
             ):
-                earliest_change_date = transaction.bookingDate
-            if transaction.bookingStatus != "BOOKED":
+                earliest_change_date = _transaction.bookingDate
+            if _transaction.bookingStatus != "BOOKED":
                 continue
             change = ComdirectImportChange(
                 comdirect_import=self,
-                date=transaction.bookingDate,
-                description=transaction.get_description(),
-                change=transaction.amount.value,
+                date=_transaction.bookingDate,
+                description=_transaction.get_description(),
+                change=_transaction.amount.value,
             )
             change.sha = change.calculate_sha()
             if change.sha in existing:
