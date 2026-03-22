@@ -417,7 +417,9 @@ class Category(models.Model):
         amount = self.changes.filter(
             date__year=month.year, date__month=month.month
         ).aggregate(total=models.Sum("change"))["total"]
-        _amount = abs(amount) if amount is not None else 0
+        if amount is None or amount >= 0:
+            return "-"
+        _amount = abs(amount)
         # check and exclamation mark
         # https://www.alt-codes.net/arrow_alt_codes.php
         if _amount <= self.monthly_budget:
