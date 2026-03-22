@@ -418,7 +418,7 @@ class Category(models.Model):
             date__year=month.year, date__month=month.month
         ).aggregate(total=models.Sum("change"))["total"]
         if amount is None or amount >= 0:
-            return "-"
+            return "✓"
         _amount = abs(amount)
         # check and exclamation mark
         # https://www.alt-codes.net/arrow_alt_codes.php
