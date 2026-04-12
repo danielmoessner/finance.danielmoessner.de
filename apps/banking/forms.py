@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 import pandas as pd
 from django import forms
@@ -292,6 +292,7 @@ class ComdirectImportChangesForm(forms.ModelForm):
             latest = timezone.now().date() - timedelta(days=14)
         else:
             latest = latest_change.date
+        latest = date(2026, 3, 15)
         page = 0
         while True:
             try:
