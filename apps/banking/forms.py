@@ -287,11 +287,11 @@ class ComdirectImportChangesForm(forms.ModelForm):
         self.session = session
 
     def is_valid(self):
-        latest_change = self.instance.account.changes.order_by("-date").first()
+        latest_change = self.instance.changes.order_by("-date").first()
         if latest_change is None:
             latest = timezone.now().date() - timedelta(days=14)
         else:
-            latest = latest_change.date.date()
+            latest = latest_change.date
         page = 0
         while True:
             try:
