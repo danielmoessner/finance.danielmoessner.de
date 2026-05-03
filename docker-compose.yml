@@ -1,5 +1,6 @@
 services:
   web:
+    mem_limit: 256m
     image: ${APP_IMAGE:-ghcr.io/danielmoessner/finance.danielmoessner.de:latest}
     restart: unless-stopped
     user: "999:33"
@@ -13,6 +14,7 @@ services:
       - ${APP_DATA_DIR:-/home/finance.danielmoessner.de/tmp}:/django/tmp
 
   cron:
+    mem_limit: 256m
     image: ${APP_IMAGE:-ghcr.io/danielmoessner/finance.danielmoessner.de:latest}
     restart: unless-stopped
     user: "999:33"
