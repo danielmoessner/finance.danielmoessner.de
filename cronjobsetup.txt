@@ -1,2 +1,8 @@
+# Cron now runs inside Docker Compose (service: `cron` in docker-compose.yml).
+#
+# If you still run this project directly on the host (no Docker), you can use
+# a host-level crontab entry like the one below.
+
 crontab -e
+# Deprecated (host-only):
 0 */2 * * * /home/finance.danielmoessner.de/tmp/venv/bin/python /home/finance.danielmoessner.de/production_manage.py cron --duration 240

@@ -1,0 +1,27 @@
+services:
+  web:
+    image: ${APP_IMAGE:-ghcr.io/danielmoessner/finance.danielmoessner.de:latest}
+    restart: unless-stopped
+    user: "999:33"
+    ports:
+      - "${APP_BIND_IP:-127.0.0.1}:${APP_PORT:-8090}:8090"
+    command: >-
+      gunicorn --chdir /django config.wsgi:application
+      --bind 0.0.0.0:8090 --timeout 240 --graceful-timeout 30
+      -w 2 --access-logfile - --error-logfile -
+    volumes:
+      - ${APP_DATA_DIR:-/home/finance.danielmoessner.de/tmp}:/django/tmp
+
+  cron:
+    image: ${APP_IMAGE:-ghcr.io/danielmoessner/finance.danielmoessner.de:latest}
+    restart: unless-stopped
+    user: "999:33"
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: >-
+      sh -c 'while true; do
+        DJANGO_SETTINGS_MODULE=config.settings.production /django/.venv/bin/python /django/manage.py cron --duration 240;
+        sleep 7200;
+      done'
+    volumes:
+      - ${APP_DATA_DIR:-/home/finance.danielmoessner.de/tmp}:/django/tmp

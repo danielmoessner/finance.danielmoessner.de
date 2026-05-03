@@ -51,6 +51,7 @@ dependencies = [
     "django-types==0.19.*",
     "numpy==2.1.*",
     "djlint==1.34.*",
+    "gunicorn==25.*",
 ]
 requires-python = ">=3.11,<3.13"
 license = {text = "MIT"}

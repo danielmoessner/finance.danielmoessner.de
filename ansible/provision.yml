@@ -1,0 +1,125 @@
+---
+- name: Provision (Debian + Nginx + Docker)
+  hosts: app
+  become: true
+
+  vars:
+    nginx_site_available: "/etc/nginx/sites-available/{{ app_nginx_site_name }}"
+    nginx_site_enabled: "/etc/nginx/sites-enabled/{{ app_nginx_site_name }}"
+    le_fullchain: "/etc/letsencrypt/live/{{ app_domain }}/fullchain.pem"
+
+  handlers:
+    - name: Test nginx config
+      command: nginx -t
+
+    - name: Restart nginx
+      service:
+        name: nginx
+        state: restarted
+
+  tasks:
+    - name: Ensure project directory exists
+      file:
+        path: "{{ app_remote_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Ensure data directories exist (group-writable for www-data / GID 33)
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: root
+        group: www-data
+        mode: "2770"
+      loop:
+        - "{{ app_data_dir }}"
+        - "{{ app_data_dir }}/static"
+        - "{{ app_data_dir }}/media"
+
+    - name: Ensure certbot webroot exists
+      file:
+        path: "{{ app_certbot_webroot }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Flush handlers (apply HTTP vhosts)
+      meta: flush_handlers
+
+    - name: Ensure Nginx is enabled + running
+      service:
+        name: nginx
+        enabled: true
+        state: started
+
+    - name: Check Let's Encrypt certificate exists
+      stat:
+        path: "{{ le_fullchain }}"
+      register: le_cert
+
+    - name: Obtain Let's Encrypt certificate (HTTP-01 via webroot)
+      command: >-
+        certbot certonly --webroot -w {{ app_certbot_webroot }}
+        --agree-tos --non-interactive
+        --register-unsafely-without-email
+        --keep-until-expiring
+        -d {{ app_domain }}
+        {% for alias in app_domain_aliases | default([]) %}-d {{ alias }} {% endfor %}
+      register: certbot_result
+      changed_when: "'Congratulations!' in (certbot_result.stdout | default(''))"
+      when: not le_cert.stat.exists
+
+    - name: Re-check Let's Encrypt certificate exists
+      stat:
+        path: "{{ le_fullchain }}"
+      register: le_cert_after
+
+    - name: Fail if certificate is missing after certbot
+      fail:
+        msg: "Expected {{ le_fullchain }} to exist, but it does not. Ensure DNS for {{ app_domain }} points to this server and port 80 is reachable."
+      when:
+        - not le_cert_after.stat.exists
+
+    - name: Configure app Nginx site (HTTPS)
+      template:
+        src: "{{ playbook_dir }}/templates/nginx-app-https.conf.j2"
+        dest: "{{ nginx_site_available }}"
+        owner: root
+        group: root
+        mode: "0644"
+      notify:
+        - Test nginx config
+        - Restart nginx
+      when:
+        - le_cert_after.stat.exists
+
+    - name: Enable app Nginx site
+      file:
+        src: "{{ nginx_site_available }}"
+        dest: "{{ nginx_site_enabled }}"
+        state: link
+      notify:
+        - Test nginx config
+        - Restart nginx
+      when:
+        - le_cert_after.stat.exists
+
+    - name: Flush handlers (apply TLS vhost)
+      meta: flush_handlers
+      when: le_cert_after.stat.exists
+
+    - name: Ensure certbot renewal timer is enabled (if available)
+      service:
+        name: certbot.timer
+        enabled: true
+        state: started
+      failed_when: false
+
+    - name: Manual step reminder
+      debug:
+        msg:
+          - "Then deploy with: ansible-playbook ansible/deploy.yml (or pass -e app_image=...)"
+          - "Certbot uses --register-unsafely-without-email."

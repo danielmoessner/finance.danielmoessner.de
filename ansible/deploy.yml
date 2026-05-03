@@ -1,0 +1,172 @@
+---
+- name: Deploy (Docker Compose)
+  hosts: app
+  become: true
+
+  vars:
+    secrets_path: "{{ app_data_dir }}/secrets.json"
+
+  tasks:
+    - name: Determine image to deploy (explicit)
+      set_fact:
+        app_image_effective: "{{ app_image }}"
+      when: app_image is defined and app_image | length > 0
+
+    - name: Determine image to deploy (default to current git SHA / GITHUB_SHA)
+      set_fact:
+        app_image_effective: "{{ app_image_repo }}:sha-{{ lookup('env', 'GITHUB_SHA') | default(lookup('pipe', 'git rev-parse HEAD'), true) }}"
+      when: app_image is not defined or app_image | length == 0
+
+    - name: Ensure project directory exists
+      file:
+        path: "{{ app_remote_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Ensure data directories exist (group-writable for www-data / GID 33)
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: root
+        group: www-data
+        mode: "2770"
+      loop:
+        - "{{ app_data_dir }}"
+        - "{{ app_data_dir }}/static"
+        - "{{ app_data_dir }}/media"
+
+    - name: Ensure tmp dir ownership/permissions (bind mount root)
+      file:
+        path: "{{ app_data_dir }}"
+        state: directory
+        owner: root
+        group: www-data
+        mode: "2770"
+
+    - name: Ensure runtime files exist (django.log, db.sqlite3)
+      file:
+        path: "{{ item }}"
+        state: touch
+        owner: root
+        group: www-data
+        mode: "0660"
+      loop:
+        - "{{ app_data_dir }}/django.log"
+        - "{{ app_data_dir }}/db.sqlite3"
+
+    - name: Install docker-compose.yml
+      copy:
+        src: "{{ playbook_dir }}/../docker-compose.yml"
+        dest: "{{ app_remote_dir }}/docker-compose.yml"
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: "Preflight: docker compose is available"
+      command: docker compose version
+      changed_when: false
+
+    - name: "Preflight: validate docker compose config"
+      command: docker compose config -q
+      args:
+        chdir: "{{ app_remote_dir }}"
+      environment:
+        APP_IMAGE: "{{ app_image_effective }}"
+        APP_DATA_DIR: "{{ app_data_dir }}"
+        APP_BIND_IP: "{{ app_bind_ip }}"
+        APP_PORT: "{{ app_port }}"
+      changed_when: false
+
+    - name: Check secrets.json exists (manual step)
+      stat:
+        path: "{{ secrets_path }}"
+      register: secrets_stat
+
+    - name: Abort if secrets.json is missing
+      fail:
+        msg: "Missing {{ secrets_path }}. Create it manually on the server before deploying."
+      when: not secrets_stat.stat.exists
+
+    - name: Ensure secrets.json permissions are readable by the container
+      file:
+        path: "{{ secrets_path }}"
+        owner: root
+        group: www-data
+        mode: "0640"
+
+    - name: Verify secrets.json is readable inside the container
+      command: docker compose run --rm --no-deps --entrypoint sh web -lc "ls -l /django/tmp/secrets.json && python -c 'import json; json.load(open(\"/django/tmp/secrets.json\"))'"
+      args:
+        chdir: "{{ app_remote_dir }}"
+      environment:
+        APP_IMAGE: "{{ app_image_effective }}"
+        APP_DATA_DIR: "{{ app_data_dir }}"
+        APP_BIND_IP: "{{ app_bind_ip }}"
+        APP_PORT: "{{ app_port }}"
+
+    - name: Pull image
+      command: docker compose pull
+      args:
+        chdir: "{{ app_remote_dir }}"
+      environment:
+        APP_IMAGE: "{{ app_image_effective }}"
+        APP_DATA_DIR: "{{ app_data_dir }}"
+        APP_BIND_IP: "{{ app_bind_ip }}"
+        APP_PORT: "{{ app_port }}"
+
+    - name: Ensure static tree group is www-data (for collectstatic)
+      command: chgrp -R www-data "{{ app_data_dir }}/static"
+      changed_when: false
+
+    - name: Ensure static tree is group-writable (for collectstatic)
+      command: chmod -R g+rwX "{{ app_data_dir }}/static"
+      changed_when: false
+
+    - name: Ensure static directories keep www-data group (setgid)
+      command: find "{{ app_data_dir }}/static" -type d -exec chmod g+s {} +
+      changed_when: false
+
+    - name: Migrate
+      command: docker compose run --rm --no-deps web python manage.py migrate --noinput
+      args:
+        chdir: "{{ app_remote_dir }}"
+      environment:
+        APP_IMAGE: "{{ app_image_effective }}"
+        APP_DATA_DIR: "{{ app_data_dir }}"
+        APP_BIND_IP: "{{ app_bind_ip }}"
+        APP_PORT: "{{ app_port }}"
+
+    - name: Collect static
+      command: docker compose run --rm --no-deps web python manage.py collectstatic --noinput
+      args:
+        chdir: "{{ app_remote_dir }}"
+      environment:
+        APP_IMAGE: "{{ app_image_effective }}"
+        APP_DATA_DIR: "{{ app_data_dir }}"
+        APP_BIND_IP: "{{ app_bind_ip }}"
+        APP_PORT: "{{ app_port }}"
+
+    - name: Start/update services
+      command: docker compose up -d --remove-orphans
+      args:
+        chdir: "{{ app_remote_dir }}"
+      environment:
+        APP_IMAGE: "{{ app_image_effective }}"
+        APP_DATA_DIR: "{{ app_data_dir }}"
+        APP_BIND_IP: "{{ app_bind_ip }}"
+        APP_PORT: "{{ app_port }}"
+
+    - name: "Preflight: nginx config is valid"
+      command: nginx -t
+      changed_when: false
+
+    - name: Reload Nginx
+      service:
+        name: nginx
+        state: reloaded
+
+    - name: Done
+      debug:
+        msg: "OK: deployed {{ app_image_effective }}"

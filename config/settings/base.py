@@ -59,6 +59,7 @@ TEMPLATES = [
             "environment": "config.jinja2.environment",
             "context_processors": [
                 "django.template.context_processors.request",
+                "config.context_processors.build_info",
             ],
         },
     },
@@ -72,6 +73,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "config.context_processors.build_info",
             ],
         },
     },
@@ -146,3 +148,5 @@ CRONJOBS = [
 ]
 
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 365  # 1 year
+
+IMAGE_VERSION = os.getenv("IMAGE_VERSION", "unknown")

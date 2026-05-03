@@ -1,0 +1,21 @@
+app_remote_dir: /home/finance.danielmoessner.de
+
+app_data_dir: /home/finance.danielmoessner.de/tmp
+
+app_bind_ip: 127.0.0.1
+
+app_port: 8090
+
+app_domain: finance.danielmoessner.de
+
+app_nginx_site_name: finance.danielmoessner.de
+
+app_client_max_body_size: 50m
+
+app_domain_aliases: []
+
+app_certbot_webroot: /var/www/certbot
+
+app_image_repo: ghcr.io/danielmoessner/finance.danielmoessner.de
+
+app_migrate_overwrite: false
