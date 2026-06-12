@@ -1,6 +1,7 @@
 import json
 from typing import Protocol, Sequence
 
+import pandas as pd
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.views import View, generic
@@ -150,6 +151,9 @@ class DataApiView(GetUserMixin, View):
         df = df.loc[df.loc[:, "value"] != 0]
         # remove duplicate dates and keep the last
         df = df.loc[~df.index.duplicated(keep="last")]
+        # keep only the latest year for chart rendering performance
+        one_year_ago = df.index.max() - pd.Timedelta(days=365)
+        df = df.loc[df.index >= one_year_ago]
         # rename the columns
         column_names = dict(
             zip(df.columns, ["Total", *[depot.name for depot in active_depots]])

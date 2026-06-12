@@ -84,6 +84,7 @@ class Depot(CoreDepot):
             "from banking_change "
             "join banking_category on banking_category.id = banking_change.category_id "
             "where banking_category.depot_id = {} "
+            "and date(banking_change.date) >= date('now', '-1 year') "
             "group by banking_category.name, strftime('%Y-%m', banking_change.date) "
             "order by date"
         ).format(self.pk)
@@ -99,6 +100,7 @@ class Depot(CoreDepot):
             "from banking_change "
             "join banking_account on banking_account.id = banking_change.account_id "
             "where depot_id={} "
+            "and date(banking_change.date) >= date('now', '-1 year') "
             "group by strftime('%Y-%W', banking_change.date), banking_account.name "
             "order by date"
         ).format(self.pk)
