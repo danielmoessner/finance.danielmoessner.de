@@ -1,11 +1,12 @@
 from datetime import timedelta
 
 from django.test import Client, TestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse_lazy
 from django.utils import timezone
 
-from apps.banking.forms import AccountForm, CategoryForm, ChangeForm, DepotForm
-from apps.banking.models import Account, Category, Change, Depot
+from apps.banking.forms import AccountForm, CategoryForm, ChangeForm, CsvImportForm, DepotForm
+from apps.banking.models import Account, Category, Change, CsvImport, Depot
 from apps.core.functional import list_sort
 from apps.users.models import StandardUser as User
 
@@ -175,6 +176,32 @@ class BalanceUpdateTestCase(TestCase):
         assert self.get_account().balance is not None
         assert self.get_category().balance is not None
         assert self.get_depot().balance is not None
+
+    def test_csv_import_resets_cached_balances(self):
+        self.create_change_and_set_balances(days_ago=20)
+        assert self.get_depot().balance is not None
+
+        csv_content = (
+            "Datum,Kategorie,Beschreibung,Cashflow\n"
+            "01.01.2026,Imported Category,CSV Import,-20 €\n"
+        )
+        upload = SimpleUploadedFile(
+            "import.csv",
+            csv_content.encode("utf-8"),
+            content_type="text/csv",
+        )
+        form = CsvImportForm(
+            self.get_depot(),
+            data={"map": '{"Imported Category":"Category"}'},
+            files={"file": upload},
+            instance=CsvImport(account=self.get_account(), map={}),
+        )
+        assert form.is_valid(), form.errors
+        form.save()
+
+        assert self.get_depot().balance is None
+        assert self.get_account().balance is None
+        assert self.get_category().balance is None
 
     def test_category_sort(self):
         a = {"n": "a", "s": [1, 2, 3]}
