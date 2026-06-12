@@ -228,8 +228,10 @@ class CsvImportForm(forms.ModelForm):
                     description=description,
                 )
             )
-        account.changes.all().delete()
-        Change.objects.bulk_create(changes)
+        with transaction.atomic():
+            account.changes.all().delete()
+            Change.objects.bulk_create(changes)
+        account.depot.set_balances_to_none()
 
 
 class ComdirectStartLoginForm(forms.ModelForm):
