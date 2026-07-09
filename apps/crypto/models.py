@@ -57,9 +57,7 @@ class Depot(CoreDepot):
             join crypto_account a on f.account_id=a.id
             where a.depot_id = {}
             group by date(date)
-        """.format(
-            self.pk
-        )
+        """.format(self.pk)
         assert str(self.pk) in statement
         return get_df_from_database(statement, ["date", "flow"])
 
@@ -267,9 +265,7 @@ class Asset(models.Model):
             where symbol='{}'
             group by date(date)
             order by date asc
-        """.format(
-            self.symbol
-        )
+        """.format(self.symbol)
         # get and return the df
         df = self.get_df_from_database(statement, ["date", "price"])
         return df

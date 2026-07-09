@@ -4,6 +4,7 @@ DEBUG = False
 
 ALLOWED_HOSTS = get_secret("ALLOWED_HOSTS")
 
+
 def _normalize_allowed_hosts(value):
     if isinstance(value, str):
         return [h.strip() for h in value.split(",") if h.strip()]

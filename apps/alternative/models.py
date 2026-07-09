@@ -69,9 +69,7 @@ class Depot(CoreDepot):
                 from alternative_value v
                 group by v.alternative_id
             )
-            """.format(
-            self.pk
-        )
+            """.format(self.pk)
         self.value = self.__get_number_from_database(statement)
 
     def reset_all(self):
@@ -166,9 +164,7 @@ class Alternative(models.Model):
                     where alternative_id = {}
                     group by date(date)
                 )
-            """.format(
-                self.pk, self.pk
-            )
+            """.format(self.pk, self.pk)
             # get the flow df
             self.value_df = utils.get_df_from_database(statement, ["date", "value"])
         return self.value_df
@@ -183,9 +179,7 @@ class Alternative(models.Model):
                 join alternative_alternative a on f.alternative_id=a.id
                 where a.id = {}
                 group by date(date)
-            """.format(
-                self.pk
-            )
+            """.format(self.pk)
             # get the flow df
             self.flow_df = utils.get_df_from_database(statement, ["date", "flow"])
         return self.flow_df

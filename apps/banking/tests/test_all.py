@@ -1,11 +1,17 @@
 from datetime import timedelta
 
-from django.test import Client, TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import Client, TestCase
 from django.urls import reverse_lazy
 from django.utils import timezone
 
-from apps.banking.forms import AccountForm, CategoryForm, ChangeForm, CsvImportForm, DepotForm
+from apps.banking.forms import (
+    AccountForm,
+    CategoryForm,
+    ChangeForm,
+    CsvImportForm,
+    DepotForm,
+)
 from apps.banking.models import Account, Category, Change, CsvImport, Depot
 from apps.core.functional import list_sort
 from apps.users.models import StandardUser as User

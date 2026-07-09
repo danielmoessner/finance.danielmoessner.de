@@ -205,9 +205,7 @@ class Depot(models.Model):
                 join stocks_bank b on f.bank_id=b.id
                 where b.depot_id = {}
                 group by date(date)
-            """.format(
-                self.pk
-            )
+            """.format(self.pk)
             # get the flow df
             df = self.get_df_from_database(statement, ["date", "flow"])
             # set the df
@@ -409,9 +407,7 @@ class Bank(models.Model):
             )
             where bank_id = {}
             order by date asc
-            """.format(
-                self.pk
-            )
+            """.format(self.pk)
             self.value_df = utils.get_df_from_database(statement, ["date", "value"])
         return self.value_df
 
@@ -664,9 +660,7 @@ class Stock(models.Model):
             where stock_id = {}
             group by date(date)
             order by date
-        """.format(
-            self.pk
-        )
+        """.format(self.pk)
         # get and return the dataframe
         df = self.get_df_from_database(statement, columns=["date", "flow"])
         return df
@@ -693,9 +687,7 @@ class Stock(models.Model):
                 )
                 group by date(date)
             )
-        """.format(
-            self.pk
-        )
+        """.format(self.pk)
         # get and return the df
         df = self.get_df_from_database(statement, columns=["date", "amount"])
         return df
@@ -709,9 +701,7 @@ class Stock(models.Model):
             from stocks_price
             where isin='{}'
             group by date(date)
-        """.format(
-            self.isin
-        )
+        """.format(self.isin)
         # get and return the df
         df = self.get_df_from_database(statement, ["date", "price"])
         return df

@@ -30,7 +30,11 @@ class Command(BaseCommand):
             job: Callable[[], None] = getattr(module, function_name)
             jobs.append(job)
         for job in jobs:
-            if duration is not None and duration >= 0 and (time.monotonic() - start) > duration:
+            if (
+                duration is not None
+                and duration >= 0
+                and (time.monotonic() - start) > duration
+            ):
                 self.stdout.write("duration limit reached, stopping")
                 break
             self.stdout.write(f"running {job}")

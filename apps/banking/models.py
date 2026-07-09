@@ -317,9 +317,7 @@ class Account(CoreAccount):
                     group by date(date)
                     order by date
                 );
-            """.format(
-                self.pk
-            )
+            """.format(self.pk)
             # get and return the df
             df = self.get_df_from_database(statement, ["date", "value"])
             self.value_df = df
@@ -427,6 +425,22 @@ class Category(models.Model):
         if _amount <= self.monthly_budget:
             return "✓ {:.0f} €".format(_amount)
         return "❗ {:.0f} €".format(_amount)
+
+    def get_next_month_budget(self) -> Decimal | None:
+        if self.monthly_budget is None:
+            return None
+        now = timezone.now().date()
+        year_to_date_total = self.changes.filter(
+            date__year=now.year, date__month__lte=now.month
+        ).aggregate(total=models.Sum("change"))["total"] or Decimal("0")
+        return self.monthly_budget * (now.month + 1) + year_to_date_total
+
+    @property
+    def next_month_budget_str(self) -> str:
+        next_month_budget = self.get_next_month_budget()
+        if next_month_budget is None:
+            return "-"
+        return f"{format_currency_amount_to_de(next_month_budget)} €"
 
     def calculate_changes_count(self):
         ago = timezone.now() - timezone.timedelta(days=90)
