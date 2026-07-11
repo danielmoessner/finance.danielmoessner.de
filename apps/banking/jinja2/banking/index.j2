@@ -72,7 +72,7 @@
                 <thead>
                     <tr>
                         <th scope="col" class="">Category</th>
-                        <th class="text-end" scope="col">Next Month</th>
+                        <th class="text-end" scope="col">Available</th>
                         {% for dt in months %}
                             <th class="text-end px-1" style="white-space: nowrap;" scope="col">{{ dt.strftime("%b %y") }}</th>
                         {% endfor %}
@@ -82,7 +82,7 @@
                     {% for category in categories %}
                         <tr>
                             <td>{{ category.name }} {{ category.monthly_budget_str }}</td>
-                            <td class="text-end">{{ category.next_month_budget_str }}</td>
+                            <td class="text-end">{{ category.available_budget_str }}</td>
                             {% for dt in months %}<td class="text-end" scope="col">{{ category.get_month(dt) }}</td>{% endfor %}
                         </tr>
                     {% endfor %}

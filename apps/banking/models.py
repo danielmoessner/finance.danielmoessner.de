@@ -426,21 +426,21 @@ class Category(models.Model):
             return "✓ {:.0f} €".format(_amount)
         return "❗ {:.0f} €".format(_amount)
 
-    def get_next_month_budget(self) -> Decimal | None:
+    def get_available_budget(self) -> Decimal | None:
         if self.monthly_budget is None:
             return None
         now = timezone.now().date()
         year_to_date_total = self.changes.filter(
             date__year=now.year, date__month__lte=now.month
         ).aggregate(total=models.Sum("change"))["total"] or Decimal("0")
-        return self.monthly_budget * (now.month + 1) + year_to_date_total
+        return self.monthly_budget * now.month + year_to_date_total
 
     @property
-    def next_month_budget_str(self) -> str:
-        next_month_budget = self.get_next_month_budget()
-        if next_month_budget is None:
+    def available_budget_str(self) -> str:
+        available_budget = self.get_available_budget()
+        if available_budget is None:
             return "-"
-        return f"{format_currency_amount_to_de(next_month_budget)} €"
+        return f"{format_currency_amount_to_de(available_budget)} €"
 
     def calculate_changes_count(self):
         ago = timezone.now() - timezone.timedelta(days=90)
