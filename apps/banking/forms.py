@@ -178,15 +178,13 @@ class CombineChangeForm(forms.Form):
             base_queryset.filter(
                 Q(date__lt=primary_change.date)
                 | Q(date=primary_change.date, pk__lt=primary_change.pk)
-            )
-            .order_by("-date", "-pk")[:10]
+            ).order_by("-date", "-pk")[:10]
         )
         future_changes = list(
             base_queryset.filter(
                 Q(date__gt=primary_change.date)
                 | Q(date=primary_change.date, pk__gt=primary_change.pk)
-            )
-            .order_by("date", "pk")[:10]
+            ).order_by("date", "pk")[:10]
         )
 
         neighboring_changes = past_changes + future_changes
@@ -215,9 +213,13 @@ class CombineChangeForm(forms.Form):
     def clean_other_change(self):
         other_change = self.cleaned_data["other_change"]
         if other_change.account_id != self.primary_change.account_id:
-            raise forms.ValidationError("Selected change must belong to the same account.")
+            raise forms.ValidationError(
+                "Selected change must belong to the same account."
+            )
         if other_change.category_id != self.primary_change.category_id:
-            raise forms.ValidationError("Selected change must belong to the same category.")
+            raise forms.ValidationError(
+                "Selected change must belong to the same category."
+            )
         return other_change
 
     def save(self, commit: bool = True):
