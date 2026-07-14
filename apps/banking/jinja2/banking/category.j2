@@ -16,6 +16,7 @@
         {{ mg.djangoModal('Edit Change', 'editChange') }}
         {{ mg.djangoModal('Delete Change', 'deleteChange') }}
         {{ mg.djangoModal('Add Change', 'addChange') }}
+        {{ mg.djangoModal('Combine Change', 'combineChange') }}
         <table class="table table-responsive-md rounded table-dark mb-5">
             <thead>
                 <tr>
@@ -37,6 +38,7 @@
                         <td class="text-end">{{ change.change }}</td>
                         <td>
                             <div class="d-flex justify-content-end">
+                                {{ bg.modalButton("C", "#combineChange", url("banking:combine_change", args=[change.pk]) ) }}
                                 {{ bg.modalButton("Edit", "#editChange", url("banking:edit_change", args=[change.pk]) ) }}
                                 {{ bg.modalButton("Delete", "#deleteChange", url("banking:delete_change", args=[change.pk]) ) }}
                             </div>

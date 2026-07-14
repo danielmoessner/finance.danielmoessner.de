@@ -1,6 +1,7 @@
 import json
 from typing import Callable
 
+from django.shortcuts import get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views import generic
@@ -13,6 +14,7 @@ from apps.banking.forms import (
     CategoryForm,
     CategorySelectForm,
     ChangeForm,
+    CombineChangeForm,
     ComdirectCompleteLoginForm,
     ComdirectImportChangesForm,
     ComdirectStartLoginForm,
@@ -216,6 +218,25 @@ class EditChangeView(
 class DeleteChangeView(GetUserMixin, CustomAjaxDeleteMixin, generic.DeleteView):
     model = Change
     template_name = "symbols/delete_snippet.j2"
+
+
+class CombineChangeView(GetUserMixin, AjaxResponseMixin, generic.FormView):
+    template_name = "symbols/form_snippet.j2"
+    form_class = CombineChangeForm
+
+    def get_primary_change(self):
+        return get_object_or_404(
+            Change.objects.select_related("account", "category", "account__depot"),
+            pk=self.kwargs["pk"],
+            account__depot__in=self.get_user().banking_depots.all(),
+        )
+
+    def get_form(self, form_class=None):
+        if form_class is None:
+            form_class = self.get_form_class()
+        primary_change = self.get_primary_change()
+        depot = primary_change.account.depot
+        return form_class(depot, primary_change, **self.get_form_kwargs())
 
 
 class MoneyMoveView(

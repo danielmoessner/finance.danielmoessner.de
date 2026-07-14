@@ -5,6 +5,7 @@ import pandas as pd
 from django import forms
 from django.contrib.sessions.backends.base import SessionBase
 from django.db import transaction
+from django.db.models import Case, IntegerField, Q, When
 from django.utils import timezone
 
 from apps.banking.models import (
@@ -150,6 +151,93 @@ class ChangeForm(forms.ModelForm):
                     )
                     self.fields["date"].initial = default_date
         self.fields["description"].widget.attrs.update({"class": "small"})
+
+
+class CombineChangeForm(forms.Form):
+    other_change = forms.ModelChoiceField(
+        widget=forms.Select,
+        queryset=Change.objects.none(),
+        label="Combine with",
+    )
+    description = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 2}),
+    )
+
+    def __init__(self, depot: Depot, primary_change: Change, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.depot = depot
+        self.primary_change = primary_change
+        base_queryset = Change.objects.filter(
+            account=primary_change.account,
+            category=primary_change.category,
+            account__depot=depot,
+        ).exclude(pk=primary_change.pk)
+
+        past_changes = list(
+            base_queryset.filter(
+                Q(date__lt=primary_change.date)
+                | Q(date=primary_change.date, pk__lt=primary_change.pk)
+            )
+            .order_by("-date", "-pk")[:10]
+        )
+        future_changes = list(
+            base_queryset.filter(
+                Q(date__gt=primary_change.date)
+                | Q(date=primary_change.date, pk__gt=primary_change.pk)
+            )
+            .order_by("date", "pk")[:10]
+        )
+
+        neighboring_changes = past_changes + future_changes
+        ordering = Case(
+            *[
+                When(pk=change.pk, then=position)
+                for position, change in enumerate(neighboring_changes)
+            ],
+            output_field=IntegerField(),
+        )
+        self.fields["other_change"].queryset = Change.objects.filter(
+            pk__in=[change.pk for change in neighboring_changes]
+        ).order_by(ordering)
+        self.fields["other_change"].label_from_instance = self._change_option_label
+        self.fields["description"].initial = primary_change.description
+
+    def _change_option_label(self, change: Change) -> str:
+        description = change.description or ""
+        if len(description) > 40:
+            description = f"{description[:40]}..."
+        return (
+            f"{change.date.strftime('%d.%m.%Y %H:%M')}"
+            f" | {change.change} | {description}"
+        )
+
+    def clean_other_change(self):
+        other_change = self.cleaned_data["other_change"]
+        if other_change.account_id != self.primary_change.account_id:
+            raise forms.ValidationError("Selected change must belong to the same account.")
+        if other_change.category_id != self.primary_change.category_id:
+            raise forms.ValidationError("Selected change must belong to the same category.")
+        return other_change
+
+    def save(self, commit: bool = True):
+        other_change = self.cleaned_data["other_change"]
+        description = self.cleaned_data.get("description", "")
+        if description == "":
+            description = self.primary_change.description
+
+        with transaction.atomic():
+            combined_change = Change.objects.create(
+                account=self.primary_change.account,
+                date=self.primary_change.date,
+                category=self.primary_change.category,
+                change=self.primary_change.change + other_change.change,
+                description=description,
+            )
+            self.primary_change.delete()
+            other_change.delete()
+
+        return combined_change
 
 
 class CsvImportForm(forms.ModelForm):

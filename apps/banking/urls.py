@@ -59,6 +59,11 @@ urlpatterns = [
         name="delete_change",
     ),
     path(
+        "changes/<int:pk>/combine/",
+        formviews.CombineChangeView.as_view(),
+        name="combine_change",
+    ),
+    path(
         "changes/money-move/",
         formviews.MoneyMoveView.as_view(),
         name="move_money",
