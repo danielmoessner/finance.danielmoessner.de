@@ -5,7 +5,7 @@ import pandas as pd
 from django import forms
 from django.contrib.sessions.backends.base import SessionBase
 from django.db import transaction
-from django.db.models import Case, IntegerField, Q, When
+from django.db.models import Q
 from django.utils import timezone
 
 from apps.banking.models import (
@@ -154,9 +154,11 @@ class ChangeForm(forms.ModelForm):
 
 
 class CombineChangeForm(forms.Form):
-    other_change = forms.ModelChoiceField(
+    SEPARATOR_VALUE = "__current_change_separator__"
+
+    other_change = forms.ChoiceField(
         widget=forms.Select,
-        queryset=Change.objects.none(),
+        choices=[],
         label="Combine with",
     )
     description = forms.CharField(
@@ -168,59 +170,104 @@ class CombineChangeForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.depot = depot
         self.primary_change = primary_change
-        base_queryset = Change.objects.filter(
-            account=primary_change.account,
-            category=primary_change.category,
-            account__depot=depot,
-        ).exclude(pk=primary_change.pk)
+        past_ids, future_ids = self._get_neighboring_change_ids()
+        neighboring_ids = list(reversed(past_ids)) + future_ids
+        neighboring_changes = Change.objects.filter(pk__in=neighboring_ids).order_by(
+            "date", "pk"
+        )
+        self._neighboring_changes_by_id = {
+            str(change.pk): change for change in neighboring_changes
+        }
 
-        past_changes = list(
-            base_queryset.filter(
-                Q(date__lt=primary_change.date)
-                | Q(date=primary_change.date, pk__lt=primary_change.pk)
-            ).order_by("-date", "-pk")[:10]
+        choices = [
+            (str(change_id), self._change_option_label(self._neighboring_changes_by_id[str(change_id)]))
+            for change_id in reversed(past_ids)
+            if str(change_id) in self._neighboring_changes_by_id
+        ]
+        if past_ids and future_ids:
+            choices.append(
+                (
+                    self.SEPARATOR_VALUE,
+                    "----- Current Change (not selectable) -----",
+                )
+            )
+        choices.extend(
+            [
+                (
+                    str(change_id),
+                    self._change_option_label(
+                        self._neighboring_changes_by_id[str(change_id)]
+                    ),
+                )
+                for change_id in future_ids
+                if str(change_id) in self._neighboring_changes_by_id
+            ]
         )
-        future_changes = list(
-            base_queryset.filter(
-                Q(date__gt=primary_change.date)
-                | Q(date=primary_change.date, pk__gt=primary_change.pk)
-            ).order_by("date", "pk")[:10]
-        )
-
-        neighboring_changes = past_changes + future_changes
-        ordering = Case(
-            *[
-                When(pk=change.pk, then=position)
-                for position, change in enumerate(neighboring_changes)
-            ],
-            output_field=IntegerField(),
-        )
-        self.fields["other_change"].queryset = Change.objects.filter(
-            pk__in=[change.pk for change in neighboring_changes]
-        ).order_by(ordering)
-        self.fields["other_change"].label_from_instance = self._change_option_label
+        self.fields["other_change"].choices = choices
         self.fields["description"].initial = primary_change.description
+
+    def _get_base_queryset(self):
+        return Change.objects.filter(
+            account=self.primary_change.account,
+            category=self.primary_change.category,
+            account__depot=self.depot,
+        ).exclude(pk=self.primary_change.pk)
+
+    def _get_neighboring_change_ids(self) -> tuple[list[int], list[int]]:
+        base_queryset = self._get_base_queryset()
+
+        past_ids = list(
+            base_queryset.filter(
+                Q(date__lt=self.primary_change.date)
+                | Q(date=self.primary_change.date, pk__lt=self.primary_change.pk)
+            )
+            .order_by("-date", "-pk")
+            .values_list("pk", flat=True)[:15]
+        )
+        future_ids = list(
+            base_queryset.filter(
+                Q(date__gt=self.primary_change.date)
+                | Q(date=self.primary_change.date, pk__gt=self.primary_change.pk)
+            )
+            .order_by("date", "pk")
+            .values_list("pk", flat=True)[:15]
+        )
+
+        return past_ids, future_ids
 
     def _change_option_label(self, change: Change) -> str:
         description = change.description or ""
-        if len(description) > 40:
-            description = f"{description[:40]}..."
+        if len(description) > 80:
+            description = f"{description[:80]}..."
         return (
             f"{change.date.strftime('%d.%m.%Y %H:%M')}"
             f" | {change.change} | {description}"
         )
 
-    def clean_other_change(self):
-        other_change = self.cleaned_data["other_change"]
+    def clean(self):
+        cleaned_data = super().clean()
+        selected_change_id = cleaned_data.get("other_change")
+        if not selected_change_id:
+            return cleaned_data
+
+        if selected_change_id == self.SEPARATOR_VALUE:
+            self.add_error("other_change", "Please select a change.")
+            return cleaned_data
+
+        other_change = self._neighboring_changes_by_id.get(selected_change_id)
+        if other_change is None:
+            self.add_error("other_change", "Please select a valid neighboring change.")
+            return cleaned_data
+
         if other_change.account_id != self.primary_change.account_id:
-            raise forms.ValidationError(
-                "Selected change must belong to the same account."
-            )
+            self.add_error("other_change", "Selected change must belong to the same account.")
+            return cleaned_data
         if other_change.category_id != self.primary_change.category_id:
-            raise forms.ValidationError(
-                "Selected change must belong to the same category."
-            )
-        return other_change
+            self.add_error("other_change", "Selected change must belong to the same category.")
+            return cleaned_data
+
+        cleaned_data["other_change"] = other_change
+        return cleaned_data
 
     def save(self, commit: bool = True):
         other_change = self.cleaned_data["other_change"]
