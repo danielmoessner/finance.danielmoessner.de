@@ -1,5 +1,6 @@
 [tool.black]
 line-length = 88
+target-version = ["py312"]
 
 [tool.mypy]
 ignore_missing_imports = true
@@ -45,7 +46,7 @@ dependencies = [
     "numpy==2.1.*",
     "gunicorn==25.*",
 ]
-requires-python = ">=3.11,<3.13"
+requires-python = ">=3.12,<3.13"
 license = {text = "MIT"}
 
 [tool.setuptools]
