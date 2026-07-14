@@ -171,17 +171,20 @@ class CombineChangeForm(forms.Form):
         self.depot = depot
         self.primary_change = primary_change
         past_ids, future_ids = self._get_neighboring_change_ids()
-        neighboring_ids = list(reversed(past_ids)) + future_ids
-        neighboring_changes = Change.objects.filter(pk__in=neighboring_ids).order_by(
-            "date", "pk"
-        )
+        neighboring_ids = list(reversed(future_ids)) + past_ids
+        neighboring_changes = Change.objects.filter(pk__in=neighboring_ids)
         self._neighboring_changes_by_id = {
             str(change.pk): change for change in neighboring_changes
         }
 
         choices = [
-            (str(change_id), self._change_option_label(self._neighboring_changes_by_id[str(change_id)]))
-            for change_id in reversed(past_ids)
+            (
+                str(change_id),
+                self._change_option_label(
+                    self._neighboring_changes_by_id[str(change_id)]
+                ),
+            )
+            for change_id in reversed(future_ids)
             if str(change_id) in self._neighboring_changes_by_id
         ]
         if past_ids and future_ids:
@@ -199,7 +202,7 @@ class CombineChangeForm(forms.Form):
                         self._neighboring_changes_by_id[str(change_id)]
                     ),
                 )
-                for change_id in future_ids
+                for change_id in past_ids
                 if str(change_id) in self._neighboring_changes_by_id
             ]
         )
