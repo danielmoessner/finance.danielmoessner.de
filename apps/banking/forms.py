@@ -239,11 +239,12 @@ class CombineChangeForm(forms.Form):
         return past_ids, future_ids
 
     def _change_option_label(self, change: Change) -> str:
+        local_date = timezone.localtime(change.date)
         description = change.description or ""
         if len(description) > 80:
             description = f"{description[:80]}..."
         return (
-            f"{change.date.strftime('%d.%m.%Y %H:%M')}"
+            f"{local_date.strftime('%d.%m.%Y %H:%M')}"
             f" | {change.change} | {description}"
         )
 
