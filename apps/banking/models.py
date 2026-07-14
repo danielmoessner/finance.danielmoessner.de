@@ -411,12 +411,26 @@ class Category(models.Model):
             },
         )
 
+    def _get_month_sum(self) -> dict[tuple[int, int], Decimal]:
+        if not hasattr(self, "_month_sums"):
+            sumsqs = (
+                Change.objects.filter(category=self)
+                .annotate(
+                    year=models.functions.ExtractYear("date"),
+                    month=models.functions.ExtractMonth("date"),
+                )
+                .values("year", "month")
+                .annotate(balance=models.Sum("change"))
+            )
+            self._month_sums: dict[tuple[int, int], Decimal] = {
+                (int(x["year"]), int(x["month"])): x["balance"] for x in sumsqs
+            }
+        return self._month_sums
+
     def get_month(self, month: date) -> str:
         if self.monthly_budget is None:
             return "-"
-        amount = self.changes.filter(
-            date__year=month.year, date__month=month.month
-        ).aggregate(total=models.Sum("change"))["total"]
+        amount = self._get_month_sum().get((month.year, month.month))
         if amount is None or amount >= 0:
             return "✓"
         _amount = abs(amount)
@@ -426,13 +440,24 @@ class Category(models.Model):
             return "✓ {:.0f} €".format(_amount)
         return "❗ {:.0f} €".format(_amount)
 
+    def get_month_amount(self, month: date) -> Decimal:
+        amount = self._get_month_sum().get((month.year, month.month))
+        if amount is None or amount >= 0:
+            return Decimal("0")
+        return abs(amount)
+
     def get_available_budget(self) -> Decimal | None:
         if self.monthly_budget is None:
             return None
         now = timezone.now().date()
-        year_to_date_total = self.changes.filter(
-            date__year=now.year, date__month__lte=now.month
-        ).aggregate(total=models.Sum("change"))["total"] or Decimal("0")
+        year_to_date_total = sum(
+            (
+                value
+                for (year, month), value in self._get_month_sum().items()
+                if year == now.year and month <= now.month
+            ),
+            Decimal("0"),
+        )
         return self.monthly_budget * now.month + year_to_date_total
 
     @property

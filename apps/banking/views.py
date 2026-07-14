@@ -3,7 +3,11 @@ from django.shortcuts import HttpResponse
 from django.views import generic
 
 from apps.banking.models import Account, Category, Depot
-from apps.banking.utils import get_12_recent_months, get_latest_years
+from apps.banking.utils import (
+    format_currency_amount_to_de,
+    get_12_recent_months,
+    get_latest_years,
+)
 from apps.core.functional import list_sort
 from apps.core.mixins import TabContextMixin
 from apps.users.mixins import GetUserMixin
@@ -37,8 +41,28 @@ class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
             categories = list_sort(
                 categories, lambda c: c.get_latest_years_sum(), reverse=True
             )
+            months = get_12_recent_months()
+            total_monthly_budget = sum(
+                (category.monthly_budget or 0) for category in categories
+            )
+            total_available_budget = sum(
+                (category.get_available_budget() or 0) for category in categories
+            )
+            month_totals = [
+                sum(category.get_month_amount(month) for category in categories)
+                for month in months
+            ]
+
+            def format_eur(value):
+                return f"{format_currency_amount_to_de(value)} €"
+
             context["categories"] = categories
-            context["months"] = get_12_recent_months()
+            context["months"] = months
+            context["budget_totals"] = {
+                "monthly_budget": format_eur(total_monthly_budget),
+                "available_budget": format_eur(total_available_budget),
+                "months": [format_eur(total) for total in month_totals],
+            }
         elif self.tab == "categories":
             show_archived = self.request.GET.get("show_archived", False)
             categories = self.object.categories.all()

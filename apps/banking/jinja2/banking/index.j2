@@ -86,6 +86,13 @@
                             {% for dt in months %}<td class="text-end" scope="col">{{ category.get_month(dt) }}</td>{% endfor %}
                         </tr>
                     {% endfor %}
+                    <tr>
+                        <td><strong>Total ({{ budget_totals.monthly_budget }})</strong></td>
+                        <td class="text-end"><strong>{{ budget_totals.available_budget }}</strong></td>
+                        {% for month_total in budget_totals.months %}
+                            <td class="text-end" scope="col"><strong>{{ month_total }}</strong></td>
+                        {% endfor %}
+                    </tr>
                 </tbody>
             </table>
         </div>
