@@ -149,14 +149,35 @@
         APP_PORT: "{{ app_port }}"
 
     - name: Start/update services
-      command: docker compose up -d --remove-orphans
-      args:
-        chdir: "{{ app_remote_dir }}"
-      environment:
-        APP_IMAGE: "{{ app_image_effective }}"
-        APP_DATA_DIR: "{{ app_data_dir }}"
-        APP_BIND_IP: "{{ app_bind_ip }}"
-        APP_PORT: "{{ app_port }}"
+      block:
+        - name: Start/update services (first attempt)
+          command: docker compose up -d --remove-orphans
+          args:
+            chdir: "{{ app_remote_dir }}"
+          environment:
+            APP_IMAGE: "{{ app_image_effective }}"
+            APP_DATA_DIR: "{{ app_data_dir }}"
+            APP_BIND_IP: "{{ app_bind_ip }}"
+            APP_PORT: "{{ app_port }}"
+      rescue:
+        - name: Extract conflicting container name (if present)
+          set_fact:
+            compose_conflict_container_name: "{{ ansible_failed_result.stderr | regex_search('container name \"/([^\"]+)\"', '\\1') | default('') }}"
+
+        - name: Remove conflicting container name
+          command: docker rm -f "{{ compose_conflict_container_name }}"
+          when: compose_conflict_container_name | length > 0
+          changed_when: true
+
+        - name: Retry start/update services after cleanup
+          command: docker compose up -d --remove-orphans
+          args:
+            chdir: "{{ app_remote_dir }}"
+          environment:
+            APP_IMAGE: "{{ app_image_effective }}"
+            APP_DATA_DIR: "{{ app_data_dir }}"
+            APP_BIND_IP: "{{ app_bind_ip }}"
+            APP_PORT: "{{ app_port }}"
 
     - name: "Preflight: nginx config is valid"
       command: nginx -t
