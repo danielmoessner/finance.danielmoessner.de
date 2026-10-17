@@ -4,42 +4,71 @@
      style="height: 600px"></div>
 <script src="{{ static('js/charts.js') }}"></script>
 <script>
+    am5.ready(function () {
+        createIncomeAndExpenditureChart().catch(function (error) {
+            console.error("Unable to initialize the income and expenditure chart", error);
+        });
+    });
 
-    am4core.ready(function () {
+    async function createIncomeAndExpenditureChart() {
+        const root = am5.Root.new("incomeAndExpenditureChart");
+        root.setThemes([
+            am5themes_Animated.new(root),
+            am5themes_Dark.new(root)
+        ]);
 
-        // create the chart and set default settings
-        const chart = am4core.create("incomeAndExpenditureChart", am4charts.XYChart);
-        chart.dateFormatter.dateFormat = "MMM YYYY";
-        chart.dateFormatter.inputDateFormat = "YYYY-MM";
+        const chart = root.container.children.push(am5xy.XYChart.new(root, {
+            panX: true,
+            wheelX: "panX",
+            wheelY: "zoomX"
+        }));
+        const response = await fetch("{{ url('banking:api_depot_income_and_expenditure_data', args=[object.pk]) }}");
+        if (!response.ok) {
+            throw new Error(`Chart data request failed: ${response.status}`);
+        }
+        const data = (await response.json()).map(function (item) {
+            const [year, month] = item.date.split("-").map(Number);
+            return {
+                ...item,
+                date: Date.UTC(year, month - 1, 1)
+            };
+        });
 
-        // add data
-        chart.dataSource.url = "{{ url('banking:api_depot_income_and_expenditure_data', args=[object.pk]) }}";
+        const xAxis = chart.xAxes.push(am5xy.DateAxis.new(root, {
+            baseInterval: { timeUnit: "month", count: 1 },
+            dateFormats: { month: "MMM yyyy" },
+            periodChangeDateFormats: { month: "MMM yyyy" },
+            renderer: am5xy.AxisRendererX.new(root, {})
+        }));
+        const yAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
+            renderer: am5xy.AxisRendererY.new(root, {})
+        }));
 
-        // create axes
-        const dateAxis = chart.xAxes.push(new am4charts.DateAxis());
-        const valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
-
-        // create series
         function createSeries(name) {
-            const series = chart.series.push(new am4charts.ColumnSeries());
-            series.name = name;
-            series.dataFields.valueY = name;
-            series.dataFields.dateX = "date";
-            series.stacked = true;
-            series.columns.template.tooltipText = "{dateX}\n{name}\n{valueY}";
+            const series = chart.series.push(am5xy.ColumnSeries.new(root, {
+                name: name,
+                xAxis: xAxis,
+                yAxis: yAxis,
+                valueYField: name,
+                valueXField: "date",
+                stacked: true,
+                tooltip: am5.Tooltip.new(root, {
+                    labelText: "{name}\n{valueY}"
+                })
+            }));
+            series.data.setAll(data);
         }
         {% for category in categories %}
             createSeries("{{ category.name }}");
         {% endfor %}
 
-        // legend
-        chart.legend = new am4charts.Legend();
-        chart.scrollbarX = new am4core.Scrollbar();
-        chart.scrollbarX.background.fill = am4core.color("#6c757d");
-        chart.scrollbarX.thumb.background.fill = am4core.color("#6c757d");
-        chart.scrollbarX.startGrip.background.fill = am4core.color("#6c757d");
-        chart.scrollbarX.endGrip.background.fill = am4core.color("#6c757d");
-        chart.scrollbarX.stroke = am4core.color("#6c757d");
-
-    });
+        const legend = chart.children.push(am5.Legend.new(root, {
+            centerX: am5.percent(50),
+            x: am5.percent(50)
+        }));
+        legend.data.setAll(chart.series.values);
+        chart.set("scrollbarX", am5.Scrollbar.new(root, {
+            orientation: "horizontal"
+        }));
+    }
 </script>

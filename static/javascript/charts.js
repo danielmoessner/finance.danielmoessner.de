@@ -1,10 +1,9 @@
-import * as am4core from "@amcharts/amcharts4/core";
-import * as am4charts from "@amcharts/amcharts4/charts";
-import am4themes_animated from "@amcharts/amcharts4/themes/animated";
-import am4themes_dark from "@amcharts/amcharts4/themes/dark";
+import * as am5 from "@amcharts/amcharts5";
+import * as am5xy from "@amcharts/amcharts5/xy";
+import am5themes_Animated from "@amcharts/amcharts5/themes/Animated";
+import am5themes_Dark from "@amcharts/amcharts5/themes/Dark";
 
-am4core.useTheme(am4themes_animated);
-am4core.useTheme(am4themes_dark);
-
-window.am4core = am4core
-window.am4charts = am4charts
+window.am5 = am5;
+window.am5xy = am5xy;
+window.am5themes_Animated = am5themes_Animated;
+window.am5themes_Dark = am5themes_Dark;
