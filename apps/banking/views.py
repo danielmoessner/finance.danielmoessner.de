@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import HttpResponse
 from django.views import generic
@@ -42,25 +44,43 @@ class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
                 categories, lambda c: c.get_latest_years_sum(), reverse=True
             )
             months = get_12_recent_months()
+
+            def format_eur(value):
+                return f"{format_currency_amount_to_de(value)} €"
+
+            category_averages = {
+                category.pk: sum(
+                    (
+                        category.get_month_amount(month)
+                        for month in months
+                    ),
+                    Decimal("0"),
+                )
+                / len(months)
+                for category in categories
+            }
             total_monthly_budget = sum(
                 (category.monthly_budget or 0) for category in categories
             )
             total_available_budget = sum(
                 (category.get_available_budget() or 0) for category in categories
             )
+            total_average = sum(category_averages.values(), Decimal("0"))
             month_totals = [
                 sum(category.get_month_amount(month) for category in categories)
                 for month in months
             ]
 
-            def format_eur(value):
-                return f"{format_currency_amount_to_de(value)} €"
-
             context["categories"] = categories
+            context["category_averages"] = {
+                category_id: format_eur(average)
+                for category_id, average in category_averages.items()
+            }
             context["months"] = months
             context["budget_totals"] = {
                 "monthly_budget": format_eur(total_monthly_budget),
                 "available_budget": format_eur(total_available_budget),
+                "average": format_eur(total_average),
                 "months": [format_eur(total) for total in month_totals],
             }
         elif self.tab == "categories":

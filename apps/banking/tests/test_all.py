@@ -90,6 +90,44 @@ class ViewsTestCase(TestCase):
             set(depot.categories.values_list("pk", flat=True)),
         )
 
+    def test_budget_view_shows_average_over_the_12_months(self):
+        self.client = Client()
+        self.client.login(username="dummy", ******)
+        depot = self.user.banking_depots.get(is_active=True)
+        account = depot.accounts.first()
+        assert account is not None
+        category = create_category(depot, name="Budget average")
+        category.monthly_budget = Decimal("100")
+        category.save()
+
+        current_month = timezone.localdate().replace(day=1)
+        previous_month = (current_month - timedelta(days=1)).replace(day=1)
+        for month, amount in (
+            (current_month, Decimal("-120")),
+            (previous_month, Decimal("-60")),
+        ):
+            Change.objects.create(
+                account=account,
+                category=category,
+                date=timezone.make_aware(
+                    datetime.combine(month, datetime.min.time()),
+                    timezone.get_current_timezone(),
+                ),
+                change=amount,
+            )
+
+        response = self.client.get(
+            "{}?tab=budgets".format(reverse_lazy("banking:index"))
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context["category_averages"][category.pk], "15,00 €"
+        )
+        html = response.content.decode()
+        self.assertIn("15,00 €", html)
+        self.assertLess(html.index(">Available<"), html.index(">Avg<"))
+
     def test_income_and_expenditure_data_uses_local_month(self):
         depot = self.user.banking_depots.get(is_active=True)
         account = depot.accounts.first()

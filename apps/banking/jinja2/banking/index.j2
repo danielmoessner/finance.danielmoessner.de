@@ -73,6 +73,7 @@
                     <tr>
                         <th scope="col" class="">Category</th>
                         <th class="text-end" scope="col">Available</th>
+                        <th class="text-end" scope="col">Avg</th>
                         {% for dt in months %}
                             <th class="text-end px-1" style="white-space: nowrap;" scope="col">{{ dt.strftime("%b %y") }}</th>
                         {% endfor %}
@@ -83,6 +84,7 @@
                         <tr>
                             <td>{{ category.name }} {{ category.monthly_budget_str }}</td>
                             <td class="text-end">{{ category.available_budget_str }}</td>
+                            <td class="text-end">{{ category_averages[category.pk] }}</td>
                             {% for dt in months %}<td class="text-end" scope="col">{{ category.get_month(dt) }}</td>{% endfor %}
                         </tr>
                     {% endfor %}
@@ -92,6 +94,9 @@
                         </td>
                         <td class="text-end">
                             <strong>{{ budget_totals.available_budget }}</strong>
+                        </td>
+                        <td class="text-end">
+                            <strong>{{ budget_totals.average }}</strong>
                         </td>
                         {% for month_total in budget_totals.months %}
                             <td class="text-end" scope="col">
