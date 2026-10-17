@@ -73,6 +73,9 @@ class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
             )
             context["categories"] = categories
             context["years"] = get_latest_years(5)
+        elif self.tab == "charts":
+            context["accounts"] = self.object.accounts.order_by("name")
+            context["categories"] = self.object.categories.order_by("name")
         elif self.tab == "statements":
             context["statements"] = self.object.get_statements()
         return context

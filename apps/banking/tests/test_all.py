@@ -79,6 +79,15 @@ class ViewsTestCase(TestCase):
             "{}?tab=charts".format(reverse_lazy("banking:index"))
         )
         self.assertEqual(response.status_code, 200)
+        depot = self.user.banking_depots.get(is_active=True)
+        self.assertEqual(
+            set(response.context["accounts"].values_list("pk", flat=True)),
+            set(depot.accounts.values_list("pk", flat=True)),
+        )
+        self.assertEqual(
+            set(response.context["categories"].values_list("pk", flat=True)),
+            set(depot.categories.values_list("pk", flat=True)),
+        )
 
     def test_account_view(self):
         self.client = Client()
