@@ -13,7 +13,15 @@ from apps.banking.forms import (
     CsvImportForm,
     DepotForm,
 )
-from apps.banking.models import Account, Category, Change, CsvImport, Depot
+from apps.banking.models import (
+    Account,
+    Category,
+    Change,
+    ComdirectImport,
+    ComdirectImportChange,
+    CsvImport,
+    Depot,
+)
 from apps.core.functional import list_sort
 from apps.users.models import StandardUser as User
 
@@ -92,7 +100,7 @@ class ViewsTestCase(TestCase):
 
     def test_budget_view_shows_average_over_the_12_months(self):
         self.client = Client()
-        self.client.login(username="dummy", ******)
+        self.client.login(username="dummy", password="test")
         depot = self.user.banking_depots.get(is_active=True)
         account = depot.accounts.first()
         assert account is not None
@@ -152,6 +160,31 @@ class ViewsTestCase(TestCase):
         self.assertEqual(rows_for_category[0]["date"], month_start.strftime("%Y-%m"))
         self.assertEqual(rows_for_category[0][category.name], -123.45)
         self.assertEqual(category.get_month_amount(month_start), Decimal("123.45"))
+
+    def test_statements_use_local_month_for_changes(self):
+        depot = self.user.banking_depots.get(is_active=True)
+        account = depot.accounts.first()
+        assert account is not None
+        category = create_category(depot, name="Statements timezone boundary")
+        month_start = timezone.localdate().replace(day=1)
+        Change.objects.create(
+            account=account,
+            category=category,
+            date=timezone.make_aware(
+                datetime.combine(month_start, datetime.min.time()),
+                timezone.get_current_timezone(),
+            ),
+            change=Decimal("-123.45"),
+        )
+
+        statements = depot.get_statements()
+
+        month_label = month_start.strftime("%B %y")
+        month_index = statements["months"].index(month_label)
+        self.assertEqual(
+            statements["data"][category.name][month_index],
+            -123.45,
+        )
 
     def test_account_view(self):
         self.client = Client()
@@ -225,6 +258,23 @@ class BalanceUpdateTestCase(TestCase):
         assert self.get_account().balance is not None
         assert self.get_depot().balance is not None
         assert self.get_category().balance is not None
+
+    def test_comdirect_import_uses_local_noon(self):
+        transaction_date = timezone.localdate()
+        imported_change = ComdirectImportChange(
+            comdirect_import=ComdirectImport(account=self.get_account()),
+            date=transaction_date,
+            description="Imported transaction",
+            change=Decimal("-12.34"),
+        )
+
+        change = imported_change.import_into_account(self.get_category())
+
+        self.assertEqual(
+            timezone.localtime(change.date).hour,
+            12,
+        )
+        self.assertEqual(timezone.localtime(change.date).date(), transaction_date)
 
     def test_balance_is_reset_properly_after_change_added(self):
         self.create_change_and_set_balances(days_ago=20)

@@ -1,6 +1,6 @@
 import hashlib
 import json
-from datetime import date, datetime
+from datetime import date, datetime, time
 from decimal import Decimal
 from typing import TYPE_CHECKING, Literal, TypedDict, Union
 from uuid import uuid4
@@ -129,22 +129,32 @@ class Depot(CoreDepot):
         return max_account[0] if max_account else None
 
     def _get_statements_df(self):
-        changes = (
+        monthly_changes = (
             Change.objects.filter(
                 account__in=self.accounts.all(),
             )
             .filter(date__gte=timezone.now() - timezone.timedelta(days=365))
-            .values_list("date", "category__name", "change")
-            .order_by("category__changes_count")
+            .annotate(
+                year=models.functions.ExtractYear("date"),
+                month=models.functions.ExtractMonth("date"),
+            )
+            .values("year", "month", "category__name")
+            .annotate(change=models.Sum("change"))
+            .order_by("-year", "-month")
         )
-        df = pd.DataFrame(changes, columns=["date", "category", "change"])
-        df["month"] = pd.to_datetime(df["date"]).dt.to_period("M")
-        monthly_summary = (
-            df.groupby(["month", "category"])["change"].sum().reset_index()
+        return pd.DataFrame(
+            [
+                {
+                    "month": datetime(int(row["year"]), int(row["month"]), 1).strftime(
+                        "%B %y"
+                    ),
+                    "category": row["category__name"],
+                    "change": row["change"],
+                }
+                for row in monthly_changes
+            ],
+            columns=["month", "category", "change"],
         )
-        monthly_summary = monthly_summary.sort_values("month", ascending=False)
-        monthly_summary["month"] = monthly_summary["month"].dt.strftime("%B %y")
-        return monthly_summary
 
     def get_statements(self):
         df = self._get_statements_df()
@@ -918,7 +928,10 @@ class ComdirectImportChange(models.Model):
             raise ValueError("change is already imported")
         change = Change(
             account=self.comdirect_import.account,
-            date=datetime.combine(self.date, datetime.min.time()),
+            date=timezone.make_aware(
+                datetime.combine(self.date, time(hour=12)),
+                timezone.get_current_timezone(),
+            ),
             category=category,
             description=self.description,
             change=self.change,

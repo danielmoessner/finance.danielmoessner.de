@@ -50,10 +50,7 @@ class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
 
             category_averages = {
                 category.pk: sum(
-                    (
-                        category.get_month_amount(month)
-                        for month in months
-                    ),
+                    (category.get_month_amount(month) for month in months),
                     Decimal("0"),
                 )
                 / len(months)
