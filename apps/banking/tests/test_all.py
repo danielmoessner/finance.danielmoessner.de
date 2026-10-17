@@ -129,9 +129,7 @@ class ViewsTestCase(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.context["category_averages"][category.pk], "15,00 €"
-        )
+        self.assertEqual(response.context["category_averages"][category.pk], "15,00 €")
         html = response.content.decode()
         self.assertIn("15,00 €", html)
         self.assertLess(html.index(">Available<"), html.index(">Avg<"))
