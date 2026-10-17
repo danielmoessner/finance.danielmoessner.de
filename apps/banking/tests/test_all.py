@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -202,6 +202,35 @@ class ViewsTestCase(TestCase):
         response = self.client.get("{}?tab=changes".format(url))
         self.assertEqual(response.status_code, 200)
 
+    def test_import_preview_does_not_show_midnight_for_date_only_transactions(self):
+        self.client = Client()
+        self.client.force_login(self.user)
+        account = self.user.banking_depots.get(is_active=True).accounts.first()
+        assert account is not None
+        comdirect_import = ComdirectImport.objects.create(
+            account=account,
+            comdirect_api_client_id="client-id",
+            comdirect_api_client_secret="client-secret",
+            comdirect_zugangsnummer="access-number",
+            comdirect_pin="pin",
+            comdirect_account_id="account-id",
+        )
+        ComdirectImportChange.objects.create(
+            comdirect_import=comdirect_import,
+            sha="test-sha",
+            date=date(2001, 1, 2),
+            description="Imported transaction",
+            change=Decimal("-12.34"),
+        )
+
+        response = self.client.get(
+            f"{reverse_lazy('banking:account', args=[account.pk])}?tab=import"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "02.01.2001")
+        self.assertNotContains(response, "02.01.2001 00:00")
+
     def test_category_view(self):
         self.client = Client()
         self.client.login(username="dummy", password="test")
@@ -269,12 +298,16 @@ class BalanceUpdateTestCase(TestCase):
         )
 
         change = imported_change.import_into_account(self.get_category())
+        change.save()
+        persisted_change = Change.objects.get(pk=change.pk)
 
         self.assertEqual(
-            timezone.localtime(change.date).hour,
+            timezone.localtime(persisted_change.date).hour,
             12,
         )
-        self.assertEqual(timezone.localtime(change.date).date(), transaction_date)
+        self.assertEqual(
+            timezone.localtime(persisted_change.date).date(), transaction_date
+        )
 
     def test_balance_is_reset_properly_after_change_added(self):
         self.create_change_and_set_balances(days_ago=20)
