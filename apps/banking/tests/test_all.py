@@ -1,4 +1,5 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
+from decimal import Decimal
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
@@ -88,6 +89,31 @@ class ViewsTestCase(TestCase):
             set(response.context["categories"].values_list("pk", flat=True)),
             set(depot.categories.values_list("pk", flat=True)),
         )
+
+    def test_income_and_expenditure_data_uses_local_month(self):
+        depot = self.user.banking_depots.get(is_active=True)
+        account = depot.accounts.first()
+        assert account is not None
+        category = create_category(depot, name="Timezone boundary expense")
+        month_start = timezone.localdate().replace(day=1)
+        local_midnight = timezone.make_aware(
+            datetime.combine(month_start, datetime.min.time()),
+            timezone.get_current_timezone(),
+        )
+        Change.objects.create(
+            account=account,
+            category=category,
+            date=local_midnight,
+            change=Decimal("-123.45"),
+        )
+
+        data = depot.get_income_and_expenditure_data()
+        rows_for_category = [row for row in data if category.name in row]
+
+        self.assertEqual(len(rows_for_category), 1)
+        self.assertEqual(rows_for_category[0]["date"], month_start.strftime("%Y-%m"))
+        self.assertEqual(rows_for_category[0][category.name], -123.45)
+        self.assertEqual(category.get_month_amount(month_start), Decimal("123.45"))
 
     def test_account_view(self):
         self.client = Client()

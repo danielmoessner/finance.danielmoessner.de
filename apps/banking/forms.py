@@ -264,10 +264,14 @@ class CombineChangeForm(forms.Form):
             return cleaned_data
 
         if other_change.account_id != self.primary_change.account_id:
-            self.add_error("other_change", "Selected change must belong to the same account.")
+            self.add_error(
+                "other_change", "Selected change must belong to the same account."
+            )
             return cleaned_data
         if other_change.category_id != self.primary_change.category_id:
-            self.add_error("other_change", "Selected change must belong to the same category.")
+            self.add_error(
+                "other_change", "Selected change must belong to the same category."
+            )
             return cleaned_data
 
         cleaned_data["other_change"] = other_change

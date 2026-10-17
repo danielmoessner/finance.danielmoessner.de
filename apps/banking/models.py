@@ -13,7 +13,7 @@ from django.utils import timezone
 from pydantic import BaseModel
 
 import apps.banking.duplicated_code as banking_duplicated_code
-from apps.banking.utils import format_currency_amount_to_de
+from apps.banking.utils import format_currency_amount_to_de, get_12_recent_months
 from apps.core import utils
 from apps.core.functional import list_create, list_map, list_sort
 from apps.core.models import Account as CoreAccount
@@ -66,6 +66,7 @@ class Depot(CoreDepot):
             if dt not in data:
                 data[dt] = {}
             data[dt][name] = value
+        print(data)
         data = turn_dict_of_dicts_into_list_of_dicts(data, "date")
         return data
 
@@ -76,20 +77,28 @@ class Depot(CoreDepot):
         return float(self.balance or 0)
 
     def get_income_and_expenditure_data(self):
-        statement = (
-            "select "
-            "strftime('%Y-%m', banking_change.date) as date, "
-            "banking_category.name ,"
-            "round(sum(banking_change.change)) as change "
-            "from banking_change "
-            "join banking_category on banking_category.id = banking_change.category_id "
-            "where banking_category.depot_id = {} "
-            "and date(banking_change.date) >= date('now', '-1 year') "
-            "group by banking_category.name, strftime('%Y-%m', banking_change.date) "
-            "order by date"
-        ).format(self.pk)
-        data = self.get_date_name_value_chart_data(statement)
-        return data
+        first_month = get_12_recent_months()[-1]
+        start_date = timezone.make_aware(
+            datetime.combine(first_month, datetime.min.time()),
+            timezone.get_current_timezone(),
+        )
+        changes = (
+            Change.objects.filter(account__depot=self, date__gte=start_date)
+            .annotate(
+                year=models.functions.ExtractYear("date"),
+                month=models.functions.ExtractMonth("date"),
+            )
+            .values("year", "month", "category__name")
+            .annotate(change=models.Sum("change"))
+            .order_by("year", "month")
+        )
+        data = {}
+        for row in changes:
+            month = f"{row['year']}-{row['month']:02}"
+            if month not in data:
+                data[month] = {}
+            data[month][row["category__name"]] = float(row["change"])
+        return turn_dict_of_dicts_into_list_of_dicts(data, "date")
 
     def get_balance_data(self):
         statement = (

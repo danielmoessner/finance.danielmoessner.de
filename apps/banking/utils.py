@@ -1,6 +1,8 @@
 from datetime import date, datetime
 from decimal import Decimal
 
+from django.utils import timezone
+
 
 def get_latest_years(n: int) -> list[str]:
     this_year = datetime.now().year
@@ -22,7 +24,7 @@ def format_currency_amount_to_de(value: float | Decimal) -> str:
 
 
 def get_12_recent_months() -> list[date]:
-    now = datetime.now()
+    now = timezone.localdate()
     months = []
     for i in range(12):
         month = (now.month - i - 1) % 12 + 1
