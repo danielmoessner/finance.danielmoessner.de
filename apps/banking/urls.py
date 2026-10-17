@@ -12,11 +12,6 @@ urlpatterns = [
         api.IncomeAndExpenditureData.as_view(),
         name="api_depot_income_and_expenditure_data",
     ),
-    path(
-        "api/depots/<int:pk>/balance-data/",
-        api.BalanceData.as_view(),
-        name="api_depot_balance_data",
-    ),
     # depots
     path("depots/add/", formviews.AddDepotView.as_view(), name="add_depot"),
     path("depots/delete/", formviews.DeleteDepotView.as_view(), name="delete_depot"),

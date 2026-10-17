@@ -8,7 +8,7 @@ from uuid import uuid4
 import pandas as pd
 import requests
 from django.contrib.sessions.backends.base import SessionBase
-from django.db import connection, models, transaction
+from django.db import models, transaction
 from django.utils import timezone
 from pydantic import BaseModel
 
@@ -57,19 +57,6 @@ class Depot(CoreDepot):
         categories: QuerySet["Category"]
 
     # getters
-    def get_date_name_value_chart_data(self, statement):
-        cursor = connection.cursor()
-        assert str(self.pk) in statement
-        cursor.execute(statement)
-        data = {}
-        for dt, name, value in cursor.fetchall():
-            if dt not in data:
-                data[dt] = {}
-            data[dt][name] = value
-        print(data)
-        data = turn_dict_of_dicts_into_list_of_dicts(data, "date")
-        return data
-
     def get_accounts(self):
         return self.accounts.all()
 
@@ -99,22 +86,6 @@ class Depot(CoreDepot):
                 data[month] = {}
             data[month][row["category__name"]] = float(row["change"])
         return turn_dict_of_dicts_into_list_of_dicts(data, "date")
-
-    def get_balance_data(self):
-        statement = (
-            "select "
-            "strftime('%Y-%W', banking_change.date) as date, "
-            "banking_account.name as name, "
-            "round(avg(banking_change.balance)) as balance "
-            "from banking_change "
-            "join banking_account on banking_account.id = banking_change.account_id "
-            "where depot_id={} "
-            "and date(banking_change.date) >= date('now', '-1 year') "
-            "group by strftime('%Y-%W', banking_change.date), banking_account.name "
-            "order by date"
-        ).format(self.pk)
-        data = self.get_date_name_value_chart_data(statement)
-        return data
 
     def get_balance(self):
         if self.balance is None:
