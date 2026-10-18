@@ -1,7 +1,7 @@
 <h2>Balance</h2>
 <div class="w-100 rounded bg-dark mb-5"
      id="totalChart"
-     style="height: 600px"></div>
+     style="height: 680px"></div>
 <script src="{{ static('js/charts.js') }}"></script>
 <script>
     am5.ready(function () {
@@ -16,8 +16,11 @@
             am5themes_Animated.new(root),
             am5themes_Dark.new(root)
         ]);
+        root.container.set("layout", root.verticalLayout);
 
         const chart = root.container.children.push(am5xy.XYChart.new(root, {
+            // width: am5.percent(100),
+            // height: am5.percent(82),
             panX: true,
             wheelX: "panX",
             wheelY: "zoomX"
@@ -55,9 +58,14 @@
             createSeries("{{ depot.name }}");
         {% endfor %}
 
-        const legend = chart.children.push(am5.Legend.new(root, {
-            centerX: am5.percent(50),
-            x: am5.percent(50)
+        const legend = root.container.children.push(am5.Legend.new(root, {
+            // width: am5.percent(100),
+            // height: am5.percent(18),
+            // centerX: am5.percent(50),
+            x: am5.percent(10),
+            useDefaultMarker: true,
+            fillField: "stroke",
+            strokeField: "stroke"
         }));
         legend.data.setAll(chart.series.values);
         legend.itemContainers.template.events.on("pointerover", function (event) {

@@ -1,7 +1,7 @@
 <h2>Income & Expenditure</h2>
 <div class="w-100 rounded bg-dark mb-5"
      id="incomeAndExpenditureChart"
-     style="height: 600px"></div>
+     style="height: 680px"></div>
 <script src="{{ static('js/charts.js') }}"></script>
 <script>
     am5.ready(function () {
@@ -16,8 +16,11 @@
             am5themes_Animated.new(root),
             am5themes_Dark.new(root)
         ]);
+        root.container.set("layout", root.verticalLayout);
 
         const chart = root.container.children.push(am5xy.XYChart.new(root, {
+            width: am5.percent(100),
+            height: am5.percent(82),
             panX: true,
             wheelX: "panX",
             wheelY: "zoomX"
@@ -51,19 +54,24 @@
                 yAxis: yAxis,
                 valueYField: name,
                 valueXField: "date",
-                stacked: true,
+                stacked: true
+            }));
+            series.columns.template.setAll({
+                tooltipText: "{name}\n{valueY}",
                 tooltip: am5.Tooltip.new(root, {
                     labelText: "{name}\n{valueY}"
                 })
-            }));
+            });
             series.data.setAll(data);
         }
         {% for category in categories %}
             createSeries("{{ category.name }}");
         {% endfor %}
 
-        const legend = chart.children.push(am5.Legend.new(root, {
-            centerX: am5.percent(50),
+        const legend = root.container.children.push(am5.Legend.new(root, {
+            width: am5.percent(100),
+            // height: am5.percent(10),
+            centerX: am5.percent(40),
             x: am5.percent(50)
         }));
         legend.data.setAll(chart.series.values);
