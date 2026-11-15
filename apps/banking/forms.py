@@ -12,6 +12,7 @@ from apps.banking.models import (
     Account,
     Category,
     Change,
+    ComdirectChallengeExpired,
     ComdirectImport,
     ComdirectImportChange,
     CsvImport,
@@ -393,6 +394,7 @@ class ComdirectStartLoginForm(forms.ModelForm):
 
     def is_valid(self):
         try:
+            self.session.pop("comdirect_expired_challenge_retries", None)
             self.instance.start_login_flow(self.session)
         except Exception as e:
             self.errors["__all__"] = self.error_class([str(e)])
@@ -402,7 +404,7 @@ class ComdirectStartLoginForm(forms.ModelForm):
 
 class ComdirectCompleteLoginForm(forms.ModelForm):
     instance: ComdirectImport
-    text = "Please validate the tan and submit again."
+    text = "Confirm the request in your Comdirect app. This window will check automatically."
 
     class Meta:
         model = ComdirectImport
@@ -411,14 +413,35 @@ class ComdirectCompleteLoginForm(forms.ModelForm):
     def __init__(self, depot: Depot, session: SessionBase, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.session = session
+        self.pending = False
 
     def is_valid(self):
-        try:
-            self.instance.complete_login_flow(self.session)
-        except Exception as e:
-            self.errors["__all__"] = self.error_class([str(e)])
-            return False
-        return True
+        for attempt in range(2):
+            try:
+                self.pending = not self.instance.complete_login_flow(self.session)
+                return not self.pending
+            except ComdirectChallengeExpired as e:
+                retries = self.session.get("comdirect_expired_challenge_retries", 0)
+                self.instance.reset(self.session)
+                if retries:
+                    self.errors["__all__"] = self.error_class([str(e)])
+                    return False
+                self.session["comdirect_expired_challenge_retries"] = 1
+                try:
+                    self.instance.start_login_flow(self.session)
+                except Exception as restart_error:
+                    self.instance.reset(self.session)
+                    self.errors["__all__"] = self.error_class([str(restart_error)])
+                    return False
+            except Exception as e:
+                self.instance.reset(self.session)
+                self.errors["__all__"] = self.error_class([str(e)])
+                return False
+
+        self.errors["__all__"] = self.error_class(
+            ["Comdirect login challenge expired after restarting the flow."]
+        )
+        return False
 
 
 class ComdirectImportChangesForm(forms.ModelForm):

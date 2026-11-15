@@ -295,19 +295,29 @@ class ComdirectImportView(
             )
         )
 
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
+        data = json.loads(response.content)
+        data["pending"] = getattr(form, "pending", False)
+        return HttpResponse(json.dumps(data), content_type="application/json")
+
     def form_valid(self, form):
+        step = self.request.session.get("comdirect_import_step")
+        if step == "login_started":
+            login_form = self.get_form()
+            if not login_form.is_valid():
+                return self.form_invalid(login_form)
+            step = self.request.session.get("comdirect_import_step")
+        if step == "login_completed":
+            import_form = self.get_form()
+            if not import_form.is_valid():
+                return self.form_invalid(import_form)
+            form = import_form
+
         response = super().form_valid(form)
-        if response.status_code != 200:
-            self.request.session["comdirect_import_step"] = ""
-            return response
-
         if self.request.session.get("comdirect_import_step") == "import_completed":
-            return response
-
-        form_class = self.get_form_class()
-        return self.form_invalid(
-            form=self.get_form(form_class)
-        )  # to get to the next step but kinda hacky to use form invalid response for it
+            self.get_object().reset(self.request.session)
+        return response
 
 
 class ComdirectImportChangeView(

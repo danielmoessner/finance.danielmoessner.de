@@ -40,7 +40,11 @@ ready(function () {
   document.querySelectorAll(".modal form").forEach((form) => {
     form.addEventListener("submit", function (event) {
       event.preventDefault();
-      submitModalForm(form, event.target.action);
+      if (form.classList.contains("comdirect-import-form")) {
+        submitComdirectImportForm(form, event.target.action);
+      } else {
+        submitModalForm(form, event.target.action);
+      }
     });
   });
 });
@@ -74,6 +78,80 @@ function submitModalForm(form, url) {
       errorElement.innerHTML = "Error";
       btn.innerHTML = prevBtn;
     });
+}
+
+function submitComdirectImportForm(form, url) {
+  const data = new FormData(form);
+  const body = form.querySelector(".modal-body");
+  const btn = form.querySelector("button[type='submit']");
+  const prevBtn = btn.innerHTML;
+  btn.innerHTML = `${prevBtn} <svg class="animate-spin" style="width: 16px; margin-bottom: 1px; height: 16px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l-2.647z"></path></svg>`;
+  btn.disabled = true;
+
+  postData(url, data)
+    .then((result) => {
+      if (result.valid) {
+        window.location.reload();
+      } else if (result.pending) {
+        body.innerHTML = result.html;
+        checkComdirectImport(url, data, body, btn, prevBtn, 0);
+      } else {
+        body.innerHTML = result.html;
+        btn.innerHTML = prevBtn;
+        btn.disabled = false;
+      }
+    })
+    .catch(() => {
+      showComdirectImportMessage(body, "The request failed. Please try again.");
+      btn.innerHTML = prevBtn;
+      btn.disabled = false;
+    });
+}
+
+function checkComdirectImport(url, data, body, btn, prevBtn, attempts) {
+  const maxAttempts = 60;
+  if (attempts >= maxAttempts) {
+    showComdirectImportMessage(
+      body,
+      "Still waiting for Comdirect approval. Confirm in your app, then submit to check again."
+    );
+    btn.innerHTML = prevBtn;
+    btn.disabled = false;
+    return;
+  }
+
+  window.setTimeout(() => {
+    postData(url, data)
+      .then((result) => {
+        if (result.valid) {
+          window.location.reload();
+        } else {
+          body.innerHTML = result.html;
+          if (result.pending) {
+            checkComdirectImport(url, data, body, btn, prevBtn, attempts + 1);
+          } else {
+            btn.innerHTML = prevBtn;
+            btn.disabled = false;
+          }
+        }
+      })
+      .catch(() => {
+        showComdirectImportMessage(
+          body,
+          "The request failed. Please submit again to continue."
+        );
+        btn.innerHTML = prevBtn;
+        btn.disabled = false;
+      });
+  }, 1000);
+}
+
+function showComdirectImportMessage(body, message) {
+  const csrfField = body.querySelector("input[name='csrfmiddlewaretoken']");
+  body.textContent = message;
+  if (csrfField) {
+    body.appendChild(csrfField);
+  }
 }
 
 function postData(postUrl, formData) {

@@ -3,6 +3,7 @@ import json
 from datetime import date, datetime, time
 from decimal import Decimal
 from typing import TYPE_CHECKING, Literal, TypedDict, Union
+from urllib.parse import urljoin
 from uuid import uuid4
 
 import pandas as pd
@@ -24,6 +25,10 @@ from apps.users.models import StandardUser
 
 if TYPE_CHECKING:
     from django.db.models.query import QuerySet
+
+
+class ComdirectChallengeExpired(Exception):
+    pass
 
 
 class Depot(CoreDepot):
@@ -595,6 +600,10 @@ class ComdirectImport(models.Model):
     def __str__(self):
         return f"Comdirect Import for {self.account.name}"
 
+    @staticmethod
+    def _new_request_id() -> int:
+        return int(datetime.now().timestamp() * 1000) % 1_000_000_000
+
     def _get_tokens(self) -> dict[str, str]:
         resp = requests.post(
             f"{self.OAUTH_URL}/oauth/token",
@@ -614,7 +623,7 @@ class ComdirectImport(models.Model):
         return {"access_token": access_token, "refresh_token": refresh_token}
 
     def _get_session_identifier(self, access_token: str) -> dict[str, str | int]:
-        request_id = int(datetime.now().timestamp())
+        request_id = self._new_request_id()
         session_id = uuid4().hex
         resp = requests.get(
             f"{self.API_URL}/session/clients/user/v1/sessions",
@@ -642,8 +651,9 @@ class ComdirectImport(models.Model):
         }
 
     def _validate_session(
-        self, access_token: str, session_id: str, request_id: int, identifier: str
+        self, access_token: str, session_id: str, identifier: str
     ) -> dict[str, str]:
+        request_id = self._new_request_id()
         resp = requests.post(
             f"{self.API_URL}/session/clients/user/v1/sessions/{identifier}/validate",
             headers={
@@ -666,17 +676,56 @@ class ComdirectImport(models.Model):
             },
         )
         resp.raise_for_status()
-        challenge_id = json.loads(resp.headers["x-once-authentication-info"])["id"]
-        return {"challenge_id": challenge_id}
+        authentication_info = json.loads(resp.headers["x-once-authentication-info"])
+        return {
+            "challenge_id": authentication_info["id"],
+            "authentication_url": authentication_info["link"]["href"],
+        }
+
+    def _get_authentication_status(
+        self,
+        access_token: str,
+        session_id: str,
+        challenge_id: str,
+        authentication_url: str,
+    ) -> str:
+        request_id = self._new_request_id()
+        resp = requests.get(
+            urljoin(self.OAUTH_URL, authentication_url),
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Accept": "application/json",
+                "x-http-request-info": json.dumps(
+                    {
+                        "clientRequestId": {
+                            "sessionId": session_id,
+                            "requestId": request_id,
+                        }
+                    }
+                ),
+                "x-once-authentication-info": json.dumps({"id": challenge_id}),
+            },
+        )
+        if resp.status_code == 422:
+            try:
+                error = resp.json()
+            except ValueError:
+                error = {}
+            if isinstance(error, dict) and error.get("code") == "expired":
+                raise ComdirectChallengeExpired(
+                    "Comdirect login challenge expired before approval."
+                )
+        resp.raise_for_status()
+        return resp.json()["status"]
 
     def _activate_session(
         self,
         access_token: str,
         session_id: str,
-        request_id: int,
         identifier: str,
         challenge_id: str,
     ) -> None:
+        request_id = self._new_request_id()
         resp = requests.patch(
             f"{self.API_URL}/session/clients/user/v1/sessions/{identifier}",
             headers={
@@ -692,7 +741,6 @@ class ComdirectImport(models.Model):
                 ),
                 "Content-Type": "application/json",
                 "x-once-authentication-info": json.dumps({"id": challenge_id}),
-                "x-once-authentication": "000000",
             },
             json={
                 "identifier": identifier,
@@ -700,6 +748,19 @@ class ComdirectImport(models.Model):
                 "activated2FA": True,
             },
         )
+        if resp.status_code == 422:
+            try:
+                error = resp.json()
+            except ValueError:
+                error = {}
+            if isinstance(error, dict) and error.get("code") == "expired":
+                raise ComdirectChallengeExpired(
+                    "Comdirect login challenge expired before approval."
+                )
+            raise requests.HTTPError(
+                f"Comdirect rejected session activation (HTTP 422): "
+                f"{resp.text[:1000]}"
+            )
         resp.raise_for_status()
 
     def _get_api_tokens(self, access_token: str) -> dict[str, str]:
@@ -775,48 +836,68 @@ class ComdirectImport(models.Model):
             self._validate_session(
                 data["access_token"],
                 data["session_id"],
-                data["request_id"],
                 data["identifier"],
             )
         )
         session.update(data)
         session["comdirect_import_step"] = "login_started"
-        # wait for user to validate the tan then call complete_login_flow
+        # complete_login_flow polls the TAN status and activates the session on approval
 
-    def complete_login_flow(self, session: SessionBase):
+    def complete_login_flow(self, session: SessionBase) -> bool:
         data = {
             "access_token": session["access_token"],
             "session_id": session["session_id"],
             "request_id": session["request_id"],
             "identifier": session["identifier"],
             "challenge_id": session["challenge_id"],
+            "authentication_url": session["authentication_url"],
             "refresh_token": session["refresh_token"],
         }
+        status = self._get_authentication_status(
+            data["access_token"],
+            data["session_id"],
+            data["challenge_id"],
+            data["authentication_url"],
+        )
+        if status in ("PENDING", "WAITING", "CREATED", "INITIALIZED"):
+            return False
+        if status == "EXPIRED":
+            raise ComdirectChallengeExpired(
+                "Comdirect login challenge expired before approval."
+            )
+        if status != "AUTHENTICATED":
+            raise RuntimeError(f"Comdirect authentication ended with status {status}.")
+
         self._activate_session(
             data["access_token"],
             data["session_id"],
-            data["request_id"],
             data["identifier"],
             data["challenge_id"],
         )
         data.update(self._get_api_tokens(data["access_token"]))
         session.update(data)
         session["comdirect_import_step"] = "login_completed"
+        return True
 
     def _refresh(self, session: SessionBase):
         data = self._refresh_tokens(session["api_refresh_token"])
         session.update(data)
 
     def reset(self, session: SessionBase):
-        del session["comdirect_import_step"]
-        del session["access_token"]
-        del session["refresh_token"]
-        del session["identifier"]
-        del session["session_id"]
-        del session["request_id"]
-        del session["challenge_id"]
-        del session["api_access_token"]
-        del session["api_refresh_token"]
+        for key in (
+            "comdirect_import_step",
+            "access_token",
+            "refresh_token",
+            "identifier",
+            "session_id",
+            "request_id",
+            "challenge_id",
+            "authentication_url",
+            "api_access_token",
+            "api_refresh_token",
+            "comdirect_expired_challenge_retries",
+        ):
+            session.pop(key, None)
 
     class Amount(BaseModel):
         value: Decimal

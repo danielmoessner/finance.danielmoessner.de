@@ -1,6 +1,8 @@
 from datetime import date, datetime, timedelta
 from decimal import Decimal
+from unittest.mock import patch
 
+import requests
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse_lazy
@@ -17,6 +19,7 @@ from apps.banking.models import (
     Account,
     Category,
     Change,
+    ComdirectChallengeExpired,
     ComdirectImport,
     ComdirectImportChange,
     CsvImport,
@@ -228,6 +231,141 @@ class ViewsTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "02.01.2001")
         self.assertNotContains(response, "02.01.2001 00:00")
+
+    def test_comdirect_import_waits_for_approval_then_imports_automatically(self):
+        self.client = Client()
+        self.client.force_login(self.user)
+        account = self.user.banking_depots.get(is_active=True).accounts.first()
+        assert account is not None
+        comdirect_import = ComdirectImport.objects.create(
+            account=account,
+            comdirect_api_client_id="client-id",
+            comdirect_api_client_secret="client-secret",
+            comdirect_zugangsnummer="access-number",
+            comdirect_pin="pin",
+            comdirect_account_id="account-id",
+        )
+        url = reverse_lazy("banking:run_comdirect_import", args=[comdirect_import.pk])
+
+        start_count = 0
+
+        def start_login(_instance, session):
+            nonlocal start_count
+            start_count += 1
+            session.update(
+                {
+                    "comdirect_import_step": "login_started",
+                    "access_token": "access-token",
+                    "refresh_token": "refresh-token",
+                    "session_id": "session-id",
+                    "request_id": 1,
+                    "identifier": "identifier",
+                    "challenge_id": "challenge-id",
+                }
+            )
+
+        complete_count = 0
+
+        def complete_login(_instance, session):
+            nonlocal complete_count
+            complete_count += 1
+            if complete_count == 1:
+                raise ComdirectChallengeExpired()
+            if complete_count == 2:
+                return False
+            session["api_access_token"] = "api-access-token"
+            session["api_refresh_token"] = "api-refresh-token"
+            session["comdirect_import_step"] = "login_completed"
+            return True
+
+        def import_transactions(_instance, session, page=0):
+            session["comdirect_import_step"] = "import_completed"
+            return None
+
+        with (
+            patch.object(ComdirectImport, "start_login_flow", start_login),
+            patch.object(ComdirectImport, "complete_login_flow", complete_login),
+            patch.object(
+                ComdirectImport, "import_transactions", import_transactions
+            ) as import_mock,
+        ):
+            start_response = self.client.post(url)
+            self.assertEqual(start_response.status_code, 200)
+            self.assertFalse(start_response.json()["valid"])
+            self.assertTrue(start_response.json()["pending"])
+
+            imported_response = self.client.post(url)
+            self.assertEqual(imported_response.status_code, 200)
+            self.assertTrue(imported_response.json()["valid"])
+            import_mock.assert_called_once()
+            self.assertEqual(start_count, 2)
+            self.assertEqual(complete_count, 3)
+            self.assertNotIn("comdirect_import_step", self.client.session)
+
+    @patch.object(ComdirectImport, "_activate_session")
+    @patch.object(ComdirectImport, "_get_authentication_status")
+    def test_comdirect_login_waits_without_activating_before_approval(
+        self, get_authentication_status, activate_session
+    ):
+        comdirect_import = ComdirectImport()
+        get_authentication_status.return_value = "PENDING"
+        session = {
+            "access_token": "access-token",
+            "session_id": "session-id",
+            "request_id": 1,
+            "identifier": "identifier",
+            "challenge_id": "challenge-id",
+            "authentication_url": "/api/session/v1/authentications/challenge",
+            "refresh_token": "refresh-token",
+        }
+
+        self.assertFalse(comdirect_import.complete_login_flow(session))
+        activate_session.assert_not_called()
+
+    @patch("apps.banking.models.requests.get")
+    def test_comdirect_polls_authentication_url(self, get_request):
+        get_request.return_value.json.return_value = {"status": "PENDING"}
+        comdirect_import = ComdirectImport()
+
+        status = comdirect_import._get_authentication_status(
+            "access-token",
+            "session-id",
+            "challenge-id",
+            "/api/session/v1/authentications/challenge-id",
+        )
+
+        self.assertEqual(status, "PENDING")
+        self.assertEqual(
+            get_request.call_args.args[0],
+            "https://api.comdirect.de/api/session/v1/authentications/challenge-id",
+        )
+        self.assertEqual(
+            get_request.call_args.kwargs["headers"]["x-once-authentication-info"],
+            '{"id": "challenge-id"}',
+        )
+
+    @patch("apps.banking.models.requests.patch")
+    def test_comdirect_activation_422_surfaces_api_detail(self, patch_request):
+        patch_request.return_value.status_code = 422
+        patch_request.return_value.text = "invalid activation request"
+        patch_request.return_value.json.return_value = {"code": "invalid"}
+        comdirect_import = ComdirectImport()
+
+        with self.assertRaisesRegex(requests.HTTPError, "invalid activation request"):
+            comdirect_import._activate_session(
+                "access-token", "session-id", "identifier", "challenge-id"
+            )
+
+    @patch("apps.banking.models.requests.patch")
+    def test_comdirect_expired_challenge_is_detected(self, patch_request):
+        patch_request.return_value.status_code = 422
+        patch_request.return_value.json.return_value = {"code": "expired"}
+        comdirect_import = ComdirectImport()
+
+        with self.assertRaises(ComdirectChallengeExpired):
+            comdirect_import._activate_session(
+                "access-token", "session-id", "identifier", "challenge-id"
+            )
 
     def test_category_view(self):
         self.client = Client()

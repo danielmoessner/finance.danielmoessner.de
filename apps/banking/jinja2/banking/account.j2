@@ -14,7 +14,11 @@
     </div>
     {% include 'symbols/stats.j2' %}
     {% if tab=='import' %}
-        {{ mg.djangoModal('Run Import', 'runImport') }}
+        {% if import_type == "comdirect" %}
+            {{ mg.djangoModal('Run Import', 'runImport', 'comdirect-import-form') }}
+        {% else %}
+            {{ mg.djangoModal('Run Import', 'runImport') }}
+        {% endif %}
         {{ mg.djangoModal('Import Change', 'importChange') }}
         {{ mg.djangoModal('Delete Change', 'deleteChange') }}
         <table class="table rounded table-responsive-md table-dark mb-5">
