@@ -11877,6 +11877,10 @@ textarea.form-control-lg {
   }
 }
 
+.min-w-0 {
+  min-width: 0;
+}
+
 .overflow-x-scroll {
   overflow-x: scroll;
 }
