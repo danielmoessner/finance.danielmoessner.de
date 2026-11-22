@@ -170,6 +170,7 @@ class ViewsTestCase(TestCase):
         self.assertEqual(response.context["category_averages"][category.pk], "15,00 €")
         html = response.content.decode()
         self.assertIn("15,00 €", html)
+        self.assertIn("1.020,00 €", html)
         self.assertLess(html.index(">Available<"), html.index(">Avg<"))
 
     def test_income_and_expenditure_data_uses_local_month(self):

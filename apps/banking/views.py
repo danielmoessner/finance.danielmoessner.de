@@ -61,7 +61,8 @@ class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
                 (category.monthly_budget or 0) for category in categories
             )
             total_available_budget = sum(
-                (category.get_available_budget() or 0) for category in categories
+                (category.get_available_budget(months) or 0)
+                for category in categories
             )
             total_average = sum(category_averages.values(), Decimal("0"))
             month_totals = [

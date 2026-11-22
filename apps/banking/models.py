@@ -441,23 +441,17 @@ class Category(models.Model):
             return Decimal("0")
         return abs(amount)
 
-    def get_available_budget(self) -> Decimal | None:
+    def get_available_budget(self, months: list[date]) -> Decimal | None:
         if self.monthly_budget is None:
             return None
-        now = timezone.now().date()
-        year_to_date_total = sum(
-            (
-                value
-                for (year, month), value in self._get_month_sum().items()
-                if year == now.year and month <= now.month
-            ),
+        return self.monthly_budget * len(months) - sum(
+            (self.get_month_amount(month) for month in months),
             Decimal("0"),
         )
-        return self.monthly_budget * now.month + year_to_date_total
 
     @property
     def available_budget_str(self) -> str:
-        available_budget = self.get_available_budget()
+        available_budget = self.get_available_budget(get_12_recent_months())
         if available_budget is None:
             return "-"
         return f"{format_currency_amount_to_de(available_budget)} €"
