@@ -225,6 +225,7 @@ class Bank(models.Model):
     depot = models.ForeignKey(
         Depot, on_delete=models.CASCADE, related_name="banks", editable=False
     )
+    is_archived = models.BooleanField(default=False)
     # query optimization
     balance = models.FloatField(null=True)
     value = models.FloatField(null=True)

@@ -30,6 +30,7 @@ class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
             context["stats"] = self.object.get_stats()
         elif self.tab == "accounts":
             show_archived = self.request.GET.get("show_archived", False)
+            context["show_archived"] = show_archived
             accounts = self.object.accounts.all()
             if not show_archived:
                 accounts = accounts.filter(is_archived=False)

@@ -55,7 +55,9 @@
                     <td colspan="2">
                         <div class="d-flex">
                             {{ bg.modalButton("Add Account", "#addAccount", url("banking:add_account") ) }}
-                            {{ bg.modalButton("Delete Account", "#deleteAccount", url("banking:delete_account") ) }}
+                            {% if show_archived %}
+                                {{ bg.modalButton("Delete Account", "#deleteAccount", url("banking:delete_account") ) }}
+                            {% endif %}
                         </div>
                     </td>
                     <td class="text-end">

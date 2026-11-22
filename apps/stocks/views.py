@@ -52,9 +52,12 @@ class IndexView(GetUserMixin, TabContextMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["stats"] = self.object.get_stats()
-        context["banks"] = self.object.banks.select_related("bucket").order_by(
-            "-value", "name"
-        )
+        show_archived = self.request.GET.get("show_archived", False)
+        context["show_archived"] = show_archived
+        banks = self.object.banks.all()
+        if not show_archived:
+            banks = banks.filter(is_archived=False)
+        context["banks"] = banks.select_related("bucket").order_by("-value", "name")
         context["stocks"] = self.object.stocks.select_related(
             "price", "top_price", "bucket"
         ).order_by("-value", "name")

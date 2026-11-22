@@ -57,13 +57,19 @@
                     </tr>
                 {% endfor %}
                 <tr>
-                    <td colspan="4">
+                    <td colspan="3">
                         <div class="d-flex">
                             {{ mg.djangoModal('Add Bank', 'addBank') }}
                             {{ bg.modalButton('Add Bank', '#addBank', url("stocks:add_bank") ) }}
-                            {{ mg.djangoModal('Delete Bank', 'deleteBank') }}
-                            {{ bg.modalButton('Delete Bank', '#deleteBank', url("stocks:delete_bank") ) }}
+                            {% if show_archived %}
+                                {{ mg.djangoModal('Delete Bank', 'deleteBank') }}
+                                {{ bg.modalButton('Delete Bank', '#deleteBank', url("stocks:delete_bank") ) }}
+                            {% endif %}
                         </div>
+                    </td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-link text-secondary"
+                           href="{{ url("stocks:index") }}?tab=banks&show_archived=1">Include Archived</a>
                     </td>
                 </tr>
             </tbody>

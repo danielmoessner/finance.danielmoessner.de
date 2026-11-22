@@ -53,7 +53,7 @@ class DepotActiveForm(forms.ModelForm):
 class BankForm(forms.ModelForm):
     class Meta:
         model = Bank
-        fields = ("name", "bucket")
+        fields = ("name", "bucket", "is_archived")
 
     def __init__(self, depot, *args, **kwargs):
         super(BankForm, self).__init__(*args, **kwargs)
@@ -68,7 +68,7 @@ class BankSelectForm(forms.Form):
 
     def __init__(self, depot, *args, **kwargs):
         super(BankSelectForm, self).__init__(*args, **kwargs)
-        self.fields["bank"].queryset = depot.banks.all()
+        self.fields["bank"].queryset = depot.banks.filter(is_archived=True)
 
 
 ###

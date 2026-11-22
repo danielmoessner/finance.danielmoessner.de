@@ -71,7 +71,7 @@ class AccountSelectForm(forms.Form):
 
     def __init__(self, depot: Depot, *args, **kwargs):
         super(AccountSelectForm, self).__init__(*args, **kwargs)
-        self.fields["account"].queryset = depot.accounts.all()
+        self.fields["account"].queryset = depot.accounts.filter(is_archived=True)
 
 
 class CategoryForm(forms.ModelForm):

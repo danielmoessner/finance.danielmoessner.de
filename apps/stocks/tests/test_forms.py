@@ -1,6 +1,7 @@
 from django.test import Client, TestCase
+from django.urls import reverse_lazy
 
-from apps.stocks.forms import FlowForm, TradeForm
+from apps.stocks.forms import BankForm, BankSelectForm, FlowForm, TradeForm
 from apps.stocks.models import Bank, Depot, Stock
 from apps.users.models import StandardUser
 
@@ -89,6 +90,45 @@ class FormValidationTestCase(StandardSetUpTestCase):
         self.create_flow("2020-05-08T12:40", 1, self.bank)
         with self.assertRaises(ValueError):
             self.create_trade("2020-05-06T12:23", self.bank, 1, 1, self.stock, "BUY")
+
+
+class BankArchiveTestCase(StandardSetUpTestCase):
+    def test_bank_form_can_archive_a_bank(self):
+        form = BankForm(self.depot, {"name": "Archived bank", "is_archived": True})
+
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertTrue(form.save().is_archived)
+
+    def test_only_archived_banks_are_available_for_deletion(self):
+        active_bank = Bank.objects.create(depot=self.depot, name="Active bank")
+        archived_bank = Bank.objects.create(
+            depot=self.depot, name="Archived bank", is_archived=True
+        )
+
+        form = BankSelectForm(self.depot)
+
+        self.assertIn(archived_bank, form.fields["bank"].queryset)
+        self.assertNotIn(active_bank, form.fields["bank"].queryset)
+
+    def test_archived_banks_and_delete_button_require_show_archived(self):
+        active_bank = Bank.objects.create(depot=self.depot, name="Active bank")
+        archived_bank = Bank.objects.create(
+            depot=self.depot, name="Archived bank", is_archived=True
+        )
+        delete_url = str(reverse_lazy("stocks:delete_bank"))
+
+        response = self.client.get(
+            reverse_lazy("stocks:index"), {"tab": "banks"}
+        )
+        self.assertIn(active_bank, response.context["banks"])
+        self.assertNotIn(archived_bank, response.context["banks"])
+        self.assertNotIn(delete_url, response.content.decode())
+
+        response = self.client.get(
+            reverse_lazy("stocks:index"), {"tab": "banks", "show_archived": "1"}
+        )
+        self.assertIn(archived_bank, response.context["banks"])
+        self.assertIn(delete_url, response.content.decode())
 
     # def test_flow_can_not_be_inserted_before_flow_and_turn_balance_negative(self):
     #     self.create_flow("2020-05-05T12:40", 1, self.bank)

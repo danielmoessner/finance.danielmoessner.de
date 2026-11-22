@@ -10,6 +10,7 @@ from django.utils import timezone
 
 from apps.banking.forms import (
     AccountForm,
+    AccountSelectForm,
     CategoryForm,
     ChangeForm,
     CsvImportForm,
@@ -100,6 +101,40 @@ class ViewsTestCase(TestCase):
             set(response.context["categories"].values_list("pk", flat=True)),
             set(depot.categories.values_list("pk", flat=True)),
         )
+
+    def test_only_archived_accounts_are_available_for_deletion(self):
+        depot = self.user.banking_depots.get(is_active=True)
+        active_account = depot.accounts.first()
+        assert active_account is not None
+        archived_account = create_account(depot, name="Archived account")
+        archived_account.is_archived = True
+        archived_account.save()
+
+        form = AccountSelectForm(depot)
+
+        self.assertIn(archived_account, form.fields["account"].queryset)
+        self.assertNotIn(active_account, form.fields["account"].queryset)
+
+    def test_archived_accounts_and_delete_button_require_show_archived(self):
+        self.client = Client()
+        self.client.login(username="dummy", password="test")
+        depot = self.user.banking_depots.get(is_active=True)
+        archived_account = create_account(depot, name="Archived account")
+        archived_account.is_archived = True
+        archived_account.save()
+        delete_url = str(reverse_lazy("banking:delete_account"))
+
+        response = self.client.get(
+            reverse_lazy("banking:index"), {"tab": "accounts"}
+        )
+        self.assertNotIn(archived_account, response.context["accounts"])
+        self.assertNotIn(delete_url, response.content.decode())
+
+        response = self.client.get(
+            reverse_lazy("banking:index"), {"tab": "accounts", "show_archived": "1"}
+        )
+        self.assertIn(archived_account, response.context["accounts"])
+        self.assertIn(delete_url, response.content.decode())
 
     def test_budget_view_shows_average_over_the_12_months(self):
         self.client = Client()
