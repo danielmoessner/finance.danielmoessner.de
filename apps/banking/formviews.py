@@ -11,6 +11,7 @@ from apps.banking.dirty_forms import MoveMoneyForm
 from apps.banking.forms import (
     AccountForm,
     AccountSelectForm,
+    BulkChangeCategoryForm,
     CategoryForm,
     CategorySelectForm,
     ChangeForm,
@@ -213,6 +214,25 @@ class EditChangeView(
                 depot__in=self.get_user().banking_depots.all()
             )
         )
+
+
+class BulkChangeCategoryView(GetUserMixin, AjaxResponseMixin, generic.FormView):
+    form_class = BulkChangeCategoryForm
+    template_name = "symbols/form_snippet.j2"
+
+    def get_source_category(self):
+        return get_object_or_404(
+            Category.objects.filter(depot__in=self.get_user().banking_depots.all()),
+            pk=self.kwargs["pk"],
+        )
+
+    def get_form(self, form_class=None):
+        if form_class is None:
+            form_class = self.get_form_class()
+        kwargs = self.get_form_kwargs()
+        if self.request.method == "GET":
+            kwargs["initial"] = self.request.GET
+        return form_class(self.get_source_category(), **kwargs)
 
 
 class DeleteChangeView(GetUserMixin, CustomAjaxDeleteMixin, generic.DeleteView):

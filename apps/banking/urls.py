@@ -59,6 +59,11 @@ urlpatterns = [
         name="combine_change",
     ),
     path(
+        "categories/<int:pk>/changes/category/",
+        formviews.BulkChangeCategoryView.as_view(),
+        name="bulk_change_category",
+    ),
+    path(
         "changes/money-move/",
         formviews.MoneyMoveView.as_view(),
         name="move_money",

@@ -11948,6 +11948,18 @@ tbody > tr:last-child td {
 
 td {
   text-wrap: nowrap;
+  vertical-align: middle;
+}
+
+.category-change-toolbar th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.category-change-selection,
+.category-change-select-all {
+  cursor: pointer;
 }
 
 /*# sourceMappingURL=main.css.map */

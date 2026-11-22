@@ -154,6 +154,53 @@ class ChangeForm(forms.ModelForm):
         self.fields["description"].widget.attrs.update({"class": "small"})
 
 
+class BulkChangeCategoryForm(forms.Form):
+    changes = forms.CharField(widget=forms.HiddenInput)
+    category = forms.ModelChoiceField(queryset=Category.objects.none())
+
+    def __init__(self, source_category: Category, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.source_category = source_category
+        self.fields["category"].queryset = source_category.depot.categories.order_by(
+            "-changes_count"
+        )
+
+    def clean_changes(self):
+        value = self.cleaned_data["changes"]
+        try:
+            change_ids = [int(change_id) for change_id in value.split(",")]
+        except ValueError:
+            raise forms.ValidationError("Please select valid changes.") from None
+
+        if not change_ids or any(change_id <= 0 for change_id in change_ids):
+            raise forms.ValidationError("Please select at least one valid change.")
+        if len(change_ids) != len(set(change_ids)):
+            raise forms.ValidationError("Please select each change only once.")
+
+        changes = list(
+            Change.objects.filter(
+                pk__in=change_ids,
+                category=self.source_category,
+                account__depot=self.source_category.depot,
+            )
+        )
+        if len(changes) != len(change_ids):
+            raise forms.ValidationError(
+                "Some selected changes no longer belong to this category."
+            )
+        return changes
+
+    def save(self):
+        changes = self.cleaned_data["changes"]
+        category = self.cleaned_data["category"]
+        with transaction.atomic():
+            Change.objects.filter(pk__in=[change.pk for change in changes]).update(
+                category=category
+            )
+            self.source_category.depot.set_balances_to_none()
+        return changes
+
+
 class CombineChangeForm(forms.Form):
     SEPARATOR_VALUE = "__current_change_separator__"
 

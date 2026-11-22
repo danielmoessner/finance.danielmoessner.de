@@ -17,9 +17,28 @@
         {{ mg.djangoModal('Delete Change', 'deleteChange') }}
         {{ mg.djangoModal('Add Change', 'addChange') }}
         {{ mg.djangoModal('Combine Change', 'combineChange') }}
+        {{ mg.djangoModal('Change Category', 'changeCategory') }}
         <table class="table table-responsive-md rounded table-dark mb-5">
             <thead>
+                <tr class="category-change-toolbar d-none">
+                    <th colspan="6">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="category-change-selection-count"></span>
+                            <span class="category-change-selection-sum"></span>
+                            <a class="btn btn-sm btn-info modal-button category-change-bulk-button"
+                               type="button"
+                               data-bs-toggle="modal"
+                               data-bs-target="#changeCategory"
+                               data-action="{{ url('banking:bulk_change_category', args=[category.pk]) }}">Change Category</a>
+                        </div>
+                    </th>
+                </tr>
                 <tr>
+                    <th scope="col">
+                        <input class="form-check-input category-change-select-all"
+                               type="checkbox"
+                               aria-label="Select all changes">
+                    </th>
                     <th scope="col">Date</th>
                     <th scope="col">Account</th>
                     <th scope="col">Description</th>
@@ -32,6 +51,13 @@
             <tbody>
                 {% for change in changes %}
                     <tr>
+                        <td>
+                            <input class="form-check-input category-change-selection"
+                                   type="checkbox"
+                                   value="{{ change.pk }}"
+                                   data-amount="{{ change.change }}"
+                                   aria-label="Select change">
+                        </td>
                         <td>{{ localtime(change.date).strftime('%d.%m.%Y %H:%M') }}</td>
                         <td>{{ change.account }}</td>
                         <td>{{ change.get_description() }}</td>
@@ -46,7 +72,7 @@
                     </tr>
                 {% endfor %}
                 <tr>
-                    <td colspan="5">
+                    <td colspan="6">
                         {{ bg.modalButton("Add Change", "#addChange", url("banking:add_change") +"?category="+category.pk|string) }}
                     </td>
                 </tr>

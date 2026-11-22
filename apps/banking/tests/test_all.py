@@ -383,6 +383,75 @@ class ViewsTestCase(TestCase):
         response = self.client.get("{}?tab=changes".format(url))
         self.assertEqual(response.status_code, 200)
 
+    def test_bulk_change_category_moves_only_selected_changes(self):
+        self.client.force_login(self.user)
+        depot = self.user.banking_depots.get(is_active=True)
+        account = depot.accounts.first()
+        source_category = create_category(depot, name="Bulk source")
+        target_category = create_category(depot, name="Bulk target")
+        selected_changes = [
+            Change.objects.create(
+                account=account,
+                category=source_category,
+                date=timezone.now(),
+                change=amount,
+            )
+            for amount in (Decimal("-12.50"), Decimal("4.25"))
+        ]
+        unselected_change = Change.objects.create(
+            account=account,
+            category=source_category,
+            date=timezone.now(),
+            change=Decimal("3.00"),
+        )
+        url = reverse_lazy("banking:bulk_change_category", args=[source_category.pk])
+        selected_ids = ",".join(str(change.pk) for change in selected_changes)
+
+        form_response = self.client.get(url, {"changes": selected_ids})
+        self.assertEqual(form_response.status_code, 200)
+        self.assertIn(f'value="{selected_ids}"', form_response.content.decode())
+
+        response = self.client.post(
+            url,
+            {
+                "changes": selected_ids,
+                "category": target_category.pk,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["valid"])
+        for change in selected_changes:
+            change.refresh_from_db()
+            self.assertEqual(change.category, target_category)
+        unselected_change.refresh_from_db()
+        self.assertEqual(unselected_change.category, source_category)
+
+    def test_bulk_change_category_rejects_changes_outside_source_category(self):
+        self.client.force_login(self.user)
+        depot = self.user.banking_depots.get(is_active=True)
+        account = depot.accounts.first()
+        source_category = create_category(depot, name="Bulk source")
+        other_category = create_category(depot, name="Other source")
+        target_category = create_category(depot, name="Bulk target")
+        other_change = Change.objects.create(
+            account=account,
+            category=other_category,
+            date=timezone.now(),
+            change=Decimal("3.00"),
+        )
+        url = reverse_lazy("banking:bulk_change_category", args=[source_category.pk])
+
+        response = self.client.post(
+            url,
+            {"changes": str(other_change.pk), "category": target_category.pk},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json()["valid"])
+        other_change.refresh_from_db()
+        self.assertEqual(other_change.category, other_category)
+
 
 class BalanceUpdateTestCase(TestCase):
     def setUp(self):
