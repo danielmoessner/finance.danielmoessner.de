@@ -8,7 +8,7 @@
     {% if account %}
         {% set defaults="?from_account="+object.pk|string+"&to_account="+object.pk|string%}
     {% endif %}
-    <table class="table table-dark table-responsive-md rounded mb-5">
+    <div class="table-scroll mb-12"><table class="data-table">
         <thead>
         <tr>
             <th scope="col">Date</th>
@@ -32,7 +32,7 @@
                 <td class="text-end">{{ transaction.amount }}</td>
                 <td class="text-end">{{ transaction.fees }}</td>
                 <td>
-                    <div class="d-flex justify-content-end">
+                    <div class="flex justify-end gap-1">
                         {{ bg.modalButton("Edit", "#editTransaction", url("crypto:edit_transaction", args=[transaction.pk])) }}
                         {{ bg.modalButton("Delete", "#deleteTransaction", url("crypto:delete_transaction", args=[transaction.pk])) }}
                     </div>
@@ -41,11 +41,11 @@
         {% endfor %}
         <tr>
             <td colspan="7">
-                <div class="d-flex">
+                <div class="flex gap-1">
                     {{ bg.modalButton("Add Transaction", "#addTransaction", url("crypto:add_transaction")+defaults) }}
                 </div>
             </td>
         </tr>
         </tbody>
-    </table>
+    </table></div>
 {% endif %}

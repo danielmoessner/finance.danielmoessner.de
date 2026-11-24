@@ -6,15 +6,15 @@
 {% block main %}
     {% import "symbols/button.j2" as bg %}
     {% import "symbols/modal.j2" as mg %}
-    <div class="d-flex justify-content-center mt-2 mb-5">
-        <div class="btn-group" role="group" aria-label="Console">
+    <div class="mt-2 mb-12 flex justify-center">
+        <div class="tab-group" role="group" aria-label="Console">
             {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=="stats") ) }}
             {{ bg.hrefButton("Data", request.path + '?tab=data', active=(tab=="data") ) }}
         </div>
     </div>
     {% include 'symbols/stats.j2' %}
     {% if tab == 'data' %}
-        <table class="table rounded table-dark mb-5">
+        <div class="table-scroll mb-12"><table class="data-table">
             <thead>
                 <tr>
                     <th scope="col">Date</th>
@@ -30,7 +30,7 @@
                         <td class="text-end">{{ data.flow if "flow" in data else "" }}</td>
                         <td class="text-end">{{ data.value if 'value' in data else "" }}</td>
                         <td>
-                            <div class="d-flex justify-content-end">
+                            <div class="flex justify-end gap-1">
                                 {% if 'flow' in data %}
                                     {{ bg.modalButton("Edit", "#editFlow", url("alternative:edit_flow", args=[data.pk]) ) }}
                                     {{ bg.modalButton("Delete", "#deleteFlow",  url("alternative:delete_flow", args=[data.pk]) ) }}
@@ -48,7 +48,7 @@
                 {% endfor %}
                 <tr>
                     <td colspan="5">
-                        <div class="d-flex">
+                        <div class="flex gap-1">
                             {{ mg.djangoModal('Add Flow', 'addFlow') }}
                             {{ bg.modalButton('Add FLow', '#addFlow', url("alternative:add_flow") +"?alternative="+object.pk|string) }}
                             {{ mg.djangoModal('Add Value', 'addValue') }}
@@ -57,6 +57,6 @@
                     </td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
     {% endif %}
 {% endblock %}

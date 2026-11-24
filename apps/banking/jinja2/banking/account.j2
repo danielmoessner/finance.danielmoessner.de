@@ -5,8 +5,8 @@
 {% block main %}
     {% import "symbols/button.j2" as bg %}
     {% import "symbols/modal.j2" as mg %}
-    <div class="d-flex justify-content-center mt-2 mb-5">
-        <div class="btn-group" role="group" aria-label="Console">
+    <div class="mt-2 mb-12 flex justify-center">
+        <div class="tab-group" role="group" aria-label="Console">
             {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats') ) }}
             {% if import %}{{ bg.hrefButton("Import", request.path + '?tab=import', active=(tab=='import') ) }}{% endif %}
             {{ bg.hrefButton("Changes", request.path + '?tab=changes', active=(tab=='changes') ) }}
@@ -21,7 +21,7 @@
         {% endif %}
         {{ mg.djangoModal('Import Change', 'importChange') }}
         {{ mg.djangoModal('Delete Change', 'deleteChange') }}
-        <table class="table rounded table-responsive-md table-dark mb-5">
+        <div class="table-scroll mb-12"><table class="data-table">
             <thead>
                 <tr>
                     <th scope="col">Date</th>
@@ -43,7 +43,7 @@
                         <td>{{ change.description_str }}</td>
                         <td class="text-end">{{ change.change }}</td>
                         <td>
-                            <div class="d-flex justify-content-end">
+                            <div class="flex justify-end gap-1">
                                 {{ bg.modalButton("Import", "#importChange", url("banking:import_comdirect_change", args=[change.pk]) ) }}
                                 {{ bg.modalButton("Delete", "#deleteChange", url("banking:delete_comdirect_change", args=[change.pk]) ) }}
                             </div>
@@ -54,7 +54,7 @@
                     <td colspan="6"></td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
     {% endif %}
     {% if tab=='changes' %}
         {{ mg.djangoModal('Edit Change', 'editChange') }}
@@ -62,7 +62,7 @@
         {{ mg.djangoModal('Add Change', 'addChange') }}
         {{ mg.djangoModal('Move Money', 'moveMoney') }}
         {{ mg.djangoModal('Import Changes', 'importChanges') }}
-        <table class="table rounded table-responsive-md table-dark mb-5">
+        <div class="table-scroll mb-12"><table class="data-table">
             <thead>
                 <tr>
                     <th scope="col">Date</th>
@@ -85,7 +85,7 @@
                         <td class="text-end">{{ change.change }}</td>
                         <td class="text-end">{{ change.get_stats()['Balance'] }}</td>
                         <td>
-                            <div class="d-flex justify-content-end">
+                            <div class="flex justify-end gap-1">
                                 {{ bg.modalButton("Edit", "#editChange", url("banking:edit_change", args=[change.pk]) ) }}
                                 {{ bg.modalButton("Delete", "#deleteChange", url("banking:delete_change", args=[change.pk]) ) }}
                             </div>
@@ -104,6 +104,6 @@
                     </td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
     {% endif %}
 {% endblock %}

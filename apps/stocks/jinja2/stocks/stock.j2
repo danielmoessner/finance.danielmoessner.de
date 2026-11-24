@@ -5,16 +5,16 @@
 {% block main %}
     {% import "symbols/button.j2" as bg %}
     {% import "symbols/modal.j2" as mg %}
-    <div class="d-flex justify-content-center mt-2 mb-5">
-        <div class="btn-group" role="group" aria-label="Console">
+    <div class="mt-2 mb-12 flex justify-center">
+        <div class="tab-group" role="group" aria-label="Console">
             {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats') ) }}
             {{ bg.hrefButton("Prices", request.path + '?tab=prices', active=(tab=='prices') ) }}
             {{ bg.hrefButton("Trades", request.path + '?tab=trades', active=(tab=='trades') ) }}
             {{ bg.hrefButton("Dividends", request.path + "?tab=dividends", active=(tab=="dividends") ) }}
             {{ bg.dropdownButton("Calculations", active=(tab=="values" or tab=="flows") ) }}
-            <div class="dropdown-menu dropdown-menu-dark py-1">
-                <a class="dropdown-item btn-sm" href="?tab=flows">Flows</a>
-                <a class="dropdown-item btn-sm" href="?tab=values">Values</a>
+            <div class="dropdown-menu" data-dropdown-menu>
+                <a class="dropdown-item" href="?tab=flows">Flows</a>
+                <a class="dropdown-item" href="?tab=values">Values</a>
             </div>
         </div>
     </div>
@@ -26,7 +26,7 @@
         {{ mg.djangoModal('Delete Fetcher', 'deleteFetcher') }}
         {{ mg.djangoModal('Edit Price', 'editPrice') }}
         {{ mg.djangoModal('Delete Price', 'deletePrice') }}
-        <table class="table table-dark table-responsive-md rounded mb-5">
+        <div class="table-scroll mb-12"><table class="data-table">
             <thead>
                 <tr>
                     <th scope="col">Fetcher</th>
@@ -36,7 +36,7 @@
             <tbody>
                 {% for fetcher in fetchers %}
                     <tr>
-                        <td class="text-truncate w-75" style="max-width: 300px;">
+                        <td class="w-3/4 max-w-[300px] truncate">
                             {% if fetcher.url %}
                                 {{ fetcher.fetcher_type }} - <a target="_blank" href="{{ fetcher.url }}">{{ fetcher.url }}</a>
                             {% else %}
@@ -57,14 +57,14 @@
                 {% endfor %}
                 <tr>
                     <td colspan="2">
-                        <div class="d-flex">
+                        <div class="flex gap-1">
                             {{ bg.modalButton("Add Fetcher", "#addFetcher", action=url("stocks:add_price_fetcher") +"?stock="+object.pk|string) }}
                         </div>
                     </td>
                 </tr>
             </tbody>
-        </table>
-        <table class="table table-dark table-responsive-md rounded mb-5">
+        </table></div>
+        <div class="table-scroll mb-12"><table class="data-table">
             <thead>
                 <tr>
                     <th scope="col">Date</th>
@@ -84,7 +84,7 @@
                     </tr>
                 {% endfor %}
             </tbody>
-        </table>
+        </table></div>
     {% endif %}
     {% include 'stocks/symbols/dividends.j2' %}
     {% with price_and_amount=False %}

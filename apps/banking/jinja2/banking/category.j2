@@ -5,8 +5,8 @@
 {% block main %}
     {% import "symbols/button.j2" as bg %}
     {% import "symbols/modal.j2" as mg %}
-    <div class="d-flex justify-content-center mt-2 mb-5">
-        <div class="btn-group" role="group" aria-label="Console">
+    <div class="mt-2 mb-12 flex justify-center">
+        <div class="tab-group" role="group" aria-label="Console">
             {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats') ) }}
             {{ bg.hrefButton("Changes", request.path + '?tab=changes', active=(tab=='changes') ) }}
         </div>
@@ -18,24 +18,20 @@
         {{ mg.djangoModal('Add Change', 'addChange') }}
         {{ mg.djangoModal('Combine Change', 'combineChange') }}
         {{ mg.djangoModal('Change Category', 'changeCategory') }}
-        <table class="table table-responsive-md rounded table-dark mb-5">
+        <div class="table-scroll mb-12"><table class="data-table">
             <thead>
-                <tr class="category-change-toolbar d-none">
+                <tr class="category-change-toolbar hidden">
                     <th colspan="6">
-                        <div class="d-flex align-items-center gap-3">
+                        <div class="flex items-center gap-4">
                             <span class="category-change-selection-count"></span>
                             <span class="category-change-selection-sum"></span>
-                            <a class="btn btn-sm btn-info modal-button category-change-bulk-button"
-                               type="button"
-                               data-bs-toggle="modal"
-                               data-bs-target="#changeCategory"
-                               data-action="{{ url('banking:bulk_change_category', args=[category.pk]) }}">Change Category</a>
+                            {{ bg.modalButton("Change Category", "#changeCategory", url('banking:bulk_change_category', args=[category.pk]), "category-change-bulk-button") }}
                         </div>
                     </th>
                 </tr>
                 <tr>
                     <th scope="col">
-                        <input class="form-check-input category-change-select-all"
+                        <input class="category-change-select-all size-4 cursor-pointer accent-info align-middle"
                                type="checkbox"
                                aria-label="Select all changes">
                     </th>
@@ -52,7 +48,7 @@
                 {% for change in changes %}
                     <tr>
                         <td>
-                            <input class="form-check-input category-change-selection"
+                            <input class="category-change-selection size-4 cursor-pointer accent-info align-middle"
                                    type="checkbox"
                                    value="{{ change.pk }}"
                                    data-amount="{{ change.change }}"
@@ -63,7 +59,7 @@
                         <td>{{ change.get_description() }}</td>
                         <td class="text-end">{{ change.change }}</td>
                         <td>
-                            <div class="d-flex justify-content-end">
+                            <div class="flex justify-end gap-1">
                                 {{ bg.modalButton("C", "#combineChange", url("banking:combine_change", args=[change.pk]) ) }}
                                 {{ bg.modalButton("Edit", "#editChange", url("banking:edit_change", args=[change.pk]) ) }}
                                 {{ bg.modalButton("Delete", "#deleteChange", url("banking:delete_change", args=[change.pk]) ) }}
@@ -77,6 +73,6 @@
                     </td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
     {% endif %}
 {% endblock %}

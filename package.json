@@ -10,13 +10,13 @@
     "@rollup/plugin-commonjs": "==28.0.*",
     "@rollup/plugin-node-resolve": "==16.0.*",
     "@rollup/plugin-terser": "==0.4.*",
-    "bootstrap": "==5.3.*",
+    "@tailwindcss/cli": "==4.*",
     "cross-env": "==7.0.*",
     "rollup": "==4.29.*",
-    "sass": "==1.83.*"
+    "tailwindcss": "==4.*"
   },
   "scripts": {
-    "css": "sass static/scss/main.scss static/app/css/main.css --load-path=node_modules",
+    "css": "tailwindcss -i static/css/app.css -o static/app/css/main.css --minify",
     "js:app": "rollup static/javascript/app.js --file static/app/js/app.js --format umd --plugin node-resolve --plugin commonjs --plugin terser",
     "js:charts": "cross-env NODE_OPTIONS='--max-old-space-size=8192' rollup static/javascript/charts.js --file static/app/js/charts.js --format umd --inlineDynamicImports --plugin node-resolve --plugin commonjs --plugin terser",
     "build": "npm run css && npm run js:app && npm run js:charts && tmp/venv/bin/python manage.py collectstatic --noinput"

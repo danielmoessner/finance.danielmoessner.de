@@ -1,6 +1,6 @@
-import { Modal } from "bootstrap";
+const spinner =
+  '<svg class="inline-block h-4 w-4 shrink-0 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
 
-// wrapper function that calls the submitted function as soon as the document is loaded
 function ready(f) {
   if (document.readyState !== "loading") {
     f();
@@ -9,38 +9,117 @@ function ready(f) {
   }
 }
 
-// put all modals to the end of the body so that they work fine on mobile
+function openModal(modal) {
+  document.querySelectorAll(".modal.is-open").forEach((open) => {
+    if (open !== modal) closeModal(open);
+  });
+  closeDropdowns();
+  modal.classList.add("is-open");
+  document.body.classList.add("overflow-hidden");
+}
+
+function closeModal(modal) {
+  modal.classList.remove("is-open");
+  if (!document.querySelector(".modal.is-open")) {
+    document.body.classList.remove("overflow-hidden");
+  }
+}
+
+function closeDropdowns() {
+  document.querySelectorAll(".dropdown-menu.is-open").forEach((menu) => {
+    menu.classList.remove("is-open");
+  });
+  document.querySelectorAll("[data-dropdown-toggle]").forEach((toggle) => {
+    toggle.setAttribute("aria-expanded", "false");
+  });
+}
+
+function placeDropdown(toggle, menu) {
+  const rect = toggle.getBoundingClientRect();
+  const width = Math.max(rect.width, 160);
+  let left = rect.right - width;
+  if (left < 8) left = 8;
+  if (left + width > window.innerWidth - 8) {
+    left = Math.max(8, window.innerWidth - 8 - width);
+  }
+  menu.style.top = `${rect.bottom + 4}px`;
+  menu.style.left = `${left}px`;
+}
+
 ready(function () {
-  document
-    .querySelectorAll(".modal")
-    .forEach((modal) => document.body.appendChild(modal));
+  document.querySelectorAll(".modal").forEach((modal) => {
+    document.body.appendChild(modal);
+  });
 });
 
 ready(function () {
-  document
-    .querySelectorAll(".category-change-bulk-button")
-    .forEach((button) => {
-      button.addEventListener(
-        "click",
-        function () {
-          const selectedIds = Array.from(
-            document.querySelectorAll(".category-change-selection:checked"),
-          ).map((checkbox) => checkbox.value);
-          const actionUrl = new URL(button.dataset.action, window.location.href);
-          actionUrl.searchParams.set("changes", selectedIds.join(","));
-          button.dataset.action = actionUrl.pathname + actionUrl.search;
-        },
-        { capture: true },
-      );
-    });
+  document.querySelectorAll(".category-change-bulk-button").forEach((button) => {
+    button.addEventListener(
+      "click",
+      function () {
+        const selectedIds = Array.from(
+          document.querySelectorAll(".category-change-selection:checked"),
+        ).map((checkbox) => checkbox.value);
+        const actionUrl = new URL(button.dataset.action, window.location.href);
+        actionUrl.searchParams.set("changes", selectedIds.join(","));
+        button.dataset.action = actionUrl.pathname + actionUrl.search;
+      },
+      { capture: true },
+    );
+  });
 });
 
 ready(function () {
-  document.querySelectorAll(".modal-button").forEach((button) => {
-    button.addEventListener("click", function (event) {
-      const url = event.target.dataset.action;
-      const modal = document.querySelector(event.target.dataset.bsTarget);
-      insertFormIntoModal(modal, url);
+  document.addEventListener("click", function (event) {
+    const toggle = event.target.closest("[data-dropdown-toggle]");
+    if (toggle) {
+      event.preventDefault();
+      const menu = toggle.parentElement.querySelector("[data-dropdown-menu]");
+      const willOpen = menu && !menu.classList.contains("is-open");
+      closeDropdowns();
+      if (willOpen) {
+        placeDropdown(toggle, menu);
+        menu.classList.add("is-open");
+        toggle.setAttribute("aria-expanded", "true");
+      }
+      return;
+    }
+
+    if (!event.target.closest("[data-dropdown-menu]")) {
+      closeDropdowns();
+    }
+
+    const opener = event.target.closest("[data-modal-target]");
+    if (opener) {
+      event.preventDefault();
+      const modal = document.querySelector(opener.dataset.modalTarget);
+      if (!modal) return;
+      insertFormIntoModal(modal, opener.dataset.action);
+      openModal(modal);
+      return;
+    }
+
+    if (event.target.closest("[data-dismiss='modal']")) {
+      const modal = event.target.closest(".modal");
+      if (modal) closeModal(modal);
+    }
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key !== "Escape") return;
+    closeDropdowns();
+    document.querySelectorAll(".modal.is-open").forEach(closeModal);
+  });
+
+  window.addEventListener("resize", closeDropdowns);
+  window.addEventListener("scroll", closeDropdowns, true);
+
+  document.querySelectorAll("[data-nav-toggle]").forEach((button) => {
+    button.addEventListener("click", function () {
+      const nav = document.getElementById(button.getAttribute("aria-controls"));
+      if (!nav) return;
+      const collapsed = nav.classList.toggle("hidden");
+      button.setAttribute("aria-expanded", collapsed ? "false" : "true");
     });
   });
 });
@@ -60,7 +139,7 @@ ready(function () {
         total + Math.round(Number(checkbox.dataset.amount) * 100),
       0,
     );
-    toolbar.classList.toggle("d-none", selected.length === 0);
+    toolbar.classList.toggle("hidden", selected.length === 0);
     toolbar.querySelector(".category-change-selection-count").textContent =
       `${selected.length} selected`;
     toolbar.querySelector(".category-change-selection-sum").textContent =
@@ -108,13 +187,21 @@ ready(function () {
   });
 });
 
+function setButtonBusy(btn, busy) {
+  if (busy) {
+    btn.dataset.prevHtml = btn.innerHTML;
+    btn.innerHTML = `${btn.dataset.prevHtml} ${spinner}`;
+    btn.disabled = true;
+    return;
+  }
+  btn.innerHTML = btn.dataset.prevHtml || btn.innerHTML;
+  btn.disabled = false;
+}
+
 function submitModalForm(form, url) {
   const data = new FormData(form);
   const errorElement = form.querySelector(".modal-body");
   const btn = form.querySelector("button[type='submit']");
-  const prevBtn = btn.innerHTML;
-  btn.innerHTML = `${btn.innerHTML} <svg class="animate-spin" style="width: 16px; margin-bottom: 1px; height: 16px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
-  btn.disabled = true;
 
   if (
     typeof url === "undefined" ||
@@ -123,19 +210,20 @@ function submitModalForm(form, url) {
   )
     return;
 
+  setButtonBusy(btn, true);
+
   postData(url, data)
     .then((data) => {
       if (data.valid) {
         window.location.reload();
       } else {
         errorElement.innerHTML = data.html;
-        btn.innerHTML = prevBtn;
-        btn.disabled = false;
+        setButtonBusy(btn, false);
       }
     })
     .catch(() => {
       errorElement.innerHTML = "Error";
-      btn.innerHTML = prevBtn;
+      setButtonBusy(btn, false);
     });
 }
 
@@ -143,9 +231,7 @@ function submitComdirectImportForm(form, url) {
   const data = new FormData(form);
   const body = form.querySelector(".modal-body");
   const btn = form.querySelector("button[type='submit']");
-  const prevBtn = btn.innerHTML;
-  btn.innerHTML = `${prevBtn} <svg class="animate-spin" style="width: 16px; margin-bottom: 1px; height: 16px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l-2.647z"></path></svg>`;
-  btn.disabled = true;
+  setButtonBusy(btn, true);
 
   postData(url, data)
     .then((result) => {
@@ -153,29 +239,26 @@ function submitComdirectImportForm(form, url) {
         window.location.reload();
       } else if (result.pending) {
         body.innerHTML = result.html;
-        checkComdirectImport(url, data, body, btn, prevBtn, 0);
+        checkComdirectImport(url, data, body, btn, 0);
       } else {
         body.innerHTML = result.html;
-        btn.innerHTML = prevBtn;
-        btn.disabled = false;
+        setButtonBusy(btn, false);
       }
     })
     .catch(() => {
       showComdirectImportMessage(body, "The request failed. Please try again.");
-      btn.innerHTML = prevBtn;
-      btn.disabled = false;
+      setButtonBusy(btn, false);
     });
 }
 
-function checkComdirectImport(url, data, body, btn, prevBtn, attempts) {
+function checkComdirectImport(url, data, body, btn, attempts) {
   const maxAttempts = 60;
   if (attempts >= maxAttempts) {
     showComdirectImportMessage(
       body,
-      "Still waiting for Comdirect approval. Confirm in your app, then submit to check again."
+      "Still waiting for Comdirect approval. Confirm in your app, then submit to check again.",
     );
-    btn.innerHTML = prevBtn;
-    btn.disabled = false;
+    setButtonBusy(btn, false);
     return;
   }
 
@@ -187,20 +270,18 @@ function checkComdirectImport(url, data, body, btn, prevBtn, attempts) {
         } else {
           body.innerHTML = result.html;
           if (result.pending) {
-            checkComdirectImport(url, data, body, btn, prevBtn, attempts + 1);
+            checkComdirectImport(url, data, body, btn, attempts + 1);
           } else {
-            btn.innerHTML = prevBtn;
-            btn.disabled = false;
+            setButtonBusy(btn, false);
           }
         }
       })
       .catch(() => {
         showComdirectImportMessage(
           body,
-          "The request failed. Please submit again to continue."
+          "The request failed. Please submit again to continue.",
         );
-        btn.innerHTML = prevBtn;
-        btn.disabled = false;
+        setButtonBusy(btn, false);
       });
   }, 1000);
 }
@@ -223,12 +304,16 @@ function postData(postUrl, formData) {
 }
 
 function fetchAndInsert(urlToFetch, elementToInsertTo) {
-  elementToInsertTo.innerHTML = "Loading...";
+  elementToInsertTo.textContent = "Loading...";
   fetch(urlToFetch)
     .then((response) => {
       return response.text();
     })
     .then((data) => {
       elementToInsertTo.innerHTML = data;
+      const field = elementToInsertTo.querySelector(
+        "input:not([type='hidden']), select, textarea",
+      );
+      if (field) field.focus();
     });
 }

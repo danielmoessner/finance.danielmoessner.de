@@ -5,8 +5,8 @@
 {% block main %}
     {% import "symbols/button.j2" as bg %}
     {% import "symbols/modal.j2" as mg %}
-    <div class="d-flex justify-content-center mt-2 mb-5">
-        <div class="btn-group" role="group" aria-label="Console">
+    <div class="mt-2 mb-12 flex justify-center">
+        <div class="tab-group" role="group" aria-label="Console">
             {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats') ) }}
             {{ bg.hrefButton("Accounts", request.path + '?tab=accounts', active=(tab=='accounts') ) }}
             {{ bg.hrefButton("Budgets", request.path + '?tab=budgets', active=(tab=='budgets') ) }}
@@ -22,7 +22,7 @@
         {{ mg.djangoModal('Edit Account', 'editAccount') }}
         {{ mg.djangoModal('Add Account', 'addAccount') }}
         {{ mg.djangoModal('Delete Account', 'deleteAccount') }}
-        <table class="table rounded table-responsive-md table-dark mb-5">
+        <div class="table-scroll mb-12"><table class="data-table">
             <thead>
                 <tr>
                     <th scope="col">Account</th>
@@ -36,14 +36,14 @@
                         <td>
                             {{ account }}
                             {% if account.bucket %}
-                                <span class="badge bg-success">{{ account.bucket.name }}</span>
+                                <span class="ms-1 inline-flex items-center rounded-md bg-success px-[0.65em] py-[0.35em] align-middle text-[0.75em] font-bold leading-none text-white">{{ account.bucket.name }}</span>
                             {% else %}
                                 {{ bg.modalButton("Set Bucket", "#editAccount", url("banking:edit_account", args=[account.pk]) ) }}
                             {% endif %}
                         </td>
                         <td class="text-end">{{ account.get_stats()['Balance'] }}</td>
                         <td>
-                            <div class="d-flex align-items-center justify-content-end">
+                            <div class="flex items-center justify-end gap-1">
                                 {{ bg.modalButton("Add Change", "#addChange", url("banking:add_change") +"?account="+account.pk|string) }}
                                 {{ bg.modalButton("Edit", "#editAccount", url("banking:edit_account", args=[account.pk]) ) }}
                                 {{ bg.hrefButton("Open", url("banking:account", args=[account.pk]) +"?tab=changes" ) }}
@@ -53,7 +53,7 @@
                 {% endfor %}
                 <tr>
                     <td colspan="2">
-                        <div class="d-flex">
+                        <div class="flex gap-1">
                             {{ bg.modalButton("Add Account", "#addAccount", url("banking:add_account") ) }}
                             {% if show_archived %}
                                 {{ bg.modalButton("Delete Account", "#deleteAccount", url("banking:delete_account") ) }}
@@ -61,23 +61,23 @@
                         </div>
                     </td>
                     <td class="text-end">
-                        <a class="btn btn-sm btn-link text-secondary"
+                        <a class="inline-flex items-center justify-center whitespace-nowrap rounded border border-transparent bg-transparent px-2 py-1 text-sm font-normal leading-normal text-secondary no-underline hover:underline"
                            href="{{ url("banking:index") }}?tab=accounts&show_archived=1">Include Archived</a>
                     </td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
     {% endif %}
     {% if tab=='budgets' %}
-        <div class="overflow-x-auto mb-5">
-            <table class="mb-0 table table-dark rounded">
+        <div class="table-scroll mb-12">
+            <table class="data-table">
                 <thead>
                     <tr>
                         <th scope="col" class="">Category</th>
                         <th class="text-end" scope="col">Available</th>
                         <th class="text-end" scope="col">Avg</th>
                         {% for dt in months %}
-                            <th class="text-end px-1" style="white-space: nowrap;" scope="col">{{ dt.strftime("%b %y") }}</th>
+                            <th class="text-end px-1" scope="col">{{ dt.strftime("%b %y") }}</th>
                         {% endfor %}
                     </tr>
                 </thead>
@@ -111,13 +111,13 @@
         </div>
     {% endif %}
     {% if tab=='statements' %}
-        <div class="overflow-x-auto mb-5">
-            <table class="mb-0 table table-dark rounded">
+        <div class="table-scroll mb-12">
+            <table class="data-table">
                 <thead>
                     <tr>
                         <th scope="col" class="">Category</th>
                         {% for month in statements.months %}
-                            <th class="text-end px-1" style="white-space: nowrap;" scope="col">{{ month }}</th>
+                            <th class="text-end px-1" scope="col">{{ month }}</th>
                         {% endfor %}
                     </tr>
                 </thead>
@@ -126,7 +126,7 @@
                         <tr>
                             <td>
                                 <input type="checkbox"
-                                       class="form-check-input me-2 category-checkbox"
+                                       class="category-checkbox me-2 size-4 shrink-0 accent-info align-middle"
                                        id="category-{{ loop.index }}"
                                        {% if not request.session.banking or not request.session.banking.selected_statement_categories %}checked{% elif category in request.session.banking.selected_statement_categories %}checked{% endif %}>
                                 <label for="category-{{ loop.index }}">{{ category }}</label>
@@ -196,7 +196,7 @@
         </script>
     {% endif %}
     {% if tab=='categories' %}
-        <table class="table rounded table-responsive-md table-dark mb-5">
+        <div class="table-scroll mb-12"><table class="data-table">
             <thead>
                 <tr>
                     <th scope="col">Category</th>
@@ -214,7 +214,7 @@
                             <td class="text-end" scope="col">{{ category.get_stats().get(year, "0.00 €") }}</td>
                         {% endfor %}
                         <td>
-                            <div class="d-flex justify-content-end">
+                            <div class="flex justify-end gap-1">
                                 {{ bg.modalButton("Edit", "#editCategory", url("banking:edit_category", args=[category.pk]) ) }}
                                 {{ mg.djangoModal('Edit Category', 'editCategory') }}
                                 {{ bg.hrefButton("Open", url("banking:category", args=[category.pk]) ) }}
@@ -224,7 +224,7 @@
                 {% endfor %}
                 <tr>
                     <td colspan="{{ years|length + 1 }}">
-                        <div class="d-flex">
+                        <div class="flex gap-1">
                             {{ mg.djangoModal('Add Category', 'addCategory') }}
                             {{ bg.modalButton('Add Category', '#addCategory', url("banking:add_category") ) }}
                             {{ mg.djangoModal('Delete Category', 'deleteCategory') }}
@@ -232,12 +232,12 @@
                         </div>
                     </td>
                     <td class="text-end">
-                        <a class="btn btn-sm btn-link text-secondary"
+                        <a class="inline-flex items-center justify-center whitespace-nowrap rounded border border-transparent bg-transparent px-2 py-1 text-sm font-normal leading-normal text-secondary no-underline hover:underline"
                            href="{{ url("banking:index") }}?tab=categories&show_archived=1">Include Archived</a>
                     </td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
     {% endif %}
     {% if tab=='charts' %}
         {% include 'banking/symbols/income_and_expenditure_chart.html' %}

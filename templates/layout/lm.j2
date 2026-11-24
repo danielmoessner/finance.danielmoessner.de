@@ -3,13 +3,13 @@
 {% import "symbols/messages.j2" as messages %}
 {% block body %}
     <body class="bg-black">
-        <div class="container">
-            <div class="d-flex flex-column flex-lg-row">
-                <div class="row flex-grow-1 pt-4 min-w-0">
-                    <aside class="col-12 col-lg-3">
+        <div class="shell">
+            <div class="flex min-w-0 flex-col lg:flex-row">
+                <div class="-mx-3 flex w-full min-w-0 flex-1 flex-wrap pt-6">
+                    <aside class="w-full px-3 lg:w-1/4">
                         {% include 'symbols/left.j2' %}
                     </aside>
-                    <main class="col-12 col-lg-9 mt-5 mt-lg-0">
+                    <main class="mt-12 w-full min-w-0 px-3 lg:mt-0 lg:w-3/4">
                         {{ hg.bigLmHeading(headingCategory, headingHeading) }}
                         {{ messages.lmMessages(request) }}
                         {% block main %}{% endblock %}

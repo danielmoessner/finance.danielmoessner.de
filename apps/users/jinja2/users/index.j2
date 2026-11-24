@@ -6,8 +6,8 @@
 {% import "symbols/heading.j2" as hg %}
 {% import "symbols/modal.j2" as mg %}
 {% block main %}
-    <div class="d-flex justify-content-center mt-2 mb-5">
-        <div class="btn-group" role="group" aria-label="Console">
+    <div class="mt-2 mb-12 flex justify-center">
+        <div class="tab-group" role="group" aria-label="Console">
             {{ bg.hrefButton("Start", request.path + '?tab=stats', active=(tab=='stats') ) }}
             {{ bg.hrefButton("Banking", request.path + '?tab=banking', active=(tab=='banking') ) }}
             {{ bg.hrefButton("Crypto", request.path + '?tab=crypto', active=(tab=='crypto') ) }}
@@ -16,28 +16,28 @@
         </div>
     </div>
     {% if tab=="stats" %}
-        <div class="rounded bg-dark p-3 mb-5">
-            <div class="mb-4">
-                <dl class="row mb-0">
-                    <dt class="col-12 col-sm-4 mb-sm-1">Username:</dt>
-                    <dd class="col-12 col-sm-8 mb-2 mb-sm-1">
+        <div class="mb-12 rounded-md bg-dark p-4">
+            <div class="mb-6">
+                <dl class="-mx-3 mb-0 flex flex-wrap">
+                    <dt class="w-full px-3 sm:mb-1 sm:w-1/3">Username:</dt>
+                    <dd class="mb-2 w-full px-3 sm:mb-1 sm:w-2/3">
                         {{ object.username }}
                     </dd>
-                    <dt class="col-12 col-sm-4 mb-sm-1">E-Mail:</dt>
-                    <dd class="col-12 col-sm-8 mb-2 mb-sm-1">
+                    <dt class="w-full px-3 sm:mb-1 sm:w-1/3">E-Mail:</dt>
+                    <dd class="mb-2 w-full px-3 sm:mb-1 sm:w-2/3">
                         {{ object.email }}
                     </dd>
-                    <dt class="col-12 col-sm-4 mb-sm-1">Frontpage:</dt>
-                    <dd class="col-12 col-sm-8 mb-2 mb-sm-1">
+                    <dt class="w-full px-3 sm:mb-1 sm:w-1/3">Frontpage:</dt>
+                    <dd class="mb-2 w-full px-3 sm:mb-1 sm:w-2/3">
                         {{ object.front_page }}
                     </dd>
-                    <dt class="col-12 col-sm-4 mb-sm-1">Dateformat:</dt>
-                    <dd class="col-12 col-sm-8 mb-2 mb-sm-1">
+                    <dt class="w-full px-3 sm:mb-1 sm:w-1/3">Dateformat:</dt>
+                    <dd class="mb-2 w-full px-3 sm:mb-1 sm:w-2/3">
                         {{ object.get_date_format_display() }}
                     </dd>
                 </dl>
             </div>
-            <div class="d-flex overflow-x-scroll overflow-x-md-auto">
+            <div class="flex gap-1 overflow-x-auto">
                 {{ mg.djangoModal('Edit Username & E-Mail', 'editUser') }}
                 {{ bg.modalButton('Edit Username & E-Mail', '#editUser', url('users:edit_user', args=[object.pk]) ) }}
                 {{ mg.djangoModal('Edit Password', 'editPassword') }}
@@ -48,7 +48,7 @@
         </div>
     {% endif %}
     {% if tab=="banking" %}
-        <table class="table table-dark table-responsive-md rounded mb-5">
+        <div class="table-scroll mb-12"><table class="data-table">
             <thead>
                 <tr>
                     <th scope="col">Depot</th>
@@ -60,7 +60,7 @@
                     <tr>
                         <td>{{ depot.name }}</td>
                         <td>
-                            <div class="d-flex justify-content-end">
+                            <div class="flex justify-end gap-1">
                                 {{ bg.hrefButton(text="Set Active", url=url("banking:set_depot", args=[depot.pk]) , disabled=(depot.is_active)) }}
                                 {{ mg.djangoModal('Edit Depot', 'editBankingDepot') }}
                                 {{ bg.modalButton("Edit", "#editBankingDepot", url("banking:edit_depot", args=[depot.pk]) ) }}
@@ -70,7 +70,7 @@
                 {% endfor %}
                 <tr>
                     <td colspan="2">
-                        <div class="d-flex">
+                        <div class="flex gap-1">
                             {{ mg.djangoModal('Add Depot', 'addBankingDepot') }}
                             {{ bg.modalButton('Add Depot', '#addBankingDepot', url("banking:add_depot") ) }}
                             {{ mg.djangoModal('Delete Depot', 'deleteBankingDepot') }}
@@ -80,10 +80,10 @@
                     </td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
     {% endif %}
     {% if tab=="crypto" %}
-        <table class="table table-dark table-responsive-md rounded mb-5">
+        <div class="table-scroll mb-12"><table class="data-table">
             <thead>
                 <tr>
                     <th scope="col">Depot</th>
@@ -95,7 +95,7 @@
                     <tr>
                         <td>{{ depot.name }}</td>
                         <td>
-                            <div class="d-flex justify-content-end">
+                            <div class="flex justify-end gap-1">
                                 {{ bg.hrefButton(text="Set Active", url=url("crypto:set_depot", args=[depot.pk]) , disabled=(depot.is_active)) }}
                                 {{ mg.djangoModal('Edit Depot', 'editCryptoDepot') }}
                                 {{ bg.modalButton("Edit", "#editCryptoDepot", url("crypto:edit_depot", args=[depot.pk]) ) }}
@@ -105,7 +105,7 @@
                 {% endfor %}
                 <tr>
                     <td colspan="2">
-                        <div class="d-flex">
+                        <div class="flex gap-1">
                             {{ mg.djangoModal('Add Depot', 'addCryptoDepot') }}
                             {{ bg.modalButton('Add Depot', '#addCryptoDepot', url("crypto:add_depot") ) }}
                             {{ mg.djangoModal('Delete Depot', 'deleteCryptoDepot') }}
@@ -115,10 +115,10 @@
                     </td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
     {% endif %}
     {% if tab=="alternative" %}
-        <table class="table table-dark table-responsive-md rounded mb-5">
+        <div class="table-scroll mb-12"><table class="data-table">
             <thead>
                 <tr>
                     <th scope="col">Depot</th>
@@ -130,7 +130,7 @@
                     <tr>
                         <td>{{ depot.name }}</td>
                         <td>
-                            <div class="d-flex justify-content-end">
+                            <div class="flex justify-end gap-1">
                                 {{ bg.hrefButton(text="Set Active", url=url("alternative:set_depot", args=[depot.pk]) , disabled=(depot.is_active)) }}
                                 {{ mg.djangoModal('Edit Depot', 'editAlternativeDepot') }}
                                 {{ bg.modalButton("Edit", "#editAlternativeDepot", url("alternative:edit_depot", args=[depot.pk]) ) }}
@@ -140,7 +140,7 @@
                 {% endfor %}
                 <tr>
                     <td colspan="2">
-                        <div class="d-flex">
+                        <div class="flex gap-1">
                             {{ mg.djangoModal('Add Depot', 'addAlternativeDepot') }}
                             {{ bg.modalButton('Add Depot', '#addAlternativeDepot', url("alternative:add_depot") ) }}
                             {{ mg.djangoModal('Delete Depot', 'deleteAlternativeDepot') }}
@@ -150,10 +150,10 @@
                     </td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
     {% endif %}
     {% if tab=='stocks' %}
-        <table class="table table-dark table-responsive-md rounded mb-5">
+        <div class="table-scroll mb-12"><table class="data-table">
             <thead>
                 <tr>
                     <th scope="col">Depot</th>
@@ -165,7 +165,7 @@
                     <tr>
                         <td>{{ depot.name }}</td>
                         <td>
-                            <div class="d-flex justify-content-end">
+                            <div class="flex justify-end gap-1">
                                 {{ bg.hrefButton(text="Set Active", url=url("stocks:set_depot", args=[depot.pk]) , disabled=(depot.is_active)) }}
                                 {{ mg.djangoModal('Edit Depot', 'editStocksDepot') }}
                                 {{ bg.modalButton("Edit", "#editStocksDepot", url("stocks:edit_depot", args=[depot.pk]) ) }}
@@ -175,7 +175,7 @@
                 {% endfor %}
                 <tr>
                     <td colspan="2">
-                        <div class="d-flex">
+                        <div class="flex gap-1">
                             {{ mg.djangoModal('Add Depot', 'addStocksDepot') }}
                             {{ bg.modalButton('Add Depot', '#addStocksDepot', url("stocks:add_depot") ) }}
                             {{ mg.djangoModal('Delete Depot', 'deleteStocksDepot') }}
@@ -185,6 +185,6 @@
                     </td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
     {% endif %}
 {% endblock %}

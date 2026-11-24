@@ -1,5 +1,5 @@
 {% if tab=="flows" %}
-    <table class="table table-dark table-responsive-md rounded">
+    <div class="table-scroll mb-4"><table class="data-table">
         <thead>
         <tr>
            <th scope="col">Date</th>
@@ -19,7 +19,7 @@
                 <td>{{ flow.bank }}</td>
                 <td class="text-end">{{ flow.flow }}</td>
                 <td>
-                    <div class="d-flex justify-content-end">
+                    <div class="flex justify-end gap-1">
                         {{ mg.djangoModal("Edit Flow", "editFlow") }}
                         {{ bg.modalButton("Edit", "#editFlow", url("stocks:edit_flow", args=[flow.pk])) }}
                         {{ mg.djangoModal("Delete Flow", "deleteFlow") }}
@@ -30,12 +30,12 @@
         {% endfor %}
         <tr>
             <td colspan="5">
-                <div class="d-flex">
+                <div class="flex gap-1">
                     {{ mg.djangoModal("Add Flow", "addFlow") }}
                     {{ bg.modalButton("Add Flow", "#addFlow", url("stocks:add_flow")+"?bank="+object.pk|string) }}
                 </div>
             </td>
         </tr>
         </tbody>
-    </table>
+    </table></div>
 {% endif %}

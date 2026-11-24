@@ -7,7 +7,7 @@
     {% import "symbols/modal.j2" as mg %}
     {{ mg.djangoModal('Edit Bucket', 'editBucket') }}
     {{ mg.djangoModal('Delete Bucket', 'deleteBucket') }}
-    <table class="table rounded table-responsive-md table-dark mb-5">
+    <div class="table-scroll mb-12"><table class="data-table">
         <thead>
             <tr>
                 <th scope="col">Bucket</th>
@@ -27,7 +27,7 @@
                     <td class="text-end">{{ bucket.get_wanted_percentage() }}</td>
                     <td class="text-end">{{ bucket.get_diff() }}</td>
                     <td>
-                        <div class="d-flex align-items-center justify-content-end">
+                        <div class="flex items-center justify-end gap-1">
                             {% if bucket.pk %}
                                 {{ bg.modalButton("Edit", "#editBucket", url("overview:edit_bucket", args=[bucket.pk]) ) }}
                                 {{ bg.modalButton("Delete", "#deleteBucket", url("overview:delete_bucket", args=[bucket.pk]) ) }}
@@ -47,5 +47,5 @@
                 <td></td>
             </tr>
         </tbody>
-    </table>
+    </table></div>
 {% endblock %}

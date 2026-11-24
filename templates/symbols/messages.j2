@@ -1,22 +1,20 @@
 {% macro lmMessages(request) %}
     {% with messages=get_messages(request) %}
         {% if messages %}
-            <div class="messages">
+            <div class="messages space-y-2">
                 {% for message in messages %}
-                    {% if message.level <= 10 %}
-                        <p class="py-1 px-2 rounded m-0 bg-info">{{ message|safe }}</p>
-                    {% elif message.level <= 20 %}
-                        <p class="py-1 px-2 rounded m-0 bg-info">{{ message|safe }}</p>
+                    {% if message.level <= 20 %}
+                        <p class="m-0 rounded-md bg-info px-2 py-1 text-black">{{ message|safe }}</p>
                     {% elif message.level <= 25 %}
-                        <p class="py-1 px-2 rounded m-0 bg-success">{{ message|safe }}</p>
+                        <p class="m-0 rounded-md bg-success px-2 py-1 text-white">{{ message|safe }}</p>
                     {% elif message.level <= 30 %}
-                        <p class="py-1 px-2 rounded m-0 bg-warning">{{ message|safe }}</p>
+                        <p class="m-0 rounded-md bg-warning px-2 py-1 text-black">{{ message|safe }}</p>
                     {% elif message.level >= 40 %}
-                        <p class="py-1 px-2 rounded m-0 bg-danger text-bg-danger">{{ message|safe }}</p>
+                        <p class="m-0 rounded-md bg-danger px-2 py-1 text-white">{{ message|safe }}</p>
                     {% endif %}
                 {% endfor %}
             </div>
-            <hr class="w-100 mb-2 mt-2 border-secondary">
+            <hr class="my-2 h-px w-full border-0 bg-secondary/25">
         {% endif %}
     {% endwith %}
 {% endmacro %}
