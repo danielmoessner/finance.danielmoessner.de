@@ -32,19 +32,19 @@ authors = [
     {name = "danielmoessner", email = "github@danielmoessner.de"},
 ]
 dependencies = [
-    "beautifulsoup4==4.14.*",
-    "django==5.2.*",
-    "django-debug-toolbar==6.0.*",
+    "beautifulsoup4==4.15.*",
+    "django==6.1.*",
+    "django-debug-toolbar==8.0.*",
     "Jinja2==3.1.*",
-    "pandas==2.2.*",
-    "pytz==2023.3.*",
-    "requests==2.31.*",
-    "pydantic==2.1.*",
-    "selenium==4.37.*",
-    "webdriver-manager==4.0.*",
-    "pytest==8.3.*",
-    "numpy==2.1.*",
-    "gunicorn==25.*",
+    "pandas==3.1.*",
+    "pytz==2026.*",
+    "requests==2.34.*",
+    "pydantic==2.14.*",
+    "selenium==4.54.*",
+    "webdriver-manager==4.1.*",
+    "pytest==9.2.*",
+    "numpy==2.5.*",
+    "gunicorn==27.*",
 ]
 requires-python = ">=3.12,<3.13"
 license = {text = "MIT"}
@@ -54,12 +54,12 @@ packages = []
 
 [dependency-groups]
 dev = [
-    "django-types==0.19.*",
-    "types-requests==2.31.*",
-    "mypy==1.10.*",
+    "django-types==0.24.*",
+    "types-requests==2.33.*",
+    "mypy==2.4.*",
     "black==26.*",
-    "djlint==1.36.*",
-    "isort==8.*",
+    "djlint==1.54.*",
+    "isort==9.*",
     "ruff==0.*",
     "pytest-django==4.*",
 ]
