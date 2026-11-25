@@ -73,8 +73,8 @@ border-transparent bg-transparent text-secondary hover:underline
         <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
     </form>
 {% endmacro %}
-{% macro dismissButton(text="Cancel", classes="") %}
-    <button class="{{ btn() }} {{ btn_md() }} {{ btn_dark() }} {{ classes }}"
+{% macro dismissButton(text="Cancel", classes="btn-sm") %}
+    <button class="{{ btn() }} {{ size(classes) }} {{ btn_dark() }} {{ extra(classes) }}"
             type="button"
             data-dismiss="modal">{{ text }}</button>
 {% endmacro %}
