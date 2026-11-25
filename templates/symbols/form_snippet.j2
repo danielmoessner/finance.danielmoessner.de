@@ -3,7 +3,7 @@
 {% with errors=form.non_field_errors() %}
     {% if errors %}
         <p>
-            {% for error in errors %}<span class="form-child--errors">{{ error }}</span>{% endfor %}
+            {% for error in errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
         </p>
     {% endif %}
 {% endwith %}
@@ -11,8 +11,12 @@
     <p>
         {{ field.label_tag() }}
         {{ field }}
-        <span class="text-danger">{{ field.errors|striptags|replace('.', '. ') |replace(".  ", ". ") }}</span>
-        <span class="text-secondary">{{ field.help_text|striptags|replace('.', '. ') |replace(".  ", ". ") }}</span>
+        {% if field.errors %}
+            <span class="mt-1 block text-sm text-danger">{{ field.errors|striptags|replace('.', '. ') |replace(".  ", ". ") }}</span>
+        {% endif %}
+        {% if field.help_text %}
+            <span class="mt-1 block text-sm text-secondary">{{ field.help_text|striptags|replace('.', '. ') |replace(".  ", ". ") }}</span>
+        {% endif %}
     </p>
 {% endfor %}
 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">

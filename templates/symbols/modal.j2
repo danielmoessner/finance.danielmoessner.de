@@ -1,14 +1,23 @@
 {% import "symbols/button.j2" as buttons %}
 {% macro djangoModal(title, id, formClass="") %}
-    <div class="modal text-darker" id="{{ id }}">
+    <div class="modal"
+         id="{{ id }}"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="{{ id }}-title">
+        <div class="modal-backdrop" data-dismiss="modal"></div>
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">{{ title }}</h4>
+                    <h4 class="modal-title" id="{{ id }}-title">{{ title }}</h4>
                     <button type="button"
-                            class="btn-close"
-                            data-bs-dismiss="modal"
-                            aria-label="Close"></button>
+                            class="modal-close"
+                            data-dismiss="modal"
+                            aria-label="Close">
+                        <svg viewBox="0 0 16 16" aria-hidden="true">
+                            <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
+                        </svg>
+                    </button>
                 </div>
                 <form action="" method="post" novalidate class="djangoform {{ formClass }}">
                     <div class="modal-body"></div>

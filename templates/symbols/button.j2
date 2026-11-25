@@ -1,44 +1,83 @@
-{% macro modalButton(text, target, action) %}
-    <a class="btn btn-sm btn-info modal-button"
-       type="button"
-       data-bs-toggle="modal"
-       data-bs-target="{{ target }}"
-       data-action="{{ action }}">{{ text }}</a>
+{% macro btn() -%}
+inline-flex cursor-pointer items-center justify-center gap-1 whitespace-nowrap border text-center align-middle font-normal leading-normal no-underline transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 disabled:pointer-events-none disabled:opacity-[.65] active:shadow-[inset_0_3px_5px_rgba(0,0,0,0.125)]
+{%- endmacro %}
+{% macro btn_sm() -%}
+rounded px-2 py-1 text-sm
+{%- endmacro %}
+{% macro btn_md() -%}
+rounded-md px-3 py-1.5 text-base
+{%- endmacro %}
+{% macro btn_secondary() -%}
+border-secondary bg-secondary text-white hover:border-[#565e64] hover:bg-[#5c636a]
+{%- endmacro %}
+{% macro btn_secondary_on() -%}
+border-[#51585e] bg-[#565e64] text-white shadow-[inset_0_3px_5px_rgba(0,0,0,0.125)]
+{%- endmacro %}
+{% macro btn_info() -%}
+border-info bg-info text-black hover:border-[#25cff1] hover:bg-[#31d2f2]
+{%- endmacro %}
+{% macro btn_light() -%}
+border-light bg-light text-black hover:border-[#c6c7c8] hover:bg-[#d3d4d5]
+{%- endmacro %}
+{% macro btn_dark() -%}
+border-white/15 bg-dark text-white hover:border-white/25 hover:bg-[#424649]
+{%- endmacro %}
+{% macro btn_link() -%}
+border-transparent bg-transparent text-white hover:bg-white/10 hover:no-underline
+{%- endmacro %}
+{% macro btn_quiet() -%}
+border-transparent bg-transparent text-secondary hover:underline
+{%- endmacro %}
+{% macro size(classes) -%}
+{%- if "btn-sm" in classes -%}{{ btn_sm() }}{%- else -%}{{ btn_md() }}{%- endif -%}
+{%- endmacro %}
+{% macro extra(classes) -%}
+{{ classes|replace("btn-sm", "")|replace("mb-4", "mb-6")|replace("mb-5", "mb-12")|trim }}
+{%- endmacro %}
+{% macro modalButton(text, target, action, extra_class="") %}
+    <button type="button"
+            class="modal-button {{ btn() }} {{ btn_sm() }} {{ btn_info() }} {{ extra_class }}"
+            data-modal-target="{{ target }}"
+            data-action="{{ action }}">{{ text }}</button>
 {% endmacro %}
 {% macro postButton(text, action, csrf_token) %}
     <form action="{{ action }}" method="post">
-        <button class="btn btn-sm btn-secondary" type="submit">{{ text }}</button>
+        <button class="{{ btn() }} {{ btn_sm() }} {{ btn_secondary() }}" type="submit">{{ text }}</button>
         <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
     </form>
 {% endmacro %}
 {% macro hrefButton(text, url, classes="btn-sm", active=False, disabled=False) %}
-    <a class="btn btn-secondary {{ classes }} {{ 'disabled' if disabled else '' }} {{ 'active' if active else '' }}"
-       type="button"
+    <a class="{{ btn() }} {{ size(classes) }} {{ btn_secondary_on() if active else btn_secondary() }} {{ extra(classes) }} {{ 'pointer-events-none opacity-[.65]' if disabled else '' }}"
+       {% if disabled %}aria-disabled="true" tabindex="-1"{% endif %}
        href="{{ url }}">{{ text }}</a>
 {% endmacro %}
 {% macro dropdownButton(text, classes="btn-sm", active=False, disabled=False) %}
     <button type="button"
-            class="btn btn-secondary dropdown-toggle {{ classes }} {{ "disabled" if disabled else "" }} {{ "active" if active else "" }}"
-            data-bs-toggle="dropdown"
+            class="dropdown-toggle {{ btn() }} {{ size(classes) }} {{ btn_secondary_on() if active else btn_secondary() }} {{ extra(classes) }} {{ 'pointer-events-none opacity-[.65]' if disabled else '' }}"
+            data-dropdown-toggle
             aria-haspopup="true"
             aria-expanded="false">{{ text }}</button>
 {% endmacro %}
 {% macro submitButton(text="Submit", classes="btn-sm") %}
-    <button type="submit" class="btn btn-light {{ classes }}" role="button">{{ text }}</button>
+    <button type="submit"
+            class="{{ btn() }} {{ size(classes) }} {{ btn_light() }} {{ extra(classes) }}">{{ text }}</button>
 {% endmacro %}
 {% macro navigationButton(text, url, classes="", active=False) %}
-    <a class="btn w-100 text-start {% if active %}btn-secondary active{% else %}btn-link text-white text-decoration-none{% endif %} {{ classes }}"
+    <a class="{{ btn() }} {{ btn_md() }} w-full justify-start {{ btn_secondary_on() if active else btn_link() }} {{ classes }}"
        href="{{ url }}">{{ text }}</a>
 {% endmacro %}
 {% macro navigationPostButton(text, url, csrf_token) %}
     <form action="{{ url }}" method="post">
-        <button class="btn w-100 text-start btn-link text-white text-decoration-none"
+        <button class="{{ btn() }} {{ btn_md() }} w-full justify-start {{ btn_link() }}"
                 type="submit">{{ text }}</button>
         <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
     </form>
 {% endmacro %}
-{% macro dismissButton(text="Cancel", classes="") %}
-    <button class="btn btn-dark {{ classes }}"
+{% macro dismissButton(text="Cancel", classes="btn-sm") %}
+    <button class="{{ btn() }} {{ size(classes) }} {{ btn_dark() }} {{ extra(classes) }}"
             type="button"
-            data-bs-dismiss="modal">{{ text }}</button>
+            data-dismiss="modal">{{ text }}</button>
+{% endmacro %}
+{% macro quietLink(text, url) %}
+    <a class="{{ btn() }} {{ btn_sm() }} {{ btn_quiet() }}" href="{{ url }}">{{ text }}</a>
 {% endmacro %}

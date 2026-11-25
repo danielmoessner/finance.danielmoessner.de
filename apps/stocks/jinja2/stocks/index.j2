@@ -5,28 +5,28 @@
 {% block main %}
     {% import "symbols/button.j2" as bg %}
     {% import "symbols/modal.j2" as mg %}
-    <div class="d-flex justify-content-center mt-2 mb-5">
-        <div class="btn-group" role="group" aria-label="Console">
+    <div class="mt-2 mb-12 flex justify-center">
+        <div class="tab-group" role="group" aria-label="Console">
             {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats') ) }}
             {{ bg.hrefButton("Banks", request.path + '?tab=banks', active=(tab=='banks') ) }}
             {{ bg.hrefButton("Stocks", request.path + '?tab=stocks', active=(tab=='stocks') ) }}
             {{ bg.hrefButton("Charts", request.path + '?tab=charts', active=(tab=='charts') ) }}
             {{ bg.dropdownButton("Calculations", active=(tab=="values" or tab=="flows") ) }}
-            <div class="dropdown-menu dropdown-menu-dark py-1">
-                <a class="dropdown-item btn-sm" href="?tab=flows">Flows</a>
-                <a class="dropdown-item btn-sm" href="?tab=values">Values</a>
+            <div class="dropdown-menu" data-dropdown-menu>
+                <a class="dropdown-item" href="?tab=flows">Flows</a>
+                <a class="dropdown-item" href="?tab=values">Values</a>
             </div>
         </div>
     </div>
     {% if tab == 'stats' %}
-        <div class="d-flex mb-2">
+        <div class="mb-2 flex">
             <div class="ms-auto">{{ bg.postButton("Reset Stats", url("stocks:reset_depot", args=[depot.pk]) , csrf_token) }}</div>
         </div>
     {% endif %}
     {% include 'symbols/stats.j2' %}
     {% if tab=='banks' %}
         {{ mg.djangoModal('Edit Bank', 'editBank') }}
-        <table class="table rounded table-responsive-md table-dark mb-5">
+        <div class="table-scroll mb-12"><table class="data-table">
             <thead>
                 <tr>
                     <th scope="col">Bank</th>
@@ -41,7 +41,7 @@
                         <td>
                             {{ bank.name }}
                             {% if bank.bucket %}
-                                <span class="badge bg-success">{{ bank.bucket.name }}</span>
+                                <span class="ms-1 inline-flex items-center rounded-md bg-success px-[0.65em] py-[0.35em] align-middle text-[0.75em] font-bold leading-none text-white">{{ bank.bucket.name }}</span>
                             {% else %}
                                 {{ bg.modalButton("Set Bucket", "#editBank", url("stocks:edit_bank", args=[bank.pk]) ) }}
                             {% endif %}
@@ -49,7 +49,7 @@
                         <td class="text-end">{{ bank.get_balance_display() }}</td>
                         <td class="text-end">{{ bank.get_value_display() }}</td>
                         <td>
-                            <div class="d-flex align-items-center justify-content-end">
+                            <div class="flex items-center justify-end gap-1">
                                 {{ bg.modalButton("Edit", "#editBank", url("stocks:edit_bank", args=[bank.pk]) ) }}
                                 {{ bg.hrefButton("Open", url("stocks:banks", args=[bank.pk]) ) }}
                             </div>
@@ -58,7 +58,7 @@
                 {% endfor %}
                 <tr>
                     <td colspan="3">
-                        <div class="d-flex">
+                        <div class="flex gap-1">
                             {{ mg.djangoModal('Add Bank', 'addBank') }}
                             {{ bg.modalButton('Add Bank', '#addBank', url("stocks:add_bank") ) }}
                             {% if show_archived %}
@@ -68,16 +68,16 @@
                         </div>
                     </td>
                     <td class="text-end">
-                        <a class="btn btn-sm btn-link text-secondary"
+                        <a class="inline-flex items-center justify-center whitespace-nowrap rounded border border-transparent bg-transparent px-2 py-1 text-sm font-normal leading-normal text-secondary no-underline hover:underline"
                            href="{{ url("stocks:index") }}?tab=banks&show_archived=1">Include Archived</a>
                     </td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
     {% endif %}
     {% if tab=='stocks' %}
         {{ mg.djangoModal('Edit Stock', 'editStock') }}
-        <table class="table rounded table-responsive-md table-dark mb-5">
+        <div class="table-scroll mb-12"><table class="data-table">
             <thead>
                 <tr>
                     <th scope="col">Name</th>
@@ -94,18 +94,18 @@
                         <td>
                             {{ stock.name }}
                             {% if stock.bucket %}
-                                <span class="badge bg-success">{{ stock.bucket.name }}</span>
+                                <span class="ms-1 inline-flex items-center rounded-md bg-success px-[0.65em] py-[0.35em] align-middle text-[0.75em] font-bold leading-none text-white">{{ stock.bucket.name }}</span>
                             {% else %}
                                 {{ bg.modalButton("Set Bucket", "#editStock", url("stocks:edit_stock", args=[stock.pk]) ) }}
                             {% endif %}
-                            {% if stock.no_isin %}<span class="badge bg-danger">no isin</span>{% endif %}
+                            {% if stock.no_isin %}<span class="ms-1 inline-flex items-center rounded-md bg-danger px-[0.65em] py-[0.35em] align-middle text-[0.75em] font-bold leading-none text-white">no isin</span>{% endif %}
                         </td>
                         <td class="text-end">{{ stock.get_price_display() }}</td>
                         <td class="text-end">{{ stock.get_top_price_display() }}</td>
                         <td class="text-end">{{ stock.get_amount_display() }}</td>
                         <td class="text-end">{{ stock.get_value_display() }}</td>
                         <td>
-                            <div class="d-flex align-items-center">
+                            <div class="flex items-center gap-1">
                                 {{ bg.modalButton("Edit", "#editStock", url("stocks:edit_stock", args=[stock.pk]) ) }}
                                 {{ bg.hrefButton("Open", url("stocks:stocks", args=[stock.pk]) ) }}
                             </div>
@@ -114,7 +114,7 @@
                 {% endfor %}
                 <tr>
                     <td colspan="7">
-                        <div class="d-flex">
+                        <div class="flex gap-1">
                             {{ mg.djangoModal('Add Stock', 'addStock') }}
                             {{ bg.modalButton('Add Stock', '#addStock', url("stocks:add_stock") ) }}
                             {{ mg.djangoModal('Delete Stock', 'deleteStock') }}
@@ -123,7 +123,7 @@
                     </td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
     {% endif %}
     {% if tab=="charts" %}charts todo{% endif %}
     {% include 'symbols/values.j2' %}

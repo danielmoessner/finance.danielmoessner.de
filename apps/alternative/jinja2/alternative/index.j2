@@ -6,14 +6,14 @@
 {% block main %}
     {% import "symbols/button.j2" as bg %}
     {% import "symbols/modal.j2" as mg %}
-    <div class="d-flex justify-content-center mt-2 mb-5">
-        <div class="btn-group" role="group" aria-label="Console">
+    <div class="mt-2 mb-12 flex justify-center">
+        <div class="tab-group" role="group" aria-label="Console">
             {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats') ) }}
             {{ bg.hrefButton("Alternatives", request.path + '?tab=alternatives', active=(tab=='alternatives') ) }}
         </div>
     </div>
     {% if tab == 'stats' %}
-        <div class="d-flex mb-2">
+        <div class="mb-2 flex">
             <div class="ms-auto">
                 {{ bg.postButton("Reset Stats", url("alternative:reset_depot", args=[depot.pk]) , csrf_token) }}
             </div>
@@ -22,7 +22,7 @@
     {% include 'symbols/stats.j2' %}
     {% if tab == 'alternatives' %}
         {{ mg.djangoModal('Edit Alternative', 'editAlternative') }}
-        <table class="table table-responsive-md rounded table-dark mb-5">
+        <div class="table-scroll mb-12"><table class="data-table">
             <thead>
                 <tr>
                     <th scope="col">Alternative</th>
@@ -38,7 +38,7 @@
                         <td>
                             {{ alternative.name }}
                             {% if alternative.bucket %}
-                                <span class="badge bg-success">{{ alternative.bucket.name }}</span>
+                                <span class="ms-1 inline-flex items-center rounded-md bg-success px-[0.65em] py-[0.35em] align-middle text-[0.75em] font-bold leading-none text-white">{{ alternative.bucket.name }}</span>
                             {% else %}
                                 {{ bg.modalButton("Set Bucket", "#editAlternative", url("alternative:edit_alternative", args=[alternative.pk]) ) }}
                             {% endif %}
@@ -47,7 +47,7 @@
                         <td class="text-end">{{ alternative.get_value_display() }}</td>
                         <td class="text-end">{{ alternative.get_profit_display() }}</td>
                         <td>
-                            <div class="d-flex justify-content-end">
+                            <div class="flex justify-end gap-1">
                                 {{ bg.hrefButton("Open", url('alternative:alternative', args=[alternative.pk]) ) }}
                                 {{ bg.modalButton("Edit", "#editAlternative", url("alternative:edit_alternative", args=[alternative.pk]) ) }}
                             </div>
@@ -56,7 +56,7 @@
                 {% endfor %}
                 <tr>
                     <td colspan="4">
-                        <div class="d-flex">
+                        <div class="flex gap-1">
                             {{ bg.modalButton('Add Alternative', '#addAlternative', url("alternative:add_alternative") ) }}
                             {{ bg.modalButton('Delete Alternative', '#deleteAlternative', url("alternative:delete_alternative") ) }}
                             {{ mg.djangoModal('Add Alternative', 'addAlternative') }}
@@ -65,11 +65,11 @@
                         </div>
                     </td>
                     <td class="text-end">
-                        <a class="btn btn-sm btn-link text-secondary"
+                        <a class="inline-flex items-center justify-center whitespace-nowrap rounded border border-transparent bg-transparent px-2 py-1 text-sm font-normal leading-normal text-secondary no-underline hover:underline"
                            href="{{ url("alternative:index") }}?tab=alternatives&show_archived=1">Include Archived</a>
                     </td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
     {% endif %}
 {% endblock %}

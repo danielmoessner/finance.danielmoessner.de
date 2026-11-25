@@ -5,8 +5,8 @@
 {% block main %}
     {% import "symbols/button.j2" as bg %}
     {% import "symbols/modal.j2" as mg %}
-    <div class="d-flex justify-content-center mt-2 mb-5">
-        <div class="btn-group" role="group" aria-label="Console">
+    <div class="mt-2 mb-12 flex justify-center">
+        <div class="tab-group" role="group" aria-label="Console">
             {{ bg.hrefButton("Stats", request.path + '?tab=stats', active=(tab=='stats') ) }}
             {{ bg.hrefButton("Flows", request.path + '?tab=flows', active=(tab=='flows') ) }}
             {{ bg.hrefButton("Trades", request.path + '?tab=trades', active=(tab=='trades') ) }}
