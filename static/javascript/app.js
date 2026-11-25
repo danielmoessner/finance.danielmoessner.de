@@ -1,56 +1,7 @@
+import { openModal, ready } from "./bootstrap.js";
+
 const spinner =
   '<svg class="inline-block h-4 w-4 shrink-0 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
-
-function ready(f) {
-  if (document.readyState !== "loading") {
-    f();
-  } else {
-    document.addEventListener("DOMContentLoaded", f);
-  }
-}
-
-function openModal(modal) {
-  document.querySelectorAll(".modal.is-open").forEach((open) => {
-    if (open !== modal) closeModal(open);
-  });
-  closeDropdowns();
-  modal.classList.add("is-open");
-  document.body.classList.add("overflow-hidden");
-}
-
-function closeModal(modal) {
-  modal.classList.remove("is-open");
-  if (!document.querySelector(".modal.is-open")) {
-    document.body.classList.remove("overflow-hidden");
-  }
-}
-
-function closeDropdowns() {
-  document.querySelectorAll(".dropdown-menu.is-open").forEach((menu) => {
-    menu.classList.remove("is-open");
-  });
-  document.querySelectorAll("[data-dropdown-toggle]").forEach((toggle) => {
-    toggle.setAttribute("aria-expanded", "false");
-  });
-}
-
-function placeDropdown(toggle, menu) {
-  const rect = toggle.getBoundingClientRect();
-  const width = Math.max(rect.width, 160);
-  let left = rect.right - width;
-  if (left < 8) left = 8;
-  if (left + width > window.innerWidth - 8) {
-    left = Math.max(8, window.innerWidth - 8 - width);
-  }
-  menu.style.top = `${rect.bottom + 4}px`;
-  menu.style.left = `${left}px`;
-}
-
-ready(function () {
-  document.querySelectorAll(".modal").forEach((modal) => {
-    document.body.appendChild(modal);
-  });
-});
 
 ready(function () {
   document.querySelectorAll(".category-change-bulk-button").forEach((button) => {
@@ -71,56 +22,13 @@ ready(function () {
 
 ready(function () {
   document.addEventListener("click", function (event) {
-    const toggle = event.target.closest("[data-dropdown-toggle]");
-    if (toggle) {
-      event.preventDefault();
-      const menu = toggle.parentElement.querySelector("[data-dropdown-menu]");
-      const willOpen = menu && !menu.classList.contains("is-open");
-      closeDropdowns();
-      if (willOpen) {
-        placeDropdown(toggle, menu);
-        menu.classList.add("is-open");
-        toggle.setAttribute("aria-expanded", "true");
-      }
-      return;
-    }
-
-    if (!event.target.closest("[data-dropdown-menu]")) {
-      closeDropdowns();
-    }
-
     const opener = event.target.closest("[data-modal-target]");
-    if (opener) {
-      event.preventDefault();
-      const modal = document.querySelector(opener.dataset.modalTarget);
-      if (!modal) return;
-      insertFormIntoModal(modal, opener.dataset.action);
-      openModal(modal);
-      return;
-    }
-
-    if (event.target.closest("[data-dismiss='modal']")) {
-      const modal = event.target.closest(".modal");
-      if (modal) closeModal(modal);
-    }
-  });
-
-  document.addEventListener("keydown", function (event) {
-    if (event.key !== "Escape") return;
-    closeDropdowns();
-    document.querySelectorAll(".modal.is-open").forEach(closeModal);
-  });
-
-  window.addEventListener("resize", closeDropdowns);
-  window.addEventListener("scroll", closeDropdowns, true);
-
-  document.querySelectorAll("[data-nav-toggle]").forEach((button) => {
-    button.addEventListener("click", function () {
-      const nav = document.getElementById(button.getAttribute("aria-controls"));
-      if (!nav) return;
-      const collapsed = nav.classList.toggle("hidden");
-      button.setAttribute("aria-expanded", collapsed ? "false" : "true");
-    });
+    if (!opener) return;
+    event.preventDefault();
+    const modal = document.querySelector(opener.dataset.modalTarget);
+    if (!modal) return;
+    insertFormIntoModal(modal, opener.dataset.action);
+    openModal(modal);
   });
 });
 
